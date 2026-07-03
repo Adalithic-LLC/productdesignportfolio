@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Arcatext — The modular nested prompt system</title>
+<title>Arcatext — Build a modular prompt</title>
 <style>
   /* ============================================================
-     Arcatext prompt-system diagram — boxes & arrows
-     Single file, zero dependencies. Drop anywhere or iframe it.
-     Same engine + visual language as the "How Arcatext works"
-     system diagram: tabs = views, boxes = pieces, arrows drawn
-     live in SVG, click a box to unfold it, light + dark themes.
-     Edit the FLOWS object near the bottom to change content.
+     Arcatext — modular prompt builder + runtime cascade.
+     Single file, zero dependencies. Same visual language as the
+     "How Arcatext works" system diagram.
+     - Tab 1: Build a prompt — pick options / a scenario and watch
+       the system prompt assemble from reusable modules.
+     - Tab 2: Runtime cascade — where the prompt goes (boxes + wires).
+     Light + dark themes (toggle, defaults to system preference).
      ============================================================ */
 
   :root {
@@ -22,52 +23,31 @@
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, system-ui, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
-
   html[data-theme="dark"] {
-    --bg:        #0e1116;
-    --panel:     #161b22;
-    --panel-2:   #1c232d;
-    --line:      #2a323d;
-    --ink:       #e8edf3;
-    --ink-soft:  #aab4c0;
-    --ink-faint: #6b7682;
-    --shadow:    0 12px 34px rgba(0,0,0,.45);
-    --wire:      #3a4452;
+    --bg:#0e1116; --panel:#161b22; --panel-2:#1c232d; --line:#2a323d;
+    --ink:#e8edf3; --ink-soft:#aab4c0; --ink-faint:#6b7682;
+    --shadow:0 12px 34px rgba(0,0,0,.45); --wire:#3a4452;
   }
   html[data-theme="light"] {
-    --bg:        #f6f8fb;
-    --panel:     #ffffff;
-    --panel-2:   #eef1f6;
-    --line:      #dde3ec;
-    --ink:       #18212e;
-    --ink-soft:  #515c6b;
-    --ink-faint: #8b95a3;
-    --shadow:    0 12px 30px rgba(40,55,80,.10);
-    --wire:      #c2cbd8;
+    --bg:#f6f8fb; --panel:#ffffff; --panel-2:#eef1f6; --line:#dde3ec;
+    --ink:#18212e; --ink-soft:#515c6b; --ink-faint:#8b95a3;
+    --shadow:0 12px 30px rgba(40,55,80,.10); --wire:#c2cbd8;
   }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font);
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.5;
+    background: var(--bg); color: var(--ink); font-family: var(--font);
+    -webkit-font-smoothing: antialiased; line-height: 1.5;
     transition: background .3s ease, color .3s ease;
   }
-
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 22px 80px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 22px 80px; }
 
   /* ---------- Top bar ---------- */
   .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
-  .eyebrow {
-    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--accent-2); font-weight: 600; margin: 0 0 8px;
-  }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-2); font-weight: 600; margin: 0 0 8px; }
   h1.title { font-size: clamp(24px, 3.4vw, 34px); line-height: 1.1; margin: 0 0 10px; font-weight: 700; letter-spacing: -0.02em; }
-  .lede { font-size: clamp(14px, 1.5vw, 16px); color: var(--ink-soft); max-width: 62ch; margin: 0; }
-
+  .lede { font-size: clamp(14px, 1.5vw, 16px); color: var(--ink-soft); max-width: 64ch; margin: 0; }
   .theme-toggle {
     flex: none; display: inline-flex; align-items: center; gap: 8px;
     background: var(--panel); border: 1px solid var(--line); color: var(--ink-soft);
@@ -78,7 +58,7 @@
   .theme-toggle svg { width: 15px; height: 15px; }
 
   /* ---------- Tabs ---------- */
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
   .tab {
     appearance: none; background: none; border: none; cursor: pointer;
     font: inherit; font-size: 14px; font-weight: 550; color: var(--ink-faint);
@@ -88,117 +68,169 @@
   .tab .t-ico { font-size: 16px; }
   .tab:hover { color: var(--ink-soft); }
   .tab[aria-selected="true"] { color: var(--ink); }
-  .tab[aria-selected="true"]::after {
-    content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px;
-    height: 2px; border-radius: 2px; background: var(--accent);
-  }
+  .tab[aria-selected="true"]::after { content:""; position:absolute; left:12px; right:12px; bottom:-1px; height:2px; border-radius:2px; background:var(--accent); }
   .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .flow-intro { color: var(--ink-soft); font-size: 14.5px; margin: 16px 2px 4px; max-width: 74ch; min-height: 42px; }
-  .hint {
-    margin: 2px 2px 18px; font-size: 12.5px; color: var(--ink-faint);
-    display: inline-flex; align-items: center; gap: 8px;
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ============================================================
+     BUILDER
+     ============================================================ */
+  /* Presets */
+  .presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 20px; }
+  .presets .lbl { font-size: 12.5px; color: var(--ink-faint); margin-right: 2px; }
+  .preset {
+    appearance: none; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 550;
+    color: var(--ink-soft); background: var(--panel); border: 1px solid var(--line);
+    padding: 7px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px;
+    transition: border-color .16s, color .16s, background .16s, transform .12s;
   }
+  .preset .p-ico { font-size: 14px; }
+  .preset:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-1px); }
+  .preset[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+
+  .builder { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 22px; align-items: start; }
+
+  /* Options panel */
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 16px 18px; }
+  .panel h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0 0 14px; }
+  .ctl { margin-bottom: 15px; }
+  .ctl:last-child { margin-bottom: 0; }
+  .ctl > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 7px; }
+  .ctl .hint2 { font-weight: 400; color: var(--ink-faint); font-size: 11.5px; }
+
+  select.sel {
+    width: 100%; appearance: none; font: inherit; font-size: 13.5px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 9px 30px 9px 11px; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-faint) 50%), linear-gradient(135deg, var(--ink-faint) 50%, transparent 50%);
+    background-position: right 13px center, right 8px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  select.sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .seg { display: flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 3px; }
+  .seg button {
+    flex: 1 1 0; appearance: none; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 550;
+    color: var(--ink-soft); background: none; border: none; border-radius: 7px; padding: 6px 4px; white-space: nowrap;
+    transition: background .14s, color .14s;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  .seg.teal button[aria-pressed="true"] { background: var(--accent-2); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .row2 { display: flex; gap: 8px; align-items: center; }
+  .switch { position: relative; width: 40px; height: 23px; flex: none; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; transition: background .16s, border-color .16s; }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: var(--ink-faint); transition: transform .16s, background .16s; }
+  .switch input:checked + .track { background: color-mix(in srgb, var(--accent-2) 30%, var(--panel-2)); border-color: var(--accent-2); }
+  .switch input:checked + .track + .knob { transform: translateX(17px); background: var(--accent-2); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sw-lbl { font-size: 12.5px; color: var(--ink-soft); }
+
+  /* Assembled prompt */
+  .assembly { min-width: 0; }
+  .asm-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .asm-title { font-size: 16px; font-weight: 650; letter-spacing: -.01em; margin: 0; }
+  .asm-meta { font-size: 12px; color: var(--ink-faint); font-family: var(--mono); }
+  .asm-sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .asm-sub b { color: var(--accent); font-weight: 600; }
+
+  .stack { position: relative; display: flex; flex-direction: column; gap: 10px; }
+  .mod {
+    position: relative; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm); padding: 11px 14px; box-shadow: var(--shadow);
+    animation: modIn .32s cubic-bezier(.2,.7,.3,1) both;
+  }
+  @keyframes modIn { from { opacity: 0; transform: translateY(-6px) scale(.99); } to { opacity: 1; transform: none; } }
+  .mod.frag { border-left-color: var(--accent-2); background: var(--panel-2); border-style: dashed; border-left-style: solid; }
+  html[data-theme="light"] .mod.frag { background: color-mix(in srgb, var(--accent-2) 6%, var(--panel)); }
+  .mod.json { border-left-color: var(--ink-faint); }
+  .mod-top { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+  .mod-kind { font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent); padding: 2px 6px; border-radius: 5px; }
+  .mod.frag .mod-kind { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 40%, transparent); }
+  .mod.json .mod-kind { color: var(--ink-faint); border-color: var(--line); }
+  .mod-title { font-size: 13px; font-weight: 650; }
+  .mod-fn { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
+  .mod-text { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .mod-text .cmt { color: var(--ink-faint); }
+  .mod-text .fld { color: var(--accent); }
+  .mod.json .mod-text .fld { color: var(--accent-2); }
+
+  /* Fragment library strip */
+  .lib { margin-top: 26px; }
+  .lib-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .lib-h h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0; }
+  .lib-h .sub { font-size: 12.5px; color: var(--ink-soft); }
+  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .libcard { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 11px 12px; background: var(--panel); transition: border-color .18s, opacity .18s, background .18s; opacity: .5; }
+  .libcard.on { opacity: 1; border-color: color-mix(in srgb, var(--accent-2) 55%, transparent); background: color-mix(in srgb, var(--accent-2) 7%, var(--panel)); }
+  .libcard .lc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .libcard .lc-ico { font-size: 15px; }
+  .libcard .lc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink); }
+  .libcard .lc-state { margin-left: auto; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .libcard.on .lc-state { color: var(--accent-2); }
+  .libcard .lc-desc { font-size: 12px; color: var(--ink-soft); }
+  .libcard .lc-uses { margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+
+  /* ============================================================
+     CASCADE (boxes + wires) — reused engine
+     ============================================================ */
+  .flow-intro { color: var(--ink-soft); font-size: 14.5px; margin: 0 2px 4px; max-width: 74ch; }
+  .hint { margin: 6px 2px 18px; font-size: 12.5px; color: var(--ink-faint); display: inline-flex; align-items: center; gap: 8px; }
   .hint .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2.2s infinite; }
   @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(91,140,255,.55)} 70%{box-shadow:0 0 0 9px rgba(91,140,255,0)} 100%{box-shadow:0 0 0 0 rgba(91,140,255,0)} }
-
-  /* ---------- Canvas (grid + wires) ---------- */
-  .canvas {
-    position: relative;
-    display: grid;
-    grid-template-columns: 210px minmax(0, 1fr) 210px;
-    gap: 30px 34px;
-    align-items: start;
-  }
+  .canvas { position: relative; display: grid; grid-template-columns: 210px minmax(0, 1fr) 210px; gap: 30px 34px; align-items: start; }
   .wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 0; }
-
-  /* ---------- Node boxes ---------- */
-  .node {
-    position: relative; z-index: 1;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: border-color .18s ease, transform .18s ease, background .18s ease;
-    scroll-margin-top: 16px;
-  }
+  .node { position: relative; z-index: 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); cursor: pointer; transition: border-color .18s ease, transform .18s ease; scroll-margin-top: 16px; }
   .node:hover { border-color: var(--accent); transform: translateY(-2px); }
   .node:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .node.open { border-color: var(--accent); }
   .node.comp { background: var(--panel-2); border-style: dashed; }
   .node.comp:hover, .node.comp.open { border-color: var(--accent-2); border-style: solid; }
   .node.spine { align-self: stretch; display: flex; flex-direction: column; }
-
   .n-head { display: flex; align-items: flex-start; gap: 11px; padding: 14px 14px 12px; }
-  .n-badge {
-    flex: none; width: 23px; height: 23px; border-radius: 50%;
-    display: grid; place-items: center; font-size: 11.5px; font-weight: 700;
-    color: var(--accent); border: 1.6px solid var(--accent); background: var(--bg); margin-top: 1px;
-  }
-  .node.comp .n-tag {
-    flex: none; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--accent-2); border: 1px solid color-mix(in srgb, var(--accent-2) 40%, transparent);
-    padding: 2px 6px; border-radius: 5px; margin-top: 2px;
-  }
+  .n-badge { flex: none; width: 23px; height: 23px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; color: var(--accent); border: 1.6px solid var(--accent); background: var(--bg); margin-top: 1px; }
+  .node.comp .n-tag { flex: none; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-2); border: 1px solid color-mix(in srgb, var(--accent-2) 40%, transparent); padding: 2px 6px; border-radius: 5px; margin-top: 2px; }
   .n-ico { flex: none; font-size: 19px; line-height: 1; margin-top: 1px; }
   .n-tt { flex: 1 1 auto; min-width: 0; }
   .n-title { font-size: 14.5px; font-weight: 650; margin: 0; letter-spacing: -.01em; }
   .n-sub { font-size: 11.5px; color: var(--ink-faint); font-family: var(--mono); margin-top: 2px; overflow-wrap: break-word; }
   .chev { flex: none; color: var(--ink-faint); transition: transform .25s ease; margin-top: 2px; }
   .node.open .chev { transform: rotate(90deg); color: var(--accent); }
-
   .n-short { padding: 0 14px 14px; color: var(--ink-soft); font-size: 13px; margin: 0; }
-
   .n-more { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
   .node.open .n-more { max-height: 720px; }
   .n-more-inner { padding: 2px 14px 16px; border-top: 1px solid var(--line); margin-top: 2px; }
   .n-body { color: var(--ink-soft); font-size: 13px; margin: 12px 0 14px; }
-
   .parts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 13px; }
-  .part {
-    display: flex; gap: 9px; align-items: baseline;
-    background: var(--panel-2); border: 1px solid var(--line);
-    border-radius: var(--radius-sm); padding: 9px 11px;
-  }
+  .part { display: flex; gap: 9px; align-items: baseline; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 9px 11px; }
   html[data-theme="light"] .part { background: var(--bg); }
   .part .p-name { font-size: 12.5px; font-weight: 600; flex: none; }
   .part .p-desc { font-size: 12.5px; color: var(--ink-soft); }
-
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    font-size: 11px; padding: 3px 9px; border-radius: 999px; font-family: var(--mono);
-    background: color-mix(in srgb, var(--ink-faint) 8%, transparent);
-    border: 1px solid var(--line); color: var(--ink-soft);
-  }
+  .chip { font-size: 11px; padding: 3px 9px; border-radius: 999px; font-family: var(--mono); background: color-mix(in srgb, var(--ink-faint) 8%, transparent); border: 1px solid var(--line); color: var(--ink-soft); }
   .chip.k { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
   .node.comp .chip.k { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 35%, transparent); }
-
-  /* ---------- Wire styles ---------- */
   .wire { fill: none; transition: opacity .2s; }
   .e-flow { stroke: var(--accent); stroke-width: 2; }
   .e-link { stroke: var(--wire); stroke-width: 1.7; stroke-dasharray: 5 5; }
-  .e-ext  { stroke: var(--accent-2); stroke-width: 2; stroke-dasharray: 1 6; stroke-linecap: round; }
   .e-loop { stroke: var(--accent); stroke-width: 1.7; stroke-dasharray: 6 5; opacity: .7; }
   .wire.dim { opacity: .22; }
   .mk-flow { fill: var(--accent); }
   .mk-link { fill: var(--wire); }
-  .mk-ext  { fill: var(--accent-2); }
-  .wire-label {
-    font-family: var(--mono); font-size: 10.5px; fill: var(--ink-faint);
-  }
+  .wire-label { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-faint); }
 
   /* ---------- Footer ---------- */
-  footer.foot {
-    margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--line);
-    color: var(--ink-faint); font-size: 13px;
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-  }
+  footer.foot { margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
   footer.foot a { color: var(--ink-soft); text-decoration: none; }
   footer.foot a:hover { color: var(--accent); }
 
-  /* ---------- Responsive: collapse to single column ---------- */
-  @media (max-width: 820px) {
+  /* ---------- Responsive ---------- */
+  @media (max-width: 780px) {
+    .builder { grid-template-columns: 1fr; }
     .canvas { grid-template-columns: 1fr !important; gap: 18px; }
     .node { grid-column: 1 !important; grid-row: auto !important; }
     .node.spine { align-self: auto; }
@@ -211,34 +243,66 @@
   <div class="topbar">
     <div>
       <p class="eyebrow">Prompt Architecture</p>
-      <h1 class="title">The modular nested prompt system</h1>
-      <p class="lede">Every model call is one system prompt, assembled at runtime from a fixed base, a set of
-        <em>nested fragments</em> that switch on only when an option calls for them, and a shared block of quality
-        constraints — then locked to an exact JSON contract. Each tab is a view of that system; click any box to
-        unfold it. The wiring re-routes as the diagram expands.</p>
+      <h1 class="title">Build a modular prompt</h1>
+      <p class="lede">Arcatext assembles every model call from reusable modules. Pick a scenario — or set the
+        options yourself — and watch the <em>same builder</em> nest different fragments to reword into English,
+        Japanese, Arabic and beyond. Solid blocks are always present; dashed blocks switch on only when an
+        option calls for them.</p>
     </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light / dark theme">
       <span id="themeIcon"></span><span id="themeLabel">Theme</span>
     </button>
   </div>
 
-  <div class="tabs" id="tabs" role="tablist"><!-- tabs injected --></div>
-  <p class="flow-intro" id="flowIntro"></p>
-  <span class="hint"><span class="dot"></span> Click a box to expand it — the layout and arrows adjust</span>
-
-  <div class="canvas" id="canvas">
-    <svg class="wires" id="wires" aria-hidden="true">
-      <defs>
-        <marker id="mkflow" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
-          <path class="mk-flow" d="M0,0 L8,4 L0,8 Z"/></marker>
-        <marker id="mklink" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
-          <path class="mk-link" d="M0,0 L8,4 L0,8 Z"/></marker>
-        <marker id="mkext" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
-          <path class="mk-ext" d="M0,0 L8,4 L0,8 Z"/></marker>
-      </defs>
-    </svg>
-    <!-- nodes injected -->
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" id="tab-build"   role="tab" aria-selected="true"><span class="t-ico">🧱</span>Build a prompt</button>
+    <button class="tab" id="tab-cascade" role="tab" aria-selected="false"><span class="t-ico">🔀</span>Runtime cascade</button>
   </div>
+
+  <!-- ============== VIEW: BUILD ============== -->
+  <section class="view active" id="view-build" role="tabpanel" aria-labelledby="tab-build">
+    <div class="presets" id="presets"><span class="lbl">Try a scenario:</span></div>
+
+    <div class="builder">
+      <!-- Options -->
+      <aside class="panel" id="options">
+        <h3>Options</h3>
+        <div id="controls"></div>
+      </aside>
+
+      <!-- Assembled prompt -->
+      <div class="assembly">
+        <div class="asm-head">
+          <p class="asm-title" id="asmTitle"></p>
+          <span class="asm-meta" id="asmMeta"></span>
+        </div>
+        <p class="asm-sub" id="asmSub"></p>
+        <div class="stack" id="stack"></div>
+
+        <div class="lib">
+          <div class="lib-h">
+            <h3>Fragment library</h3>
+            <span class="sub">The six reusable modules — highlighted ones are in the current build.</span>
+          </div>
+          <div class="lib-grid" id="libGrid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== VIEW: CASCADE ============== -->
+  <section class="view" id="view-cascade" role="tabpanel" aria-labelledby="tab-cascade" hidden>
+    <p class="flow-intro" id="flowIntro"></p>
+    <span class="hint"><span class="dot"></span> Click a box to expand it — the layout and arrows adjust</span>
+    <div class="canvas" id="canvas">
+      <svg class="wires" id="wires" aria-hidden="true">
+        <defs>
+          <marker id="mkflow" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path class="mk-flow" d="M0,0 L8,4 L0,8 Z"/></marker>
+          <marker id="mklink" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path class="mk-link" d="M0,0 L8,4 L0,8 Z"/></marker>
+        </defs>
+      </svg>
+    </div>
+  </section>
 
   <footer class="foot">
     <span>Arcatext / ReKeys — modular nested prompt system · source: LLMPrompts.swift</span>
@@ -248,428 +312,425 @@
 
 <script>
 /* ============================================================
-   FLOWS — edit here to change content.
-   node: { id, kind:'step'|'comp', col:1|2|3, row:'4' | '2 / 7',
-           badge?, tag?, icon, title, sub, short, body, parts:[{n,d}], chips:[] }
-   edge: { from, to, kind:'flow'|'link'|'ext'|'loop', fs?, ts?, label? }
-         fs/ts = forced side 't'|'b'|'l'|'r' (otherwise auto by geometry)
+   DATA
    ============================================================ */
-const FLOWS = {
-  anatomy: {
-    label: "Anatomy of a prompt", ico: "🧬",
-    intro: "One builder assembles a prompt top-to-bottom: a fixed base directive, the nested fragments that only appear when an option is set, the shared quality constraints, and finally the exact JSON shape the parser expects.",
-    nodes: [
-      { id:"src", kind:"comp", col:1, row:"1 / 5", tag:"Source", icon:"📄", title:"LLMPrompts.swift",
-        sub:"enum · 847 lines", short:"One file, twelve static builders — the single source of truth.",
-        body:"Every prompt string in the app is produced here by a static func. ChatGPTService only builds the HTTP body and parses the reply; it never assembles prompt text inline. Change wording here and it propagates to every caller.",
-        parts:[{n:"static func × 12",d:"one builder per prompt family"},{n:"composable fragments",d:"shared sub-strings, reused across builders"},{n:"model",d:"gpt-4o-mini for every prompt"}],
-        chips:["LLMPrompts.swift","enum LLMPrompts"] },
-
-      { id:"base", kind:"step", col:2, row:"1", badge:1, icon:"🧱", title:"Base directive",
-        sub:"per-feature instruction", short:"The task-specific core, e.g. “Reword this into &lt;target&gt;.”",
-        body:"Each builder starts from its own fixed instruction — reword, translate, analyse, align homographs. The full language name is injected here (“Spanish”, never “es”) because the model reasons better from names than from codes.",
-        parts:[{n:"full language name",d:"“Spanish”, not “es”"},{n:"single-target output",d:"the ENTIRE output must be in &lt;target&gt;"}],
-        chips:["reword(...)","gpt-4o-mini"] },
-
-      { id:"frag", kind:"step", col:2, row:"2", badge:2, icon:"🧩", title:"Nested fragments",
-        sub:"conditional sub-prompts", short:"Six reusable fragments switch on only when the options call for them.",
-        body:"Gender, group-chat, alphabet/script and romanization fragments are concatenated into the prompt only when the relevant option is set. An empty option contributes nothing — so the same builder yields a lean prompt or a richly-constrained one from one code path. (See the Fragments tab.)",
-        parts:[{n:"speaker · recipient gender",d:"1st- & 2nd-person agreement"},{n:"alphabet / script",d:"per-script writing directive"},{n:"romanization CoT",d:"native_form emitted first"},{n:"script retry",d:"re-ask on wrong script"}],
-        chips:["speakerGenderFragment","alphabetFragment"] },
-
-      { id:"inputs", kind:"comp", col:3, row:"2", tag:"Runtime", icon:"🎛️", title:"Reword options",
-        sub:"app-group store", short:"The live settings that decide which fragments fire.",
-        body:"Target language, speaker & recipient gender, group make-up, alphabet/script and the optional copy-language are read from the shared app-group store at call time. They gate which fragments are appended — and the same set forms the cache key.",
-        parts:[{n:"language + alphabet",d:"chooses the script directive"},{n:"speaker · recipient · group",d:"chooses the gender fragments"}],
-        chips:["sharedDefaults"] },
-
-      { id:"univ", kind:"step", col:2, row:"3", badge:3, icon:"🛡️", title:"Universal constraints",
-        sub:"shared quality clauses", short:"Parallel guardrails present in nearly every prompt.",
-        body:"A block of quality clauses is repeated near-verbatim across the builders: single-target output, no false cognates, connotation precision, no softening, person/agreement stability, native vocabulary, and structure/count preservation. They read like duplication but are deliberate parallel guardrails — edit one, mirror it to the others.",
-        parts:[{n:"no false cognates",d:"don’t keep look-alike source words"},{n:"no softening",d:"nightmares ≠ dreams"},{n:"same count",d:"no added words or filler"}],
-        chips:["§ universal constraints"] },
-
-      { id:"json", kind:"step", col:2, row:"4", badge:4, icon:"🔒", title:"JSON contract",
-        sub:"exact field names", short:"The output shape the parser expects — field names are the API.",
-        body:"The prompt ends by pinning an exact JSON schema, e.g. {\"reword\":\"…\"}. Where romanization CoT is on, native_form is listed BEFORE the output field so auto-regressive generation commits to native script first, then transliterates. Renaming a field would break parsing at runtime; adding an optional one is safe.",
-        parts:[{n:"{\"reword\":\"…\"}",d:"parsed by exact name"},{n:"native_form first",d:"CoT ordering is load-bearing"}],
-        chips:["field names = contract"] },
-
-      { id:"parse", kind:"comp", col:3, row:"4", tag:"Consumer", icon:"🧾", title:"Response parser",
-        sub:"parseContent()", short:"Reads the reply by exact field name.",
-        body:"The parser matches fields literally — reword, tr, translation, synonyms, selections, native_form … — and ignores extras. This exact-name contract is why fields are only ever added, never renamed.",
-        parts:[{n:"exact-name match",d:"renames are breaking changes"},{n:"extras ignored",d:"native_form is free to add"}],
-        chips:["ChatGPTService.swift"] },
-    ],
-    edges: [
-      { from:"base", to:"frag", kind:"flow" },
-      { from:"frag", to:"univ", kind:"flow" },
-      { from:"univ", to:"json", kind:"flow" },
-      { from:"inputs", to:"frag", kind:"link", fs:"l", ts:"r", label:"gates" },
-      { from:"src", to:"base", kind:"link" },
-      { from:"src", to:"frag", kind:"link" },
-      { from:"src", to:"univ", kind:"link" },
-      { from:"json", to:"parse", kind:"ext", fs:"r", ts:"l" },
-    ],
-  },
-
-  fragments: {
-    label: "The fragment library", ico: "🧩",
-    intro: "The real trick is modularity: six fragments are the building blocks nested inside many prompts. Each is defined once — edit it and the change propagates to every prompt that injects it. The chips on each box list which prompt numbers use it.",
-    nodes: [
-      { id:"prop", kind:"comp", col:1, row:"1 / 7", tag:"Why", icon:"♻️", title:"Edit once, propagate",
-        sub:"shared fragments", short:"Fragments are defined once and reused across builders.",
-        body:"Because each fragment is a single function, a wording change ripples to every prompt that injects it — no copy-paste drift. Recommendations are asked to name the fragment and list its ripple targets for exactly this reason.",
-        parts:[{n:"one definition",d:"many call sites"},{n:"ripple-aware",d:"name the fragment, list its consumers"}],
-        chips:["LLMPrompts.swift"] },
-
-      { id:"spk", kind:"step", col:2, row:"1", badge:1, icon:"🙋", title:"speakerGenderFragment",
-        sub:"1st-person agreement", short:"Injects Speaker = male / female.",
-        body:"Adds the speaker’s gender so first-person forms agree in gendered languages.",
-        parts:[{n:"Speaker=male/female",d:"1st-person agreement"}],
-        chips:["#1 Reword","#2 Reword+Copy"] },
-
-      { id:"rcp", kind:"step", col:2, row:"2", badge:2, icon:"🫵", title:"recipientGenderFragment",
-        sub:"2nd-person agreement", short:"Injects Recipient = male / female.",
-        body:"Adds the recipient’s gender for second-person forms and gendered nouns.",
-        parts:[{n:"Recipient=male/female",d:"2nd-person + gendered nouns"}],
-        chips:["#1 Reword","#2 Reword+Copy"] },
-
-      { id:"grp", kind:"step", col:2, row:"3", badge:3, icon:"👥", title:"groupChatFragment",
-        sub:"plural-you make-up", short:"Injects Group = allMale / allFemale / mixed.",
-        body:"Resolves the plural “you” in group chats so agreement matches the audience.",
-        parts:[{n:"Group = allMale / allFemale / mixed",d:"plural-you agreement"}],
-        chips:["#1 Reword","#2 Reword+Copy"] },
-
-      { id:"alpha", kind:"step", col:2, row:"4", badge:4, icon:"🔤", title:"alphabetFragment",
-        sub:"→ getAlphabetPromptInstruction", short:"The per-script writing directive — the widest-reaching fragment.",
-        body:"Emits a script-specific instruction (“Use Cyrillic only…”, or full Hepburn / Jyutping / IAST rules). Its Cantonese/Jyutping branch is the single longest fragment in the file — bespoke anti-Mandarin guardrails. Touches six prompts, with a forSynonyms variant for #5.",
-        parts:[{n:"per-script directive",d:"Cyrillic, Hepburn, IAST…"},{n:"Cantonese branch",d:"anti-Mandarin Jyutping rules"}],
-        chips:["#1","#2","#5 Synonyms","#9","#10","#11"] },
-
-      { id:"retry", kind:"step", col:2, row:"5", badge:5, icon:"🔁", title:"scriptRetryFragment",
-        sub:"wrong-script recovery", short:"Prepends a RETRY banner when the last output used the wrong script.",
-        body:"When outputViolatesScript() flags the previous call, this fragment adds “RETRY: the previous output used the WRONG script.” so the model corrects course on the retry.",
-        parts:[{n:"RETRY banner",d:"triggered by outputViolatesScript()"}],
-        chips:["#1","#2","#5","#9","#10","#11"] },
-
-      { id:"cot", kind:"step", col:2, row:"6", badge:6, icon:"🧠", title:"Romanization CoT",
-        sub:"native_form before output", short:"Forces a native-script anchor before transliterating.",
-        body:"For Romanized output of a non-Latin language (Japanese, Mandarin, Cantonese, Korean, Thai, Arabic, Russian, Hindi…), the fragment forces a native_form field emitted BEFORE the output. At temp 0/0.3 this native anchor stops words being dropped or merged during transliteration.",
-        parts:[{n:"native_form first",d:"auto-regressive anchor"},{n:"non-Latin only",d:"native-Latin languages exempt"}],
-        chips:["#1","#2","#3","#7","#9","#10","#11"] },
-
-      { id:"exempt", kind:"comp", col:3, row:"6", tag:"Edge case", icon:"⚠️", title:"Native-Latin exempt",
-        sub:"bs · sr · uz · jv · kmr", short:"Latin-script languages skip the CoT.",
-        body:"Bosnian, Serbian, Uzbek, Javanese and Kurmanji use Latin natively, so “Romanized” needs no transliteration — the CoT is intentionally OFF for them. Turning it on would add a pointless native_form step.",
-        parts:[{n:"bs · sr · uz · jv · kmr",d:"CoT off by design"}],
-        chips:["nativeLatinRomanizedLanguages"] },
-    ],
-    edges: [
-      { from:"prop", to:"spk", kind:"link" },
-      { from:"prop", to:"alpha", kind:"link" },
-      { from:"prop", to:"cot", kind:"link" },
-      { from:"cot", to:"exempt", kind:"loop", fs:"r", ts:"l", label:"except" },
-    ],
-  },
-
-  cascade: {
-    label: "Families & cascade", ico: "🔀",
-    intro: "Twelve builders, one per feature. The dominant runtime path is Reword → Check: a reword hands off to the Check view, which can re-align homographs or re-gender words and refresh its reverse translation. The side boxes are the builders that live outside this chain.",
-    nodes: [
-      { id:"reword", kind:"step", col:2, row:"1", badge:1, icon:"✍️", title:"reword",
-        sub:"prompt #1", short:"User taps Reword — rewrites the message into the target language.",
-        body:"The flagship builder. Returns {\"reword\":\"…\"} (with a leading native_form when romanization CoT applies) at temp 0.3 — or 0 for Romanized. Pulls in the gender, group, alphabet, script-retry and CoT fragments as options demand.",
-        parts:[{n:"{\"reword\":\"…\"}",d:"+ native_form when CoT applies"},{n:"temp 0.3",d:"0 for Romanized"}],
-        chips:["reword(...)"] },
-
-      { id:"check", kind:"step", col:2, row:"2", badge:2, icon:"🔍", title:"checkAnalysis",
-        sub:"prompt #7", short:"Check view — reverse-translates the reword and flags drift.",
-        body:"On opening Check, this reverse-translates the reword, flags semantic drift, and lists gender-sensitive person-nouns and any homographs. Returns translation + semanticDrift + homographs + genderWords at temp 0.",
-        parts:[{n:"reverse translation",d:"back into the source language"},{n:"semanticDrift",d:"meaning-shift flag"},{n:"homographs · genderWords",d:"candidates for the next step"}],
-        chips:["checkAnalysis(...)"] },
-
-      { id:"align", kind:"step", col:2, row:"3", badge:3, icon:"🧩", title:"alignHomographMeanings",
-        sub:"prompt #10", short:"Picks which sense each detected homograph used.",
-        body:"For every detected homograph it picks the sense the model actually used and emits a target-language word per sense, plus classifications that let the typo-filter drop mis-detections. Returns selections + translations + classifications.",
-        parts:[{n:"selections",d:"chosen sense per word"},{n:"classifications",d:"feeds the typo gate"}],
-        chips:["alignHomographMeanings(...)"] },
-
-      { id:"homoreword", kind:"step", col:2, row:"4", badge:4, icon:"🔀", title:"rewordWithHomographContext",
-        sub:"prompt #11", short:"Re-rewrites after the user picks an alternative meaning.",
-        body:"When the user chooses a different homograph sense in Check, this re-rewrites the message with that context and reports whether the change reverted an earlier choice. Returns {\"reword\":\"…\",\"reverted\":bool}.",
-        parts:[{n:"reword + reverted",d:"new text, revert flag"}],
-        chips:["rewordWithHomographContext(...)"] },
-
-      { id:"ctx", kind:"step", col:2, row:"5", badge:5, icon:"🌐", title:"translateWithContext",
-        sub:"prompt #8", short:"Refreshes the reverse translation after any Check edit.",
-        body:"After a homograph pick or a word-gender change, this re-runs the reverse translation so the side-by-side comparison stays in sync. Returns {\"tr\":\"…\"} at temp 0.",
-        parts:[{n:"{\"tr\":\"…\"}",d:"refreshed reverse translation"}],
-        chips:["translateWithContext(...)"] },
-
-      { id:"wordgender", kind:"step", col:3, row:"3", badge:6, icon:"⚧", title:"Word genders",
-        sub:"prompt #9", short:"Re-rewrites when the user changes individual word genders.",
-        body:"A branch off Check: adjusting a person-noun’s gender re-rewrites the translation for that choice, then hands back to translateWithContext to refresh the reverse. Returns {\"reword\":\"…\"}.",
-        parts:[{n:"{\"reword\":\"…\"}",d:"+ optional native_form"}],
-        chips:["rewordWithWordGenders(...)"] },
-
-      { id:"copy", kind:"comp", col:1, row:"1", tag:"Copy", icon:"✉️", title:"Reword + Copy",
-        sub:"prompt #2", short:"Reword when Send-Copy is on — two languages at once.",
-        body:"When Send-Copy is enabled this replaces #1 entirely; they never run together. Produces the reword and a second-language copy in one call: {\"reword\":\"…\",\"copy\":\"…\"} with per-output native_form when CoT applies.",
-        parts:[{n:"reword + copy",d:"two target languages in one call"}],
-        chips:["rewordWithCopy(...)"] },
-
-      { id:"syn", kind:"comp", col:1, row:"2", tag:"Aside", icon:"🔤", title:"Synonyms",
-        sub:"prompt #5", short:"Pre-loads N synonyms for the keyboard’s synonym popover.",
-        body:"Runs independently of the cascade, on the current reword in the current alphabet. Returns {\"synonyms\":[…]} in one call. Uses the alphabet fragment’s forSynonyms variant.",
-        parts:[{n:"{\"synonyms\":[…]}",d:"batched in one request"}],
-        chips:["synonymsBatch(...)"] },
-
-      { id:"simple", kind:"comp", col:1, row:"3", tag:"Utility", icon:"🔁", title:"Simple translate",
-        sub:"prompt #3", short:"Internal helper for reverse-translation and utility callers.",
-        body:"A lightweight translator used by Check’s reverse step and a few utilities. Returns {\"tr\":\"…\"} at temp 0, with a leading native_form when the source is romanized non-Latin.",
-        parts:[{n:"{\"tr\":\"…\"}",d:"plain translation helper"}],
-        chips:["simpleTranslate(...)"] },
-
-      { id:"paste", kind:"comp", col:1, row:"4", tag:"Own flow", icon:"📋", title:"Paste view",
-        sub:"prompt #4", short:"Paste-view “Sentences” tab — translation + breakdown.",
-        body:"Its own flow, unrelated to Reword. Translates received text and gives a sentence-by-sentence breakdown: {\"tr\":\"…\",\"bd\":[{\"o\":\"…\",\"t\":\"…\"}, …]}.",
-        parts:[{n:"tr + bd[]",d:"translation + per-sentence breakdown"}],
-        chips:["pasteviewTranslate(...)"] },
-
-      { id:"defs", kind:"comp", col:3, row:"5", tag:"Admin", icon:"🗂️", title:"Homograph defs",
-        sub:"prompt #12", short:"Admin-only seeding of new homograph labels.",
-        body:"Generates the labels for a new homograph word being added to the Supabase library. Admin-only, off the user path. Returns {\"definitions\":[…]}.",
-        parts:[{n:"{\"definitions\":[…]}",d:"labels for the library"}],
-        chips:["homographDefinitions(...)"] },
-    ],
-    edges: [
-      { from:"reword", to:"check", kind:"flow", label:"open Check" },
-      { from:"check", to:"align", kind:"flow", label:"homographs?" },
-      { from:"align", to:"homoreword", kind:"flow", label:"user picks sense" },
-      { from:"homoreword", to:"ctx", kind:"flow", label:"refresh" },
-      { from:"check", to:"wordgender", kind:"flow", fs:"r", ts:"t", label:"gender edit" },
-      { from:"wordgender", to:"ctx", kind:"flow", fs:"b", ts:"r" },
-      { from:"copy", to:"reword", kind:"link", fs:"r", ts:"l", label:"send-copy" },
-      { from:"syn", to:"check", kind:"link", label:"on current reword" },
-      { from:"defs", to:"align", kind:"link", fs:"l", ts:"r", label:"seeds library" },
-    ],
-  },
+const LANGS = {
+  en:  { name:"English",   nonLatin:false },
+  es:  { name:"Spanish",   nonLatin:false },
+  fr:  { name:"French",    nonLatin:false },
+  de:  { name:"German",    nonLatin:false },
+  ja:  { name:"Japanese",  nonLatin:true,  script:"Japanese (kanji + kana)", roman:"Hepburn rōmaji" },
+  ko:  { name:"Korean",    nonLatin:true,  script:"Hangul",                  roman:"Revised Romanization" },
+  yue: { name:"Cantonese", nonLatin:true,  script:"Traditional Chinese",     roman:"Jyutping" },
+  ru:  { name:"Russian",   nonLatin:true,  script:"Cyrillic",                roman:"Latin transliteration" },
+  ar:  { name:"Arabic",    nonLatin:true,  script:"Arabic script",           roman:"romanized Arabic" },
+  hi:  { name:"Hindi",     nonLatin:true,  script:"Devanagari",              roman:"IAST" },
+  th:  { name:"Thai",      nonLatin:true,  script:"Thai script",             roman:"RTGS" },
+  sr:  { name:"Serbian",   nonLatin:true,  script:"Cyrillic", roman:"Serbian Latin (Gaj’s)", nativeLatin:true },
 };
+const LANG_ORDER = ["en","es","fr","de","ja","ko","yue","ru","ar","hi","th","sr"];
+const GROUP_LABEL = { none:"—", allMale:"all male", allFemale:"all female", mixed:"mixed" };
+
+const PRESETS = [
+  { ico:"🇬🇧", label:"Reword · English",             s:{ lang:"en",  script:"native",    speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
+  { ico:"🇯🇵", label:"Reword · Japanese (Rōmaji)",    s:{ lang:"ja",  script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
+  { ico:"🇪🇸", label:"Reword · Spanish (♀→♂)",        s:{ lang:"es",  script:"native",    speaker:"female", recipient:"male", group:"none", copy:null, retry:false } },
+  { ico:"🇸🇦", label:"Reword · Arabic (native)",      s:{ lang:"ar",  script:"native",    speaker:"none",   recipient:"female", group:"none", copy:null, retry:false } },
+  { ico:"🇷🇺", label:"Reword + Copy · Russian",       s:{ lang:"ru",  script:"native",    speaker:"none",   recipient:"none", group:"none", copy:"en", retry:false } },
+  { ico:"🇭🇰", label:"Reword · Cantonese (Jyutping)", s:{ lang:"yue", script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:true } },
+  { ico:"🇷🇸", label:"Reword · Serbian (Latin)",      s:{ lang:"sr",  script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
+];
+
+// Fragment library metadata (display order = injection order)
+const FRAGMENTS = [
+  { key:"speaker",   fn:"speakerGenderFragment",    ico:"🙋", desc:"1st-person gender agreement",            uses:"#1 #2" },
+  { key:"recipient", fn:"recipientGenderFragment",  ico:"🫵", desc:"2nd-person + gendered nouns",            uses:"#1 #2" },
+  { key:"group",     fn:"groupChatFragment",        ico:"👥", desc:"plural-you make-up",                     uses:"#1 #2" },
+  { key:"alphabet",  fn:"alphabetFragment",         ico:"🔤", desc:"per-script writing directive",           uses:"#1 #2 #5 #9 #10 #11" },
+  { key:"retry",     fn:"scriptRetryFragment",      ico:"🔁", desc:"RETRY banner on wrong-script output",    uses:"#1 #2 #5 #9 #10 #11" },
+  { key:"cot",       fn:"romanizationCoT",          ico:"🧠", desc:"native_form emitted before output",      uses:"#1 #2 #3 #7 #9 #10 #11" },
+];
+
+let state = Object.assign({}, PRESETS[1].s); // default: Japanese (Rōmaji)
 
 /* ============================================================
-   RENDER + LIVE WIRING
+   DERIVATION
    ============================================================ */
-const canvas   = document.getElementById("canvas");
-const wires    = document.getElementById("wires");
-const tabsEl   = document.getElementById("tabs");
-const introEl  = document.getElementById("flowIntro");
-const chevSvg  = '<svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+function isRomanized(s){ const L = LANGS[s.lang]; return L.nonLatin && s.script === "romanized"; }
+function usesCoT(s){ const L = LANGS[s.lang]; return isRomanized(s) && !L.nativeLatin; }
+function copyCoT(s){ if(!s.copy) return false; const C = LANGS[s.copy]; return usesCoT(s) && C.nonLatin && !C.nativeLatin; }
 
-const order = Object.keys(FLOWS);
-let current = null;
-const nodeEls = new Map();   // id -> element
-let liveEdges = [];          // {edge, path, label}
+function activeFragments(s){
+  const L = LANGS[s.lang];
+  return {
+    speaker:   s.speaker !== "none",
+    recipient: s.recipient !== "none",
+    group:     s.group !== "none",
+    alphabet:  L.nonLatin,
+    retry:     !!s.retry,
+    cot:       usesCoT(s),
+  };
+}
 
-/* ---- tabs ---- */
-order.forEach((key, i) => {
-  const f = FLOWS[key];
-  const t = document.createElement("button");
-  t.className = "tab";
-  t.setAttribute("role", "tab");
-  t.id = "tab-" + key;
-  t.innerHTML = `<span class="t-ico">${f.ico}</span>${f.label}`;
-  t.addEventListener("click", () => selectFlow(key));
-  tabsEl.appendChild(t);
-});
+/* Ordered list of modules the builder emits for this state. */
+function buildModules(s){
+  const L = LANGS[s.lang];
+  const mods = [];
+  mods.push({ cls:"core", kind:"required", title:"Base directive", fn:"reword(...)",
+    text:`Reword the message into ${L.name}.` });
 
-function selectFlow(key) {
-  if (key === current) return;
-  current = key;
-  const flow = FLOWS[key];
+  if (s.speaker !== "none")
+    mods.push({ cls:"frag", kind:"fragment", title:"Speaker gender", fn:"speakerGenderFragment",
+      text:`Speaker = ${s.speaker}.  «cmt»// 1st-person agreement«/cmt»` });
+  if (s.recipient !== "none")
+    mods.push({ cls:"frag", kind:"fragment", title:"Recipient gender", fn:"recipientGenderFragment",
+      text:`Recipient = ${s.recipient}.  «cmt»// 2nd-person + gendered nouns«/cmt»` });
+  if (s.group !== "none")
+    mods.push({ cls:"frag", kind:"fragment", title:"Group chat", fn:"groupChatFragment",
+      text:`Group = ${GROUP_LABEL[s.group]}.  «cmt»// resolves plural “you”«/cmt»` });
+  if (L.nonLatin) {
+    const dir = isRomanized(s) ? `Use ${L.roman} only — never ${L.script}.` : `Use ${L.script} only.`;
+    mods.push({ cls:"frag", kind:"fragment", title:"Alphabet / script", fn:"alphabetFragment", text:dir });
+  }
+  if (s.retry)
+    mods.push({ cls:"frag", kind:"fragment", title:"Script retry", fn:"scriptRetryFragment",
+      text:`RETRY: the previous output used the WRONG script.` });
+  if (usesCoT(s))
+    mods.push({ cls:"frag", kind:"fragment", title:"Romanization CoT", fn:"romanizationCoT",
+      text:`First emit «fld»native_form«/fld» in ${L.script}, THEN transliterate to ${L.roman}.` });
 
-  tabsEl.querySelectorAll(".tab").forEach(t =>
-    t.setAttribute("aria-selected", t.id === "tab-" + key ? "true" : "false"));
-  introEl.textContent = flow.intro;
+  mods.push({ cls:"core", kind:"required", title:"Universal constraints", fn:"shared clauses",
+    text:`Single target · no false cognates · no softening (nightmares ≠ dreams) · same sentence count · native vocabulary.` });
 
-  // clear old nodes (keep the <svg> wires element)
-  [...canvas.querySelectorAll(".node")].forEach(n => n.remove());
-  nodeEls.clear();
-  [...wires.querySelectorAll(".wire, .wire-label")].forEach(w => w.remove());
-  liveEdges = [];
+  mods.push({ cls:"json", kind:"contract", title:"JSON contract", fn:"parseContent()", json: jsonFields(s) });
+  return mods;
+}
 
-  flow.nodes.forEach(n => canvas.appendChild(buildNode(n)));
+/* Ordered JSON output fields, native_form* before each output field. */
+function jsonFields(s){
+  const cot = usesCoT(s), ccot = copyCoT(s), copy = !!s.copy;
+  const f = [];
+  if (cot && copy) f.push(["native_form_reword", "native script, first"]);
+  else if (cot)    f.push(["native_form", "native script, emitted first"]);
+  f.push(["reword", "the reworded message"]);
+  if (copy) {
+    if (ccot) f.push(["native_form_copy", "native script for the copy"]);
+    f.push(["copy", `${LANGS[s.copy].name} translation`]);
+  }
+  return f;
+}
 
-  // build wires
-  flow.edges.forEach(edge => {
+function scenarioName(s){
+  const L = LANGS[s.lang];
+  const script = L.nonLatin ? ` (${isRomanized(s) ? (L.nativeLatin ? "Latin" : L.roman) : L.script.split(" ")[0]})` : "";
+  return `Reword${s.copy ? " + Copy" : ""} · ${L.name}${script}`;
+}
+function familyOf(s){ return s.copy ? "#2 rewordWithCopy" : "#1 reword"; }
+
+/* ============================================================
+   RENDER — builder
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt!=null) e.textContent = txt; return e; }
+
+/* render mod-text with «cmt»/«fld» markers safely (no innerHTML of user text) */
+function renderModText(target, text){
+  const re = /«(cmt|fld)»(.*?)«\/\1»/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) target.appendChild(document.createTextNode(text.slice(last, m.index)));
+    target.appendChild(el("span", m[1], m[2]));
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
+}
+
+function renderPresets(){
+  const box = $("presets");
+  [...box.querySelectorAll(".preset")].forEach(n => n.remove());
+  PRESETS.forEach(p => {
+    const b = el("button", "preset");
+    b.type = "button";
+    b.append(el("span", "p-ico", p.ico), document.createTextNode(p.label));
+    const match = Object.keys(p.s).every(k => JSON.stringify(state[k]) === JSON.stringify(p.s[k]));
+    b.setAttribute("aria-pressed", match ? "true" : "false");
+    b.addEventListener("click", () => { state = Object.assign({}, p.s); render(); });
+    box.appendChild(b);
+  });
+}
+
+function ctl(labelHTML){ const d = el("div","ctl"); const l = el("label"); l.innerHTML = labelHTML; d.appendChild(l); return d; }
+function segControl(key, options, teal){
+  const seg = el("div", "seg" + (teal ? " teal" : ""));
+  options.forEach(o => {
+    const b = el("button", null, o.label); b.type = "button";
+    b.setAttribute("aria-pressed", state[key] === o.v ? "true" : "false");
+    b.addEventListener("click", () => { state[key] = o.v; render(); });
+    seg.appendChild(b);
+  });
+  return seg;
+}
+
+function renderControls(){
+  const box = $("controls"); box.textContent = "";
+  const L = LANGS[state.lang];
+
+  // Language
+  const cL = ctl("Target language");
+  const sel = el("select", "sel");
+  LANG_ORDER.forEach(code => { const o = el("option", null, LANGS[code].name); o.value = code; if(code===state.lang) o.selected = true; sel.appendChild(o); });
+  sel.addEventListener("change", () => {
+    state.lang = sel.value;
+    if (!LANGS[state.lang].nonLatin) state.script = "native";
+    if (state.copy === state.lang) state.copy = state.lang === "en" ? "es" : "en";
+    render();
+  });
+  cL.appendChild(sel); box.appendChild(cL);
+
+  // Script (only for non-Latin)
+  if (L.nonLatin) {
+    const cS = ctl(`Script <span class="hint2">— native or romanized</span>`);
+    cS.appendChild(segControl("script", [ {v:"native", label:L.script.split(" ")[0]}, {v:"romanized", label:"Romanized"} ], true));
+    box.appendChild(cS);
+  }
+
+  // Speaker / Recipient
+  box.appendChild((()=>{ const c = ctl("Speaker gender"); c.appendChild(segControl("speaker", [ {v:"none",label:"—"}, {v:"male",label:"Male"}, {v:"female",label:"Female"} ])); return c; })());
+  box.appendChild((()=>{ const c = ctl("Recipient gender"); c.appendChild(segControl("recipient", [ {v:"none",label:"—"}, {v:"male",label:"Male"}, {v:"female",label:"Female"} ])); return c; })());
+
+  // Group
+  box.appendChild((()=>{ const c = ctl(`Group chat <span class="hint2">— plural “you”</span>`); c.appendChild(segControl("group", [ {v:"none",label:"—"}, {v:"allMale",label:"♂"}, {v:"allFemale",label:"♀"}, {v:"mixed",label:"Mixed"} ])); return c; })());
+
+  // Send copy
+  const cC = ctl(`Send-Copy <span class="hint2">— a second language</span>`);
+  const row = el("div", "row2");
+  const sw = el("label", "switch");
+  const inp = document.createElement("input"); inp.type = "checkbox"; inp.checked = !!state.copy;
+  inp.addEventListener("change", () => { state.copy = inp.checked ? (state.lang === "en" ? "es" : "en") : null; render(); });
+  sw.append(inp, el("span","track"), el("span","knob"));
+  row.appendChild(sw);
+  if (state.copy){
+    const csel = el("select", "sel"); csel.style.flex = "1";
+    LANG_ORDER.filter(c => c !== state.lang).forEach(code => { const o = el("option", null, LANGS[code].name); o.value = code; if(code===state.copy) o.selected = true; csel.appendChild(o); });
+    csel.addEventListener("change", () => { state.copy = csel.value; render(); });
+    row.appendChild(csel);
+  } else {
+    row.appendChild(el("span","sw-lbl","Off"));
+  }
+  cC.appendChild(row); box.appendChild(cC);
+
+  // Retry (advanced)
+  const cR = ctl(`Simulate retry <span class="hint2">— wrong-script recovery</span>`);
+  const rr = el("div","row2");
+  const rsw = el("label","switch");
+  const rin = document.createElement("input"); rin.type = "checkbox"; rin.checked = !!state.retry;
+  rin.addEventListener("change", () => { state.retry = rin.checked; render(); });
+  rsw.append(rin, el("span","track"), el("span","knob"));
+  rr.append(rsw, el("span","sw-lbl", state.retry ? "On" : "Off"));
+  cR.appendChild(rr); box.appendChild(cR);
+}
+
+function renderStack(){
+  const mods = buildModules(state);
+  const stack = $("stack"); stack.textContent = "";
+  const fragCount = mods.filter(m => m.cls === "frag").length;
+
+  $("asmTitle").textContent = scenarioName(state);
+  $("asmMeta").textContent = `${mods.length} modules · ${fragCount} fragment${fragCount===1?"":"s"} → ${familyOf(state)}`;
+  const sub = $("asmSub"); sub.textContent = "";
+  sub.append(document.createTextNode("The "), (()=>{const b=el("b",null,"same builder");return b;})(),
+    document.createTextNode(fragCount === 0
+      ? " emits only the required modules — no options are set, so no fragments nest in."
+      : ` nests ${fragCount} optional fragment${fragCount===1?"":"s"} into the required base + constraints + JSON contract.`));
+
+  mods.forEach((m, i) => {
+    const card = el("div", "mod " + m.cls);
+    card.style.animationDelay = (i * 22) + "ms";
+    const top = el("div","mod-top");
+    top.append(el("span","mod-kind", m.kind), el("span","mod-title", m.title), el("span","mod-fn", m.fn));
+    card.appendChild(top);
+    const body = el("div","mod-text");
+    if (m.cls === "json") renderJSON(body, m.json);
+    else renderModText(body, m.text);
+    card.appendChild(body);
+    stack.appendChild(card);
+  });
+}
+
+function renderJSON(target, fields){
+  target.appendChild(document.createTextNode("{\n"));
+  fields.forEach((f, i) => {
+    target.appendChild(document.createTextNode("  "));
+    target.appendChild(el("span","fld", `"${f[0]}"`));
+    target.appendChild(document.createTextNode(`: "…"${i < fields.length-1 ? "," : ""}   `));
+    target.appendChild(el("span","cmt", `// ${f[1]}`));
+    target.appendChild(document.createTextNode("\n"));
+  });
+  target.appendChild(document.createTextNode("}"));
+}
+
+function renderLibrary(){
+  const active = activeFragments(state);
+  const grid = $("libGrid"); grid.textContent = "";
+  FRAGMENTS.forEach(fr => {
+    const on = !!active[fr.key];
+    const c = el("div", "libcard" + (on ? " on" : ""));
+    const top = el("div","lc-top");
+    top.append(el("span","lc-ico", fr.ico), el("span","lc-name", fr.fn), el("span","lc-state", on ? "in use" : "idle"));
+    c.appendChild(top);
+    c.appendChild(el("div","lc-desc", fr.desc));
+    c.appendChild(el("div","lc-uses", "prompts " + fr.uses));
+    grid.appendChild(c);
+  });
+}
+
+function render(){ renderPresets(); renderControls(); renderStack(); renderLibrary(); }
+
+/* ============================================================
+   CASCADE (boxes + wires)
+   ============================================================ */
+const CASCADE = {
+  intro: "Twelve builders, one per feature. The dominant runtime path is Reword → Check: a reword hands off to the Check view, which can re-align homographs or re-gender words and refresh its reverse translation. The side boxes are the builders that live outside this chain.",
+  nodes: [
+    { id:"reword", kind:"step", col:2, row:"1", badge:1, icon:"✍️", title:"reword", sub:"prompt #1", short:"User taps Reword — rewrites the message into the target language.",
+      body:"The flagship builder — the one the Build tab assembles. Returns {\"reword\":\"…\"} (with a leading native_form when romanization CoT applies). Pulls in the gender, group, alphabet, script-retry and CoT fragments as options demand.",
+      parts:[{n:"{\"reword\":\"…\"}",d:"+ native_form when CoT applies"},{n:"temp 0.3",d:"0 for Romanized"}], chips:["reword(...)"] },
+    { id:"check", kind:"step", col:2, row:"2", badge:2, icon:"🔍", title:"checkAnalysis", sub:"prompt #7", short:"Check view — reverse-translates the reword and flags drift.",
+      body:"On opening Check, this reverse-translates the reword, flags semantic drift, and lists gender-sensitive person-nouns and any homographs. Returns translation + semanticDrift + homographs + genderWords.",
+      parts:[{n:"reverse translation",d:"back into the source language"},{n:"homographs · genderWords",d:"candidates for the next step"}], chips:["checkAnalysis(...)"] },
+    { id:"align", kind:"step", col:2, row:"3", badge:3, icon:"🧩", title:"alignHomographMeanings", sub:"prompt #10", short:"Picks which sense each detected homograph used.",
+      body:"For every detected homograph it picks the sense the model actually used and emits a target-language word per sense, plus classifications that let the typo-filter drop mis-detections.",
+      parts:[{n:"selections",d:"chosen sense per word"},{n:"classifications",d:"feeds the typo gate"}], chips:["alignHomographMeanings(...)"] },
+    { id:"homoreword", kind:"step", col:2, row:"4", badge:4, icon:"🔀", title:"rewordWithHomographContext", sub:"prompt #11", short:"Re-rewrites after the user picks an alternative meaning.",
+      body:"When the user chooses a different homograph sense in Check, this re-rewrites the message with that context and reports whether the change reverted an earlier choice.",
+      parts:[{n:"reword + reverted",d:"new text, revert flag"}], chips:["rewordWithHomographContext(...)"] },
+    { id:"ctx", kind:"step", col:2, row:"5", badge:5, icon:"🌐", title:"translateWithContext", sub:"prompt #8", short:"Refreshes the reverse translation after any Check edit.",
+      body:"After a homograph pick or a word-gender change, this re-runs the reverse translation so the side-by-side comparison stays in sync.",
+      parts:[{n:"{\"tr\":\"…\"}",d:"refreshed reverse translation"}], chips:["translateWithContext(...)"] },
+    { id:"wordgender", kind:"step", col:3, row:"3", badge:6, icon:"⚧", title:"Word genders", sub:"prompt #9", short:"Re-rewrites when the user changes individual word genders.",
+      body:"A branch off Check: adjusting a person-noun’s gender re-rewrites the translation for that choice, then hands back to translateWithContext to refresh the reverse.",
+      parts:[{n:"{\"reword\":\"…\"}",d:"+ optional native_form"}], chips:["rewordWithWordGenders(...)"] },
+    { id:"copy", kind:"comp", col:1, row:"1", tag:"Copy", icon:"✉️", title:"Reword + Copy", sub:"prompt #2", short:"Reword when Send-Copy is on — two languages at once.",
+      body:"When Send-Copy is enabled this replaces #1 entirely; they never run together. Produces the reword and a second-language copy in one call.",
+      parts:[{n:"reword + copy",d:"two target languages in one call"}], chips:["rewordWithCopy(...)"] },
+    { id:"syn", kind:"comp", col:1, row:"2", tag:"Aside", icon:"🔤", title:"Synonyms", sub:"prompt #5", short:"Pre-loads N synonyms for the keyboard’s synonym popover.",
+      body:"Runs independently of the cascade, on the current reword in the current alphabet. Uses the alphabet fragment’s forSynonyms variant.",
+      parts:[{n:"{\"synonyms\":[…]}",d:"batched in one request"}], chips:["synonymsBatch(...)"] },
+    { id:"simple", kind:"comp", col:1, row:"3", tag:"Utility", icon:"🔁", title:"Simple translate", sub:"prompt #3", short:"Internal helper for reverse-translation and utility callers.",
+      body:"A lightweight translator used by Check’s reverse step and a few utilities, with a leading native_form when the source is romanized non-Latin.",
+      parts:[{n:"{\"tr\":\"…\"}",d:"plain translation helper"}], chips:["simpleTranslate(...)"] },
+    { id:"paste", kind:"comp", col:1, row:"4", tag:"Own flow", icon:"📋", title:"Paste view", sub:"prompt #4", short:"Paste-view “Sentences” tab — translation + breakdown.",
+      body:"Its own flow, unrelated to Reword. Translates received text and gives a sentence-by-sentence breakdown.",
+      parts:[{n:"tr + bd[]",d:"translation + per-sentence breakdown"}], chips:["pasteviewTranslate(...)"] },
+    { id:"defs", kind:"comp", col:3, row:"5", tag:"Admin", icon:"🗂️", title:"Homograph defs", sub:"prompt #12", short:"Admin-only seeding of new homograph labels.",
+      body:"Generates the labels for a new homograph word being added to the Supabase library. Admin-only, off the user path.",
+      parts:[{n:"{\"definitions\":[…]}",d:"labels for the library"}], chips:["homographDefinitions(...)"] },
+  ],
+  edges: [
+    { from:"reword", to:"check", kind:"flow", label:"open Check" },
+    { from:"check", to:"align", kind:"flow", label:"homographs?" },
+    { from:"align", to:"homoreword", kind:"flow", label:"user picks sense" },
+    { from:"homoreword", to:"ctx", kind:"flow", label:"refresh" },
+    { from:"check", to:"wordgender", kind:"flow", fs:"r", ts:"t", label:"gender edit" },
+    { from:"wordgender", to:"ctx", kind:"flow", fs:"b", ts:"r" },
+    { from:"copy", to:"reword", kind:"link", fs:"r", ts:"l", label:"send-copy" },
+    { from:"syn", to:"check", kind:"link", label:"on current reword" },
+    { from:"defs", to:"align", kind:"link", fs:"l", ts:"r", label:"seeds library" },
+  ],
+};
+const canvas = $("canvas"), wires = $("wires");
+const chevSvg = '<svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const nodeEls = new Map(); let liveEdges = []; let cascadeBuilt = false;
+
+function buildCascade(){
+  $("flowIntro").textContent = CASCADE.intro;
+  CASCADE.nodes.forEach(n => canvas.appendChild(buildNode(n)));
+  CASCADE.edges.forEach(edge => {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("class", "wire e-" + edge.kind);
-    const mk = edge.kind === "link" ? "mklink" : edge.kind === "ext" ? "mkext" : "mkflow";
-    path.setAttribute("marker-end", `url(#${mk})`);
+    path.setAttribute("marker-end", `url(#${edge.kind === "link" ? "mklink" : "mkflow"})`);
     wires.appendChild(path);
     let label = null;
     if (edge.label) {
       label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("class", "wire-label");
-      label.setAttribute("text-anchor", "middle");
-      label.textContent = edge.label;
-      wires.appendChild(label);
+      label.setAttribute("class", "wire-label"); label.setAttribute("text-anchor", "middle");
+      label.textContent = edge.label; wires.appendChild(label);
     }
     liveEdges.push({ edge, path, label });
   });
-
-  history.replaceState(null, "", "#" + key);
-  requestAnimationFrame(() => { redraw(); animate(); });
+  cascadeBuilt = true;
 }
-
-function buildNode(n) {
-  const el = document.createElement("div");
-  el.className = "node " + (n.kind === "comp" ? "comp" : "step") + (n.row.includes("/") ? " spine" : "");
-  el.style.gridColumn = String(n.col);
-  el.style.gridRow = n.row;
-  el.setAttribute("tabindex", "0");
-  el.setAttribute("role", "button");
-  el.setAttribute("aria-expanded", "false");
-
-  const lead = n.kind === "comp"
-    ? `<span class="n-tag">${n.tag || "Component"}</span>`
-    : `<span class="n-badge">${n.badge}</span>`;
-  const parts = (n.parts || []).map(p =>
-    `<div class="part"><span class="p-name">${p.n}</span><span class="p-desc">${p.d}</span></div>`).join("");
-  const chips = (n.chips || []).map((c, i) =>
-    `<span class="chip ${i === 0 ? "k" : ""}">${c}</span>`).join("");
-
-  el.innerHTML = `
-    <div class="n-head">
-      ${lead}
-      <span class="n-ico">${n.icon}</span>
-      <span class="n-tt">
-        <p class="n-title">${n.title}</p>
-        <div class="n-sub">${n.sub}</div>
-      </span>
-      ${chevSvg}
-    </div>
+function buildNode(n){
+  const elx = document.createElement("div");
+  elx.className = "node " + (n.kind === "comp" ? "comp" : "step") + (n.row.includes("/") ? " spine" : "");
+  elx.style.gridColumn = String(n.col); elx.style.gridRow = n.row;
+  elx.setAttribute("tabindex","0"); elx.setAttribute("role","button"); elx.setAttribute("aria-expanded","false");
+  const lead = n.kind === "comp" ? `<span class="n-tag">${n.tag || "Component"}</span>` : `<span class="n-badge">${n.badge}</span>`;
+  const parts = (n.parts||[]).map(p => `<div class="part"><span class="p-name">${p.n}</span><span class="p-desc">${p.d}</span></div>`).join("");
+  const chips = (n.chips||[]).map((c,i) => `<span class="chip ${i===0?"k":""}">${c}</span>`).join("");
+  elx.innerHTML = `
+    <div class="n-head">${lead}<span class="n-ico">${n.icon}</span>
+      <span class="n-tt"><p class="n-title">${n.title}</p><div class="n-sub">${n.sub}</div></span>${chevSvg}</div>
     <p class="n-short">${n.short}</p>
-    <div class="n-more"><div class="n-more-inner">
-      <p class="n-body">${n.body}</p>
-      ${parts ? `<div class="parts">${parts}</div>` : ""}
-      ${chips ? `<div class="chips">${chips}</div>` : ""}
-    </div></div>`;
-
-  const toggle = () => {
-    const open = el.classList.toggle("open");
-    el.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
-    animate();
-  };
-  el.addEventListener("click", toggle);
-  el.addEventListener("keydown", e => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
-  });
-  el.addEventListener("mouseenter", () => highlight(n.id, true));
-  el.addEventListener("mouseleave", () => highlight(n.id, false));
-
-  nodeEls.set(n.id, el);
-  return el;
+    <div class="n-more"><div class="n-more-inner"><p class="n-body">${n.body}</p>
+      ${parts ? `<div class="parts">${parts}</div>` : ""}${chips ? `<div class="chips">${chips}</div>` : ""}</div></div>`;
+  const toggle = () => { const open = elx.classList.toggle("open"); elx.setAttribute("aria-expanded", open?"true":"false"); if(open) setTimeout(()=>elx.scrollIntoView({behavior:"smooth",block:"nearest"}),60); animateWires(); };
+  elx.addEventListener("click", toggle);
+  elx.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
+  elx.addEventListener("mouseenter", () => highlight(n.id, true));
+  elx.addEventListener("mouseleave", () => highlight(n.id, false));
+  nodeEls.set(n.id, elx); return elx;
 }
-
-/* ---- geometry helpers ---- */
-function rectOf(el) { return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }; }
-function side(r, s) {
-  const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-  if (s === "t") return { x: cx, y: r.y, n: [0, -1] };
-  if (s === "b") return { x: cx, y: r.y + r.h, n: [0, 1] };
-  if (s === "l") return { x: r.x, y: cy, n: [-1, 0] };
-  return { x: r.x + r.w, y: cy, n: [1, 0] };
-}
-function pickSides(a, b, edge) {
-  let fs = edge.fs, ts = edge.ts;
-  if (!fs || !ts) {
-    const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
-    const dx = bcx - acx, dy = bcy - acy;
-    if (Math.abs(dx) > Math.abs(dy) * 1.15) {
-      fs = fs || (dx > 0 ? "r" : "l"); ts = ts || (dx > 0 ? "l" : "r");
-    } else {
-      fs = fs || (dy > 0 ? "b" : "t"); ts = ts || (dy > 0 ? "t" : "b");
-    }
-  }
-  return [fs, ts];
-}
-
-function redraw() {
-  wires.setAttribute("width", canvas.offsetWidth);
-  wires.setAttribute("height", canvas.offsetHeight);
-  liveEdges.forEach(({ edge, path, label }) => {
-    const aEl = nodeEls.get(edge.from), bEl = nodeEls.get(edge.to);
-    if (!aEl || !bEl) return;
-    const ra = rectOf(aEl), rb = rectOf(bEl);
-    const [fs, ts] = pickSides(ra, rb, edge);
-    const p1 = side(ra, fs), p2 = side(rb, ts);
-    const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-    const off = Math.max(34, Math.min(dist * 0.4, 130));
-    const c1x = p1.x + p1.n[0] * off, c1y = p1.y + p1.n[1] * off;
-    const c2x = p2.x + p2.n[0] * off, c2y = p2.y + p2.n[1] * off;
+function rectOf(e){ return { x:e.offsetLeft, y:e.offsetTop, w:e.offsetWidth, h:e.offsetHeight }; }
+function sideOf(r,s){ const cx=r.x+r.w/2, cy=r.y+r.h/2; if(s==="t")return{x:cx,y:r.y,n:[0,-1]}; if(s==="b")return{x:cx,y:r.y+r.h,n:[0,1]}; if(s==="l")return{x:r.x,y:cy,n:[-1,0]}; return{x:r.x+r.w,y:cy,n:[1,0]}; }
+function pickSides(a,b,edge){ let fs=edge.fs, ts=edge.ts; if(!fs||!ts){ const dx=(b.x+b.w/2)-(a.x+a.w/2), dy=(b.y+b.h/2)-(a.y+a.h/2); if(Math.abs(dx)>Math.abs(dy)*1.15){ fs=fs||(dx>0?"r":"l"); ts=ts||(dx>0?"l":"r"); } else { fs=fs||(dy>0?"b":"t"); ts=ts||(dy>0?"t":"b"); } } return [fs,ts]; }
+function redrawWires(){
+  if(!cascadeBuilt) return;
+  wires.setAttribute("width", canvas.offsetWidth); wires.setAttribute("height", canvas.offsetHeight);
+  liveEdges.forEach(({edge,path,label}) => {
+    const aEl=nodeEls.get(edge.from), bEl=nodeEls.get(edge.to); if(!aEl||!bEl) return;
+    const ra=rectOf(aEl), rb=rectOf(bEl); const [fs,ts]=pickSides(ra,rb,edge);
+    const p1=sideOf(ra,fs), p2=sideOf(rb,ts);
+    const dist=Math.hypot(p2.x-p1.x,p2.y-p1.y), off=Math.max(34,Math.min(dist*0.4,130));
+    const c1x=p1.x+p1.n[0]*off, c1y=p1.y+p1.n[1]*off, c2x=p2.x+p2.n[0]*off, c2y=p2.y+p2.n[1]*off;
     path.setAttribute("d", `M${p1.x},${p1.y} C${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y}`);
-    if (label) {
-      // place label at the bezier midpoint (t = 0.5)
-      const mx = 0.125*p1.x + 0.375*c1x + 0.375*c2x + 0.125*p2.x;
-      const my = 0.125*p1.y + 0.375*c1y + 0.375*c2y + 0.125*p2.y;
-      label.setAttribute("x", mx); label.setAttribute("y", my - 4);
-    }
+    if(label){ const mx=0.125*p1.x+0.375*c1x+0.375*c2x+0.125*p2.x, my=0.125*p1.y+0.375*c1y+0.375*c2y+0.125*p2.y; label.setAttribute("x",mx); label.setAttribute("y",my-4); }
   });
 }
+function animateWires(){ const t0=performance.now(); (function tick(now){ redrawWires(); if(now-t0<440) requestAnimationFrame(tick); })(performance.now()); }
+function highlight(id,on){ liveEdges.forEach(({edge,path})=>{ const rel=edge.from===id||edge.to===id; path.classList.toggle("dim", on&&!rel); }); }
+new ResizeObserver(() => redrawWires()).observe(canvas);
+window.addEventListener("resize", redrawWires);
 
-/* redraw across the expand/reflow transition for smoothness */
-function animate() {
-  const t0 = performance.now();
-  (function tick(now) {
-    redraw();
-    if (now - t0 < 440) requestAnimationFrame(tick);
-  })(performance.now());
-}
-
-function highlight(id, on) {
-  liveEdges.forEach(({ edge, path }) => {
-    const related = edge.from === id || edge.to === id;
-    path.classList.toggle("dim", on && !related);
+/* ============================================================
+   TABS
+   ============================================================ */
+function selectTab(key){
+  ["build","cascade"].forEach(k => {
+    $("tab-"+k).setAttribute("aria-selected", k===key ? "true" : "false");
+    const v = $("view-"+k); v.classList.toggle("active", k===key); v.hidden = k!==key;
   });
+  if (key === "cascade") { if(!cascadeBuilt) buildCascade(); requestAnimationFrame(() => { redrawWires(); animateWires(); }); }
+  history.replaceState(null, "", "#" + key);
 }
-
-/* keep wires correct on resize / font load / content changes */
-new ResizeObserver(() => redraw()).observe(canvas);
-window.addEventListener("resize", redraw);
-window.addEventListener("load", redraw);
+$("tab-build").addEventListener("click", () => selectTab("build"));
+$("tab-cascade").addEventListener("click", () => selectTab("cascade"));
 
 /* ============================================================
    THEME
    ============================================================ */
-const root = document.documentElement;
-const tIcon = document.getElementById("themeIcon");
-const tLabel = document.getElementById("themeLabel");
+const root = document.documentElement, tIcon = $("themeIcon"), tLabel = $("themeLabel");
 const sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 const moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
-
-function applyTheme(theme) {
-  root.setAttribute("data-theme", theme);
-  tIcon.innerHTML = theme === "dark" ? moon : sun;
-  tLabel.textContent = theme === "dark" ? "Dark" : "Light";
-  try { localStorage.setItem("arcatext-theme", theme); } catch (e) {}
-  redraw();
-}
-(function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem("arcatext-theme"); } catch (e) {}
-  const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-  applyTheme(saved || (prefersLight ? "light" : "dark"));
-})();
-document.getElementById("themeToggle").addEventListener("click", () =>
-  applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+function applyTheme(t){ root.setAttribute("data-theme", t); tIcon.innerHTML = t==="dark"?moon:sun; tLabel.textContent = t==="dark"?"Dark":"Light"; try{ localStorage.setItem("arcatext-theme", t); }catch(e){} redrawWires(); }
+(function(){ let saved=null; try{ saved=localStorage.getItem("arcatext-theme"); }catch(e){} const pl = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches; applyTheme(saved || (pl?"light":"dark")); })();
+$("themeToggle").addEventListener("click", () => applyTheme(root.getAttribute("data-theme")==="dark"?"light":"dark"));
 
 /* ============================================================
-   INIT — deep-link via #flow
+   INIT
    ============================================================ */
-const initial = location.hash.replace("#", "");
-selectFlow(FLOWS[initial] ? initial : order[0]);
+render();
+selectTab(location.hash.replace("#","") === "cascade" ? "cascade" : "build");
 </script>
 </body>
 </html>
