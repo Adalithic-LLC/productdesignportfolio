@@ -9,8 +9,8 @@
      Arcatext — modular prompt builder + runtime cascade.
      Single file, zero dependencies. Same visual language as the
      "How Arcatext works" system diagram.
-     - Tab 1: Build a prompt — pick options / a scenario and watch
-       the system prompt assemble from reusable modules.
+     - Tab 1: Build a prompt — click Prompt Modules to assemble a
+       system prompt; a plain-English sentence narrates the build.
      - Tab 2: Runtime cascade — where the prompt goes (boxes + wires).
      Light + dark themes (toggle, defaults to system preference).
      ============================================================ */
@@ -41,7 +41,7 @@
     -webkit-font-smoothing: antialiased; line-height: 1.5;
     transition: background .3s ease, color .3s ease;
   }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 22px 80px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 22px 80px; }
 
   /* ---------- Top bar ---------- */
   .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
@@ -58,7 +58,7 @@
   .theme-toggle svg { width: 15px; height: 15px; }
 
   /* ---------- Tabs ---------- */
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
   .tab {
     appearance: none; background: none; border: none; cursor: pointer;
     font: inherit; font-size: 14px; font-weight: 550; color: var(--ink-faint);
@@ -77,76 +77,67 @@
   /* ============================================================
      BUILDER
      ============================================================ */
-  /* Presets */
-  .presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 20px; }
-  .presets .lbl { font-size: 12.5px; color: var(--ink-faint); margin-right: 2px; }
-  .preset {
-    appearance: none; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 550;
-    color: var(--ink-soft); background: var(--panel); border: 1px solid var(--line);
-    padding: 7px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px;
-    transition: border-color .16s, color .16s, background .16s, transform .12s;
+  /* Plain-English narration */
+  .narration {
+    display: flex; gap: 13px; align-items: flex-start;
+    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); margin: 2px 0 26px;
   }
-  .preset .p-ico { font-size: 14px; }
-  .preset:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-1px); }
-  .preset[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+  .narration .q { font-family: Georgia, "Times New Roman", serif; font-size: 36px; line-height: .78; color: var(--accent-2); flex: none; }
+  .narration p { margin: 0; font-size: clamp(15px, 1.8vw, 18px); line-height: 1.5; color: var(--ink); font-weight: 500; }
+  .narration .hl { color: var(--accent-2); font-weight: 600; }
 
-  .builder { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 22px; align-items: start; }
+  /* Section header */
+  .sec-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 13px; flex-wrap: wrap; }
+  .sec-h h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0; }
+  .sec-h .sub { font-size: 12.5px; color: var(--ink-soft); }
 
-  /* Options panel */
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 16px 18px; }
-  .panel h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0 0 14px; }
-  .ctl { margin-bottom: 15px; }
-  .ctl:last-child { margin-bottom: 0; }
-  .ctl > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 7px; }
-  .ctl .hint2 { font-weight: 400; color: var(--ink-faint); font-size: 11.5px; }
+  /* Prompt Modules palette */
+  .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(214px, 1fr)); gap: 10px; margin-bottom: 30px; }
+  .pm {
+    border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 13px 13px;
+    background: var(--panel); cursor: pointer; transition: border-color .16s, background .16s, transform .12s, box-shadow .16s;
+  }
+  .pm:hover { border-color: var(--accent-2); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .pm.on { border-color: color-mix(in srgb, var(--accent-2) 55%, transparent); background: color-mix(in srgb, var(--accent-2) 8%, var(--panel)); }
+  .pm.req { cursor: default; border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+  .pm.req:hover { transform: none; box-shadow: none; }
+  .pm.disabled { opacity: .5; cursor: not-allowed; }
+  .pm.disabled:hover { border-color: var(--line); transform: none; box-shadow: none; }
+  .pm:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pm-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .pm-ico { font-size: 15px; flex: none; }
+  .pm-name { font-size: 13px; font-weight: 650; letter-spacing: -.01em; }
+  .pm-state { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--ink-faint); white-space: nowrap; }
+  .pm.on .pm-state { color: var(--accent-2); }
+  .pm.req .pm-state { color: var(--accent); }
+  .pm-desc { font-size: 12px; color: var(--ink-soft); font-family: var(--mono); }
+  .pm select.sel { margin-top: 10px; }
 
   select.sel {
-    width: 100%; appearance: none; font: inherit; font-size: 13.5px; color: var(--ink);
-    background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
-    padding: 9px 30px 9px 11px; cursor: pointer;
+    width: 100%; appearance: none; font: inherit; font-size: 13px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 28px 8px 10px; cursor: pointer;
     background-image: linear-gradient(45deg, transparent 50%, var(--ink-faint) 50%), linear-gradient(135deg, var(--ink-faint) 50%, transparent 50%);
-    background-position: right 13px center, right 8px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+    background-position: right 12px center, right 7px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
   }
+  html[data-theme="light"] .pm.on select.sel, html[data-theme="light"] .pm.req select.sel { background-color: var(--panel); }
   select.sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-  .seg { display: flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 3px; }
-  .seg button {
-    flex: 1 1 0; appearance: none; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 550;
-    color: var(--ink-soft); background: none; border: none; border-radius: 7px; padding: 6px 4px; white-space: nowrap;
-    transition: background .14s, color .14s;
-  }
-  .seg button:hover { color: var(--ink); }
-  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
-  .seg.teal button[aria-pressed="true"] { background: var(--accent-2); }
-  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* Assembled prompt card (grouping) */
+  .promptcard { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); box-shadow: var(--shadow); overflow: hidden; }
+  .pc-head { display: flex; align-items: baseline; gap: 10px; padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .pc-title { font-size: 13px; font-weight: 650; }
+  .pc-meta { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-left: auto; }
+  .pc-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 
-  .row2 { display: flex; gap: 8px; align-items: center; }
-  .switch { position: relative; width: 40px; height: 23px; flex: none; }
-  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-  .switch .track { position: absolute; inset: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; transition: background .16s, border-color .16s; }
-  .switch .knob { position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: var(--ink-faint); transition: transform .16s, background .16s; }
-  .switch input:checked + .track { background: color-mix(in srgb, var(--accent-2) 30%, var(--panel-2)); border-color: var(--accent-2); }
-  .switch input:checked + .track + .knob { transform: translateX(17px); background: var(--accent-2); }
-  .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .sw-lbl { font-size: 12.5px; color: var(--ink-soft); }
-
-  /* Assembled prompt */
-  .assembly { min-width: 0; }
-  .asm-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 4px; }
-  .asm-title { font-size: 16px; font-weight: 650; letter-spacing: -.01em; margin: 0; }
-  .asm-meta { font-size: 12px; color: var(--ink-faint); font-family: var(--mono); }
-  .asm-sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; }
-  .asm-sub b { color: var(--accent); font-weight: 600; }
-
-  .stack { position: relative; display: flex; flex-direction: column; gap: 10px; }
   .mod {
     position: relative; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent);
-    border-radius: var(--radius-sm); padding: 11px 14px; box-shadow: var(--shadow);
-    animation: modIn .32s cubic-bezier(.2,.7,.3,1) both;
+    border-radius: var(--radius-sm); padding: 11px 14px;
+    animation: modIn .3s cubic-bezier(.2,.7,.3,1) both;
   }
   @keyframes modIn { from { opacity: 0; transform: translateY(-6px) scale(.99); } to { opacity: 1; transform: none; } }
-  .mod.frag { border-left-color: var(--accent-2); background: var(--panel-2); border-style: dashed; border-left-style: solid; }
-  html[data-theme="light"] .mod.frag { background: color-mix(in srgb, var(--accent-2) 6%, var(--panel)); }
+  .mod.frag { border-left-color: var(--accent-2); }
   .mod.json { border-left-color: var(--ink-faint); }
   .mod-top { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
   .mod-kind { font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent); padding: 2px 6px; border-radius: 5px; }
@@ -158,22 +149,6 @@
   .mod-text .cmt { color: var(--ink-faint); }
   .mod-text .fld { color: var(--accent); }
   .mod.json .mod-text .fld { color: var(--accent-2); }
-
-  /* Fragment library strip */
-  .lib { margin-top: 26px; }
-  .lib-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
-  .lib-h h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0; }
-  .lib-h .sub { font-size: 12.5px; color: var(--ink-soft); }
-  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-  .libcard { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 11px 12px; background: var(--panel); transition: border-color .18s, opacity .18s, background .18s; opacity: .5; }
-  .libcard.on { opacity: 1; border-color: color-mix(in srgb, var(--accent-2) 55%, transparent); background: color-mix(in srgb, var(--accent-2) 7%, var(--panel)); }
-  .libcard .lc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .libcard .lc-ico { font-size: 15px; }
-  .libcard .lc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink); }
-  .libcard .lc-state { margin-left: auto; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
-  .libcard.on .lc-state { color: var(--accent-2); }
-  .libcard .lc-desc { font-size: 12px; color: var(--ink-soft); }
-  .libcard .lc-uses { margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
 
   /* ============================================================
      CASCADE (boxes + wires) — reused engine
@@ -217,7 +192,6 @@
   .wire { fill: none; transition: opacity .2s; }
   .e-flow { stroke: var(--accent); stroke-width: 2; }
   .e-link { stroke: var(--wire); stroke-width: 1.7; stroke-dasharray: 5 5; }
-  .e-loop { stroke: var(--accent); stroke-width: 1.7; stroke-dasharray: 6 5; opacity: .7; }
   .wire.dim { opacity: .22; }
   .mk-flow { fill: var(--accent); }
   .mk-link { fill: var(--wire); }
@@ -230,7 +204,6 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 780px) {
-    .builder { grid-template-columns: 1fr; }
     .canvas { grid-template-columns: 1fr !important; gap: 18px; }
     .node { grid-column: 1 !important; grid-row: auto !important; }
     .node.spine { align-self: auto; }
@@ -244,10 +217,9 @@
     <div>
       <p class="eyebrow">Prompt Architecture</p>
       <h1 class="title">Build a modular prompt</h1>
-      <p class="lede">Arcatext assembles every model call from reusable modules. Pick a scenario — or set the
-        options yourself — and watch the <em>same builder</em> nest different fragments to reword into English,
-        Japanese, Arabic and beyond. Solid blocks are always present; dashed blocks switch on only when an
-        option calls for them.</p>
+      <p class="lede">Arcatext builds every model call by stacking small, reusable <em>prompt modules</em>. Click the
+        modules you need — target language, script, gender, a second-language copy — and watch the system prompt
+        assemble below. The sentence up top reads your build back in plain English.</p>
     </div>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light / dark theme">
       <span id="themeIcon"></span><span id="themeLabel">Theme</span>
@@ -261,32 +233,20 @@
 
   <!-- ============== VIEW: BUILD ============== -->
   <section class="view active" id="view-build" role="tabpanel" aria-labelledby="tab-build">
-    <div class="presets" id="presets"><span class="lbl">Try a scenario:</span></div>
+    <div class="narration"><span class="q" aria-hidden="true">“</span><p id="narrText"></p></div>
 
-    <div class="builder">
-      <!-- Options -->
-      <aside class="panel" id="options">
-        <h3>Options</h3>
-        <div id="controls"></div>
-      </aside>
+    <div class="sec-h">
+      <h3>Prompt Modules</h3>
+      <span class="sub">Click a module to add or remove it — some carry a dropdown.</span>
+    </div>
+    <div class="palette" id="palette"></div>
 
-      <!-- Assembled prompt -->
-      <div class="assembly">
-        <div class="asm-head">
-          <p class="asm-title" id="asmTitle"></p>
-          <span class="asm-meta" id="asmMeta"></span>
-        </div>
-        <p class="asm-sub" id="asmSub"></p>
-        <div class="stack" id="stack"></div>
-
-        <div class="lib">
-          <div class="lib-h">
-            <h3>Fragment library</h3>
-            <span class="sub">The six reusable modules — highlighted ones are in the current build.</span>
-          </div>
-          <div class="lib-grid" id="libGrid"></div>
-        </div>
+    <div class="promptcard">
+      <div class="pc-head">
+        <span class="pc-title">Assembled system prompt</span>
+        <span class="pc-meta" id="pcMeta"></span>
       </div>
+      <div class="pc-body" id="pcBody"></div>
     </div>
   </section>
 
@@ -329,103 +289,90 @@ const LANGS = {
   sr:  { name:"Serbian",   nonLatin:true,  script:"Cyrillic", roman:"Serbian Latin (Gaj’s)", nativeLatin:true },
 };
 const LANG_ORDER = ["en","es","fr","de","ja","ko","yue","ru","ar","hi","th","sr"];
-const GROUP_LABEL = { none:"—", allMale:"all male", allFemale:"all female", mixed:"mixed" };
+const GROUP_LABEL = { allMale:"all male", allFemale:"all female", mixed:"mixed" };
+const GENDER_OPTS = [ {v:"male",label:"Male"}, {v:"female",label:"Female"} ];
+const GROUP_OPTS  = [ {v:"allMale",label:"All male"}, {v:"allFemale",label:"All female"}, {v:"mixed",label:"Mixed"} ];
 
-const PRESETS = [
-  { ico:"🇬🇧", label:"Reword · English",             s:{ lang:"en",  script:"native",    speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
-  { ico:"🇯🇵", label:"Reword · Japanese (Rōmaji)",    s:{ lang:"ja",  script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
-  { ico:"🇪🇸", label:"Reword · Spanish (♀→♂)",        s:{ lang:"es",  script:"native",    speaker:"female", recipient:"male", group:"none", copy:null, retry:false } },
-  { ico:"🇸🇦", label:"Reword · Arabic (native)",      s:{ lang:"ar",  script:"native",    speaker:"none",   recipient:"female", group:"none", copy:null, retry:false } },
-  { ico:"🇷🇺", label:"Reword + Copy · Russian",       s:{ lang:"ru",  script:"native",    speaker:"none",   recipient:"none", group:"none", copy:"en", retry:false } },
-  { ico:"🇭🇰", label:"Reword · Cantonese (Jyutping)", s:{ lang:"yue", script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:true } },
-  { ico:"🇷🇸", label:"Reword · Serbian (Latin)",      s:{ lang:"sr",  script:"romanized", speaker:"none",   recipient:"none", group:"none", copy:null, retry:false } },
-];
-
-// Fragment library metadata (display order = injection order)
-const FRAGMENTS = [
-  { key:"speaker",   fn:"speakerGenderFragment",    ico:"🙋", desc:"1st-person gender agreement",            uses:"#1 #2" },
-  { key:"recipient", fn:"recipientGenderFragment",  ico:"🫵", desc:"2nd-person + gendered nouns",            uses:"#1 #2" },
-  { key:"group",     fn:"groupChatFragment",        ico:"👥", desc:"plural-you make-up",                     uses:"#1 #2" },
-  { key:"alphabet",  fn:"alphabetFragment",         ico:"🔤", desc:"per-script writing directive",           uses:"#1 #2 #5 #9 #10 #11" },
-  { key:"retry",     fn:"scriptRetryFragment",      ico:"🔁", desc:"RETRY banner on wrong-script output",    uses:"#1 #2 #5 #9 #10 #11" },
-  { key:"cot",       fn:"romanizationCoT",          ico:"🧠", desc:"native_form emitted before output",      uses:"#1 #2 #3 #7 #9 #10 #11" },
-];
-
-let state = Object.assign({}, PRESETS[1].s); // default: Japanese (Rōmaji)
+/* Default build mirrors the example sentence:
+   "Reword into Japanese, romanize it. I'm male talking to a female. Copy in English." */
+let s = {
+  lang: "ja",
+  speaker: "male", recipient: "female", group: "mixed", copyLang: "en",
+  on: { romanize:true, speaker:true, recipient:true, group:false, copy:true, retry:false },
+};
 
 /* ============================================================
    DERIVATION
    ============================================================ */
-function isRomanized(s){ const L = LANGS[s.lang]; return L.nonLatin && s.script === "romanized"; }
-function usesCoT(s){ const L = LANGS[s.lang]; return isRomanized(s) && !L.nativeLatin; }
-function copyCoT(s){ if(!s.copy) return false; const C = LANGS[s.copy]; return usesCoT(s) && C.nonLatin && !C.nativeLatin; }
+function romActive(){ return s.on.romanize && LANGS[s.lang].nonLatin; }
+function cotActive(){ return romActive() && !LANGS[s.lang].nativeLatin; }
+function copyCoT(){ const C = LANGS[s.copyLang]; return s.on.copy && romActive() && C.nonLatin && !C.nativeLatin; }
+function familyOf(){ return s.on.copy ? "#2 rewordWithCopy" : "#1 reword"; }
+const langOptions = () => LANG_ORDER.map(c => ({ v:c, label:LANGS[c].name }));
+const copyOptions = () => LANG_ORDER.filter(c => c !== s.lang).map(c => ({ v:c, label:LANGS[c].name }));
 
-function activeFragments(s){
+/* ============================================================
+   NARRATION — plain-English read-back of the build
+   ============================================================ */
+function narration(){
   const L = LANGS[s.lang];
-  return {
-    speaker:   s.speaker !== "none",
-    recipient: s.recipient !== "none",
-    group:     s.group !== "none",
-    alphabet:  L.nonLatin,
-    retry:     !!s.retry,
-    cot:       usesCoT(s),
-  };
-}
+  const parts = [];
+  let lead = `Reword this text into «hl»${L.name}«/hl»`;
+  if (romActive()) lead += `, and romanize it («hl»${L.roman}«/hl»)`;
+  parts.push(lead + ".");
 
-/* Ordered list of modules the builder emits for this state. */
-function buildModules(s){
-  const L = LANGS[s.lang];
-  const mods = [];
-  mods.push({ cls:"core", kind:"required", title:"Base directive", fn:"reword(...)",
-    text:`Reword the message into ${L.name}.` });
+  if (s.on.speaker && s.on.recipient) parts.push(`I'm a «hl»${s.speaker}«/hl» talking to a «hl»${s.recipient}«/hl».`);
+  else if (s.on.speaker)              parts.push(`I'm a «hl»${s.speaker}«/hl».`);
+  else if (s.on.recipient)            parts.push(`I'm talking to a «hl»${s.recipient}«/hl».`);
 
-  if (s.speaker !== "none")
-    mods.push({ cls:"frag", kind:"fragment", title:"Speaker gender", fn:"speakerGenderFragment",
-      text:`Speaker = ${s.speaker}.  «cmt»// 1st-person agreement«/cmt»` });
-  if (s.recipient !== "none")
-    mods.push({ cls:"frag", kind:"fragment", title:"Recipient gender", fn:"recipientGenderFragment",
-      text:`Recipient = ${s.recipient}.  «cmt»// 2nd-person + gendered nouns«/cmt»` });
-  if (s.group !== "none")
-    mods.push({ cls:"frag", kind:"fragment", title:"Group chat", fn:"groupChatFragment",
-      text:`Group = ${GROUP_LABEL[s.group]}.  «cmt»// resolves plural “you”«/cmt»` });
-  if (L.nonLatin) {
-    const dir = isRomanized(s) ? `Use ${L.roman} only — never ${L.script}.` : `Use ${L.script} only.`;
-    mods.push({ cls:"frag", kind:"fragment", title:"Alphabet / script", fn:"alphabetFragment", text:dir });
+  if (s.on.group) {
+    const g = s.group === "mixed" ? "a mix of men and women" : s.group === "allMale" ? "all men" : "all women";
+    parts.push(`It's a group chat — «hl»${g}«/hl».`);
   }
-  if (s.retry)
-    mods.push({ cls:"frag", kind:"fragment", title:"Script retry", fn:"scriptRetryFragment",
-      text:`RETRY: the previous output used the WRONG script.` });
-  if (usesCoT(s))
-    mods.push({ cls:"frag", kind:"fragment", title:"Romanization CoT", fn:"romanizationCoT",
-      text:`First emit «fld»native_form«/fld» in ${L.script}, THEN transliterate to ${L.roman}.` });
-
-  mods.push({ cls:"core", kind:"required", title:"Universal constraints", fn:"shared clauses",
-    text:`Single target · no false cognates · no softening (nightmares ≠ dreams) · same sentence count · native vocabulary.` });
-
-  mods.push({ cls:"json", kind:"contract", title:"JSON contract", fn:"parseContent()", json: jsonFields(s) });
-  return mods;
+  if (s.on.copy)  parts.push(`I'd also like a copy in «hl»${LANGS[s.copyLang].name}«/hl».`);
+  if (s.on.retry) parts.push(`The last attempt used the wrong script, so try again.`);
+  return parts.join(" ");
 }
 
-/* Ordered JSON output fields, native_form* before each output field. */
-function jsonFields(s){
-  const cot = usesCoT(s), ccot = copyCoT(s), copy = !!s.copy;
+/* ============================================================
+   MODULES — the rows that make up the assembled prompt
+   ============================================================ */
+function cardRows(){
+  const L = LANGS[s.lang];
+  const rows = [];
+
+  let baseText = `Reword the message into ${L.name}.`;
+  if (L.nonLatin && !romActive()) baseText += `  Use ${L.script} only.`;
+  rows.push({ cls:"core", kind:"required", title:"Base directive", fn:"reword(...)", text:baseText });
+
+  if (romActive()){
+    let t = `Use ${L.roman} only — never ${L.script}.`;
+    if (cotActive()) t += `\nFirst emit «fld»native_form«/fld» in ${L.script}, THEN transliterate.`;
+    rows.push({ cls:"frag", kind:"module", title:"Romanize", fn:"alphabetFragment + CoT", text:t });
+  }
+  if (s.on.speaker)   rows.push({ cls:"frag", kind:"module", title:"Speaker gender",   fn:"speakerGenderFragment",   text:`Speaker = ${s.speaker}.  «cmt»// 1st-person agreement«/cmt»` });
+  if (s.on.recipient) rows.push({ cls:"frag", kind:"module", title:"Recipient gender", fn:"recipientGenderFragment", text:`Recipient = ${s.recipient}.  «cmt»// 2nd-person + gendered nouns«/cmt»` });
+  if (s.on.group)     rows.push({ cls:"frag", kind:"module", title:"Group chat",       fn:"groupChatFragment",       text:`Group = ${GROUP_LABEL[s.group]}.  «cmt»// resolves plural “you”«/cmt»` });
+  if (s.on.copy)      rows.push({ cls:"frag", kind:"module", title:"Send a copy",       fn:"rewordWithCopy",          text:`Also produce a copy in ${LANGS[s.copyLang].name}.` });
+  if (s.on.retry)     rows.push({ cls:"frag", kind:"module", title:"Script retry",      fn:"scriptRetryFragment",     text:`RETRY: the previous output used the WRONG script.` });
+
+  rows.push({ cls:"core", kind:"required", title:"Universal constraints", fn:"shared clauses",
+    text:`Single target · no false cognates · no softening (nightmares ≠ dreams) · same sentence count · native vocabulary.` });
+  rows.push({ cls:"json", kind:"output", title:"JSON contract", fn:"parseContent()", json: jsonFields() });
+  return rows;
+}
+function jsonFields(){
+  const cot = cotActive(), ccot = copyCoT(), copy = s.on.copy;
   const f = [];
   if (cot && copy) f.push(["native_form_reword", "native script, first"]);
   else if (cot)    f.push(["native_form", "native script, emitted first"]);
   f.push(["reword", "the reworded message"]);
   if (copy) {
     if (ccot) f.push(["native_form_copy", "native script for the copy"]);
-    f.push(["copy", `${LANGS[s.copy].name} translation`]);
+    f.push(["copy", `${LANGS[s.copyLang].name} translation`]);
   }
   return f;
 }
-
-function scenarioName(s){
-  const L = LANGS[s.lang];
-  const script = L.nonLatin ? ` (${isRomanized(s) ? (L.nativeLatin ? "Latin" : L.roman) : L.script.split(" ")[0]})` : "";
-  return `Reword${s.copy ? " + Copy" : ""} · ${L.name}${script}`;
-}
-function familyOf(s){ return s.copy ? "#2 rewordWithCopy" : "#1 reword"; }
 
 /* ============================================================
    RENDER — builder
@@ -433,9 +380,9 @@ function familyOf(s){ return s.copy ? "#2 rewordWithCopy" : "#1 reword"; }
 const $ = (id) => document.getElementById(id);
 function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt!=null) e.textContent = txt; return e; }
 
-/* render mod-text with «cmt»/«fld» markers safely (no innerHTML of user text) */
-function renderModText(target, text){
-  const re = /«(cmt|fld)»(.*?)«\/\1»/g;
+/* render marked text («cmt»/«fld»/«hl») safely, no innerHTML of dynamic text */
+function renderMarked(target, text){
+  const re = /«(cmt|fld|hl)»([\s\S]*?)«\/\1»/g;
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) target.appendChild(document.createTextNode(text.slice(last, m.index)));
@@ -445,118 +392,93 @@ function renderModText(target, text){
   if (last < text.length) target.appendChild(document.createTextNode(text.slice(last)));
 }
 
-function renderPresets(){
-  const box = $("presets");
-  [...box.querySelectorAll(".preset")].forEach(n => n.remove());
-  PRESETS.forEach(p => {
-    const b = el("button", "preset");
-    b.type = "button";
-    b.append(el("span", "p-ico", p.ico), document.createTextNode(p.label));
-    const match = Object.keys(p.s).every(k => JSON.stringify(state[k]) === JSON.stringify(p.s[k]));
-    b.setAttribute("aria-pressed", match ? "true" : "false");
-    b.addEventListener("click", () => { state = Object.assign({}, p.s); render(); });
-    box.appendChild(b);
-  });
-}
-
-function ctl(labelHTML){ const d = el("div","ctl"); const l = el("label"); l.innerHTML = labelHTML; d.appendChild(l); return d; }
-function segControl(key, options, teal){
-  const seg = el("div", "seg" + (teal ? " teal" : ""));
-  options.forEach(o => {
-    const b = el("button", null, o.label); b.type = "button";
-    b.setAttribute("aria-pressed", state[key] === o.v ? "true" : "false");
-    b.addEventListener("click", () => { state[key] = o.v; render(); });
-    seg.appendChild(b);
-  });
-  return seg;
-}
-
-function renderControls(){
-  const box = $("controls"); box.textContent = "";
-  const L = LANGS[state.lang];
-
-  // Language
-  const cL = ctl("Target language");
+function mkSelect(value, options, onChange){
   const sel = el("select", "sel");
-  LANG_ORDER.forEach(code => { const o = el("option", null, LANGS[code].name); o.value = code; if(code===state.lang) o.selected = true; sel.appendChild(o); });
-  sel.addEventListener("change", () => {
-    state.lang = sel.value;
-    if (!LANGS[state.lang].nonLatin) state.script = "native";
-    if (state.copy === state.lang) state.copy = state.lang === "en" ? "es" : "en";
-    render();
-  });
-  cL.appendChild(sel); box.appendChild(cL);
-
-  // Script (only for non-Latin)
-  if (L.nonLatin) {
-    const cS = ctl(`Script <span class="hint2">— native or romanized</span>`);
-    cS.appendChild(segControl("script", [ {v:"native", label:L.script.split(" ")[0]}, {v:"romanized", label:"Romanized"} ], true));
-    box.appendChild(cS);
-  }
-
-  // Speaker / Recipient
-  box.appendChild((()=>{ const c = ctl("Speaker gender"); c.appendChild(segControl("speaker", [ {v:"none",label:"—"}, {v:"male",label:"Male"}, {v:"female",label:"Female"} ])); return c; })());
-  box.appendChild((()=>{ const c = ctl("Recipient gender"); c.appendChild(segControl("recipient", [ {v:"none",label:"—"}, {v:"male",label:"Male"}, {v:"female",label:"Female"} ])); return c; })());
-
-  // Group
-  box.appendChild((()=>{ const c = ctl(`Group chat <span class="hint2">— plural “you”</span>`); c.appendChild(segControl("group", [ {v:"none",label:"—"}, {v:"allMale",label:"♂"}, {v:"allFemale",label:"♀"}, {v:"mixed",label:"Mixed"} ])); return c; })());
-
-  // Send copy
-  const cC = ctl(`Send-Copy <span class="hint2">— a second language</span>`);
-  const row = el("div", "row2");
-  const sw = el("label", "switch");
-  const inp = document.createElement("input"); inp.type = "checkbox"; inp.checked = !!state.copy;
-  inp.addEventListener("change", () => { state.copy = inp.checked ? (state.lang === "en" ? "es" : "en") : null; render(); });
-  sw.append(inp, el("span","track"), el("span","knob"));
-  row.appendChild(sw);
-  if (state.copy){
-    const csel = el("select", "sel"); csel.style.flex = "1";
-    LANG_ORDER.filter(c => c !== state.lang).forEach(code => { const o = el("option", null, LANGS[code].name); o.value = code; if(code===state.copy) o.selected = true; csel.appendChild(o); });
-    csel.addEventListener("change", () => { state.copy = csel.value; render(); });
-    row.appendChild(csel);
-  } else {
-    row.appendChild(el("span","sw-lbl","Off"));
-  }
-  cC.appendChild(row); box.appendChild(cC);
-
-  // Retry (advanced)
-  const cR = ctl(`Simulate retry <span class="hint2">— wrong-script recovery</span>`);
-  const rr = el("div","row2");
-  const rsw = el("label","switch");
-  const rin = document.createElement("input"); rin.type = "checkbox"; rin.checked = !!state.retry;
-  rin.addEventListener("change", () => { state.retry = rin.checked; render(); });
-  rsw.append(rin, el("span","track"), el("span","knob"));
-  rr.append(rsw, el("span","sw-lbl", state.retry ? "On" : "Off"));
-  cR.appendChild(rr); box.appendChild(cR);
+  options.forEach(o => { const op = el("option", null, o.label); op.value = o.v; if(o.v===value) op.selected = true; sel.appendChild(op); });
+  ["click","mousedown","keydown"].forEach(ev => sel.addEventListener(ev, e => e.stopPropagation()));
+  sel.addEventListener("change", e => { e.stopPropagation(); onChange(sel.value); });
+  return sel;
 }
 
-function renderStack(){
-  const mods = buildModules(state);
-  const stack = $("stack"); stack.textContent = "";
-  const fragCount = mods.filter(m => m.cls === "frag").length;
+function paletteCard(c){
+  const d = el("div", "pm" + (c.on ? " on" : "") + (c.req ? " req" : "") + (c.disabled ? " disabled" : ""));
+  const top = el("div","pm-top");
+  top.append(el("span","pm-ico", c.ico), el("span","pm-name", c.name),
+    el("span","pm-state", c.req ? "REQUIRED" : c.disabled ? "N/A" : c.on ? "✓ ADDED" : "＋ ADD"));
+  d.appendChild(top);
+  d.appendChild(el("div","pm-desc", c.desc));
+  if (c.select) d.appendChild(c.select);
+  if (!c.req && !c.disabled && c.toggle) {
+    d.setAttribute("role","button"); d.tabIndex = 0;
+    d.addEventListener("click", c.toggle);
+    d.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); c.toggle(); } });
+  }
+  return d;
+}
 
-  $("asmTitle").textContent = scenarioName(state);
-  $("asmMeta").textContent = `${mods.length} modules · ${fragCount} fragment${fragCount===1?"":"s"} → ${familyOf(state)}`;
-  const sub = $("asmSub"); sub.textContent = "";
-  sub.append(document.createTextNode("The "), (()=>{const b=el("b",null,"same builder");return b;})(),
-    document.createTextNode(fragCount === 0
-      ? " emits only the required modules — no options are set, so no fragments nest in."
-      : ` nests ${fragCount} optional fragment${fragCount===1?"":"s"} into the required base + constraints + JSON contract.`));
+function renderPalette(){
+  const box = $("palette"); box.textContent = "";
+  const latin = !LANGS[s.lang].nonLatin;
 
-  mods.forEach((m, i) => {
-    const card = el("div", "mod " + m.cls);
-    card.style.animationDelay = (i * 22) + "ms";
+  box.appendChild(paletteCard({
+    req:true, ico:"🌐", name:"Target language", desc:`reword(...) → ${LANGS[s.lang].name}`,
+    select: mkSelect(s.lang, langOptions(), v => {
+      s.lang = v;
+      if (!LANGS[v].nonLatin) s.on.romanize = false;
+      if (s.copyLang === v) s.copyLang = (v === "en" ? "es" : "en");
+      render();
+    }),
+  }));
+
+  box.appendChild(paletteCard({
+    ico:"🔤", name:"Romanize", on: s.on.romanize && !latin, disabled: latin,
+    desc: latin ? "Latin script — n/a" : `write in ${LANGS[s.lang].roman}`,
+    toggle: () => { if (latin) return; s.on.romanize = !s.on.romanize; render(); },
+  }));
+
+  box.appendChild(paletteCard({
+    ico:"🙋", name:"Speaker gender", on: s.on.speaker, desc:"speakerGenderFragment",
+    toggle: () => { s.on.speaker = !s.on.speaker; render(); },
+    select: s.on.speaker ? mkSelect(s.speaker, GENDER_OPTS, v => { s.speaker = v; render(); }) : null,
+  }));
+  box.appendChild(paletteCard({
+    ico:"🫵", name:"Recipient gender", on: s.on.recipient, desc:"recipientGenderFragment",
+    toggle: () => { s.on.recipient = !s.on.recipient; render(); },
+    select: s.on.recipient ? mkSelect(s.recipient, GENDER_OPTS, v => { s.recipient = v; render(); }) : null,
+  }));
+  box.appendChild(paletteCard({
+    ico:"👥", name:"Group chat", on: s.on.group, desc:"groupChatFragment",
+    toggle: () => { s.on.group = !s.on.group; render(); },
+    select: s.on.group ? mkSelect(s.group, GROUP_OPTS, v => { s.group = v; render(); }) : null,
+  }));
+  box.appendChild(paletteCard({
+    ico:"✉️", name:"Send a copy", on: s.on.copy, desc:"rewordWithCopy → #2",
+    toggle: () => { s.on.copy = !s.on.copy; render(); },
+    select: s.on.copy ? mkSelect(s.copyLang, copyOptions(), v => { s.copyLang = v; render(); }) : null,
+  }));
+  box.appendChild(paletteCard({
+    ico:"🔁", name:"Script retry", on: s.on.retry, desc:"scriptRetryFragment",
+    toggle: () => { s.on.retry = !s.on.retry; render(); },
+  }));
+}
+
+function renderCard(){
+  const rows = cardRows();
+  const modCount = rows.filter(r => r.cls === "frag").length;
+  $("pcMeta").textContent = `${rows.length} modules · ${modCount} optional → ${familyOf()}`;
+  const body = $("pcBody"); body.textContent = "";
+  rows.forEach((r, i) => {
+    const card = el("div", "mod " + r.cls);
+    card.style.animationDelay = (i * 20) + "ms";
     const top = el("div","mod-top");
-    top.append(el("span","mod-kind", m.kind), el("span","mod-title", m.title), el("span","mod-fn", m.fn));
+    top.append(el("span","mod-kind", r.kind), el("span","mod-title", r.title), el("span","mod-fn", r.fn));
     card.appendChild(top);
-    const body = el("div","mod-text");
-    if (m.cls === "json") renderJSON(body, m.json);
-    else renderModText(body, m.text);
-    card.appendChild(body);
-    stack.appendChild(card);
+    const txt = el("div","mod-text");
+    if (r.cls === "json") renderJSON(txt, r.json); else renderMarked(txt, r.text);
+    card.appendChild(txt);
+    body.appendChild(card);
   });
 }
-
 function renderJSON(target, fields){
   target.appendChild(document.createTextNode("{\n"));
   fields.forEach((f, i) => {
@@ -569,22 +491,8 @@ function renderJSON(target, fields){
   target.appendChild(document.createTextNode("}"));
 }
 
-function renderLibrary(){
-  const active = activeFragments(state);
-  const grid = $("libGrid"); grid.textContent = "";
-  FRAGMENTS.forEach(fr => {
-    const on = !!active[fr.key];
-    const c = el("div", "libcard" + (on ? " on" : ""));
-    const top = el("div","lc-top");
-    top.append(el("span","lc-ico", fr.ico), el("span","lc-name", fr.fn), el("span","lc-state", on ? "in use" : "idle"));
-    c.appendChild(top);
-    c.appendChild(el("div","lc-desc", fr.desc));
-    c.appendChild(el("div","lc-uses", "prompts " + fr.uses));
-    grid.appendChild(c);
-  });
-}
-
-function render(){ renderPresets(); renderControls(); renderStack(); renderLibrary(); }
+function renderNarration(){ const p = $("narrText"); p.textContent = ""; renderMarked(p, narration()); }
+function render(){ renderNarration(); renderPalette(); renderCard(); }
 
 /* ============================================================
    CASCADE (boxes + wires)
@@ -593,7 +501,7 @@ const CASCADE = {
   intro: "Twelve builders, one per feature. The dominant runtime path is Reword → Check: a reword hands off to the Check view, which can re-align homographs or re-gender words and refresh its reverse translation. The side boxes are the builders that live outside this chain.",
   nodes: [
     { id:"reword", kind:"step", col:2, row:"1", badge:1, icon:"✍️", title:"reword", sub:"prompt #1", short:"User taps Reword — rewrites the message into the target language.",
-      body:"The flagship builder — the one the Build tab assembles. Returns {\"reword\":\"…\"} (with a leading native_form when romanization CoT applies). Pulls in the gender, group, alphabet, script-retry and CoT fragments as options demand.",
+      body:"The flagship builder — the one the Build tab assembles. Returns {\"reword\":\"…\"} (with a leading native_form when romanization CoT applies). Pulls in the gender, group, alphabet, script-retry and CoT modules as options demand.",
       parts:[{n:"{\"reword\":\"…\"}",d:"+ native_form when CoT applies"},{n:"temp 0.3",d:"0 for Romanized"}], chips:["reword(...)"] },
     { id:"check", kind:"step", col:2, row:"2", badge:2, icon:"🔍", title:"checkAnalysis", sub:"prompt #7", short:"Check view — reverse-translates the reword and flags drift.",
       body:"On opening Check, this reverse-translates the reword, flags semantic drift, and lists gender-sensitive person-nouns and any homographs. Returns translation + semanticDrift + homographs + genderWords.",
@@ -614,7 +522,7 @@ const CASCADE = {
       body:"When Send-Copy is enabled this replaces #1 entirely; they never run together. Produces the reword and a second-language copy in one call.",
       parts:[{n:"reword + copy",d:"two target languages in one call"}], chips:["rewordWithCopy(...)"] },
     { id:"syn", kind:"comp", col:1, row:"2", tag:"Aside", icon:"🔤", title:"Synonyms", sub:"prompt #5", short:"Pre-loads N synonyms for the keyboard’s synonym popover.",
-      body:"Runs independently of the cascade, on the current reword in the current alphabet. Uses the alphabet fragment’s forSynonyms variant.",
+      body:"Runs independently of the cascade, on the current reword in the current alphabet. Uses the alphabet module’s forSynonyms variant.",
       parts:[{n:"{\"synonyms\":[…]}",d:"batched in one request"}], chips:["synonymsBatch(...)"] },
     { id:"simple", kind:"comp", col:1, row:"3", tag:"Utility", icon:"🔁", title:"Simple translate", sub:"prompt #3", short:"Internal helper for reverse-translation and utility callers.",
       body:"A lightweight translator used by Check’s reverse step and a few utilities, with a leading native_form when the source is romanized non-Latin.",
@@ -682,7 +590,7 @@ function buildNode(n){
   nodeEls.set(n.id, elx); return elx;
 }
 function rectOf(e){ return { x:e.offsetLeft, y:e.offsetTop, w:e.offsetWidth, h:e.offsetHeight }; }
-function sideOf(r,s){ const cx=r.x+r.w/2, cy=r.y+r.h/2; if(s==="t")return{x:cx,y:r.y,n:[0,-1]}; if(s==="b")return{x:cx,y:r.y+r.h,n:[0,1]}; if(s==="l")return{x:r.x,y:cy,n:[-1,0]}; return{x:r.x+r.w,y:cy,n:[1,0]}; }
+function sideOf(r,x){ const cx=r.x+r.w/2, cy=r.y+r.h/2; if(x==="t")return{x:cx,y:r.y,n:[0,-1]}; if(x==="b")return{x:cx,y:r.y+r.h,n:[0,1]}; if(x==="l")return{x:r.x,y:cy,n:[-1,0]}; return{x:r.x+r.w,y:cy,n:[1,0]}; }
 function pickSides(a,b,edge){ let fs=edge.fs, ts=edge.ts; if(!fs||!ts){ const dx=(b.x+b.w/2)-(a.x+a.w/2), dy=(b.y+b.h/2)-(a.y+a.h/2); if(Math.abs(dx)>Math.abs(dy)*1.15){ fs=fs||(dx>0?"r":"l"); ts=ts||(dx>0?"l":"r"); } else { fs=fs||(dy>0?"b":"t"); ts=ts||(dy>0?"t":"b"); } } return [fs,ts]; }
 function redrawWires(){
   if(!cascadeBuilt) return;
