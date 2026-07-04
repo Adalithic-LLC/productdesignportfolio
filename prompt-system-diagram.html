@@ -111,7 +111,7 @@
   .pm-state { margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--ink-faint); white-space: nowrap; }
   .pm.on .pm-state { color: var(--accent-2); }
   .pm.req .pm-state { color: var(--accent); }
-  .pm-desc { font-size: 12px; color: var(--ink-soft); font-family: var(--mono); }
+  .pm-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.45; }
   .pm select.sel { margin-top: 10px; }
 
   select.sel {
@@ -421,7 +421,7 @@ function renderPalette(){
   const latin = !LANGS[s.lang].nonLatin;
 
   box.appendChild(paletteCard({
-    req:true, ico:"🌐", name:"Target language", desc:`reword(...) → ${LANGS[s.lang].name}`,
+    req:true, ico:"🌐", name:"Target language", desc:"The language your message is reworded into.",
     select: mkSelect(s.lang, langOptions(), v => {
       s.lang = v;
       if (!LANGS[v].nonLatin) s.on.romanize = false;
@@ -432,32 +432,32 @@ function renderPalette(){
 
   box.appendChild(paletteCard({
     ico:"🔤", name:"Romanize", on: s.on.romanize && !latin, disabled: latin,
-    desc: latin ? "Latin script — n/a" : `write in ${LANGS[s.lang].roman}`,
+    desc: latin ? "Not needed — this language already uses the Latin alphabet." : "Spell the result in Latin letters instead of the native script.",
     toggle: () => { if (latin) return; s.on.romanize = !s.on.romanize; render(); },
   }));
 
   box.appendChild(paletteCard({
-    ico:"🙋", name:"Speaker gender", on: s.on.speaker, desc:"speakerGenderFragment",
+    ico:"🙋", name:"Speaker gender", on: s.on.speaker, desc:"Your gender, so first-person wording agrees.",
     toggle: () => { s.on.speaker = !s.on.speaker; render(); },
     select: s.on.speaker ? mkSelect(s.speaker, GENDER_OPTS, v => { s.speaker = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"🫵", name:"Recipient gender", on: s.on.recipient, desc:"recipientGenderFragment",
+    ico:"🫵", name:"Recipient gender", on: s.on.recipient, desc:"The reader's gender, for second-person wording.",
     toggle: () => { s.on.recipient = !s.on.recipient; render(); },
     select: s.on.recipient ? mkSelect(s.recipient, GENDER_OPTS, v => { s.recipient = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"👥", name:"Group chat", on: s.on.group, desc:"groupChatFragment",
+    ico:"👥", name:"Group chat", on: s.on.group, desc:"Handle a plural “you” when writing to a group.",
     toggle: () => { s.on.group = !s.on.group; render(); },
     select: s.on.group ? mkSelect(s.group, GROUP_OPTS, v => { s.group = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"✉️", name:"Send a copy", on: s.on.copy, desc:"rewordWithCopy → #2",
+    ico:"✉️", name:"Send a copy", on: s.on.copy, desc:"Also produce the message in a second language.",
     toggle: () => { s.on.copy = !s.on.copy; render(); },
     select: s.on.copy ? mkSelect(s.copyLang, copyOptions(), v => { s.copyLang = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"🔁", name:"Script retry", on: s.on.retry, desc:"scriptRetryFragment",
+    ico:"🔁", name:"Script retry", on: s.on.retry, desc:"Ask again when the last result came back in the wrong script.",
     toggle: () => { s.on.retry = !s.on.retry; render(); },
   }));
 }
