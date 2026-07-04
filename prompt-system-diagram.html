@@ -227,8 +227,8 @@
   </div>
 
   <div class="tabs" id="tabs" role="tablist">
-    <button class="tab" id="tab-build"   role="tab" aria-selected="true"><span class="t-ico">🧱</span>Build a prompt</button>
-    <button class="tab" id="tab-cascade" role="tab" aria-selected="false"><span class="t-ico">🔀</span>Runtime cascade</button>
+    <button class="tab" id="tab-build"   role="tab" aria-selected="true">Build a prompt</button>
+    <button class="tab" id="tab-cascade" role="tab" aria-selected="false">Runtime cascade</button>
   </div>
 
   <!-- ============== VIEW: BUILD ============== -->
@@ -403,8 +403,8 @@ function mkSelect(value, options, onChange){
 function paletteCard(c){
   const d = el("div", "pm" + (c.on ? " on" : "") + (c.req ? " req" : "") + (c.disabled ? " disabled" : ""));
   const top = el("div","pm-top");
-  top.append(el("span","pm-ico", c.ico), el("span","pm-name", c.name),
-    el("span","pm-state", c.req ? "REQUIRED" : c.disabled ? "N/A" : c.on ? "✓ ADDED" : "＋ ADD"));
+  top.append(el("span","pm-name", c.name),
+    el("span","pm-state", c.req ? "REQUIRED" : c.disabled ? "N/A" : c.on ? "ADDED" : "ADD"));
   d.appendChild(top);
   d.appendChild(el("div","pm-desc", c.desc));
   if (c.select) d.appendChild(c.select);
@@ -421,7 +421,7 @@ function renderPalette(){
   const latin = !LANGS[s.lang].nonLatin;
 
   box.appendChild(paletteCard({
-    req:true, ico:"🌐", name:"Target language", desc:"The language your message is reworded into.",
+    req:true, name:"Target language", desc:"The language your message is reworded into.",
     select: mkSelect(s.lang, langOptions(), v => {
       s.lang = v;
       if (!LANGS[v].nonLatin) s.on.romanize = false;
@@ -431,33 +431,33 @@ function renderPalette(){
   }));
 
   box.appendChild(paletteCard({
-    ico:"🔤", name:"Romanize", on: s.on.romanize && !latin, disabled: latin,
+    name:"Romanize", on: s.on.romanize && !latin, disabled: latin,
     desc: latin ? "Not needed — this language already uses the Latin alphabet." : "Spell the result in Latin letters instead of the native script.",
     toggle: () => { if (latin) return; s.on.romanize = !s.on.romanize; render(); },
   }));
 
   box.appendChild(paletteCard({
-    ico:"🙋", name:"Speaker gender", on: s.on.speaker, desc:"Your gender, so first-person wording agrees.",
+    name:"Speaker gender", on: s.on.speaker, desc:"Your gender, so first-person wording agrees.",
     toggle: () => { s.on.speaker = !s.on.speaker; render(); },
     select: s.on.speaker ? mkSelect(s.speaker, GENDER_OPTS, v => { s.speaker = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"🫵", name:"Recipient gender", on: s.on.recipient, desc:"The reader's gender, for second-person wording.",
+    name:"Recipient gender", on: s.on.recipient, desc:"The reader's gender, for second-person wording.",
     toggle: () => { s.on.recipient = !s.on.recipient; render(); },
     select: s.on.recipient ? mkSelect(s.recipient, GENDER_OPTS, v => { s.recipient = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"👥", name:"Group chat", on: s.on.group, desc:"Handle a plural “you” when writing to a group.",
+    name:"Group chat", on: s.on.group, desc:"Handle a plural “you” when writing to a group.",
     toggle: () => { s.on.group = !s.on.group; render(); },
     select: s.on.group ? mkSelect(s.group, GROUP_OPTS, v => { s.group = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"✉️", name:"Send a copy", on: s.on.copy, desc:"Also produce the message in a second language.",
+    name:"Send a copy", on: s.on.copy, desc:"Also produce the message in a second language.",
     toggle: () => { s.on.copy = !s.on.copy; render(); },
     select: s.on.copy ? mkSelect(s.copyLang, copyOptions(), v => { s.copyLang = v; render(); }) : null,
   }));
   box.appendChild(paletteCard({
-    ico:"🔁", name:"Script retry", on: s.on.retry, desc:"Ask again when the last result came back in the wrong script.",
+    name:"Script retry", on: s.on.retry, desc:"Ask again when the last result came back in the wrong script.",
     toggle: () => { s.on.retry = !s.on.retry; render(); },
   }));
 }
@@ -500,37 +500,37 @@ function render(){ renderNarration(); renderPalette(); renderCard(); }
 const CASCADE = {
   intro: "Twelve builders, one per feature. The dominant runtime path is Reword → Check: a reword hands off to the Check view, which can re-align homographs or re-gender words and refresh its reverse translation. The side boxes are the builders that live outside this chain.",
   nodes: [
-    { id:"reword", kind:"step", col:2, row:"1", badge:1, icon:"✍️", title:"reword", sub:"prompt #1", short:"User taps Reword — rewrites the message into the target language.",
+    { id:"reword", kind:"step", col:2, row:"1", badge:1, title:"reword", sub:"prompt #1", short:"User taps Reword — rewrites the message into the target language.",
       body:"The flagship builder — the one the Build tab assembles. Returns {\"reword\":\"…\"} (with a leading native_form when romanization CoT applies). Pulls in the gender, group, alphabet, script-retry and CoT modules as options demand.",
       parts:[{n:"{\"reword\":\"…\"}",d:"+ native_form when CoT applies"},{n:"temp 0.3",d:"0 for Romanized"}], chips:["reword(...)"] },
-    { id:"check", kind:"step", col:2, row:"2", badge:2, icon:"🔍", title:"checkAnalysis", sub:"prompt #7", short:"Check view — reverse-translates the reword and flags drift.",
+    { id:"check", kind:"step", col:2, row:"2", badge:2, title:"checkAnalysis", sub:"prompt #7", short:"Check view — reverse-translates the reword and flags drift.",
       body:"On opening Check, this reverse-translates the reword, flags semantic drift, and lists gender-sensitive person-nouns and any homographs. Returns translation + semanticDrift + homographs + genderWords.",
       parts:[{n:"reverse translation",d:"back into the source language"},{n:"homographs · genderWords",d:"candidates for the next step"}], chips:["checkAnalysis(...)"] },
-    { id:"align", kind:"step", col:2, row:"3", badge:3, icon:"🧩", title:"alignHomographMeanings", sub:"prompt #10", short:"Picks which sense each detected homograph used.",
+    { id:"align", kind:"step", col:2, row:"3", badge:3, title:"alignHomographMeanings", sub:"prompt #10", short:"Picks which sense each detected homograph used.",
       body:"For every detected homograph it picks the sense the model actually used and emits a target-language word per sense, plus classifications that let the typo-filter drop mis-detections.",
       parts:[{n:"selections",d:"chosen sense per word"},{n:"classifications",d:"feeds the typo gate"}], chips:["alignHomographMeanings(...)"] },
-    { id:"homoreword", kind:"step", col:2, row:"4", badge:4, icon:"🔀", title:"rewordWithHomographContext", sub:"prompt #11", short:"Re-rewrites after the user picks an alternative meaning.",
+    { id:"homoreword", kind:"step", col:2, row:"4", badge:4, title:"rewordWithHomographContext", sub:"prompt #11", short:"Re-rewrites after the user picks an alternative meaning.",
       body:"When the user chooses a different homograph sense in Check, this re-rewrites the message with that context and reports whether the change reverted an earlier choice.",
       parts:[{n:"reword + reverted",d:"new text, revert flag"}], chips:["rewordWithHomographContext(...)"] },
-    { id:"ctx", kind:"step", col:2, row:"5", badge:5, icon:"🌐", title:"translateWithContext", sub:"prompt #8", short:"Refreshes the reverse translation after any Check edit.",
+    { id:"ctx", kind:"step", col:2, row:"5", badge:5, title:"translateWithContext", sub:"prompt #8", short:"Refreshes the reverse translation after any Check edit.",
       body:"After a homograph pick or a word-gender change, this re-runs the reverse translation so the side-by-side comparison stays in sync.",
       parts:[{n:"{\"tr\":\"…\"}",d:"refreshed reverse translation"}], chips:["translateWithContext(...)"] },
-    { id:"wordgender", kind:"step", col:3, row:"3", badge:6, icon:"⚧", title:"Word genders", sub:"prompt #9", short:"Re-rewrites when the user changes individual word genders.",
+    { id:"wordgender", kind:"step", col:3, row:"3", badge:6, title:"Word genders", sub:"prompt #9", short:"Re-rewrites when the user changes individual word genders.",
       body:"A branch off Check: adjusting a person-noun’s gender re-rewrites the translation for that choice, then hands back to translateWithContext to refresh the reverse.",
       parts:[{n:"{\"reword\":\"…\"}",d:"+ optional native_form"}], chips:["rewordWithWordGenders(...)"] },
-    { id:"copy", kind:"comp", col:1, row:"1", tag:"Copy", icon:"✉️", title:"Reword + Copy", sub:"prompt #2", short:"Reword when Send-Copy is on — two languages at once.",
+    { id:"copy", kind:"comp", col:1, row:"1", tag:"Copy", title:"Reword + Copy", sub:"prompt #2", short:"Reword when Send-Copy is on — two languages at once.",
       body:"When Send-Copy is enabled this replaces #1 entirely; they never run together. Produces the reword and a second-language copy in one call.",
       parts:[{n:"reword + copy",d:"two target languages in one call"}], chips:["rewordWithCopy(...)"] },
-    { id:"syn", kind:"comp", col:1, row:"2", tag:"Aside", icon:"🔤", title:"Synonyms", sub:"prompt #5", short:"Pre-loads N synonyms for the keyboard’s synonym popover.",
+    { id:"syn", kind:"comp", col:1, row:"2", tag:"Aside", title:"Synonyms", sub:"prompt #5", short:"Pre-loads N synonyms for the keyboard’s synonym popover.",
       body:"Runs independently of the cascade, on the current reword in the current alphabet. Uses the alphabet module’s forSynonyms variant.",
       parts:[{n:"{\"synonyms\":[…]}",d:"batched in one request"}], chips:["synonymsBatch(...)"] },
-    { id:"simple", kind:"comp", col:1, row:"3", tag:"Utility", icon:"🔁", title:"Simple translate", sub:"prompt #3", short:"Internal helper for reverse-translation and utility callers.",
+    { id:"simple", kind:"comp", col:1, row:"3", tag:"Utility", title:"Simple translate", sub:"prompt #3", short:"Internal helper for reverse-translation and utility callers.",
       body:"A lightweight translator used by Check’s reverse step and a few utilities, with a leading native_form when the source is romanized non-Latin.",
       parts:[{n:"{\"tr\":\"…\"}",d:"plain translation helper"}], chips:["simpleTranslate(...)"] },
-    { id:"paste", kind:"comp", col:1, row:"4", tag:"Own flow", icon:"📋", title:"Paste view", sub:"prompt #4", short:"Paste-view “Sentences” tab — translation + breakdown.",
+    { id:"paste", kind:"comp", col:1, row:"4", tag:"Own flow", title:"Paste view", sub:"prompt #4", short:"Paste-view “Sentences” tab — translation + breakdown.",
       body:"Its own flow, unrelated to Reword. Translates received text and gives a sentence-by-sentence breakdown.",
       parts:[{n:"tr + bd[]",d:"translation + per-sentence breakdown"}], chips:["pasteviewTranslate(...)"] },
-    { id:"defs", kind:"comp", col:3, row:"5", tag:"Admin", icon:"🗂️", title:"Homograph defs", sub:"prompt #12", short:"Admin-only seeding of new homograph labels.",
+    { id:"defs", kind:"comp", col:3, row:"5", tag:"Admin", title:"Homograph defs", sub:"prompt #12", short:"Admin-only seeding of new homograph labels.",
       body:"Generates the labels for a new homograph word being added to the Supabase library. Admin-only, off the user path.",
       parts:[{n:"{\"definitions\":[…]}",d:"labels for the library"}], chips:["homographDefinitions(...)"] },
   ],
@@ -577,7 +577,7 @@ function buildNode(n){
   const parts = (n.parts||[]).map(p => `<div class="part"><span class="p-name">${p.n}</span><span class="p-desc">${p.d}</span></div>`).join("");
   const chips = (n.chips||[]).map((c,i) => `<span class="chip ${i===0?"k":""}">${c}</span>`).join("");
   elx.innerHTML = `
-    <div class="n-head">${lead}<span class="n-ico">${n.icon}</span>
+    <div class="n-head">${lead}
       <span class="n-tt"><p class="n-title">${n.title}</p><div class="n-sub">${n.sub}</div></span>${chevSvg}</div>
     <p class="n-short">${n.short}</p>
     <div class="n-more"><div class="n-more-inner"><p class="n-body">${n.body}</p>
