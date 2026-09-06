@@ -285,7 +285,7 @@
       <div class="promptcard">
         <div class="pc-head">
           <span class="pc-title">Assembled System Prompt: Sent to LLM</span>
-          <span class="pc-meta" id="pcMeta"></span>
+          <span class="pc-meta">Prompt content simplified</span>
         </div>
         <div class="pc-body" id="pcBody"></div>
       </div>
@@ -502,8 +502,6 @@ function renderPalette(){
 
 function renderCard(){
   const rows = cardRows();
-  const modCount = rows.filter(r => r.cls === "frag").length;
-  $("pcMeta").textContent = `${rows.length} modules · ${modCount} optional`;
   const body = $("pcBody"); body.textContent = "";
   rows.forEach((r, i) => {
     const card = el("div", "mod " + r.cls);
