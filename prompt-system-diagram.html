@@ -406,12 +406,12 @@ function cardRows(){
 function jsonFields(){
   const cot = cotActive(), ccot = copyCoT(), copy = s.on.copy;
   const f = [];
-  if (cot && copy) f.push(["native_form_reword", "native script, first"]);
-  else if (cot)    f.push(["native_form", "native script, emitted first"]);
-  f.push(["reword", "the reworded message"]);
+  if (cot && copy) f.push("native_form_reword");
+  else if (cot)    f.push("native_form");
+  f.push("reword");
   if (copy) {
-    if (ccot) f.push(["native_form_copy", "native script for the copy"]);
-    f.push(["copy", `${LANGS[s.copyLang].name} translation`]);
+    if (ccot) f.push("native_form_copy");
+    f.push("copy");
   }
   return f;
 }
@@ -520,11 +520,10 @@ function renderCard(){
 }
 function renderJSON(target, fields){
   target.appendChild(document.createTextNode("{\n"));
-  fields.forEach((f, i) => {
+  fields.forEach((name, i) => {
     target.appendChild(document.createTextNode("  "));
-    target.appendChild(el("span","fld", `"${f[0]}"`));
-    target.appendChild(document.createTextNode(`: "…"${i < fields.length-1 ? "," : ""}   `));
-    target.appendChild(el("span","cmt", `// ${f[1]}`));
+    target.appendChild(el("span","fld", `"${name}"`));
+    target.appendChild(document.createTextNode(`: "…"${i < fields.length-1 ? "," : ""}`));
     target.appendChild(document.createTextNode("\n"));
   });
   target.appendChild(document.createTextNode("}"));
