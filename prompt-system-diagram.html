@@ -6,12 +6,13 @@
 <title>Arcatext — Build a modular prompt</title>
 <style>
   /* ============================================================
-     Arcatext — modular prompt builder + runtime cascade.
+     Arcatext — modular prompt builder.
      Single file, zero dependencies. Same visual language as the
      "How Arcatext works" system diagram.
-     - Tab 1: Build a prompt — click Prompt Modules to assemble a
-       system prompt; a plain-English sentence narrates the build.
-     - Tab 2: Runtime cascade — where the prompt goes (boxes + wires).
+     One view: click Prompt Modules at left to assemble the system
+     prompt at right; a plain-English sentence narrates the build.
+     The Runtime cascade view (boxes + wires) is commented out below
+     rather than deleted, along with the tab bar that switched to it.
      Light + dark themes (toggle, defaults to system preference).
      ============================================================ */
 
@@ -152,8 +153,6 @@
   /* Assembled prompt — a generated-output / code panel */
   .promptcard { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); overflow: hidden; }
   .pc-head { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
-  .pc-dots { display: inline-flex; gap: 6px; margin-right: 2px; }
-  .pc-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
   .pc-title { font-size: 12.5px; font-weight: 650; }
   .pc-meta { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-left: auto; }
   .pc-body { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--bg); border-radius: 0 0 var(--radius) var(--radius); }
@@ -283,7 +282,6 @@
 
       <div class="promptcard">
         <div class="pc-head">
-          <span class="pc-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="pc-title">Assembled System Prompt: Sent to LLM</span>
           <span class="pc-meta" id="pcMeta"></span>
         </div>
