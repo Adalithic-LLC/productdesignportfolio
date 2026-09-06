@@ -20,6 +20,7 @@ import { Editable } from '@/content/Editable';
 import { EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
+import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { TypingFlowDiagram } from '@/components/TypingFlowDiagram';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -572,14 +573,20 @@ export default function Arcatext() {
             </ItemGroup>
           </div>
 
+          {/* The modular prompt system */}
+          <div className="mt-20 reveal">
+            <h3 className="text-xl sm:text-2xl font-semibold mb-5">The modular prompt system</h3>
+            <PromptArchitecture />
+          </div>
+
           {/* Competitive product requirement */}
           <div className="mt-20 reveal">
             <Editable as="h3" path="arcatext.execution.competitiveTitle" className="text-xl sm:text-2xl font-semibold mb-5" />
             <Prose>
               <Paragraphs base="arcatext.execution.competitive" items={arc.execution.competitive} />
             </Prose>
-            {/* Diagram under the "The need for better typing UX" subsection.
-                It breaks out of the centered content column to span the full
+            {/* Typing-UX diagram for this subsection. It breaks out of the
+                centered content column to span the full
                 page width (clearing the left section-nav rail at >=1600px),
                 without affecting any other content's width. */}
             <div className="mx-[calc(50%-50vw)] px-4 sm:px-6 lg:px-8 min-[1600px]:pl-56 min-[1600px]:pr-12">

@@ -815,15 +815,10 @@
           "response": "Gender controls, script options, clarification tools, and alternate phrasing."
         }
       ],
-      "competitiveTitle": "Competitive product requirement",
+      "competitiveTitle": "Keeping up with Google and Apple",
       "competitive": [
         "After testing Arcatext with students and teachers, I learned that the translation feature set would not drive adoption if the keyboard was significantly less fluid and accurate than default keyboards from Apple & Google.",
         "To earn a place in a daily-use interface, Arcatext needed to preserve familiar typing patterns and outperform the basic translation workflows available through Apple Translate and Gboard.",
-        {
-          "type": "heading",
-          "style": "h4",
-          "text": "The need for better typing UX"
-        },
         {
           "type": "paragraph",
           "text": "In response to this feedback, I vastly improved the accuracy and forgiveness of the typing UX, added a personalization layer that learns each users' typing profile, and added a glide typing setting, which allows users to swipe a finger across the keys to write instead of tapping each key.\n\nTo capture and act on typing behaviors, I also built an admin tool for tuning the typing and autocorrect performance. This tool aggregates user data, creates scores, and recommends parameters updates.\n\nLearn more about the Arcatext Typing UX Admin Tool"
