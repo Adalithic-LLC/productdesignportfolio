@@ -56,7 +56,11 @@
     transition: border-color .18s, color .18s;
   }
   .theme-toggle:hover { border-color: var(--accent); color: var(--ink); }
-  .theme-toggle svg { width: 15px; height: 15px; }
+  /* The icon is an inline SVG in a span, so it would otherwise sit on the
+     text baseline and ride low against the label. Making the span a flex box
+     and the SVG a block centers the two against each other. */
+  .theme-toggle #themeIcon { display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .theme-toggle svg { width: 15px; height: 15px; display: block; }
 
   /* ---------- Tabs ---------- */
   .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
@@ -264,7 +268,6 @@
   <section class="view active" id="view-build">
     <div class="sec-h">
       <h3>The LLM Prompt in Plain English</h3>
-      <span class="sub">Reads your current build back as a sentence.</span>
     </div>
     <div class="narration"><span class="q" aria-hidden="true">“</span><p id="narrText"></p></div>
 
