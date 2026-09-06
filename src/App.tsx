@@ -20,6 +20,9 @@ import { isAdminUnlocked, unlockAdminSession, ADMIN_CHANGE_EVENT } from '@/lib/a
 
 gsap.registerPlugin(ScrollTrigger);
 
+/** Routes whose pages carry a section nav, which hosts its own Admin entry. */
+const PROJECT_ROUTES = ['arcatext', 'conversant', 'usaa', 'memberhome'];
+
 /**
  * Resolves the current route and whether the URL carries an admin flag.
  * Admin mode is enabled by `#/admin` (home), an `?admin` flag on any route
@@ -105,8 +108,9 @@ function App() {
             </>
           )}
 
-          {/* Admin entry — shown at the bottom of every page, hidden once in admin mode. */}
-          <AdminToggle isAdmin={isAdmin} />
+          {/* Admin entry for pages with no section nav to host one. Project
+              pages put it at the foot of their section navigation instead. */}
+          {!PROJECT_ROUTES.includes(route) && <AdminToggle isAdmin={isAdmin} />}
 
           <div
             className="fixed inset-0 pointer-events-none -z-10"

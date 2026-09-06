@@ -4,9 +4,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useContent } from '@/content/ContentContext';
+import { AdminNavEntry } from '@/components/AdminToggle';
 
 export interface TocItem {
   /** The id of the <section> this entry links to (e.g. "sec-01"). */
@@ -154,6 +156,11 @@ export function SectionToc({ items: rawItems, labels: rawLabels, routeHash, orde
           );
         })}
       </ol>
+
+      {/* Admin entry, under the last section. */}
+      <div className="mt-4 border-t border-border/40 pt-3 pl-[1.9rem]">
+        <AdminNavEntry />
+      </div>
     </nav>
   );
 }
@@ -212,6 +219,12 @@ export function SectionNavDropdown({ items: rawItems, labels: rawLabels, routeHa
               </DropdownMenuItem>
             );
           })}
+
+          {/* Admin entry, under the last section. */}
+          <DropdownMenuSeparator />
+          <div className="px-2 py-1.5">
+            <AdminNavEntry className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground" />
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -11,24 +11,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { tryUnlockAdmin } from '@/lib/adminAuth';
+import { useContent } from '@/content/ContentContext';
 
 /**
- * Subtle "Admin" button shown at the bottom of every page. Opens a password
- * prompt; a correct password enters admin (inline editing) mode, which then
- * persists across navigation. Hidden once admin is active — the AdminBar
- * handles editing and exiting from there.
+ * The password prompt behind every "Admin" entry point. A correct password
+ * enters admin (inline editing) mode, which then persists across navigation.
  */
-export function AdminToggle({ isAdmin }: { isAdmin: boolean }) {
-  const [open, setOpen] = useState(false);
+function AdminDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
-
-  if (isAdmin) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (tryUnlockAdmin(password)) {
-      setOpen(false);
+      onOpenChange(false);
       setPassword('');
     } else {
       setError(true);
@@ -36,20 +32,7 @@ export function AdminToggle({ isAdmin }: { isAdmin: boolean }) {
   };
 
   return (
-    <div className="relative border-t border-border/20 py-6 text-center">
-      <button
-        type="button"
-        onClick={() => {
-          setPassword('');
-          setError(false);
-          setOpen(true);
-        }}
-        className="text-xs font-medium text-muted-foreground/50 hover:text-foreground transition-colors"
-      >
-        Admin
-      </button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 sm:mx-0">
@@ -88,6 +71,55 @@ export function AdminToggle({ isAdmin }: { isAdmin: boolean }) {
           </form>
         </DialogContent>
       </Dialog>
+  );
+}
+
+/**
+ * Subtle "Admin" button at the foot of a page. Used where there is no section
+ * navigation to host the entry — the home page. Hidden once admin is active,
+ * since the AdminBar handles editing and exiting from there.
+ */
+export function AdminToggle({ isAdmin }: { isAdmin: boolean }) {
+  const [open, setOpen] = useState(false);
+  if (isAdmin) return null;
+
+  return (
+    <div className="relative border-t border-border/20 py-6 text-center">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-xs font-medium text-muted-foreground/50 hover:text-foreground transition-colors"
+      >
+        Admin
+      </button>
+      <AdminDialog open={open} onOpenChange={setOpen} />
     </div>
+  );
+}
+
+/**
+ * The same entry, styled to sit at the foot of the section navigation on
+ * project pages — the rail at >=1600px and the dropdown below it. Reads admin
+ * state from content context so callers do not have to thread it through.
+ */
+export function AdminNavEntry({ className }: { className?: string }) {
+  const { isAdmin } = useContent();
+  const [open, setOpen] = useState(false);
+  if (isAdmin) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={
+          className ??
+          'text-xs font-medium text-muted-foreground/50 transition-colors hover:text-foreground'
+        }
+      >
+        Admin
+      </button>
+      <AdminDialog open={open} onOpenChange={setOpen} />
+    </>
   );
 }
