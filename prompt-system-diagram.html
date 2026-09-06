@@ -175,7 +175,6 @@
   .mod.frag .mod-kind { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 40%, transparent); }
   .mod.json .mod-kind { color: var(--ink-faint); border-color: var(--line); }
   .mod-title { font-size: 13px; font-weight: 650; }
-  .mod-fn { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
   .mod-text { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
   .mod-text .cmt { color: var(--ink-faint); }
   .mod-text .fld { color: var(--accent); }
@@ -385,21 +384,21 @@ function cardRows(){
 
   let baseText = `Reword the message into ${L.name}.`;
   if (L.nonLatin && !romActive()) baseText += `  Use ${L.script} only.`;
-  rows.push({ cls:"core", kind:"required", title:"Base directive", fn:"reword(...)", text:baseText });
+  rows.push({ cls:"core", kind:"required", title:"Base directive", text:baseText });
 
   if (romActive()){
     let t = `Use ${L.roman} only — never ${L.script}.`;
     if (cotActive()) t += `\nFirst emit «fld»native_form«/fld» in ${L.script}, THEN transliterate.`;
-    rows.push({ cls:"frag", kind:"module", title:"Romanize", fn:"alphabetFragment + CoT", text:t });
+    rows.push({ cls:"frag", kind:"module", title:"Romanize", text:t });
   }
   if (s.on.speaker)   rows.push({ cls:"frag", kind:"module", title:"Speaker gender",   text:`Speaker = ${s.speaker}.  «cmt»// 1st-person agreement«/cmt»` });
   if (s.on.recipient) rows.push({ cls:"frag", kind:"module", title:"Recipient gender", text:`Recipient = ${s.recipient}.  «cmt»// 2nd-person + gendered nouns«/cmt»` });
   if (s.on.group)     rows.push({ cls:"frag", kind:"module", title:"Group chat",       text:`Group = ${GROUP_LABEL[s.group]}.  «cmt»// resolves plural “you”«/cmt»` });
   if (s.on.copy)      rows.push({ cls:"frag", kind:"module", title:"Send a copy",      text:`Also produce a copy in ${LANGS[s.copyLang].name}.` });
 
-  rows.push({ cls:"core", kind:"required", title:"Universal constraints", fn:"shared clauses",
+  rows.push({ cls:"core", kind:"required", title:"Universal constraints",
     text:`Single target · no false cognates · no softening (nightmares ≠ dreams) · same sentence count · native vocabulary.` });
-  rows.push({ cls:"json", kind:"output", title:"JSON Format", fn:"parseContent()",
+  rows.push({ cls:"json", kind:"output", title:"JSON Format",
     desc:"Return the result as JSON with fixed field names, so the app parses it consistently and reliably.",
     json: jsonFields() });
   return rows;
@@ -511,7 +510,6 @@ function renderCard(){
     card.style.animationDelay = (i * 20) + "ms";
     const top = el("div","mod-top");
     top.append(el("span","mod-kind", r.kind), el("span","mod-title", r.title));
-    if (r.fn) top.appendChild(el("span","mod-fn", r.fn));
     card.appendChild(top);
     if (r.desc) card.appendChild(el("p","mod-note", r.desc));
     const txt = el("div","mod-text");
