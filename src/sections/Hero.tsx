@@ -101,7 +101,7 @@ export default function Hero() {
             order puts the copy first so it still leads when the grid collapses
             to one column; explicit placement pulls the tiles alongside it at
             desktop widths. */}
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)_minmax(0,1fr)] lg:gap-12">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.68fr)_minmax(0,1.43fr)] lg:gap-12">
           <div className="mx-auto max-w-2xl text-center lg:col-start-2 lg:row-start-1">
             <h1
               ref={titleRef}
@@ -138,7 +138,7 @@ export default function Hero() {
           <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-1 lg:row-start-1 lg:mx-0 lg:w-4/5">
             <ArcatextCardStack onSelect={scrollToProjects} />
           </div>
-          <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-4/5">
+          <div className="mx-auto w-11/12 sm:w-3/4 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-full">
             <D2CTile onSelect={scrollToProjects} />
           </div>
         </div>

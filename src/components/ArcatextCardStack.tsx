@@ -10,6 +10,12 @@
  * Every card below the top one sits at the identical back transform, so the
  * card travelling to the back lands exactly behind the new second card and is
  * occluded rather than having to fade out.
+ *
+ * Every card's screen stays painted; it is the grey plate on top that comes and
+ * goes. Hiding the screens with opacity instead let Chromium drop their decoded
+ * data while they sat at zero, so a promoted card painted blank white for a
+ * frame before its image came back -- a visible flash on every turn of the
+ * deck. The plate is instant on the way off and fades on the way back.
  */
 import { useEffect, useRef, useState } from 'react';
 
@@ -80,13 +86,13 @@ export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
               alt=""
               width={700}
               height={894}
-              decoding="async"
-              className={`h-full w-full object-contain transition-opacity duration-500 ${lit ? 'opacity-100' : 'opacity-0'}`}
+              decoding="sync"
+              className="h-full w-full object-contain"
             />
             {/* The plain grey card the deck shows behind the live screen. */}
             <span
               aria-hidden
-              className={`absolute inset-0 bg-neutral-300 transition-opacity duration-500 ${lit ? 'opacity-0' : 'opacity-100'}`}
+              className={`absolute inset-0 bg-neutral-300 transition-opacity ${lit ? 'opacity-0 duration-0' : 'opacity-100 duration-200'}`}
             />
           </button>
         );
