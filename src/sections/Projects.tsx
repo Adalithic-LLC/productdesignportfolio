@@ -58,14 +58,13 @@ export default function Projects() {
       );
 
       cards.forEach((card, i) => {
-        // Entrance: cards stagger/flip in on scroll (animates rotateY + opacity).
-        const direction = i % 2 === 0 ? -90 : 90;
+        // Entrance: cards fade in on scroll. Opacity only -- the float below
+        // owns the transform, so the entrance stays off it entirely.
         gsap.fromTo(
           card,
-          { opacity: 0, rotateY: direction },
+          { opacity: 0 },
           {
             opacity: 1,
-            rotateY: 0,
             duration: 0.7,
             ease: 'expo.out',
             scrollTrigger: {
@@ -76,9 +75,8 @@ export default function Projects() {
           }
         );
 
-        // Persistent floating: a gentle, looping bob on the Y axis. Animates a
-        // different transform channel (y) than the entrance (rotateY), so the
-        // two compose without conflict. Each loop starts and ends at y:0, and
+        // Persistent floating: a gentle, looping bob on the Y axis. Each loop
+        // starts and ends at y:0, and
         // every `.to` reads the current value, so resuming after a hover is
         // seamless. Cards are phase-offset so they don't bob in unison.
         const amp = 9; // px — subtle but perceptible
@@ -141,22 +139,17 @@ export default function Projects() {
         <div
           ref={cardsRef}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-          style={{ perspective: '1000px' }}
         >
           {projects.map((project, index) => (
             <div
               key={project.id}
               className="project-card group relative"
-              style={{ 
-                transformStyle: 'preserve-3d',
-                transform: `rotate(${index % 2 === 0 ? '-1' : '1'}deg)`,
-              }}
+              style={{ transform: `rotate(${index % 2 === 0 ? '-1' : '1'}deg)` }}
             >
               <a
                 href={project.link}
                 onClick={(e) => handleProjectClick(e, project.link)}
                 className="block relative overflow-hidden rounded-2xl lg:rounded-3xl bg-card border border-border/50 transition-all duration-500 ease-expo-out hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2"
-                style={{ transformStyle: 'preserve-3d' }}
               >
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -221,16 +214,6 @@ export default function Projects() {
           ))}
         </div>
 
-        {/* View All Button */}
-        <div className="text-center mt-12">
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 text-sm font-medium"
-          >
-            <Editable as="span" path="projects.viewAll" />
-            <ArrowUpRight className="w-4 h-4" />
-          </a>
-        </div>
       </div>
 
       <PasswordModal

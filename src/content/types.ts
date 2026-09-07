@@ -74,7 +74,6 @@ export interface SiteContent {
   projects: {
     heading: string;
     viewProject: string;
-    viewAll: string;
     items: ProjectItem[];
   };
   caseStudies: {
