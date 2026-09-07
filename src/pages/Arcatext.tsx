@@ -22,6 +22,7 @@ import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { TypingFlowDiagram } from '@/components/TypingFlowDiagram';
+import { ArcatextRoadmap } from '@/components/ArcatextRoadmap';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -370,6 +371,11 @@ export default function Arcatext() {
             <Prose>
               <Paragraphs base="arcatext.strategy.ai" items={arc.strategy.ai} />
             </Prose>
+          </div>
+
+          {/* Product roadmap — closes the strategy with where the product goes next. */}
+          <div className="mt-16 reveal">
+            <ArcatextRoadmap />
           </div>
         </SectionBody>
       </section>
