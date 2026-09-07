@@ -12,6 +12,9 @@
  * and two columns respectively — wide enough to read — with the five remaining
  * phone screens filling a row beneath them. Each tile carries a small rotation
  * and vertical nudge so the set reads as a pinned-up collection, not a table.
+ *
+ * The screens float: no card border, fill or shadow behind them, since each
+ * capture already carries the app's own panel edges.
  */
 
 const BASE = import.meta.env.BASE_URL;
@@ -74,7 +77,7 @@ function TileButton({
       onClick={onSelect}
       aria-label={`${tile.alt} — see the projects`}
       style={{ rotate: `${tile.tilt}deg`, translate: tile.drop ? `0 ${tile.drop}px` : undefined }}
-      className={`group block w-full overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:rotate-0 hover:border-primary/40 hover:shadow-lg focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl ${className}`}
+      className={`group block w-full overflow-hidden rounded-xl transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl ${className}`}
     >
       <img
         src={`${BASE}hero-tiles/${tile.src}.jpg`}
