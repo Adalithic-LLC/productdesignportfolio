@@ -9,20 +9,75 @@
  * at the same width even though the slots differ.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { gsap } from 'gsap';
 
 import { CardDeck, type DeckCard } from '@/components/CardDeck';
 
 const BASE = import.meta.env.BASE_URL;
 
 /**
+ * A gentle looping bob, the same one the Work cards carry.
+ *
+ * It drives a wrapper rather than the tile itself. The tiles transition their
+ * own transform on hover, and a per-frame transform written through a 300ms
+ * transition would lag the animation instead of playing it. Hovering settles
+ * the bob to rest rather than freezing it mid-air, and it sits out entirely
+ * for anyone who has asked for reduced motion.
+ */
+function Floating({ phase = 0, children }: { phase?: number; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const amp = 9;   // px -- subtle but perceptible
+    const dur = 1.05;
+    let bob: gsap.core.Timeline | null = null;
+    let settle: gsap.core.Tween | null = null;
+
+    const start = () => {
+      bob = gsap
+        .timeline({ repeat: -1, defaults: { ease: 'sine.inOut' } })
+        .to(el, { y: amp, duration: dur })
+        .to(el, { y: -amp, duration: dur * 2 })
+        .to(el, { y: 0, duration: dur });
+    };
+    start();
+    bob!.progress(phase);   // only on the first run, so a resume is seamless
+
+    const onEnter = () => {
+      bob?.kill();
+      settle = gsap.to(el, { y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+    };
+    const onLeave = () => {
+      settle?.kill();
+      start();
+    };
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+      bob?.kill();
+      settle?.kill();
+      gsap.set(el, { clearProps: 'transform' });
+    };
+  }, [phase]);
+
+  return <div ref={ref}>{children}</div>;
+}
+
+/**
  * The products rail D2C generated out of the Conversant codebase, as a deck of
  * its own -- one card for now, with room for the rest of the generated screens.
  *
- * The rail is far taller than it is wide, so it is cropped to the deck's card
- * ratio through the first policy and cut in the gap between rows, rather than
- * letterboxed down to a sliver. Its corner radius is in its own alpha, and the
- * deck clips to the same radius so the grey plate follows the card's shape.
+ * The card takes the rail's own proportions -- roughly 1:2.3 -- so the whole
+ * panel shows rather than the top of it, which means the slot has to be narrow
+ * for the card not to run away in height. Its corner radius is in its own
+ * alpha, and the deck clips to the same radius so the grey plate follows the
+ * card's shape.
  * It turns half a beat out of phase with the Arcatext deck, so the two never
  * flick together.
  */
@@ -34,9 +89,9 @@ export function ProductsCardStack({ onSelect }: { onSelect: () => void }) {
   return (
     <CardDeck
       cards={PRODUCTS}
-      width={1434}
-      height={1529}
-      cardClass="rounded-[1.5%] shadow-[0_14px_34px_-16px_rgba(0,0,0,0.45)]"
+      width={1484}
+      height={3416}
+      cardClass="rounded-[5px] shadow-[0_14px_34px_-16px_rgba(0,0,0,0.45)]"
       phaseMs={1500}
       onSelect={onSelect}
     />
@@ -136,12 +191,16 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
     <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12">
       {/* Exactly half the width, so the gap comes out of the other half. */}
       <div className="w-full shrink-0 lg:w-1/2">
-        <AdminToolTile onSelect={onSelect} />
+        <Floating>
+          <AdminToolTile onSelect={onSelect} />
+        </Floating>
       </div>
       {/* Measured against the whole row, not the space left over, so it stands
           about as tall as the tool beside it rather than taking up the slack. */}
       <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[30%]">
-        <D2CTile onSelect={onSelect} />
+        <Floating phase={0.5}>
+          <D2CTile onSelect={onSelect} />
+        </Floating>
       </div>
     </div>
   );
