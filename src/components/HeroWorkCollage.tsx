@@ -1,9 +1,11 @@
 /**
  * A loose collage of real product UI, sitting beside the hero intro.
  *
- * Every tile is a shipped screen — Arcatext's keyboard and Check/Paste views,
- * its typing-performance admin tool, and the D2C Figma plugin. Tiles are laid
- * out in CSS columns rather than a strict grid, and each carries a small
+ * Every tile is a shipped screen: the Arcatext feature demos as they run on
+ * adalithic.com (captured from the live components, not the older App Store
+ * compositions), its typing-performance admin tool, and the D2C Figma plugin.
+ * Tiles are laid out in CSS columns rather than a strict grid, and each has a
+ * small
  * rotation, so the set reads as a pinned-up collection rather than a table.
  * Clicking any of them jumps to the projects section.
  */
@@ -22,18 +24,15 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { src: 'reword', alt: 'Arcatext — rewording a message in place', w: 300, h: 468, tilt: -1.4 },
-  { src: 'typing-admin', alt: 'Arcatext typing-performance admin tool', w: 560, h: 359, tilt: 1.1 },
-  { src: 'reword-options', alt: 'Arcatext — recipient gender and alphabet options', w: 300, h: 468, tilt: 1.6 },
-  { src: 'keyboard', alt: 'Arcatext — the keyboard inside any messaging app', w: 300, h: 468, tilt: -0.9 },
-  { src: 'figma-plugin', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 560, h: 280, tilt: -1.5 },
-  { src: 'homographs', alt: 'Arcatext — homograph clarification in the Check view', w: 300, h: 468, tilt: 1.2 },
-  { src: 'check', alt: 'Arcatext — checking a translation before sending', w: 300, h: 468, tilt: -1.7 },
-  { src: 'synonyms', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 300, h: 468, tilt: 1.4 },
-  { src: 'nav', alt: 'Arcatext — setup and navigation', w: 420, h: 236, tilt: -1.1 },
-  { src: 'paste-view', alt: 'Arcatext — translating a received message', w: 300, h: 468, tilt: 1.5 },
-  { src: 'reverse-translation', alt: 'Arcatext — reverse translation for verification', w: 300, h: 468, tilt: -1.3 },
-  { src: 'send-copy', alt: 'Arcatext — sending a copy in a second language', w: 300, h: 468, tilt: 0.9 },
+  { src: 'reword', alt: 'Arcatext — rewording a message from the keyboard', w: 420, h: 488, tilt: -1.4 },
+  { src: 'typing-admin', alt: 'Arcatext typing-performance admin tool', w: 620, h: 397, tilt: 1.1 },
+  { src: 'homographs', alt: 'Arcatext — disambiguating a homograph before sending', w: 420, h: 544, tilt: 1.6 },
+  { src: 'paste-view', alt: 'Arcatext — translating a received message in place', w: 420, h: 559, tilt: -0.9 },
+  { src: 'figma-plugin', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 620, h: 310, tilt: -1.5 },
+  { src: 'reverse-translation', alt: 'Arcatext — reverse translation to confirm intent', w: 420, h: 544, tilt: 1.2 },
+  { src: 'reword-options', alt: 'Arcatext — recipient gender and script options', w: 420, h: 544, tilt: -1.7 },
+  { src: 'synonyms', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 420, h: 559, tilt: 1.4 },
+  { src: 'send-copy', alt: 'Arcatext — sending a copy in a second language', w: 420, h: 545, tilt: -1.1 },
 ];
 
 export function HeroWorkCollage({ onSelect }: { onSelect: () => void }) {
