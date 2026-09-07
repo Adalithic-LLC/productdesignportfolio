@@ -1,0 +1,378 @@
+<!-- Source for public/conversant-ui.{png,webp}: a clean redraw of the
+     Conversant member-servicing screen, rebuilt from a photographed spec
+     screenshot so the asset is vector-crisp rather than a picture of a
+     monitor. Sample member data only -- the same fictitious record the
+     original spec used.
+
+     To regenerate, render this file at 1680x920 with a device scale factor
+     of 2 and save the shot as public/conversant-ui.png. -->
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1c1c1c;
+    --ink-soft: #3a3a3a;
+    --label: #6e6e6e;
+    --link: #1155cc;
+    --rule: #d8d8d8;
+    --rule-soft: #e7e7e7;
+    --rail: #f1f1f1;
+    --chrome: #e4e4e4;
+  }
+  html, body { width: 1680px; height: 920px; }
+  body {
+    font: 400 12px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { width: 1680px; height: 920px; display: flex; flex-direction: column; background: #fff; }
+
+  /* ---- window chrome ---------------------------------------------------- */
+  .titlebar {
+    height: 26px; display: flex; align-items: center; gap: 7px;
+    padding: 0 10px; background: #fff; font-size: 12px; color: var(--ink-soft);
+  }
+  .tabbar {
+    height: 34px; display: flex; align-items: flex-end; padding: 0 8px 0 10px;
+    background: #fff; border-bottom: 2px solid #2f5c9e;
+  }
+  .tab {
+    height: 27px; min-width: 210px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 9px 0 12px; font-size: 12px;
+    border: 1px solid var(--rule); border-bottom: none;
+    border-radius: 3px 3px 0 0; background: #f6f6f6; color: var(--ink-soft);
+    margin-right: 4px;
+  }
+  .tab.on { background: #fff; color: var(--ink); border-color: #c9c9c9; }
+  .wctl { margin-left: auto; display: flex; align-items: center; gap: 16px; padding-bottom: 6px; color: #4a4a4a; }
+
+  /* ---- member header strip --------------------------------------------- */
+  .strip {
+    position: relative; height: 52px; border-bottom: 1px solid var(--rule); background: #fff;
+  }
+  .fact { position: absolute; top: 50%; transform: translateY(-50%); }
+  .fact .k { font-size: 10.5px; color: var(--label); letter-spacing: .1px; }
+  .fact .v { font-size: 12.5px; color: var(--ink); font-weight: 600; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+  .fact.plain .v { font-weight: 400; }
+  .auth {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ---- body ------------------------------------------------------------- */
+  .body { flex: 1; display: flex; min-height: 0; }
+  .rail {
+    width: 50px; background: var(--rail); display: flex; flex-direction: column;
+    align-items: center; padding-top: 10px; gap: 15px; flex: none;
+  }
+  .rail.right { width: 62px; border-left: 1px solid var(--rule); }
+  .rail.left { border-right: 1px solid var(--rule); }
+  .railitem { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #4b4b4b; position: relative; }
+  .railitem .lbl { font-size: 7.5px; line-height: 1.15; text-align: center; max-width: 48px; }
+  .railitem.on { color: #17509c; }
+  .badge { position: absolute; top: -2px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #d0342c; }
+  .spacer { flex: 1; }
+
+  /* ---- panels ----------------------------------------------------------- */
+  .panel { display: flex; flex-direction: column; min-height: 0; background: #fff; }
+  .panel.left  { width: 370px; flex: none; border-right: 1px solid var(--rule); }
+  .panel.mid   { flex: 1; min-width: 0; }
+  .panel.right { width: 384px; flex: none; border-left: 1px solid var(--rule); }
+
+  .ptitle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px 9px; font-size: 14.5px; font-weight: 700; color: var(--ink);
+  }
+  .ptabs { display: flex; gap: 22px; padding: 0 14px; border-bottom: 1px solid var(--rule); }
+  .ptab { font-size: 12.5px; color: #4a4a4a; padding-bottom: 7px; }
+  .ptab.on { color: var(--link); border-bottom: 2px solid var(--link); font-weight: 500; }
+
+  .scroll { flex: 1; overflow: hidden; position: relative; padding: 0 14px; }
+  .sbar { position: absolute; top: 8px; right: 3px; width: 5px; border-radius: 3px; background: #c4c4c4; }
+
+  .sec { padding-top: 17px; }
+  .sechead {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13.5px; font-weight: 700; padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule); margin-bottom: 2px;
+  }
+
+  .notif {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #eef1f8; border-left: 3px solid #6d7cc0; color: var(--link);
+    font-size: 12.5px; padding: 12px 10px; margin-top: 9px; border-radius: 2px;
+  }
+  .addlink { display: flex; align-items: center; justify-content: flex-end; gap: 5px; color: var(--link); font-size: 12px; padding: 9px 0 2px; }
+
+  .row { display: flex; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); font-size: 12px; }
+  .row .k { width: 96px; flex: none; color: var(--label); font-size: 11.5px; padding-right: 8px; }
+  .row .v { flex: 1; color: var(--ink); }
+  .row .a { color: var(--link); font-size: 11.5px; padding-left: 10px; }
+  .more { color: var(--link); font-size: 11.5px; padding: 11px 0 2px; }
+
+  .scribbles {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--rule); padding: 9px 14px; font-size: 12.5px;
+    color: var(--link); background: #fafafa;
+  }
+  .scribbles .l { display: flex; align-items: center; gap: 6px; }
+
+  /* ---- centre ----------------------------------------------------------- */
+  .midtabs { display: flex; align-items: center; gap: 10px; padding: 9px 16px 0; }
+  .midtab { font-size: 14px; font-weight: 700; padding: 3px 14px 8px; border-bottom: 2px solid #2f5c9e; }
+  .plusbtn { width: 22px; height: 22px; border: 1px solid var(--rule); border-radius: 3px; display: grid; place-items: center; color: #4a4a4a; }
+  .midrule { border-bottom: 1px solid var(--rule); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 34px; padding: 4px 16px 0; }
+  .card { padding-top: 14px; }
+  .cardhead { font-size: 13.5px; font-weight: 700; padding-bottom: 7px; border-bottom: 1px solid var(--rule); }
+  .lrow { display: flex; align-items: baseline; padding: 4.5px 0; font-size: 12px; }
+  .lrow .n { flex: 1; color: var(--link); }
+  .lrow .n.plain { color: var(--ink-soft); }
+  .lrow .m { width: 132px; flex: none; color: var(--ink-soft); }
+  .lrow .d { width: 74px; flex: none; text-align: right; color: var(--ink-soft); }
+  .showing { color: var(--link); font-size: 11.5px; padding-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+  /* ---- products --------------------------------------------------------- */
+  .active { display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 10px 0 8px; }
+  .active b { font-weight: 700; }
+  .showall { color: var(--link); display: flex; align-items: center; gap: 5px; font-size: 11.5px; }
+  .grouphead {
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--link); font-size: 13.5px; padding: 15px 0 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .grouphead .l { display: flex; align-items: center; gap: 7px; }
+  .prodname { color: var(--link); font-size: 12.5px; padding: 14px 0 5px; }
+  .prow { display: flex; align-items: flex-start; padding: 7px 0; font-size: 12px; }
+  .prow .k { width: 122px; flex: none; color: var(--label); font-size: 11.5px; padding-right: 10px; }
+  .prow .v { flex: 1; color: var(--ink); }
+  .toggle { color: var(--link); font-size: 11.5px; display: flex; align-items: center; gap: 5px; padding: 7px 0 2px; }
+  .addrow { display: flex; justify-content: flex-end; padding: 9px 0 2px; }
+  svg { display: block; }
+</style></head>
+<body>
+<div class="app">
+
+  <div class="titlebar">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5a5a5a" stroke-width="1.9"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.3.36.55.64.72"/></svg>
+    Conversant (1)
+  </div>
+
+  <div class="tabbar">
+    <div class="tab on"><span>Tab 1</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" stroke="#5c5c5c" stroke-width="2.2" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg></div>
+    <div class="tab"><span>Tab 2</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" stroke="#5c5c5c" stroke-width="2.2" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg></div>
+    <div class="wctl">
+      <svg width="13" height="2" viewBox="0 0 13 2"><rect width="13" height="1.6" fill="#4a4a4a"/></svg>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#4a4a4a" stroke-width="1.4"><rect x="1" y="1" width="10" height="10"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" stroke="#4a4a4a" stroke-width="2" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="auth" style="left:1.8%">
+      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2e9e4f"/><path d="M7.4 12.4l3.1 3.1 6.1-6.6" stroke="#fff" stroke-width="2.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><div class="k">Authentication</div><div class="v" style="font-weight:400">Verified</div></div>
+    </div>
+    <div class="fact" style="left:13.2%"><div class="k">Address As</div><div class="v">Captain Boltz
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></div></div>
+    <div class="fact plain" style="left:37.7%"><div class="k">Member Number</div><div class="v">#020536085</div></div>
+    <div class="fact plain" style="left:50.6%"><div class="k">Gender</div><div class="v">MALE
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></div></div>
+    <div class="fact plain" style="left:62.2%"><div class="k">Eligibility</div><div class="v">DEPENDENT</div></div>
+    <div class="fact plain" style="left:74.1%"><div class="k">Date of Birth</div><div class="v">03/19/1954 (69)
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></div></div>
+    <div class="fact plain" style="left:86.2%"><div class="k">Tenure</div><div class="v">44 years</div></div>
+    <div class="fact" style="left:97%">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <div class="rail left">
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span class="lbl">Home</span></div>
+      <div class="railitem on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.6 4.1-5.4 7.5-5.4S18.1 16.4 19.5 20"/></svg><span class="lbl">Profile</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg><span class="lbl">ODOC</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c1.1-3 3.2-4.5 5.5-4.5s4.4 1.5 5.5 4.5"/><path d="M15 14.6c2 .3 3.5 1.7 4.4 4.4"/></svg><span class="lbl">Activity</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9"/></svg><span class="lbl">Member<br>Settings</span></div>
+      <div class="spacer"></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18c3-6 6 4 9-2s5 1 7-3"/><path d="M4 6h9"/></svg><span class="lbl">Scribbles</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H4z"/><path d="M8 21h8"/><path d="M12 17v4"/></svg><span class="lbl">Choose<br>Channel</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span class="lbl">Phone<br>Directory</span></div>
+      <div class="railitem" style="margin-bottom:9px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v6H4V6h6"/></svg><span class="lbl">Launch<br>Portal</span></div>
+    </div>
+
+    <!-- ============================ LEFT PANEL ============================ -->
+    <div class="panel left">
+      <div class="ptitle">Member Information
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.1"><path d="M13 6l-6 6 6 6M19 6l-6 6 6 6"/></svg></div>
+      <div class="ptabs">
+        <div class="ptab on">Basic</div><div class="ptab">CAPS</div><div class="ptab">Military &amp; Occupation</div>
+      </div>
+      <div class="scroll">
+        <div class="sbar" style="height:220px"></div>
+
+        <div class="sec">
+          <div class="sechead">Notifications
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+          <div class="notif">Protected Person
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div class="notif">Accessibility (12)
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div class="addlink">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            Add Notification</div>
+        </div>
+
+        <div class="sec">
+          <div class="sechead">Member Details
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+          <div class="row"><div class="k">Full name</div><div class="v">MacDonald M Boltz</div><div class="a">Edit</div></div>
+          <div class="row"><div class="k">Pronounced</div><div class="v">MUHK-DON-UHLD BOWL-TZ</div></div>
+          <div class="row"><div class="k">Marital Status</div><div class="v">MARRIED</div><div class="a">Edit</div></div>
+          <div class="more">show more</div>
+        </div>
+
+        <div class="sec">
+          <div class="sechead">Contact Information
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+          <div class="row"><div class="k">Mailing<br>Address</div><div class="v">1 NORTERRA DR, PHOENIX AZ<br>85085-8024</div><div class="a">Edit</div></div>
+          <div class="row"><div class="k">Physical<br>Address</div><div class="v">6416 REGENCY LN, LOUISVILLE KY<br>40207-2310</div><div class="a">Edit</div></div>
+          <div class="row"><div class="k">Local Time</div><div class="v">4:09 PM EDT (Physical Address)</div></div>
+          <div class="row"><div class="k">Primary Mobile</div><div class="v">702-123-8848</div><div class="a">Dial</div><div class="a">Edit</div></div>
+          <div class="row"><div class="k">Other Mobile</div><div class="v">210-884-9900</div><div class="a">Dial</div></div>
+          <div class="row"><div class="k">Primary Fax</div><div class="v">409-673-2591</div><div class="a">Dial</div></div>
+          <div class="more">show more</div>
+        </div>
+      </div>
+      <div class="scribbles"><span class="l">Scribbles
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M14 4h6v6"/><path d="M20 4l-8 8"/><path d="M18 14v6H4V6h6"/></svg></span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.2"><path d="M6 15l6-6 6 6"/></svg></div>
+    </div>
+
+    <!-- ============================== CENTRE ============================== -->
+    <div class="panel mid">
+      <div class="midtabs">
+        <div class="midtab">Member Summary</div>
+        <div class="plusbtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></div>
+      </div>
+      <div class="midrule"></div>
+      <div class="cols">
+
+        <div class="card">
+          <div class="cardhead">Customer Associated Persons</div>
+          <div class="lrow"><div class="n">Alighiero M Boltz</div><div class="m">Spouse (58)</div><div class="d">11/13/2025</div></div>
+          <div class="lrow"><div class="n">REGINALD BOLTZ</div><div class="m">Child (39)</div><div class="d">11/13/2025</div></div>
+          <div class="lrow"><div class="n">Donnell Boltz</div><div class="m">Child (33)</div><div class="d">11/13/2025</div></div>
+          <div class="lrow"><div class="n">Sarah Boltz</div><div class="m">Child (30)</div><div class="d">11/13/2025</div></div>
+          <div class="lrow"><div class="n">Meera Rice</div><div class="m">Step-Child (38)</div><div class="d">11/13/2025</div></div>
+          <div class="showing">Showing 5 Of 11 Results
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">Timeline</div>
+          <div class="lrow"><div class="n plain">Inquire P&amp;C Account Summary</div><div class="d">4/27/2023</div></div>
+          <div class="lrow"><div class="n plain">Change Other Personal Info</div><div class="d">3/27/2023</div></div>
+          <div class="lrow"><div class="n plain">Change Mailing Address</div><div class="d">7/22/2022</div></div>
+          <div class="lrow"><div class="n plain">Account Activity</div><div class="d">1/22/2022</div></div>
+          <div class="lrow"><div class="n plain">Account Activity</div><div class="d">1/2/2022</div></div>
+          <div class="showing">Showing 5 Of 26 Results
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">Life Events</div>
+          <div class="lrow"><div class="n">Auto</div><div class="d">5/1/2023</div></div>
+          <div class="lrow"><div class="n">Death Of A Loved One</div><div class="d">4/1/2023</div></div>
+          <div class="lrow"><div class="n">Deploying</div><div class="d">3/30/2023</div></div>
+          <div class="lrow"><div class="n">Divorce</div><div class="d">11/28/2022</div></div>
+          <div class="lrow"><div class="n">Job Change</div><div class="d">10/30/2021</div></div>
+          <div class="showing">Showing 5 Of 7 Results
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">Next Best Action</div>
+          <div class="lrow"><div class="n">Auto Loan: Follow Up</div></div>
+          <div class="lrow"><div class="n">Mortgage: Follow Up</div></div>
+          <div class="lrow"><div class="n">VPP Insurance: Suggest</div></div>
+          <div class="lrow"><div class="n">Renter's Insurance: Suggest</div></div>
+          <div class="lrow"><div class="n">Pet Insurance: Suggest</div></div>
+          <div class="showing">Showing 5 Of 8 Results
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">Claims</div>
+          <div class="lrow"><div class="n">Automobile</div><div class="m">new</div><div class="d">5/30/2023</div></div>
+          <div class="lrow"><div class="n">Death Of A Loved One</div><div class="m">Work In Progress</div><div class="d">3/30/2023</div></div>
+          <div class="lrow"><div class="n plain">Property</div><div class="m">Archived</div><div class="d">1/3/2023</div></div>
+          <div class="lrow"><div class="n plain">Automobile</div><div class="m">Archived</div><div class="d">12/25/2023</div></div>
+          <div class="lrow"><div class="n plain">Property</div><div class="m">Archived</div><div class="d">10/31/2023</div></div>
+          <div class="showing">Showing 5 Of 21 Results
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================ RIGHT PANEL =========================== -->
+    <div class="panel right">
+      <div class="ptitle">Products
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" stroke-width="2.1"><path d="M11 6l6 6-6 6M5 6l6 6-6 6"/></svg></div>
+      <div class="scroll" style="padding-top:0">
+        <div class="sbar" style="height:300px"></div>
+        <div class="active"><span><b>Active:</b> P&amp;C, Life, Bank, Agency</span>
+          <span class="showall">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>Show All</span></div>
+
+        <div class="grouphead"><span class="l">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>Property &amp; Casualty Insurance</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+
+        <div class="prodname">Auto Insurance - TX #7101</div>
+        <div class="prow"><div class="k">Coverage Dates</div><div class="v">3/2/2020 - 9/2/2020</div></div>
+        <div class="prow"><div class="k">Nickname</div><div class="v">The Trusty Old Honda</div></div>
+        <div class="prow"><div class="k">Premium</div><div class="v">$1479.20 / 6 MONTHS</div></div>
+        <div class="prow"><div class="k">Covered<br>Vehicles</div><div class="v">2008 HONDA CIVIC, 2011 SUBARU<br>FORESTER</div></div>
+        <div class="prow"><div class="k">Covered Drivers</div><div class="v">CLAIRE SMITH</div></div>
+        <div class="prow"><div class="k">Company Of<br>Placement</div><div class="v">CIG</div></div>
+        <div class="toggle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 15l6-6 6 6"/></svg>show less</div>
+
+        <div class="prodname">Auto Insurance - TX #7101</div>
+        <div class="prow"><div class="k">Coverage Dates</div><div class="v">9/2/2020 - 12/31/2020</div></div>
+        <div class="toggle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>show more</div>
+        <div class="addrow"><span class="toggle">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Add</span></div>
+
+        <div class="grouphead"><span class="l">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>Banking</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+        <div class="prodname">USAA Classic Checking *5542</div>
+        <div class="toggle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>show more</div>
+        <div class="prodname">Demand Deposit Account *7764</div>
+        <div class="toggle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>show more</div>
+        <div class="addrow"><span class="toggle">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Add</span></div>
+
+        <div class="grouphead"><span class="l">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>Life &amp; Health Insurance</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1155cc" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg></div>
+      </div>
+    </div>
+
+    <div class="rail right">
+      <div class="railitem on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg><span class="lbl">Products</span></div>
+      <div class="railitem"><span class="badge"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M9.5 19V5M15 19v-7M20.5 19v-4"/></svg><span class="lbl">NBA</span></div>
+      <div class="railitem"><span class="badge"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span class="lbl">Actions</span></div>
+      <div class="railitem"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/></svg><span class="lbl">KC</span></div>
+    </div>
+
+  </div>
+</div>
+</body></html>
