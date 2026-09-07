@@ -137,7 +137,7 @@ export default function Arcatext() {
       </div>
 
       {/* Hero */}
-      <section className="relative pt-40 pb-24 sm:pt-48 sm:pb-32 overflow-hidden">
+      <section className="relative pt-40 pb-16 sm:pt-48 sm:pb-20 overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-60"
           style={{
@@ -192,7 +192,7 @@ export default function Arcatext() {
       {/* My role — framing for the demo that follows, so the reader knows whose
           work they are about to explore. Outside ReorderableSections, which
           only covers the numbered sections. */}
-      <section className="pt-12 sm:pt-16">
+      <section>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="reveal">
             <Editable as="h3" path="arcatext.overview.roleTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
