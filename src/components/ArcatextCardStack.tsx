@@ -21,6 +21,7 @@ const CARDS: DeckCard[] = [
   { src: 'arcatext-fix-words-edit.webp', alt: 'Arcatext — typing a replacement for a chosen word' },
   { src: 'arcatext-translate-received.webp', alt: 'Arcatext — translating a received message in place' },
   { src: 'arcatext-menu.webp', alt: 'Arcatext — the keyboard menu and language settings' },
+  { src: 'arcatext-study-guide.webp', alt: 'Arcatext — the study guide of saved words, phrases and expressions' },
 ];
 
 export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
