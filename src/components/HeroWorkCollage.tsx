@@ -1,18 +1,12 @@
 /**
  * The hero's product screens, either side of the introduction and beneath it:
- * the Arcatext deck on the left (see ArcatextCardStack), the deck of screens
- * D2C generated on the right, and beneath them the typing-performance admin
- * tool -- running live, not a capture of it -- beside the D2C plugin window
- * that produced those screens.
- *
- * Both flanking decks inset their cards 3% of their slot, so their cards draw
- * at the same width even though the slots differ.
+ * the Arcatext deck on the left (see ArcatextCardStack), the D2C plugin window
+ * on the right, and beneath them the typing-performance admin tool -- running
+ * live, not a capture of it -- beside a products rail D2C generated.
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
-
-import { CardDeck, type DeckCard } from '@/components/CardDeck';
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -70,31 +64,37 @@ function Floating({ phase = 0, children }: { phase?: number; children: ReactNode
 }
 
 /**
- * The products rail D2C generated out of the Conversant codebase, as a deck of
- * its own -- one card for now, with room for the rest of the generated screens.
- *
- * The card takes the rail's own proportions -- roughly 1:2.3 -- so the whole
- * panel shows rather than the top of it, which means the slot has to be narrow
- * for the card not to run away in height. Its corner radius is in its own
- * alpha, and the deck clips to the same radius so the grey plate follows the
- * card's shape.
- * It turns half a beat out of phase with the Arcatext deck, so the two never
- * flick together.
+ * The products rail D2C generated out of the Conversant codebase, beside the
+ * tuning tool. It is roughly 1:2.3, far taller than it is wide, so rather than
+ * crop it or letterbox it, its slot is sized so that its full height comes out
+ * equal to the tool's.
  */
-const PRODUCTS: DeckCard[] = [
-  { src: 'd2c-products.webp', alt: 'A Conversant products panel, generated from the codebase by D2C' },
-];
+const PRODUCTS = {
+  src: 'd2c-products.webp',
+  alt: 'A Conversant products panel, generated from the codebase by D2C',
+  w: 1484,
+  h: 3416,
+};
 
-export function ProductsCardStack({ onSelect }: { onSelect: () => void }) {
+function ProductsTile({ onSelect }: { onSelect: () => void }) {
   return (
-    <CardDeck
-      cards={PRODUCTS}
-      width={1484}
-      height={3416}
-      cardClass="rounded-[5px] shadow-[0_14px_34px_-16px_rgba(0,0,0,0.45)]"
-      phaseMs={1500}
-      onSelect={onSelect}
-    />
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${PRODUCTS.alt} — see the projects`}
+      style={{ rotate: '-1.2deg' }}
+      className="group block w-full transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <img
+        src={`${BASE}hero-tiles/${PRODUCTS.src}`}
+        alt=""
+        width={PRODUCTS.w}
+        height={PRODUCTS.h}
+        decoding="async"
+        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.03]"
+        style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
+      />
+    </button>
   );
 }
 
@@ -111,7 +111,7 @@ const D2C = {
   h: 1529,
 };
 
-function D2CTile({ onSelect }: { onSelect: () => void }) {
+export function D2CTile({ onSelect }: { onSelect: () => void }) {
   return (
     <button
       type="button"
@@ -197,9 +197,14 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
       </div>
       {/* Measured against the whole row, not the space left over, so it stands
           about as tall as the tool beside it rather than taking up the slack. */}
-      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[30%]">
+      {/* Width derived so the rail comes out exactly as tall as the tool: the
+          tool is half the row at 1400x897, and the rail is 1484x3416, so half
+          the row times both ratios is the width that matches their heights.
+          Stretching to the tool instead would be circular -- the rail's own
+          height is part of what sets the row's. */}
+      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(50%*(897/1400)*(1484/3416))]">
         <Floating phase={0.5}>
-          <D2CTile onSelect={onSelect} />
+          <ProductsTile onSelect={onSelect} />
         </Floating>
       </div>
     </div>

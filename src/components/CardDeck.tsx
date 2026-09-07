@@ -32,8 +32,6 @@ export function CardDeck({
   height,
   cardClass,
   holdMs = 3000,
-  /** Delays the first turn, so two decks on one page never flick in unison. */
-  phaseMs = 0,
   onSelect,
 }: {
   cards: DeckCard[];
@@ -41,7 +39,6 @@ export function CardDeck({
   height: number;
   cardClass: string;
   holdMs?: number;
-  phaseMs?: number;
   onSelect: () => void;
 }) {
   const [front, setFront] = useState(0);
@@ -57,15 +54,9 @@ export function CardDeck({
       setLeaving(going);
       setFront(frontRef.current);
     };
-    let turning: ReturnType<typeof setInterval> | undefined;
-    const first = setTimeout(() => {
-      turning = setInterval(advance, holdMs);
-    }, phaseMs);
-    return () => {
-      clearTimeout(first);
-      if (turning) clearInterval(turning);
-    };
-  }, [count, holdMs, phaseMs]);
+    const turning = setInterval(advance, holdMs);
+    return () => clearInterval(turning);
+  }, [count, holdMs]);
 
   useEffect(() => {
     if (leaving === null) return;
