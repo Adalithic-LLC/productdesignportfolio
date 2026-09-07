@@ -65,15 +65,12 @@ export interface SocialLink {
 
 export interface SiteContent {
   nav: {
-    logo: string;
     links: NavLink[];
   };
   hero: {
     badge: string;
     title: string;
     subtitle: string;
-    ctaPrimary: string;
-    ctaSecondary: string;
     scrollText: string;
     stats: HeroStat[];
   };

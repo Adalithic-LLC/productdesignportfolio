@@ -1,18 +1,13 @@
 {
   "nav": {
-    "logo": "Andrew Richards",
     "links": [
       {
         "name": "Home",
         "href": "#home"
       },
       {
-        "name": "Projects",
+        "name": "Work",
         "href": "#projects"
-      },
-      {
-        "name": "Case Studies",
-        "href": "#case-studies"
       },
       {
         "name": "About",
@@ -28,8 +23,6 @@
     "badge": "Available for new projects",
     "title": "Digital Product Designer",
     "subtitle": "I design elegant solutions for complex products, validated through user needs, business goals, and technical realities.",
-    "ctaPrimary": "View My Work",
-    "ctaSecondary": "Get in Touch",
     "scrollText": "Scroll to explore",
     "stats": [
       {
