@@ -137,7 +137,7 @@ export default function Arcatext() {
       </div>
 
       {/* Hero */}
-      <section className="relative pt-40 pb-16 sm:pt-48 sm:pb-20 overflow-hidden">
+      <section className="relative pt-40 pb-20 sm:pt-48 sm:pb-24 overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-60"
           style={{
@@ -146,62 +146,61 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <Editable as="span" path="arcatext.hero.status" className="text-xs font-medium text-primary tracking-wide" />
-          </div>
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-14">
+            {/* Left: what the product is. */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <Editable as="span" path="arcatext.hero.status" className="text-xs font-medium text-primary tracking-wide" />
+              </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 text-balance">
-            <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
-          </h1>
-          <Editable
-            as="p"
-            path="arcatext.hero.subtitle"
-            multiline
-            className="text-xl sm:text-2xl md:text-3xl text-foreground/80 max-w-3xl leading-snug mb-10 text-balance"
-          />
-
-          <div className="flex flex-wrap gap-2 mb-10">
-            {arc.hero.typeTags.map((_, i) => (
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-balance">
+                <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
+              </h1>
               <Editable
-                key={i}
-                as="span"
-                path={`arcatext.hero.typeTags.${i}`}
-                className="px-3 py-1.5 text-xs font-medium rounded-full bg-card border border-border/50 text-foreground/80"
+                as="p"
+                path="arcatext.hero.subtitle"
+                multiline
+                className="text-xl sm:text-2xl text-foreground/80 leading-snug mb-10 text-balance"
               />
-            ))}
-          </div>
 
-          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl border-t border-border/40 pt-8">
-            <div>
-              <Editable as="dt" path="arcatext.hero.roleLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-              <Editable as="dd" path="arcatext.hero.roleValue" className="text-sm text-foreground/90" />
+              <div className="flex flex-wrap gap-2">
+                {arc.hero.typeTags.map((_, i) => (
+                  <Editable
+                    key={i}
+                    as="span"
+                    path={`arcatext.hero.typeTags.${i}`}
+                    className="px-3 py-1.5 text-xs font-medium rounded-full bg-card border border-border/50 text-foreground/80"
+                  />
+                ))}
+              </div>
             </div>
+
+            {/* Right: whose work it is, then the at-a-glance facts. */}
             <div>
-              <Editable as="dt" path="arcatext.hero.platformLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-              <Editable as="dd" path="arcatext.hero.platformValue" className="text-sm text-foreground/90" />
+              <Prose>
+                <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
+              </Prose>
+
+              <dl className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-border/40 pt-8">
+                <div>
+                  <Editable as="dt" path="arcatext.hero.roleLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.roleValue" className="text-sm text-foreground/90" />
+                </div>
+                <div>
+                  <Editable as="dt" path="arcatext.hero.platformLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.platformValue" className="text-sm text-foreground/90" />
+                </div>
+                <div>
+                  <Editable as="dt" path="arcatext.hero.surfaceLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.surfaceValue" className="text-sm text-foreground/90" />
+                </div>
+              </dl>
             </div>
-            <div>
-              <Editable as="dt" path="arcatext.hero.surfaceLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-              <Editable as="dd" path="arcatext.hero.surfaceValue" className="text-sm text-foreground/90" />
-            </div>
-          </dl>
+          </div>
         </div>
       </section>
 
-      {/* My role — framing for the demo that follows, so the reader knows whose
-          work they are about to explore. Outside ReorderableSections, which
-          only covers the numbered sections. */}
-      <section>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="reveal">
-            <Editable as="h3" path="arcatext.overview.roleTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
-            <Prose>
-              <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
-            </Prose>
-          </div>
-        </div>
-      </section>
 
       {/* Interactive keyboard diagram — breaks out to the full page width,
           clearing the left section-nav rail at >=1600px. */}
