@@ -461,7 +461,7 @@
     "hero": {
       "status": "In development",
       "title": "Arcatext",
-      "subtitle": "A translation keyboard that turns real conversations into self-directed language practice, with features that provide control and insight.",
+      "subtitle": "A translation-keyboard that turns real conversations into self-directed language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",
         "Language-Learning Tool",
@@ -501,8 +501,8 @@
       ],
       "roleTitle": "My role",
       "role": [
-        "I led Arcatext as the company founder & product designer, taking the app from the early concept through research, MVP design, implementation, and launch.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I created the LLC, developed the iOS app, designed the core translation keyboard experience, and built the foundation for Arcatext to evolve from an MVP into a broader language-learning platform."
+        "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, MVP design, implementation, and launch.",
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation.\n\nI designed and developed 11 features, plus a 'typing performance' admin control center!\n\nMy vision is to evolve Arcatext into a more robust language-learning platform, keeping the translation-keyboard at the center."
       ]
     },
     "problem": {
