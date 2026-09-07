@@ -5,8 +5,9 @@
  *
  * Every tile is real product: the send-a-copy screen as it runs on
  * adalithic.com, the typing-performance admin tool running live (see
- * AdminToolTile), and the D2C Figma plugin. Clicking any of them jumps to the
- * projects section.
+ * AdminToolTile), and the D2C plugin, cut out of its own screenshot so its
+ * window floats rather than sitting on a grey plate. Clicking any of them
+ * jumps to the projects section.
  *
  * Beneath the introduction the admin tool takes half the page, flush left so
  * its edge lines up with the card deck above it, and the plugin sits in the
@@ -62,7 +63,7 @@ const RIGHT: Tile = {
 
 /** Sits beneath it, alongside the live admin tool. */
 const CLUSTER: Tile[] = [
-  { src: 'figma-plugin.jpg', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, width: 'w-1/2 lg:w-[32%]' },
+  { src: 'd2c.webp', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 700, h: 746, tilt: -0.8, width: 'w-1/2 lg:w-[32%]' },
 ];
 
 function TileButton({
