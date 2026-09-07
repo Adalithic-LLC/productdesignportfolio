@@ -475,13 +475,13 @@
       "surfaceValue": "Any messaging app (iMessage, WhatsApp, HelloTalk, …)"
     },
     "overview": {
-      "eyebrow": "Overview",
+      "eyebrow": "OVERVIEW",
       "titleLead": "What is",
       "titleHighlight": "Arcatext?",
       "intro": [
-        "Arcatext is a language-learning product designed to make the complexity and nuance of language more accessible — and the learning process more natural, engaging, and practical.",
-        "The first phase, a translation keyboard, helps users turn real conversations with friends, penpals, and AI into personalized language-learning experiences. Instead of forcing learners through generic lessons, Arcatext helps them learn from the conversations they actually want to have.",
-        "It combines context-aware translation, clarification tools, and language exposure so users can communicate across languages with greater fluency, accuracy, and confidence."
+        "Arcatext is a language learning product designed to make the complexity and nuance of language more accessible and the learning process more natural, engaging, and practical.",
+        "The first phase, a translation keyboard, helps users turn real conversations with friends, penpals, and AI into personalized language learning experiences. Instead of forcing learners through generic lessons, Arcatext helps them learn from the conversations they actually want to have.",
+        "It combines context aware translation, clarification tools, and language exposure so users can communicate across languages with greater fluency, accuracy, and confidence."
       ],
       "productTypeLabel": "Product type",
       "productTypeList": [
@@ -492,17 +492,17 @@
       ],
       "originTitle": "Origin & pivot",
       "origin": [
-        "Arcatext began as a personal attempt to make multilingual texting more fluid. Early exploration exposed the friction of existing translator keyboards and copy-paste workflows, but exploration with students pivoted the project from a conceptual messaging app optimization into a language learning product."
+        "Arcatext began as a personal attempt to make multilingual texting more streamlined. \n\n\nStarting as a conceptual messaging app optimization, I pivoted to language learning product after further research and market exploration."
       ],
       "readingWritingTitle": "The focus on reading and writing",
       "readingWriting": [
-        "Language learning involves reading, writing, speaking, listening, vocabulary, grammar, and tone. While many tools support guided lessons or speaking practice, the biggest opportunity was in reading and writing — especially in real texting conversations.",
-        "Messaging gives learners time to pause, revise, compare, and understand language before responding. That made it the ideal entry point: a way to turn everyday conversations into personalized learning moments."
+        "Language learning involves reading, writing, speaking, listening, vocabulary, grammar, and tone. While many tools support guided lessons or speaking practice, the biggest opportunity was in reading and writing, especially in real texting conversations.",
+        "Writing gives learners time to pause, revise, compare, and understand language before responding."
       ],
       "roleTitle": "My role",
       "role": [
-        "I led Arcatext as a founder-designer, taking the product from early concept through research, MVP design, implementation, pricing strategy, and launch preparation.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, front-end and back-end development, and business formation. I created the LLC, developed the iOS app, designed the core translation keyboard experience, and built the foundation for Arcatext to evolve from an MVP into a broader language-learning platform."
+        "I led Arcatext as the company founder & product designer, taking the app from the early concept through research, MVP design, implementation, and launch.",
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted front and back-end development, and business formation. I created the LLC, developed the iOS app, designed the core translation keyboard experience, and built the foundation for Arcatext to evolve from an MVP into a broader language-learning platform."
       ]
     },
     "problem": {
@@ -510,7 +510,7 @@
       "titleLead": "Most language-learning tools separate practice from",
       "titleHighlight": "real communication.",
       "intro": [
-        "Learners spend time on scripted exercises, flashcards, grammar drills, and guided lessons — but those activities don’t always prepare them for the conversations they actually want to have. Real communication is personal, unpredictable, emotional, and full of nuance.",
+        "Learners spend time on scripted exercises, flashcards, grammar drills, and guided lessons. While those activities create important foundational knowledge, they don’t always fully prepare them for the conversations they want to have. Real communication is personal, unpredictable, emotional, and full of nuance.",
         "A learner may know vocabulary from an app but still struggle when texting a friend, replying to a penpal, navigating tone, choosing the right level of formality, reading an unfamiliar script, or understanding why one translation sounds natural and another does not.",
         "Translation tools solve part of the problem, but they usually focus on producing a result rather than helping the user learn from the moment. They translate the message, but rarely expose the decisions behind the translation."
       ],
@@ -672,9 +672,7 @@
           "desc": "Over time, real communication becomes structured insight: recurring vocabulary, grammar gaps, confidence issues, topics of interest, and personalized recommendations — the bridge from MVP keyboard to broader learning platform."
         }
       ],
-      "closing": [
-        "Keeping the default path simple while progressively disclosing depth lets Arcatext serve beginners who need help producing understandable messages, intermediate learners who want feedback, and advanced learners who need nuance. The Reword experience supports context-aware translation, grammar correction, tone refinement, and language-specific options like speaker gender, recipient gender, group gender, and script preferences. The Check experience helps users verify meaning before sending, so they avoid blindly sending text they don’t understand."
-      ]
+      "closing": []
     },
     "decisions": {
       "eyebrow": "KEY DESIGN DECISIONS",
@@ -815,10 +813,15 @@
           "response": "Gender controls, script options, clarification tools, and alternate phrasing."
         }
       ],
-      "competitiveTitle": "Keeping up with Google and Apple",
+      "competitiveTitle": "Competitive product requirement",
       "competitive": [
         "After testing Arcatext with students and teachers, I learned that the translation feature set would not drive adoption if the keyboard was significantly less fluid and accurate than default keyboards from Apple & Google.",
         "To earn a place in a daily-use interface, Arcatext needed to preserve familiar typing patterns and outperform the basic translation workflows available through Apple Translate and Gboard.",
+        {
+          "type": "heading",
+          "style": "h4",
+          "text": "The need for better typing UX"
+        },
         {
           "type": "paragraph",
           "text": "In response to this feedback, I vastly improved the accuracy and forgiveness of the typing UX, added a personalization layer that learns each users' typing profile, and added a glide typing setting, which allows users to swipe a finger across the keys to write instead of tapping each key.\n\nTo capture and act on typing behaviors, I also built an admin tool for tuning the typing and autocorrect performance. This tool aggregates user data, creates scores, and recommends parameters updates.\n\nLearn more about the Arcatext Typing UX Admin Tool"
@@ -937,9 +940,9 @@
       ]
     },
     "footerCta": {
-      "titleLead": "Want to",
-      "titleHighlight": "work",
-      "titleRest": "with me?",
+      "titleLead": "Want to talk about",
+      "titleHighlight": "Arcatext",
+      "titleRest": "or language-learning design?",
       "getInTouch": "Get in Touch",
       "backToProjects": "Back to Projects"
     },
@@ -947,7 +950,7 @@
       "eyebrow": "Interactive",
       "titleLead": "The keyboard,",
       "titleHighlight": "in motion",
-      "description": "An interactive walkthrough of the Arcatext keyboard, built from the iOS source. The first step plays automatically, then pauses — step through it with Back / Next, or tap any keyboard button to jump to that step."
+      "description": "An interactive walkthrough of the Arcatext keyboard."
     }
   },
   "conversant": {
