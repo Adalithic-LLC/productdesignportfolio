@@ -146,9 +146,13 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-14">
-            {/* Left: what the product is. */}
-            <div>
+          {/* Two rows so the subtitle and the role copy start at the same
+              height: the pill and title occupy row 1 on their own, and both
+              body columns sit in row 2. Doing it with rows rather than a fixed
+              offset keeps them aligned as the title resizes. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-14">
+            {/* Row 1, left: the project's name. */}
+            <div className="lg:col-start-1 lg:row-start-1">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 <Editable as="span" path="arcatext.hero.status" className="text-xs font-medium text-primary tracking-wide" />
@@ -157,6 +161,10 @@ export default function Arcatext() {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-balance">
                 <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
               </h1>
+            </div>
+
+            {/* Row 2, left: what the product is. */}
+            <div className="lg:col-start-1 lg:row-start-2">
               <Editable
                 as="p"
                 path="arcatext.hero.subtitle"
@@ -176,8 +184,8 @@ export default function Arcatext() {
               </div>
             </div>
 
-            {/* Right: whose work it is, then the at-a-glance facts. */}
-            <div>
+            {/* Row 2, right: whose work it is, then the at-a-glance facts. */}
+            <div className="mt-12 lg:mt-0 lg:col-start-2 lg:row-start-2">
               <Prose>
                 <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
               </Prose>
