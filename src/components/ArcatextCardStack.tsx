@@ -1,5 +1,5 @@
 /**
- * The Arcatext screens as a deck being flipped through: every five seconds the
+ * The Arcatext screens as a deck being flipped through: every few seconds the
  * top card lifts, arcs out to the left and tucks in at the back of the stack,
  * letting the greyed card behind it come forward.
  *
@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 const BASE = import.meta.env.BASE_URL;
 
 /** How long a card holds the top, and how long its trip to the back takes. */
-const HOLD_MS = 5000;
+const HOLD_MS = 3000;
 const FLICK_MS = 750;
 
 type Card = { src: string; alt: string };
