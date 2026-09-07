@@ -16,6 +16,14 @@ import {
 } from 'lucide-react';
 import { Editable } from '@/content/Editable';
 import { ArcatextRoadmap } from '@/components/ArcatextRoadmap';
+// Keyboard glyphs, from the Arcatext design assets (shared with adalithic.com),
+// so the toolbar and action keys match the shipping app rather than approximating it.
+import menuUrl from '@/assets/keyboard/menu.svg';
+import pasteUrl from '@/assets/keyboard/paste.svg';
+import checkUrl from '@/assets/keyboard/check.svg';
+import shiftUrl from '@/assets/keyboard/shift.svg';
+import backspaceUrl from '@/assets/keyboard/backspace.svg';
+import localesUrl from '@/assets/keyboard/locales.svg';
 
 /**
  * ArcatextKeyboard
@@ -37,7 +45,6 @@ const C = {
   toolButtonBg: '#E6E6EB',
   toolIcon: '#0040DD',
   rewordBg: '#0040DD',
-  checkBg: '#B1C6E0',
   checkText: '#0040DD',
   regularKey: '#FFFFFF',
   actionKey: '#B1C6E0',
@@ -110,28 +117,6 @@ const BEZEL = 12;
 const OUTER_W = DESIGN_W + BEZEL * 2;
 const OUTER_H = SCREEN_H + BEZEL * 2;
 const BASE_SCALE = 0.8;
-
-function EllipsisCircle() {
-  return (
-    <svg width="25" height="25" viewBox="0 0 25 25" fill="none">
-      <circle cx="12.5" cy="12.5" r="11" stroke={C.toolIcon} strokeWidth="1.6" />
-      <circle cx="7" cy="12.5" r="1.55" fill={C.toolIcon} />
-      <circle cx="12.5" cy="12.5" r="1.55" fill={C.toolIcon} />
-      <circle cx="18" cy="12.5" r="1.55" fill={C.toolIcon} />
-    </svg>
-  );
-}
-
-function PasteGlyph() {
-  return (
-    <svg width="16.8" height="21" viewBox="0 0 16 20" fill="none">
-      <path
-        d="M-0.000488281 16.2114V3.82666C-0.000488281 3.06299 0.204264 2.4847 0.61377 2.0918C1.02327 1.69336 1.58219 1.47201 2.29053 1.42773C3.25895 1.36686 4.18864 1.28109 5.07959 1.17041C5.97607 1.05973 6.83659 0.932454 7.66113 0.788574C8.49121 0.63916 9.28809 0.475911 10.0518 0.298828C10.8818 0.0996094 11.5265 0.193685 11.9858 0.581055C12.4451 0.962891 12.6748 1.58822 12.6748 2.45703V14.5845C12.6748 15.3205 12.5475 15.8794 12.293 16.2612C12.0384 16.6486 11.6012 16.9336 10.9814 17.1162C9.97982 17.3929 9.01139 17.617 8.07617 17.7886C7.14095 17.9657 6.2168 18.104 5.30371 18.2036C4.39616 18.3032 3.47754 18.3779 2.54785 18.4277C1.73991 18.4775 1.11182 18.306 0.663574 17.9131C0.220866 17.5257 -0.000488281 16.9585 -0.000488281 16.2114ZM3.25342 5.79395C4.43766 5.71647 5.5223 5.59749 6.50732 5.43701C7.49788 5.27653 8.47461 5.08838 9.4375 4.87256C9.64779 4.82829 9.78337 4.75635 9.84424 4.65674C9.91064 4.55713 9.94385 4.44368 9.94385 4.31641C9.94385 4.17806 9.89128 4.06185 9.78613 3.96777C9.68099 3.86816 9.53158 3.83773 9.33789 3.87646C8.41927 4.08122 7.47021 4.26383 6.49072 4.42432C5.51676 4.5848 4.4349 4.70378 3.24512 4.78125C3.06803 4.79232 2.93799 4.84766 2.85498 4.94727C2.77751 5.04688 2.73877 5.16585 2.73877 5.3042C2.73877 5.44255 2.78581 5.56152 2.87988 5.66113C2.97396 5.76074 3.09847 5.80501 3.25342 5.79395ZM3.25342 8.4917C4.43766 8.40869 5.5223 8.28695 6.50732 8.12646C7.49788 7.96598 8.47461 7.77783 9.4375 7.56201C9.64779 7.51774 9.78337 7.4458 9.84424 7.34619C9.91064 7.24658 9.94385 7.1359 9.94385 7.01416C9.94385 6.87028 9.89128 6.74854 9.78613 6.64893C9.68099 6.54932 9.53158 6.52165 9.33789 6.56592C8.41927 6.7762 7.47021 6.96159 6.49072 7.12207C5.51676 7.27702 4.4349 7.39323 3.24512 7.4707C3.06803 7.48177 2.93799 7.53711 2.85498 7.63672C2.77751 7.73633 2.73877 7.85254 2.73877 7.98535C2.73877 8.13477 2.78581 8.25928 2.87988 8.35889C2.97396 8.45296 3.09847 8.49723 3.25342 8.4917ZM3.25342 11.1812C4.43766 11.0981 5.5223 10.9764 6.50732 10.8159C7.49788 10.6554 8.47461 10.4673 9.4375 10.2515C9.64779 10.2072 9.78337 10.1353 9.84424 10.0356C9.91064 9.93604 9.94385 9.82536 9.94385 9.70361C9.94385 9.56527 9.89128 9.44629 9.78613 9.34668C9.68099 9.24154 9.53158 9.2111 9.33789 9.25537C8.41927 9.46012 7.47021 9.64274 6.49072 9.80322C5.51676 9.95817 4.4349 10.0771 3.24512 10.1602C3.06803 10.1768 2.93799 10.2349 2.85498 10.3345C2.77751 10.4341 2.73877 10.5503 2.73877 10.6831C2.73877 10.827 2.78581 10.9487 2.87988 11.0483C2.97396 11.1424 3.09847 11.1867 3.25342 11.1812ZM3.25342 13.8623C3.94515 13.818 4.53727 13.7655 5.02979 13.7046C5.5223 13.6382 5.99268 13.569 6.44092 13.4971C6.59033 13.4694 6.70378 13.4058 6.78125 13.3062C6.85872 13.201 6.89746 13.0903 6.89746 12.9741C6.89746 12.8358 6.84489 12.7168 6.73975 12.6172C6.6346 12.512 6.47965 12.4761 6.2749 12.5093C5.882 12.5757 5.44759 12.6393 4.97168 12.7002C4.5013 12.7555 3.92578 12.8026 3.24512 12.8413C3.06803 12.8579 2.93799 12.916 2.85498 13.0156C2.77751 13.1097 2.73877 13.2259 2.73877 13.3643C2.73877 13.5081 2.78581 13.6299 2.87988 13.7295C2.97396 13.8236 3.09847 13.8678 3.25342 13.8623ZM6.85596 19.1914C7.56429 19.0807 8.28923 18.9451 9.03076 18.7847C9.7723 18.6297 10.5332 18.4471 11.3135 18.2368C11.8724 18.0763 12.34 17.8439 12.7163 17.5396C13.0981 17.2407 13.3859 16.8506 13.5796 16.3691C13.7733 15.8877 13.8701 15.2928 13.8701 14.5845V2.49854C13.8701 2.36019 13.8646 2.22461 13.8535 2.0918C13.8424 1.95345 13.8286 1.8068 13.812 1.65186C14.3599 1.7902 14.7721 2.07243 15.0488 2.49854C15.3311 2.91911 15.4722 3.48079 15.4722 4.18359V16.4771C15.4722 17.3791 15.248 18.057 14.7998 18.5107C14.3571 18.9645 13.6903 19.1914 12.7993 19.1914H6.85596Z"
-        fill={C.toolIcon}
-      />
-    </svg>
-  );
-}
 
 function Key({
   label,
@@ -625,19 +610,17 @@ export default function ArcatextKeyboard() {
                   <div className="mb-2 flex items-center" style={{ height: 50, gap: 8 }}>
                     <button onClick={() => jump('menu')} className="relative ml-2 mr-[3px]" aria-label="Open menu">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <EllipsisCircle />
+                        <img src={menuUrl} alt="" style={{ width: 21, height: 21 }} />
                       </div>
                     </button>
                     <button onClick={() => jump('paste')} className="relative mr-[3px]" aria-label="Open paste">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <PasteGlyph />
+                        <img src={pasteUrl} alt="" style={{ width: 16, height: 20 }} />
                       </div>
                     </button>
                     <button onClick={() => jump('check')} className="relative" aria-label="Open check">
-                      <div className="grid place-items-center rounded-[12px]" style={{ width: 68, height: 50, backgroundColor: C.checkBg }}>
-                        <span className="text-[16px] font-medium" style={{ color: C.checkText }}>
-                          Check
-                        </span>
+                      <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
+                        <img src={checkUrl} alt="" style={{ width: 20, height: 20 }} />
                       </div>
                     </button>
                     <div className="flex-1" />
@@ -672,32 +655,30 @@ export default function ArcatextKeyboard() {
                   </div>
                   <div className="mb-[8px] flex gap-[5px]">
                     <Key bg={C.actionKey} grow={1.5}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 4l7 7h-4v6H9v-6H5l7-7z" fill="rgba(0,0,0,0.82)" />
-                      </svg>
+                      <img src={shiftUrl} alt="shift" style={{ width: 19, height: 17 }} />
                     </Key>
                     {row3.map((l) => (
                       <Key key={l} label={lower ? l : l.toUpperCase()} />
                     ))}
                     <Key bg={C.actionKey} grow={1.5}>
-                      <svg width="22" height="20" viewBox="0 0 26 22" fill="none">
-                        <path d="M8.2 3h13a2 2 0 012 2v12a2 2 0 01-2 2h-13a2 2 0 01-1.5-.7L1 11l5.7-7.3A2 2 0 018.2 3z" stroke="rgba(0,0,0,0.82)" strokeWidth="1.6" fill="none" />
-                        <path d="M11 8l6 6M17 8l-6 6" stroke="rgba(0,0,0,0.82)" strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
+                      <img src={backspaceUrl} alt="backspace" style={{ width: 23, height: 17 }} />
                     </Key>
                   </div>
                   <div className="mb-2 flex gap-[5px]">
                     <Key bg={C.actionKey} grow={1.6} fontSize={15}>
                       123
                     </Key>
-                    <Key bg={C.actionKey} grow={1.2} fontSize={17}>
-                      文
+                    <Key bg={C.actionKey} grow={1.2}>
+                      <img src={localesUrl} alt="languages" style={{ width: 14, height: 17 }} />
                     </Key>
                     <Key grow={5} fontSize={15}>
                       <span className="text-black/85">space</span>
                     </Key>
-                    <Key bg={C.actionKey} grow={1.6} fontSize={18}>
-                      ↵
+                    <Key bg={C.actionKey} grow={1.6}>
+                      <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M11 9l-4 4 4 4" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     </Key>
                   </div>
                 </div>
