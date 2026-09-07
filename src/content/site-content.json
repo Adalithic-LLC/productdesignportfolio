@@ -22,6 +22,8 @@
   "hero": {
     "title": "Hi, I'm Andrew Richards!",
     "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love bringing clarity to complex systems, living in ambiguity, and pushing my limits.",
+    "roleLabel": "Role",
+    "roleValue": "Founder · Product Designer · iOS/Backend Developer",
     "intro": [
       "",
       ""

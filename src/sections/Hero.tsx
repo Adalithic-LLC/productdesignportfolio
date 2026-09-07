@@ -130,16 +130,26 @@ export default function Hero() {
             <p
               ref={subtitleRef}
               /* pre-line so the blank line typed into the copy reads as a paragraph break. */
-              className="whitespace-pre-line text-lg sm:text-xl text-foreground/80 leading-relaxed text-balance"
+              className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-bold text-foreground/80 leading-relaxed text-balance"
             >
               <Editable as="span" path="hero.subtitle" multiline />
             </p>
+
+            {/* Same shape as the case-study callouts: label over value. */}
+            <dl className="mt-8">
+              <Editable
+                as="dt"
+                path="hero.roleLabel"
+                className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block"
+              />
+              <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
+            </dl>
           </div>
 
           <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-2 lg:row-start-1 lg:w-4/5">
             <ArcatextCardStack onSelect={scrollToProjects} />
           </div>
-          <div className="mx-auto w-11/12 sm:w-3/4 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-full">
+          <div className="mx-auto w-1/2 sm:w-2/5 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-[68%]">
             <ProductsCardStack onSelect={scrollToProjects} />
           </div>
         </div>

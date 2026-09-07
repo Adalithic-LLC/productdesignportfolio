@@ -70,6 +70,8 @@ export interface SiteContent {
   hero: {
     title: string;
     subtitle: string;
+    roleLabel: string;
+    roleValue: string;
   };
   projects: {
     heading: string;
