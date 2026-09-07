@@ -72,9 +72,7 @@ export interface SiteContent {
     subtitle: string;
   };
   projects: {
-    headingLead: string;
-    headingHighlight: string;
-    subtitle: string;
+    heading: string;
     viewProject: string;
     viewAll: string;
     items: ProjectItem[];

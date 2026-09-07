@@ -132,16 +132,9 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div ref={titleRef} className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-            <Editable as="span" path="projects.headingLead" />{' '}
-            <Editable as="span" path="projects.headingHighlight" className="gradient-text" />
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+            <Editable as="span" path="projects.heading" className="gradient-text" />
           </h2>
-          <Editable
-            as="p"
-            path="projects.subtitle"
-            multiline
-            className="text-lg text-muted-foreground max-w-2xl mx-auto"
-          />
         </div>
 
         {/* Projects Grid */}

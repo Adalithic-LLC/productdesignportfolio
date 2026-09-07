@@ -29,9 +29,7 @@
     "scrollText": "Scroll to explore"
   },
   "projects": {
-    "headingLead": "Selected",
-    "headingHighlight": "Projects",
-    "subtitle": "A curated collection of work that showcases my approach to solving complex design challenges.",
+    "heading": "Work",
     "viewProject": "View Project",
     "viewAll": "View All Projects",
     "items": [
