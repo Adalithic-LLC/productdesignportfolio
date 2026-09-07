@@ -502,7 +502,11 @@
       "roleTitle": "My role",
       "role": [
         "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, MVP design, implementation, and launch.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation.\n\nI designed and developed 11 features, plus a 'typing performance' admin control center!\n\nMy vision is to evolve Arcatext into a more robust language-learning platform, keeping the translation-keyboard at the center."
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 11 features, plus a 'typing performance' admin control center!",
+        {
+          "type": "paragraph",
+          "text": "My vision is to evolve Arcatext into a more robust language-learning platform, keeping the translation-keyboard at the center."
+        }
       ]
     },
     "problem": {
