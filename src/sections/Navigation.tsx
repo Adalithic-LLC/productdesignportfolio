@@ -51,9 +51,9 @@ export default function Navigation() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-end">
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="absolute left-1/2 hidden -translate-x-1/2 md:flex items-center gap-8">
               {navLinks.map((link, i) => (
                 <a
                   key={link.href}
