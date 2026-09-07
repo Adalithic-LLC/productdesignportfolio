@@ -1,33 +1,13 @@
 /**
- * The Arcatext screens as a deck being flipped through: every few seconds the
- * top card lifts, arcs out to the left and tucks in at the back of the stack,
- * letting the greyed card behind it come forward.
+ * The Arcatext screens as a deck (see CardDeck for the motion).
  *
  * The captures carry their own transparency, so the white card underneath is
  * what gives each screen its page -- the same white the demos were drawn
  * against, now supplied by the deck rather than baked into the file.
- *
- * Every card below the top one sits at the identical back transform, so the
- * card travelling to the back lands exactly behind the new second card and is
- * occluded rather than having to fade out.
- *
- * Every card's screen stays painted; it is the grey plate on top that comes and
- * goes. Hiding the screens with opacity instead let Chromium drop their decoded
- * data while they sat at zero, so a promoted card painted blank white for a
- * frame before its image came back -- a visible flash on every turn of the
- * deck. The plate is instant on the way off and fades on the way back.
  */
-import { useEffect, useRef, useState } from 'react';
+import { CardDeck, type DeckCard } from '@/components/CardDeck';
 
-const BASE = import.meta.env.BASE_URL;
-
-/** How long a card holds the top, and how long its trip to the back takes. */
-const HOLD_MS = 3000;
-const FLICK_MS = 750;
-
-type Card = { src: string; alt: string };
-
-const DECK: Card[] = [
+const CARDS: DeckCard[] = [
   { src: 'reword.webp', alt: 'Arcatext — the keyboard toolbar, rewording a message' },
   { src: 'homographs.webp', alt: 'Arcatext — checking a homograph before sending' },
   { src: 'paste-view.webp', alt: 'Arcatext — translating a received message in place' },
@@ -38,65 +18,13 @@ const DECK: Card[] = [
 ];
 
 export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
-  const [front, setFront] = useState(0);
-  /** The card mid-flight to the back, if any. */
-  const [leaving, setLeaving] = useState<number | null>(null);
-  const frontRef = useRef(0);
-
-  useEffect(() => {
-    const tick = setInterval(() => {
-      const going = frontRef.current;
-      frontRef.current = (going + 1) % DECK.length;
-      setLeaving(going);
-      setFront(frontRef.current);
-    }, HOLD_MS);
-    return () => clearInterval(tick);
-  }, []);
-
-  useEffect(() => {
-    if (leaving === null) return;
-    const settled = setTimeout(() => setLeaving(null), FLICK_MS);
-    return () => clearTimeout(settled);
-  }, [leaving]);
-
   return (
-    <div className="relative w-full" style={{ aspectRatio: '700 / 894' }}>
-      {DECK.map((card, i) => {
-        const isFront = (i - front + DECK.length) % DECK.length === 0;
-        const isLeaving = leaving === i;
-        const lit = isFront || isLeaving;
-        return (
-          <button
-            key={card.src}
-            type="button"
-            onClick={onSelect}
-            tabIndex={isFront ? 0 : -1}
-            aria-hidden={!isFront}
-            aria-label={`${card.alt} — see the projects`}
-            className={[
-              'deck-card absolute inset-[3%] overflow-hidden rounded-[20px] bg-white',
-              'ring-1 ring-black/5 shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isFront ? 'deck-card--front' : 'pointer-events-none',
-              isLeaving ? 'deck-card--leaving' : '',
-            ].join(' ')}
-          >
-            <img
-              src={`${BASE}hero-tiles/${card.src}`}
-              alt=""
-              width={700}
-              height={894}
-              decoding="sync"
-              className="h-full w-full object-contain"
-            />
-            {/* The plain grey card the deck shows behind the live screen. */}
-            <span
-              aria-hidden
-              className={`absolute inset-0 bg-neutral-300 transition-opacity ${lit ? 'opacity-0 duration-0' : 'opacity-100 duration-200'}`}
-            />
-          </button>
-        );
-      })}
-    </div>
+    <CardDeck
+      cards={CARDS}
+      width={700}
+      height={894}
+      cardClass="rounded-[20px] bg-white ring-1 ring-black/5 shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]"
+      onSelect={onSelect}
+    />
   );
 }

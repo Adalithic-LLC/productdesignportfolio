@@ -1,54 +1,80 @@
 /**
  * The hero's product screens, either side of the introduction and beneath it:
- * the Arcatext deck on the left (see ArcatextCardStack), the D2C plugin window
- * on the right, and the typing-performance admin tool -- running live, not a
- * capture of it -- across the half-width below.
+ * the Arcatext deck on the left (see ArcatextCardStack), the deck of screens
+ * D2C generated on the right, and beneath them the typing-performance admin
+ * tool -- running live, not a capture of it -- beside the D2C plugin window
+ * that produced those screens.
  *
- * The two flanking slots draw at the same width by construction: both inset
- * their content 3% of the slot, so the D2C window measures exactly what the
- * deck's cards do. D2C is next in line for a deck of its own once its second
- * screen lands, which is why it keeps that geometry rather than filling its
- * slot edge to edge.
+ * Both flanking decks inset their cards 3% of their slot, so their cards draw
+ * at the same width even though the slots differ.
  */
 
 import { useEffect, useRef, useState } from 'react';
 
+import { CardDeck, type DeckCard } from '@/components/CardDeck';
+
 const BASE = import.meta.env.BASE_URL;
 
 /**
- * Cut out of its own screenshot, so the window's rounded corners are in the
- * file's alpha rather than a clip. The shadow is a drop-shadow filter for the
- * same reason -- a box-shadow would trace the element's rectangle, not the
- * window inside it.
+ * The products rail D2C generated out of the Conversant codebase, as a deck of
+ * its own -- one card for now, with room for the rest of the generated screens.
+ *
+ * The rail is far taller than it is wide, so it is cropped to the deck's card
+ * ratio through the first policy and cut in the gap between rows, rather than
+ * letterboxed down to a sliver. Its corner radius is in its own alpha, and the
+ * deck clips to the same radius so the grey plate follows the card's shape.
+ * It turns half a beat out of phase with the Arcatext deck, so the two never
+ * flick together.
+ */
+const PRODUCTS: DeckCard[] = [
+  { src: 'd2c-products.webp', alt: 'A Conversant products panel, generated from the codebase by D2C' },
+];
+
+export function ProductsCardStack({ onSelect }: { onSelect: () => void }) {
+  return (
+    <CardDeck
+      cards={PRODUCTS}
+      width={1434}
+      height={1529}
+      cardClass="rounded-[1.5%] shadow-[0_14px_34px_-16px_rgba(0,0,0,0.45)]"
+      phaseMs={1500}
+      onSelect={onSelect}
+    />
+  );
+}
+
+/**
+ * The D2C plugin window itself, beside the tuning tool. Cut out of its own
+ * screenshot, so the window's rounded corners live in the file's alpha rather
+ * than in a clip -- which is also why the shadow is a drop-shadow filter: a
+ * box-shadow would trace the element's rectangle, not the window inside it.
  */
 const D2C = {
   src: 'd2c.webp',
   alt: 'D2C — a Figma plugin bridging design and Claude Code',
-  w: 700,
-  h: 746,
+  w: 1434,
+  h: 1529,
 };
 
-export function D2CTile({ onSelect }: { onSelect: () => void }) {
+function D2CTile({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="relative w-full" style={{ aspectRatio: `${D2C.w} / ${D2C.h}` }}>
-      <button
-        type="button"
-        onClick={onSelect}
-        aria-label={`${D2C.alt} — see the projects`}
-        style={{ rotate: '1.8deg' }}
-        className="group absolute inset-[3%] transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <img
-          src={`${BASE}hero-tiles/${D2C.src}`}
-          alt=""
-          width={D2C.w}
-          height={D2C.h}
-          decoding="async"
-          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-          style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
-        />
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${D2C.alt} — see the projects`}
+      style={{ rotate: '1.8deg' }}
+      className="group block w-full transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <img
+        src={`${BASE}hero-tiles/${D2C.src}`}
+        alt=""
+        width={D2C.w}
+        height={D2C.h}
+        decoding="async"
+        className="block w-full transition-transform duration-500 group-hover:scale-[1.03]"
+        style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
+      />
+    </button>
   );
 }
 
@@ -107,8 +133,16 @@ function AdminToolTile({ onSelect }: { onSelect: () => void }) {
 
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="w-full lg:w-1/2">
-      <AdminToolTile onSelect={onSelect} />
+    <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12">
+      {/* Exactly half the width, so the gap comes out of the other half. */}
+      <div className="w-full shrink-0 lg:w-1/2">
+        <AdminToolTile onSelect={onSelect} />
+      </div>
+      {/* Measured against the whole row, not the space left over, so it stands
+          about as tall as the tool beside it rather than taking up the slack. */}
+      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[30%]">
+        <D2CTile onSelect={onSelect} />
+      </div>
     </div>
   );
 }
