@@ -70,8 +70,8 @@ export interface SiteContent {
   hero: {
     title: string;
     subtitle: string;
+    /** Closing note, rendered below the work cluster. */
     intro: string[];
-    scrollText: string;
   };
   projects: {
     headingLead: string;

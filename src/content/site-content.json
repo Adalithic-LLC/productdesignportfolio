@@ -21,12 +21,10 @@
   },
   "hero": {
     "title": "Hi, my name's Andrew Richards!",
-    "subtitle": "I'm a digital product designer and builder who fell in love with creating real products with AI.",
+    "subtitle": "I'm a digital product designer and builder using AI to create real products & tools.",
     "intro": [
-      "My path has taken some twists & turns, starting with industrial design in school @ RISD, getting into research and conceptual product design at MIT, then re-focusing on web and app design at USAA, where I found my passion!",
-      "When I built my side project, Arcatext, I realized how significantly digital product development has evolved, and I couldn't be happier. We can finally dream, design, and build things that actually work!"
-    ],
-    "scrollText": "Scroll to explore"
+      "I've been fortunate to gain experience in design for web, iOS, Android, chat interfaces, plugins, and complex desktop applications. I thrive in ambiguous problem spaces where connected systems need immense attention to detail and where technical constraints need creative solutions."
+    ]
   },
   "projects": {
     "headingLead": "Selected",

@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { ArrowDown } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { HeroWorkCollage } from '@/components/HeroWorkCollage';
+import { HeroSideTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
 
 export default function Hero() {
   const { content, isAdmin } = useContent();
@@ -44,16 +43,6 @@ export default function Hero() {
           delay: 0.8,
         }
       );
-
-      // Scroll indicator bounce
-      gsap.to('.scroll-indicator', {
-        y: 10,
-        duration: 1.5,
-        ease: 'sine.inOut',
-        repeat: -1,
-        yoyo: true,
-        delay: 2,
-      });
     }, heroRef);
 
     return () => ctx.revert();
@@ -107,9 +96,12 @@ export default function Hero() {
 
       {/* Main Content */}
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 py-24">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Left: the introduction. */}
-          <div className="max-w-xl">
+        {/* The introduction sits centred with a screen either side of it. DOM
+            order puts the copy first so it still leads when the grid collapses
+            to one column; explicit placement pulls the tiles alongside it at
+            desktop widths. */}
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.1fr)_minmax(0,1fr)] lg:gap-12">
+          <div className="mx-auto max-w-2xl text-center lg:col-start-2 lg:row-start-1">
             <h1
               ref={titleRef}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
@@ -135,30 +127,31 @@ export default function Hero() {
 
             <p
               ref={subtitleRef}
-              className="text-lg sm:text-xl text-foreground/80 mb-6 leading-relaxed"
+              className="text-lg sm:text-xl text-foreground/80 leading-relaxed text-balance"
             >
               <Editable as="span" path="hero.subtitle" multiline />
             </p>
-
-            <div className="space-y-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
-              {hero.intro.map((_, i) => (
-                <Editable key={i} as="p" path={`hero.intro.${i}`} multiline />
-              ))}
-            </div>
-
           </div>
 
-          {/* Right: the work itself. */}
-          <div className="opacity-0 animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
-            <HeroWorkCollage onSelect={scrollToProjects} />
+          <div className="mx-auto w-2/3 sm:w-1/2 lg:w-full lg:col-start-1 lg:row-start-1">
+            <HeroSideTile side="left" onSelect={scrollToProjects} />
+          </div>
+          <div className="mx-auto w-2/3 sm:w-1/2 lg:w-full lg:col-start-3 lg:row-start-1">
+            <HeroSideTile side="right" onSelect={scrollToProjects} />
           </div>
         </div>
-      </div>
 
-      {/* Scroll Indicator */}
-      <div className="scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground">
-        <Editable as="span" path="hero.scrollText" className="text-xs font-medium uppercase tracking-wider" />
-        <ArrowDown className="w-5 h-5" />
+        {/* The rest of the work, clustered beneath. */}
+        <div className="mt-10 lg:mt-12">
+          <HeroWorkCluster onSelect={scrollToProjects} />
+        </div>
+
+        {/* Closing note, below the cluster. */}
+        <div className="mx-auto mt-14 max-w-3xl space-y-5 text-center text-base sm:text-lg text-muted-foreground leading-relaxed">
+          {hero.intro.map((_, i) => (
+            <Editable key={i} as="p" path={`hero.intro.${i}`} multiline />
+          ))}
+        </div>
       </div>
 
       {/* Bottom Gradient Fade */}
