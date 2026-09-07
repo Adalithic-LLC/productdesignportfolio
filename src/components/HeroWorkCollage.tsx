@@ -8,9 +8,10 @@
  * AdminToolTile), and the D2C Figma plugin. Clicking any of them jumps to the
  * projects section.
  *
- * The cluster is a five-column grid so the two landscape tools can span three
- * and two columns respectively — wide enough to read. Each tile carries a small
- * rotation so the set reads as a pinned-up collection, not a table.
+ * Beneath the introduction the admin tool takes half the page, flush left so
+ * its edge lines up with the card deck above it, and the plugin sits in the
+ * other half. Each tile carries a small rotation so the set reads as a
+ * pinned-up collection, not a table.
  *
  * The screen genuinely floats: the Arcatext demo was recaptured with the page's
  * ground knocked out, so the transparency is in the file itself and the bubbles
@@ -48,8 +49,6 @@ type Tile = {
   tilt: number;
   /** Pixels of vertical offset, kept under the row gap so rows never collide. */
   drop?: number;
-  /** Columns to span inside the cluster grid. */
-  span?: number;
   /** Fraction of its grid cell the tile fills, when the cell is wider than it should draw. */
   width?: string;
 };
@@ -63,13 +62,8 @@ const RIGHT: Tile = {
 
 /** Sits beneath it, alongside the live admin tool. */
 const CLUSTER: Tile[] = [
-  { src: 'figma-plugin.jpg', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, span: 2, width: 'w-1/2' },
+  { src: 'figma-plugin.jpg', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, width: 'w-1/2 lg:w-[32%]' },
 ];
-
-const SPAN_CLASS: Record<number, string> = {
-  2: 'col-span-2 lg:col-span-2',
-  3: 'col-span-2 lg:col-span-3',
-};
 
 function TileButton({
   tile,
@@ -125,7 +119,7 @@ function AdminToolTile({ onSelect }: { onSelect: () => void }) {
     <div
       ref={frameRef}
       style={{ rotate: '0.6deg', aspectRatio: `${TOOL.w} / ${TOOL.h}` }}
-      className="relative col-span-2 overflow-hidden rounded-xl bg-white transition-transform duration-300 hover:rotate-0 sm:rounded-2xl lg:col-span-3"
+      className="relative w-full overflow-hidden rounded-xl bg-white transition-transform duration-300 hover:rotate-0 sm:rounded-2xl"
     >
       <iframe
         src={TOOL.src}
@@ -148,11 +142,16 @@ function AdminToolTile({ onSelect }: { onSelect: () => void }) {
 
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="grid grid-cols-2 items-start gap-3 sm:gap-4 lg:grid-cols-5">
-      <AdminToolTile onSelect={onSelect} />
-      {CLUSTER.map((t) => (
-        <TileButton key={t.src} tile={t} onSelect={onSelect} className={t.span ? SPAN_CLASS[t.span] : ''} />
-      ))}
+    <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-start">
+      {/* Exactly half the width, so the gap comes out of the other half. */}
+      <div className="w-full shrink-0 lg:w-1/2">
+        <AdminToolTile onSelect={onSelect} />
+      </div>
+      <div className="flex w-full min-w-0 lg:pl-12">
+        {CLUSTER.map((t) => (
+          <TileButton key={t.src} tile={t} onSelect={onSelect} />
+        ))}
+      </div>
     </div>
   );
 }

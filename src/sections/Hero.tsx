@@ -135,7 +135,7 @@ export default function Hero() {
             </p>
           </div>
 
-          <div className="mx-auto w-2/3 sm:w-1/2 lg:w-4/5 lg:col-start-1 lg:row-start-1">
+          <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-1 lg:row-start-1 lg:mx-0 lg:w-4/5">
             <ArcatextCardStack onSelect={scrollToProjects} />
           </div>
           <div className="mx-auto w-2/3 sm:w-1/2 lg:w-4/5 lg:col-start-3 lg:row-start-1">
@@ -143,8 +143,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* The rest of the work, clustered beneath. */}
-        <div className="mx-auto mt-10 w-full lg:mt-12 lg:w-4/5">
+        {/* The rest of the work, beneath — flush left, under the card deck. */}
+        <div className="mt-10 w-full lg:mt-12">
           <HeroWorkCluster onSelect={scrollToProjects} />
         </div>
       </div>
