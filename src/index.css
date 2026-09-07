@@ -284,3 +284,32 @@
   outline-offset: 2px;
   background-color: hsl(var(--primary) / 0.08);
 }
+
+/* Hero card deck ---------------------------------------------------------
+   Cards below the top all rest at the same back transform, so the one
+   travelling to the back lands exactly behind the new second card. The
+   z-index steps mid-flight, holding the card above the deck while it lifts
+   out and dropping it under once it starts tucking in. */
+.deck-card {
+  transform: rotate(4.5deg) translate(2%, -1.5%) scale(0.985);
+  z-index: 10;
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.deck-card--front {
+  transform: rotate(-2deg) translate(0, 0) scale(1);
+  z-index: 40;
+}
+.deck-card--leaving {
+  animation: deck-flick 750ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes deck-flick {
+  0%   { transform: rotate(-2deg) translate(0, 0) scale(1); z-index: 60; }
+  30%  { transform: rotate(-13deg) translate(-20%, 3%) scale(0.99); }
+  54%  { z-index: 60; }
+  55%  { z-index: 5; }
+  100% { transform: rotate(4.5deg) translate(2%, -1.5%) scale(0.985); z-index: 5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck-card { transition: none; }
+  .deck-card--leaving { animation: none; }
+}

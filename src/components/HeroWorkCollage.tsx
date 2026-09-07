@@ -1,7 +1,7 @@
 /**
- * The hero's collage of real product UI, split into three slots that sit
- * around the introduction: one screen to its left, one to its right, and the
- * rest clustered beneath it.
+ * The hero's collage of real product UI, sitting around the introduction: the
+ * Arcatext deck to its left (see ArcatextCardStack), one screen to its right,
+ * and the tools clustered beneath it.
  *
  * Every tile is a shipped screen: the Arcatext feature demos as they run on
  * adalithic.com (captured from the live components), its typing-performance
@@ -9,9 +9,8 @@
  * projects section.
  *
  * The cluster is a five-column grid so the two landscape tools can span three
- * and two columns respectively — wide enough to read — with the five remaining
- * phone screens filling a row beneath them. Each tile carries a small rotation
- * and vertical nudge so the set reads as a pinned-up collection, not a table.
+ * and two columns respectively — wide enough to read. Each tile carries a small
+ * rotation so the set reads as a pinned-up collection, not a table.
  *
  * The screens genuinely float: the Arcatext demos were recaptured with the
  * page's ground knocked out, so the transparency is in the files themselves and
@@ -38,27 +37,17 @@ type Tile = {
   width?: string;
 };
 
-/** Flanks the introduction. */
-const LEFT: Tile = {
-  src: 'reword.webp',
-  alt: 'Arcatext — rewording a message from the keyboard',
-  w: 700, h: 769, tilt: -1.8,
-};
+/** Flanks the introduction, opposite the card deck. */
 const RIGHT: Tile = {
-  src: 'homographs.webp',
-  alt: 'Arcatext — disambiguating a homograph before sending',
+  src: 'send-copy.webp',
+  alt: 'Arcatext — sending a copy in a second language',
   w: 700, h: 861, tilt: 1.7,
 };
 
-/** Sits beneath it: the two tools, then a row of phone screens. */
+/** Sits beneath it: the two tools the Arcatext deck does not cover. */
 const CLUSTER: Tile[] = [
   { src: 'typing-admin.jpg', alt: 'Arcatext typing-performance admin tool', w: 1400, h: 897, tilt: 0.6, span: 3 },
   { src: 'figma-plugin.jpg', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, span: 2, width: 'w-1/2' },
-  { src: 'paste-view.webp', alt: 'Arcatext — translating a received message in place', w: 700, h: 894, tilt: -1.2, drop: 4 },
-  { src: 'reverse-translation.webp', alt: 'Arcatext — reverse translation to confirm intent', w: 700, h: 861, tilt: 1.5, drop: 10 },
-  { src: 'reword-options.webp', alt: 'Arcatext — recipient gender and script options', w: 700, h: 861, tilt: -1.6 },
-  { src: 'synonyms.webp', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 700, h: 890, tilt: 1.1, drop: 11 },
-  { src: 'send-copy.webp', alt: 'Arcatext — sending a copy in a second language', w: 700, h: 861, tilt: -1.3, drop: 5 },
 ];
 
 const SPAN_CLASS: Record<number, string> = {
@@ -95,8 +84,8 @@ function TileButton({
   );
 }
 
-export function HeroSideTile({ side, onSelect }: { side: 'left' | 'right'; onSelect: () => void }) {
-  return <TileButton tile={side === 'left' ? LEFT : RIGHT} onSelect={onSelect} />;
+export function HeroSideTile({ onSelect }: { onSelect: () => void }) {
+  return <TileButton tile={RIGHT} onSelect={onSelect} />;
 }
 
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {

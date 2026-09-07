@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { HeroSideTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
+import { ArcatextCardStack } from '@/components/ArcatextCardStack';
 
 export default function Hero() {
   const { content, isAdmin } = useContent();
@@ -135,10 +136,10 @@ export default function Hero() {
           </div>
 
           <div className="mx-auto w-2/3 sm:w-1/2 lg:w-4/5 lg:col-start-1 lg:row-start-1">
-            <HeroSideTile side="left" onSelect={scrollToProjects} />
+            <ArcatextCardStack onSelect={scrollToProjects} />
           </div>
           <div className="mx-auto w-2/3 sm:w-1/2 lg:w-4/5 lg:col-start-3 lg:row-start-1">
-            <HeroSideTile side="right" onSelect={scrollToProjects} />
+            <HeroSideTile onSelect={scrollToProjects} />
           </div>
         </div>
 
