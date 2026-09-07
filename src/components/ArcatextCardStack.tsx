@@ -3,8 +3,12 @@
  *
  * These are simulator captures of the shipped keyboard rather than the web
  * demos that stood in for it, so they carry the device's own status bar and go
- * edge to edge -- the card clips them to its corner radius instead of supplying
- * a page behind them, and the deck's card takes the phone's 1206x2622.
+ * edge to edge -- the card clips them instead of supplying a page behind them,
+ * and takes the phone's 1206x2622.
+ *
+ * The capture is 402x874pt, an iPhone 16 Pro, whose display corners are 62pt --
+ * 15.4% of the width. The simulator writes the screen out square, so that curve
+ * only exists if the card supplies it: 36px at the 231px the card draws at.
  */
 import { CardDeck, type DeckCard } from '@/components/CardDeck';
 
@@ -25,7 +29,7 @@ export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
       cards={CARDS}
       width={1206}
       height={2622}
-      cardClass="rounded-[22px] bg-white ring-1 ring-black/5 shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]"
+      cardClass="rounded-[36px] bg-white ring-1 ring-black/5 shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]"
       onSelect={onSelect}
     />
   );
