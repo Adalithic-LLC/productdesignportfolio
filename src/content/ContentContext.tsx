@@ -17,7 +17,7 @@ export type MoveSelection =
  * The save target branch can be overridden from the admin bar at runtime.
  */
 const CONTENT_PATH = 'src/content/site-content.json';
-const REPO_OWNER = 'AndrewRichardsDesign';
+const REPO_OWNER = 'Adalithic-LLC';
 const REPO_NAME = 'productdesignportfolio';
 const DEFAULT_BRANCH = 'main';
 
