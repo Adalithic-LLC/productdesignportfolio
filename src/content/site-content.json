@@ -21,10 +21,12 @@
   },
   "hero": {
     "title": "Hi, my name's Andrew Richards!",
-    "subtitle": "I'm a digital product designer and builder using AI to create real products & tools.",
+    "subtitle": "I'm a digital product designer and builder using AI to create real products & tools. I love bringing clarity to complex systems, living in ambiguity, embracing technical constraints, and pushing the limits.\n\nI've worked on desktop applications, web apps, iOS, Android, chat UI, and Figma plugins.",
     "intro": [
-      "I've been fortunate to gain experience in design for web, iOS, Android, chat interfaces, plugins, and complex desktop applications. I thrive in ambiguous problem spaces where connected systems need immense attention to detail and where technical constraints need creative solutions."
-    ]
+      "",
+      ""
+    ],
+    "scrollText": "Scroll to explore"
   },
   "projects": {
     "headingLead": "Selected",
