@@ -28,6 +28,7 @@ const DECK: Card[] = [
   { src: 'reverse-translation.webp', alt: 'Arcatext — reverse translation, to confirm intent' },
   { src: 'reword-options.webp', alt: 'Arcatext — recipient gender and script options' },
   { src: 'synonyms.webp', alt: 'Arcatext — synonym alternatives for a reworded phrase' },
+  { src: 'send-copy.webp', alt: 'Arcatext — sending a copy in a second language' },
 ];
 
 export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {

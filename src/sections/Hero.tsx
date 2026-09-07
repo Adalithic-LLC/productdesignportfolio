@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { HeroSideTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
+import { D2CTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
 import { ArcatextCardStack } from '@/components/ArcatextCardStack';
 
 export default function Hero() {
@@ -138,8 +138,8 @@ export default function Hero() {
           <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-1 lg:row-start-1 lg:mx-0 lg:w-4/5">
             <ArcatextCardStack onSelect={scrollToProjects} />
           </div>
-          <div className="mx-auto w-2/3 sm:w-1/2 lg:w-4/5 lg:col-start-3 lg:row-start-1">
-            <HeroSideTile onSelect={scrollToProjects} />
+          <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-4/5">
+            <D2CTile onSelect={scrollToProjects} />
           </div>
         </div>
 

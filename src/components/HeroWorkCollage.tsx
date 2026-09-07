@@ -1,23 +1,14 @@
 /**
- * The hero's collage of real product UI, sitting around the introduction: the
- * Arcatext deck to its left (see ArcatextCardStack), one screen to its right,
- * and the tools clustered beneath it.
+ * The hero's product screens, either side of the introduction and beneath it:
+ * the Arcatext deck on the left (see ArcatextCardStack), the D2C plugin window
+ * on the right, and the typing-performance admin tool -- running live, not a
+ * capture of it -- across the half-width below.
  *
- * Every tile is real product: the send-a-copy screen as it runs on
- * adalithic.com, the typing-performance admin tool running live (see
- * AdminToolTile), and the D2C plugin, cut out of its own screenshot so its
- * window floats rather than sitting on a grey plate. Clicking any of them
- * jumps to the projects section.
- *
- * Beneath the introduction the admin tool takes half the page, flush left so
- * its edge lines up with the card deck above it, and the plugin sits in the
- * other half. Each tile carries a small rotation so the set reads as a
- * pinned-up collection, not a table.
- *
- * The screen genuinely floats: the Arcatext demo was recaptured with the page's
- * ground knocked out, so the transparency is in the file itself and the bubbles
- * sit straight on the hero in either theme. The two tools keep their own chrome
- * -- an admin console and a plugin panel read as windows.
+ * The two flanking slots draw at the same width by construction: both inset
+ * their content 3% of the slot, so the D2C window measures exactly what the
+ * deck's cards do. D2C is next in line for a deck of its own once its second
+ * screen lands, which is why it keeps that geometry rather than filling its
+ * slot edge to edge.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -25,12 +16,50 @@ import { useEffect, useRef, useState } from 'react';
 const BASE = import.meta.env.BASE_URL;
 
 /**
- * The admin tool is the real prototype rather than a capture of it -- the same
- * self-contained page the Arcatext case study embeds. It is pinned to the
- * tool's daylight palette whatever the portfolio's theme, so it reads as a
- * light window beside the other screens, and it renders at its full desktop
- * width before being scaled into the tile: at the tile's own width the tool's
- * responsive layout would collapse to a single narrow column.
+ * Cut out of its own screenshot, so the window's rounded corners are in the
+ * file's alpha rather than a clip. The shadow is a drop-shadow filter for the
+ * same reason -- a box-shadow would trace the element's rectangle, not the
+ * window inside it.
+ */
+const D2C = {
+  src: 'd2c.webp',
+  alt: 'D2C — a Figma plugin bridging design and Claude Code',
+  w: 700,
+  h: 746,
+};
+
+export function D2CTile({ onSelect }: { onSelect: () => void }) {
+  return (
+    <div className="relative w-full" style={{ aspectRatio: `${D2C.w} / ${D2C.h}` }}>
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={`${D2C.alt} — see the projects`}
+        style={{ rotate: '1.8deg' }}
+        className="group absolute inset-[3%] transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <img
+          src={`${BASE}hero-tiles/${D2C.src}`}
+          alt=""
+          width={D2C.w}
+          height={D2C.h}
+          decoding="async"
+          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+          style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
+        />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The admin tool is the real prototype -- the same self-contained page the
+ * Arcatext case study embeds, pinned to the tool's daylight palette whatever
+ * the portfolio's theme. The iframe is laid out at the tool's full desktop
+ * width and scaled to whatever the tile is given, with a ResizeObserver keeping
+ * the two in step, since that factor is a ratio CSS cannot work out on its own;
+ * at the tile's own width the tool's responsive layout would collapse to a
+ * single narrow column.
  */
 const TOOL = {
   src: `${BASE}arcatext-admin-tool.html?theme=daylight`,
@@ -39,71 +68,6 @@ const TOOL = {
   h: 897,
 };
 
-type Tile = {
-  /** Filename in public/hero-tiles. */
-  src: string;
-  /** Describes the screen; also the button's accessible name. */
-  alt: string;
-  w: number;
-  h: number;
-  /** Degrees; small and alternating, to break the grid without looking sloppy. */
-  tilt: number;
-  /** Pixels of vertical offset, kept under the row gap so rows never collide. */
-  drop?: number;
-  /** Fraction of its grid cell the tile fills, when the cell is wider than it should draw. */
-  width?: string;
-};
-
-/** Flanks the introduction, opposite the card deck. */
-const RIGHT: Tile = {
-  src: 'send-copy.webp',
-  alt: 'Arcatext — sending a copy in a second language',
-  w: 700, h: 861, tilt: 1.7,
-};
-
-/** Sits beneath it, alongside the live admin tool. */
-const CLUSTER: Tile[] = [
-  { src: 'd2c.webp', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 700, h: 746, tilt: -0.8, width: 'w-1/2 lg:w-[32%]' },
-];
-
-function TileButton({
-  tile,
-  onSelect,
-  className = '',
-}: {
-  tile: Tile;
-  onSelect: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-label={`${tile.alt} — see the projects`}
-      style={{ rotate: `${tile.tilt}deg`, translate: tile.drop ? `0 ${tile.drop}px` : undefined }}
-      className={`group block overflow-hidden rounded-xl transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl ${tile.width ?? 'w-full'} ${className}`}
-    >
-      <img
-        src={`${BASE}hero-tiles/${tile.src}`}
-        alt=""
-        width={tile.w}
-        height={tile.h}
-        decoding="async"
-        className="block w-full transition-transform duration-500 group-hover:scale-[1.03]"
-      />
-    </button>
-  );
-}
-
-export function HeroSideTile({ onSelect }: { onSelect: () => void }) {
-  return <TileButton tile={RIGHT} onSelect={onSelect} />;
-}
-
-/**
- * The admin tool, live. The iframe is laid out at the tool's desktop width and
- * scaled to whatever the tile is actually given; a ResizeObserver keeps the two
- * in step, since the factor is a ratio CSS cannot work out on its own.
- */
 function AdminToolTile({ onSelect }: { onSelect: () => void }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
@@ -143,16 +107,8 @@ function AdminToolTile({ onSelect }: { onSelect: () => void }) {
 
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-start">
-      {/* Exactly half the width, so the gap comes out of the other half. */}
-      <div className="w-full shrink-0 lg:w-1/2">
-        <AdminToolTile onSelect={onSelect} />
-      </div>
-      <div className="flex w-full min-w-0 lg:pl-12">
-        {CLUSTER.map((t) => (
-          <TileButton key={t.src} tile={t} onSelect={onSelect} />
-        ))}
-      </div>
+    <div className="w-full lg:w-1/2">
+      <AdminToolTile onSelect={onSelect} />
     </div>
   );
 }
