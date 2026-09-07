@@ -13,14 +13,16 @@
  * phone screens filling a row beneath them. Each tile carries a small rotation
  * and vertical nudge so the set reads as a pinned-up collection, not a table.
  *
- * The screens float: no card border, fill or shadow behind them, since each
- * capture already carries the app's own panel edges.
+ * The screens genuinely float: the Arcatext demos were recaptured with the
+ * page's ground knocked out, so the transparency is in the files themselves and
+ * the bubbles sit straight on the hero in either theme. The two tools keep
+ * their own chrome -- an admin console and a plugin panel read as windows.
  */
 
 const BASE = import.meta.env.BASE_URL;
 
 type Tile = {
-  /** File in public/hero-tiles, without extension. */
+  /** Filename in public/hero-tiles. */
   src: string;
   /** Describes the screen; also the button's accessible name. */
   alt: string;
@@ -32,29 +34,31 @@ type Tile = {
   drop?: number;
   /** Columns to span inside the cluster grid. */
   span?: number;
+  /** Fraction of its grid cell the tile fills, when the cell is wider than it should draw. */
+  width?: string;
 };
 
 /** Flanks the introduction. */
 const LEFT: Tile = {
-  src: 'reword',
+  src: 'reword.webp',
   alt: 'Arcatext — rewording a message from the keyboard',
-  w: 700, h: 813, tilt: -1.8,
+  w: 700, h: 769, tilt: -1.8,
 };
 const RIGHT: Tile = {
-  src: 'homographs',
+  src: 'homographs.webp',
   alt: 'Arcatext — disambiguating a homograph before sending',
-  w: 700, h: 907, tilt: 1.7,
+  w: 700, h: 861, tilt: 1.7,
 };
 
 /** Sits beneath it: the two tools, then a row of phone screens. */
 const CLUSTER: Tile[] = [
-  { src: 'typing-admin', alt: 'Arcatext typing-performance admin tool', w: 1400, h: 897, tilt: 0.6, span: 3 },
-  { src: 'figma-plugin', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, span: 2 },
-  { src: 'paste-view', alt: 'Arcatext — translating a received message in place', w: 520, h: 692, tilt: -1.2, drop: 4 },
-  { src: 'reverse-translation', alt: 'Arcatext — reverse translation to confirm intent', w: 520, h: 674, tilt: 1.5, drop: 10 },
-  { src: 'reword-options', alt: 'Arcatext — recipient gender and script options', w: 520, h: 674, tilt: -1.6 },
-  { src: 'synonyms', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 520, h: 692, tilt: 1.1, drop: 11 },
-  { src: 'send-copy', alt: 'Arcatext — sending a copy in a second language', w: 520, h: 674, tilt: -1.3, drop: 5 },
+  { src: 'typing-admin.jpg', alt: 'Arcatext typing-performance admin tool', w: 1400, h: 897, tilt: 0.6, span: 3 },
+  { src: 'figma-plugin.jpg', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.8, span: 2, width: 'w-1/2' },
+  { src: 'paste-view.webp', alt: 'Arcatext — translating a received message in place', w: 700, h: 894, tilt: -1.2, drop: 4 },
+  { src: 'reverse-translation.webp', alt: 'Arcatext — reverse translation to confirm intent', w: 700, h: 861, tilt: 1.5, drop: 10 },
+  { src: 'reword-options.webp', alt: 'Arcatext — recipient gender and script options', w: 700, h: 861, tilt: -1.6 },
+  { src: 'synonyms.webp', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 700, h: 890, tilt: 1.1, drop: 11 },
+  { src: 'send-copy.webp', alt: 'Arcatext — sending a copy in a second language', w: 700, h: 861, tilt: -1.3, drop: 5 },
 ];
 
 const SPAN_CLASS: Record<number, string> = {
@@ -77,10 +81,10 @@ function TileButton({
       onClick={onSelect}
       aria-label={`${tile.alt} — see the projects`}
       style={{ rotate: `${tile.tilt}deg`, translate: tile.drop ? `0 ${tile.drop}px` : undefined }}
-      className={`group block w-full overflow-hidden rounded-xl transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl ${className}`}
+      className={`group block overflow-hidden rounded-xl transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl ${tile.width ?? 'w-full'} ${className}`}
     >
       <img
-        src={`${BASE}hero-tiles/${tile.src}.jpg`}
+        src={`${BASE}hero-tiles/${tile.src}`}
         alt=""
         width={tile.w}
         height={tile.h}
