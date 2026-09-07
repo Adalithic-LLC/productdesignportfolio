@@ -127,7 +127,8 @@ export default function Hero() {
 
             <p
               ref={subtitleRef}
-              className="text-lg sm:text-xl text-foreground/80 leading-relaxed text-balance"
+              /* pre-line so the blank line typed into the copy reads as a paragraph break. */
+              className="whitespace-pre-line text-lg sm:text-xl text-foreground/80 leading-relaxed text-balance"
             >
               <Editable as="span" path="hero.subtitle" multiline />
             </p>
@@ -144,13 +145,6 @@ export default function Hero() {
         {/* The rest of the work, clustered beneath. */}
         <div className="mx-auto mt-10 w-full lg:mt-12 lg:w-4/5">
           <HeroWorkCluster onSelect={scrollToProjects} />
-        </div>
-
-        {/* Closing note, below the cluster. */}
-        <div className="mx-auto mt-14 max-w-3xl space-y-5 text-center text-base sm:text-lg text-muted-foreground leading-relaxed">
-          {hero.intro.map((_, i) => (
-            <Editable key={i} as="p" path={`hero.intro.${i}`} multiline />
-          ))}
         </div>
       </div>
 
