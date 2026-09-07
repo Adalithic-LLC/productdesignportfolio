@@ -468,9 +468,9 @@
         "Multilingual Communication"
       ],
       "roleLabel": "ROLE",
-      "roleValue": "Founder · Product Designer · iOS Developer · Backend Developer",
+      "roleValue": "Founder · Product Designer · iOS/ Backend Developer",
       "platformLabel": "Platform",
-      "platformValue": "iOS · Custom keyboard",
+      "platformValue": "iOS",
       "surfaceLabel": "Surface",
       "surfaceValue": "Any messaging app (iMessage, WhatsApp, HelloTalk, …)"
     },
@@ -492,7 +492,7 @@
       ],
       "originTitle": "Origin & pivot",
       "origin": [
-        "Arcatext began as a personal attempt to make multilingual texting more streamlined. \n\n\nStarting as a conceptual messaging app optimization, I pivoted to language learning product after further research and market exploration."
+        "Arcatext began as a personal attempt to make multilingual texting more streamlined.\n\nStarting as a conceptual messaging app optimization, I pivoted to language learning product after further research and market exploration."
       ],
       "readingWritingTitle": "The focus on reading and writing",
       "readingWriting": [
@@ -502,7 +502,7 @@
       "roleTitle": "My role",
       "role": [
         "I led Arcatext as the company founder & product designer, taking the app from the early concept through research, MVP design, implementation, and launch.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted front and back-end development, and business formation. I created the LLC, developed the iOS app, designed the core translation keyboard experience, and built the foundation for Arcatext to evolve from an MVP into a broader language-learning platform."
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I created the LLC, developed the iOS app, designed the core translation keyboard experience, and built the foundation for Arcatext to evolve from an MVP into a broader language-learning platform."
       ]
     },
     "problem": {
@@ -947,7 +947,7 @@
       "backToProjects": "Back to Projects"
     },
     "interactive": {
-      "eyebrow": "Interactive",
+      "eyebrow": "INTERACTIVE",
       "titleLead": "The keyboard,",
       "titleHighlight": "in motion",
       "description": "An interactive walkthrough of the Arcatext keyboard."
