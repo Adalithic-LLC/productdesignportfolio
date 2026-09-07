@@ -71,6 +71,7 @@ export interface SiteContent {
     badge: string;
     title: string;
     subtitle: string;
+    intro: string[];
     scrollText: string;
     stats: HeroStat[];
   };

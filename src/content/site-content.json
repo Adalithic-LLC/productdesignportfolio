@@ -21,8 +21,12 @@
   },
   "hero": {
     "badge": "Available for new projects",
-    "title": "Digital Product Designer",
-    "subtitle": "I design elegant solutions for complex products, validated through user needs, business goals, and technical realities.",
+    "title": "Hi, my name's Andrew Richards!",
+    "subtitle": "I'm a digital product designer and builder who fell in love with creating real products with AI.",
+    "intro": [
+      "My path has taken some twists & turns, starting with industrial design in school @ RISD, getting into research and conceptual product design at MIT, then re-focusing on web and app design at USAA, where I found my passion!",
+      "When I built my side project, Arcatext, I realized how significantly digital product development has evolved, and I couldn't be happier. We can finally dream, design, and build things that actually work!"
+    ],
     "scrollText": "Scroll to explore",
     "stats": [
       {

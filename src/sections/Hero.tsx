@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ArrowDown } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
+import { HeroWorkCollage } from '@/components/HeroWorkCollage';
 
 export default function Hero() {
   const { content, isAdmin } = useContent();
@@ -80,13 +81,17 @@ export default function Hero() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const scrollToProjects = () => {
+    document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const titleText = hero.title;
 
   return (
     <section
       ref={heroRef}
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden"
       style={{ perspective: '1200px' }}
     >
       {/* Animated Background Gradient */}
@@ -101,62 +106,77 @@ export default function Hero() {
       />
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 opacity-0 animate-fade-in"
-          style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
-        >
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <Editable as="span" path="hero.badge" className="text-sm font-medium text-primary" />
-        </div>
-
-        {/* Title */}
-        <h1
-          ref={titleRef}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight"
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          {isAdmin ? (
-            <Editable as="span" path="hero.title" />
-          ) : (
-            titleText.split('').map((char, i) => (
-              <span
-                key={i}
-                className="char inline-block"
-                style={{ display: char === ' ' ? 'inline' : 'inline-block' }}
-              >
-                {char === ' ' ? '\u00A0' : char}
-              </span>
-            ))
-          )}
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          ref={subtitleRef}
-          className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed"
-        >
-          <Editable as="span" path="hero.subtitle" multiline />
-        </p>
-
-        {/* Stats Row */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto opacity-0 animate-fade-in"
-          style={{ animationDelay: '1.4s', animationFillMode: 'forwards' }}
-        >
-          {hero.stats.map((_, i) => (
-            <div key={i} className="text-center">
-              <Editable
-                as="div"
-                path={`hero.stats.${i}.value`}
-                className="text-2xl sm:text-3xl font-bold gradient-text"
-              />
-              <Editable
-                as="div"
-                path={`hero.stats.${i}.label`}
-                className="text-sm text-muted-foreground mt-1"
-              />
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-24">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-14">
+          {/* Left: the introduction. */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 opacity-0 animate-fade-in"
+              style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+            >
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <Editable as="span" path="hero.badge" className="text-sm font-medium text-primary" />
             </div>
-          ))}
+
+            <h1
+              ref={titleRef}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              {isAdmin ? (
+                <Editable as="span" path="hero.title" />
+              ) : (
+                titleText.split(' ').map((word, w) => (
+                  <span key={w} className="inline-block whitespace-nowrap">
+                    {word.split('').map((char, i) => (
+                      <span key={i} className="char inline-block">
+                        {char}
+                      </span>
+                    ))}
+                    {w < titleText.split(' ').length - 1 && (
+                      <span className="char inline-block">&nbsp;</span>
+                    )}
+                  </span>
+                ))
+              )}
+            </h1>
+
+            <p
+              ref={subtitleRef}
+              className="text-lg sm:text-xl text-foreground/80 mb-6 leading-relaxed"
+            >
+              <Editable as="span" path="hero.subtitle" multiline />
+            </p>
+
+            <div className="space-y-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
+              {hero.intro.map((_, i) => (
+                <Editable key={i} as="p" path={`hero.intro.${i}`} multiline />
+              ))}
+            </div>
+
+            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 opacity-0 animate-fade-in"
+              style={{ animationDelay: '1.4s', animationFillMode: 'forwards' }}
+            >
+              {hero.stats.map((_, i) => (
+                <div key={i}>
+                  <Editable
+                    as="div"
+                    path={`hero.stats.${i}.value`}
+                    className="text-2xl sm:text-3xl font-bold gradient-text"
+                  />
+                  <Editable
+                    as="div"
+                    path={`hero.stats.${i}.label`}
+                    className="text-sm text-muted-foreground mt-1"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: the work itself. */}
+          <div className="opacity-0 animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
+            <HeroWorkCollage onSelect={scrollToProjects} />
+          </div>
         </div>
       </div>
 
