@@ -189,8 +189,21 @@ export default function Arcatext() {
         </div>
       </section>
 
-      {/* Interactive keyboard diagram — breaks out to the full page width so the
-          live demo (Phase 1) and the roadmap (Phases 2–4) sit side by side,
+      {/* My role — framing for the demo that follows, so the reader knows whose
+          work they are about to explore. Outside ReorderableSections, which
+          only covers the numbered sections. */}
+      <section className="pt-12 sm:pt-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="reveal">
+            <Editable as="h3" path="arcatext.overview.roleTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
+            <Prose>
+              <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
+            </Prose>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive keyboard diagram — breaks out to the full page width,
           clearing the left section-nav rail at >=1600px. */}
       <section className="py-12 sm:py-16">
         <div className="mx-[calc(50%-50vw)] px-4 sm:px-6 lg:px-8 min-[1600px]:pl-56 min-[1600px]:pr-12">
@@ -249,12 +262,6 @@ export default function Arcatext() {
             </div>
           </div>
 
-          <div className="mt-20 reveal">
-            <Editable as="h3" path="arcatext.overview.roleTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
-            <Prose>
-              <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
-            </Prose>
-          </div>
         </SectionBody>
       </section>
 
