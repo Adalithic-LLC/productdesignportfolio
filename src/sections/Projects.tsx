@@ -7,6 +7,7 @@ import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
 import { PasswordModal } from '@/components/PasswordModal';
 import { isProjectUnlocked } from '@/lib/projectAuth';
+import { HIGHLIGHT_MS, onProjectHighlight } from '@/lib/highlightProject';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,6 +19,40 @@ export default function Projects() {
   const cardsRef = useRef<HTMLDivElement>(null);
   // Link the visitor is trying to open while the password modal is shown.
   const [pendingLink, setPendingLink] = useState<string | null>(null);
+  /** Card a hero tile pointed at: it glows and holds still for a few seconds. */
+  const [litTitle, setLitTitle] = useState<string | null>(null);
+  const litIndex = litTitle
+    ? projects.findIndex((p) => p.title.toLowerCase() === litTitle.toLowerCase())
+    : -1;
+  /** Read inside the GSAP closures, which are built once and never re-run. */
+  const litIndexRef = useRef(-1);
+  /** Per-card float controls, so the lit card can be held still from outside. */
+  const floats = useRef(new Map<number, { stop: () => void; start: () => void }>());
+
+  useEffect(() => {
+    let clear: ReturnType<typeof setTimeout>;
+    const off = onProjectHighlight((title) => {
+      setLitTitle(title);
+      clearTimeout(clear);
+      clear = setTimeout(() => setLitTitle(null), HIGHLIGHT_MS);
+    });
+    return () => {
+      off();
+      clearTimeout(clear);
+    };
+  }, []);
+
+  // Only the card that changed state is touched, so the others keep the phase
+  // they have been bobbing at rather than restarting.
+  const wasLit = useRef(-1);
+  useEffect(() => {
+    litIndexRef.current = litIndex;
+    if (wasLit.current !== -1 && wasLit.current !== litIndex) {
+      floats.current.get(wasLit.current)?.start();
+    }
+    if (litIndex !== -1) floats.current.get(litIndex)?.stop();
+    wasLit.current = litIndex;
+  }, [litIndex]);
 
   const handleProjectClick = (e: React.MouseEvent, link: string) => {
     // In admin mode, navigate normally — admin persists across pages and the
@@ -103,8 +138,22 @@ export default function Projects() {
         };
         const onLeave = () => {
           snap?.kill();
+          if (litIndexRef.current === i) return; // a lit card stays still
           startFloat(); // resumes smoothly from the current y
         };
+
+        const settle = () => {
+          floatTl?.kill();
+          snap?.kill();
+          snap = gsap.to(card, { y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+        };
+        floats.current.set(i, {
+          stop: settle,
+          start: () => {
+            snap?.kill();
+            startFloat();
+          },
+        });
 
         card.addEventListener('mouseenter', onEnter);
         card.addEventListener('mouseleave', onLeave);
@@ -149,7 +198,9 @@ export default function Projects() {
               <a
                 href={project.link}
                 onClick={(e) => handleProjectClick(e, project.link)}
-                className="block relative overflow-hidden rounded-2xl lg:rounded-3xl bg-card border border-border/50 transition-all duration-500 ease-expo-out hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2"
+                className={`block relative overflow-hidden rounded-2xl lg:rounded-3xl bg-card border border-border/50 transition-all duration-500 ease-expo-out hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 ${
+                  litIndex === index ? 'project-lit' : ''
+                }`}
               >
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] overflow-hidden">

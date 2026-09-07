@@ -15,9 +15,14 @@
  * for a frame before the image came back -- a visible flash on every turn. The
  * plate is instant on the way off and fades on the way back.
  *
+ * Hovering holds the deck still -- the turn stops where it is, and the stack
+ * takes up the same bob the tiles below it carry, so it reads as picked up
+ * rather than frozen. Leaving settles the bob and starts the turn over.
+ *
  * The motion itself lives in .deck-card in index.css.
  */
 import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -44,10 +49,13 @@ export function CardDeck({
   const [front, setFront] = useState(0);
   /** The card mid-flight to the back, if any. */
   const [leaving, setLeaving] = useState<number | null>(null);
+  const [held, setHeld] = useState(false);
   const frontRef = useRef(0);
+  const boxRef = useRef<HTMLDivElement>(null);
   const count = cards.length;
 
   useEffect(() => {
+    if (held) return;   // leaving starts the interval over, which is the intent
     const advance = () => {
       const going = frontRef.current;
       frontRef.current = (going + 1) % count;
@@ -56,7 +64,24 @@ export function CardDeck({
     };
     const turning = setInterval(advance, holdMs);
     return () => clearInterval(turning);
-  }, [count, holdMs]);
+  }, [count, holdMs, held]);
+
+  // The bob, only while held. Its cleanup kills the loop before the next run
+  // settles it, so releasing eases back to rest rather than snapping.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!held) {
+      gsap.to(el, { y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+      return;
+    }
+    const bob = gsap
+      .timeline({ repeat: -1, defaults: { ease: 'sine.inOut' } })
+      .to(el, { y: 9, duration: 1.05 })
+      .to(el, { y: -9, duration: 2.1 })
+      .to(el, { y: 0, duration: 1.05 });
+    return () => bob.kill();
+  }, [held]);
 
   useEffect(() => {
     if (leaving === null) return;
@@ -65,7 +90,13 @@ export function CardDeck({
   }, [leaving]);
 
   return (
-    <div className="relative w-full" style={{ aspectRatio: `${width} / ${height}` }}>
+    <div
+      ref={boxRef}
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      className="relative w-full"
+      style={{ aspectRatio: `${width} / ${height}` }}
+    >
       {cards.map((card, i) => {
         const isFront = (i - front + count) % count === 0;
         const isLeaving = leaving === i;

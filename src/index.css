@@ -313,3 +313,21 @@
   .deck-card { transition: none; }
   .deck-card--leaving { animation: none; }
 }
+
+/* A work card lit from a hero tile ---------------------------------------
+   The glow pulses on the card's own rounded shape; the ring keeps a steady
+   edge under it so the card stays outlined at the quiet end of the cycle. */
+@keyframes project-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px hsl(var(--primary) / 0.55), 0 0 22px 2px hsl(var(--primary) / 0.25); }
+  50%      { box-shadow: 0 0 0 2px hsl(var(--primary) / 0.75), 0 0 48px 12px hsl(var(--primary) / 0.5); }
+}
+.project-lit {
+  animation: project-pulse 1.7s ease-in-out infinite;
+  border-color: hsl(var(--primary) / 0.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-lit {
+    animation: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.7), 0 0 30px 6px hsl(var(--primary) / 0.35);
+  }
+}
