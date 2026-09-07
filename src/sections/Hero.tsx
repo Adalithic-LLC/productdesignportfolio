@@ -106,17 +106,10 @@ export default function Hero() {
       />
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-24">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-14">
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 py-24">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left: the introduction. */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 opacity-0 animate-fade-in"
-              style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
-            >
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <Editable as="span" path="hero.badge" className="text-sm font-medium text-primary" />
-            </div>
-
+          <div className="max-w-xl">
             <h1
               ref={titleRef}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
@@ -153,24 +146,6 @@ export default function Hero() {
               ))}
             </div>
 
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 opacity-0 animate-fade-in"
-              style={{ animationDelay: '1.4s', animationFillMode: 'forwards' }}
-            >
-              {hero.stats.map((_, i) => (
-                <div key={i}>
-                  <Editable
-                    as="div"
-                    path={`hero.stats.${i}.value`}
-                    className="text-2xl sm:text-3xl font-bold gradient-text"
-                  />
-                  <Editable
-                    as="div"
-                    path={`hero.stats.${i}.label`}
-                    className="text-sm text-muted-foreground mt-1"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Right: the work itself. */}

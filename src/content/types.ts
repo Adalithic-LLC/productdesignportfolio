@@ -68,12 +68,10 @@ export interface SiteContent {
     links: NavLink[];
   };
   hero: {
-    badge: string;
     title: string;
     subtitle: string;
     intro: string[];
     scrollText: string;
-    stats: HeroStat[];
   };
   projects: {
     headingLead: string;

@@ -8,9 +8,10 @@
  *
  * A grid rather than CSS columns, because the two landscape tools need to span
  * the full width to be legible at all — in a column they came out ~165px wide.
- * The phone screens sit three to a row around them. Each tile carries a small
- * rotation and vertical nudge so the set still reads as a pinned-up collection
- * rather than a table.
+ * The phone screens sit three to a row around them. It opens on the admin tool
+ * so the first screenful shows both a system and the product it tunes. Each tile
+ * carries a small rotation and vertical nudge so the set still reads as a
+ * pinned-up collection rather than a table.
  */
 
 const BASE = import.meta.env.BASE_URL;
@@ -33,19 +34,17 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { src: 'reword', alt: 'Arcatext — rewording a message from the keyboard', w: 420, h: 488, tilt: -1.4, drop: 0 },
-  { src: 'homographs', alt: 'Arcatext — disambiguating a homograph before sending', w: 420, h: 544, tilt: 1.2, drop: 10 },
-  { src: 'paste-view', alt: 'Arcatext — translating a received message in place', w: 420, h: 559, tilt: -0.9, drop: 4 },
+  { src: 'typing-admin', alt: 'Arcatext typing-performance admin tool', w: 1400, h: 897, tilt: 0.6, wide: true },
 
-  { src: 'typing-admin', alt: 'Arcatext typing-performance admin tool', w: 620, h: 397, tilt: 0.6, wide: true },
+  { src: 'reword', alt: 'Arcatext — rewording a message from the keyboard', w: 520, h: 604, tilt: -1.4 },
+  { src: 'homographs', alt: 'Arcatext — disambiguating a homograph before sending', w: 520, h: 674, tilt: 1.2, drop: 10 },
+  { src: 'paste-view', alt: 'Arcatext — translating a received message in place', w: 520, h: 692, tilt: -0.9, drop: 4 },
+  { src: 'figma-plugin', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 1400, h: 700, tilt: -0.7, wide: true },
 
-  { src: 'reverse-translation', alt: 'Arcatext — reverse translation to confirm intent', w: 420, h: 544, tilt: 1.5, drop: 6 },
-  { src: 'reword-options', alt: 'Arcatext — recipient gender and script options', w: 420, h: 544, tilt: -1.6, drop: 0 },
-  { src: 'synonyms', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 420, h: 559, tilt: 1.1, drop: 11 },
-
-  { src: 'figma-plugin', alt: 'D2C — a Figma plugin bridging design and Claude Code', w: 620, h: 310, tilt: -0.7, wide: true },
-
-  { src: 'send-copy', alt: 'Arcatext — sending a copy in a second language', w: 420, h: 545, tilt: 1.3, drop: 5, centred: true },
+  { src: 'reverse-translation', alt: 'Arcatext — reverse translation to confirm intent', w: 520, h: 674, tilt: 1.5, drop: 6 },
+  { src: 'reword-options', alt: 'Arcatext — recipient gender and script options', w: 520, h: 674, tilt: -1.6 },
+  { src: 'synonyms', alt: 'Arcatext — synonym alternatives for a reworded phrase', w: 520, h: 692, tilt: 1.1, drop: 11 },
+  { src: 'send-copy', alt: 'Arcatext — sending a copy in a second language', w: 520, h: 674, tilt: 1.3, drop: 5, centred: true },
 ];
 
 export function HeroWorkCollage({ onSelect }: { onSelect: () => void }) {
