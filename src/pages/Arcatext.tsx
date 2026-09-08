@@ -137,8 +137,42 @@ export default function Arcatext() {
         </div>
       </div>
 
+      {/* What the product actually does, up front: one card per feature, its
+          screen on the left and its name on the right, ahead of the title.
+          Both are content, so the titles can be reworded and the thumbnails
+          swapped from admin.
+          The thumbnails crop from the centre, which is where each screen's own
+          panel sits -- cropping from the top gives the same chat header on
+          every one of them. */}
+      <section className="pt-32 pb-2 sm:pt-40 sm:pb-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+            {arc.features.map((feature, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-colors duration-300 hover:border-primary/30"
+              >
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+                  <EditableImage
+                    path={`arcatext.features.${i}.image`}
+                    alt={feature.title}
+                    className="h-full w-full object-cover"
+                    wrapperClassName="h-full w-full"
+                  />
+                </div>
+                <Editable
+                  as="h3"
+                  path={`arcatext.features.${i}.title`}
+                  className="min-w-0 text-base font-semibold text-foreground"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Hero */}
-      <section className="relative pt-40 pb-20 sm:pt-48 sm:pb-24 overflow-hidden">
+      <section className="relative pt-10 pb-20 sm:pt-14 sm:pb-24 overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-60"
           style={{
@@ -205,39 +239,6 @@ export default function Arcatext() {
         </div>
       </section>
 
-
-      {/* What the product actually does, up front: one card per feature, its
-          screen on the left and its name on the right. Both are content, so the
-          titles can be reworded and the thumbnails swapped from admin.
-          The thumbnails crop from the centre, which is where each screen's own
-          panel sits -- cropping from the top gives the same chat header on
-          every one of them. */}
-      <section className="pb-4 sm:pb-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
-            {arc.features.map((feature, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-colors duration-300 hover:border-primary/30"
-              >
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
-                  <EditableImage
-                    path={`arcatext.features.${i}.image`}
-                    alt={feature.title}
-                    className="h-full w-full object-cover"
-                    wrapperClassName="h-full w-full"
-                  />
-                </div>
-                <Editable
-                  as="h3"
-                  path={`arcatext.features.${i}.title`}
-                  className="min-w-0 text-base font-semibold text-foreground"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Interactive keyboard diagram — breaks out to the full page width,
           clearing the left section-nav rail at >=1600px. */}
