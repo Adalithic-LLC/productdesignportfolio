@@ -30,7 +30,8 @@ export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
       cards={CARDS}
       width={1206}
       height={2622}
-      cardClass="rounded-[36px] bg-white ring-1 ring-black/5 shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]"
+      cardClass="rounded-[36px] bg-white ring-1 ring-black/5"
+      shadowClass="shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]"
       onSelect={onSelect}
     />
   );

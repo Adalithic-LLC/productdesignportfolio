@@ -9,6 +9,10 @@
  * to hide behind -- the departing card *is* the new back card -- so it simply
  * greys over once it settles.
  *
+ * Only the two cards you can see cast a shadow, plus the one in flight. Sharing
+ * that back transform means the rest sit exactly on top of each other, and a
+ * shadow each compounds into a dark smear well outside the deck's silhouette.
+ *
  * Every card's screen stays painted; it is the grey plate on top that comes and
  * goes. Hiding the screens with opacity instead let Chromium drop their decoded
  * data while they sat at zero, so a promoted card painted its blank card body
@@ -36,6 +40,7 @@ export function CardDeck({
   width,
   height,
   cardClass,
+  shadowClass = '',
   holdMs = 3000,
   onSelect,
 }: {
@@ -43,6 +48,8 @@ export function CardDeck({
   width: number;
   height: number;
   cardClass: string;
+  /** Cast by the two cards you can actually see, never by the stack behind. */
+  shadowClass?: string;
   holdMs?: number;
   onSelect: () => void;
 }) {
@@ -100,7 +107,8 @@ export function CardDeck({
       style={{ aspectRatio: `${width} / ${height}` }}
     >
       {cards.map((card, i) => {
-        const isFront = (i - front + count) % count === 0;
+        const depth = (i - front + count) % count;
+        const isFront = depth === 0;
         const isLeaving = leaving === i;
         const lit = isFront || isLeaving;
         return (
@@ -115,6 +123,7 @@ export function CardDeck({
               'deck-card absolute inset-[3%] overflow-hidden',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               cardClass,
+              depth <= 1 || isLeaving ? shadowClass : '',
               isFront ? 'deck-card--front' : 'pointer-events-none',
               isLeaving ? 'deck-card--leaving' : '',
             ].join(' ')}
