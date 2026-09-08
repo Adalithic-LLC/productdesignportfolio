@@ -80,7 +80,9 @@ export function CardDeck({
       .to(el, { y: 9, duration: 1.05 })
       .to(el, { y: -9, duration: 2.1 })
       .to(el, { y: 0, duration: 1.05 });
-    return () => bob.kill();
+    return () => {
+      bob.kill();
+    };
   }, [held]);
 
   useEffect(() => {
