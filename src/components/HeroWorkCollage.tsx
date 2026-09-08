@@ -73,7 +73,7 @@ const PRODUCTS = {
   src: 'd2c-products.webp',
   alt: 'A Conversant products panel, generated from the codebase by D2C',
   w: 1484,
-  h: 3416,
+  h: 3532,
 };
 
 function ProductsTile({ onSelect }: { onSelect: () => void }) {
@@ -237,18 +237,18 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
       {/* Measured against the whole row, not the space left over, so it stands
           about as tall as the tool beside it rather than taking up the slack. */}
       {/* Width derived so the rail comes out exactly as tall as the tool: the
-          tool is half the row at 1400x897, and the rail is 1484x3416, so half
+          tool is half the row at 1400x897, and the rail is 1484x3532, so half
           the row times both ratios is the width that matches their heights.
           Stretching to the tool instead would be circular -- the rail's own
           height is part of what sets the row's. */}
-      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(50%*(897/1400)*(1484/3416))]">
+      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(50%*(897/1400)*(1484/3532))]">
         <Floating phase={0.5}>
           <ProductsTile onSelect={onSelect} />
         </Floating>
       </div>
       {/* The rail's width, rescaled from the rail's source width to this one's,
           so both panels draw their UI at the same size. */}
-      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[calc(50%*(897/1400)*(1484/3416)*(1648/1484))]">
+      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[calc(50%*(897/1400)*(1484/3532)*(1648/1484))]">
         <Floating phase={0.25}>
           <PhoneTile onSelect={onSelect} />
         </Floating>
