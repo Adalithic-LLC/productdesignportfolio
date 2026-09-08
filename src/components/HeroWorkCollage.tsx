@@ -99,6 +99,45 @@ function ProductsTile({ onSelect }: { onSelect: () => void }) {
 }
 
 /**
+ * Conversant's call controls, beside the products rail. The export already
+ * carries its own transparent rounded corners, so nothing here clips it.
+ *
+ * It is drawn at the rail's scale rather than to the rail's height or to the
+ * space left over, so the UI in the two reads at the same size: the rail's own
+ * width, then scaled from the rail's source width to the phone's. Matching the
+ * tool's height instead would put it at 437px, which with the tool and the rail
+ * does not fit the row anyway.
+ */
+const PHONE = {
+  src: 'conversant-phone.webp',
+  alt: 'Conversant — call controls, with two connected lines and one incoming',
+  w: 1648,
+  h: 1644,
+};
+
+function PhoneTile({ onSelect }: { onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${PHONE.alt} — see the projects`}
+      style={{ rotate: '1.1deg' }}
+      className="group block w-full transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <img
+        src={`${BASE}hero-tiles/${PHONE.src}`}
+        alt=""
+        width={PHONE.w}
+        height={PHONE.h}
+        decoding="async"
+        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.03]"
+        style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
+      />
+    </button>
+  );
+}
+
+/**
  * The D2C plugin window itself, beside the tuning tool. Cut out of its own
  * screenshot, so the window's rounded corners live in the file's alpha rather
  * than in a clip -- which is also why the shadow is a drop-shadow filter: a
@@ -205,6 +244,13 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
       <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(50%*(897/1400)*(1484/3416))]">
         <Floating phase={0.5}>
           <ProductsTile onSelect={onSelect} />
+        </Floating>
+      </div>
+      {/* The rail's width, rescaled from the rail's source width to this one's,
+          so both panels draw their UI at the same size. */}
+      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[calc(50%*(897/1400)*(1484/3416)*(1648/1484))]">
+        <Floating phase={0.25}>
+          <PhoneTile onSelect={onSelect} />
         </Floating>
       </div>
     </div>
