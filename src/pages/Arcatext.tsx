@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
+import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
@@ -146,18 +147,13 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Two rows so the subtitle and the role copy start at the same
-              height: the pill and title occupy row 1 on their own, and both
-              body columns sit in row 2. Doing it with rows rather than a fixed
-              offset keeps them aligned as the title resizes. */}
+          {/* Two rows: the title has row 1 of the left column to itself and the
+              subtitle follows in row 2, while the role column spans both so it
+              starts level with the title. Doing it with rows rather than a
+              fixed offset keeps them aligned as the title resizes. */}
           <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-14">
             {/* Row 1, left: the project's name. */}
             <div className="lg:col-start-1 lg:row-start-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <Editable as="span" path="arcatext.hero.status" className="text-xs font-medium text-primary tracking-wide" />
-              </div>
-
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-balance">
                 <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
               </h1>
@@ -185,7 +181,7 @@ export default function Arcatext() {
             </div>
 
             {/* Row 2, right: whose work it is, then the at-a-glance facts. */}
-            <div className="mt-12 lg:mt-0 lg:col-start-2 lg:row-start-2">
+            <div className="mt-12 lg:mt-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <Prose>
                 <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
               </Prose>
@@ -209,6 +205,39 @@ export default function Arcatext() {
         </div>
       </section>
 
+
+      {/* What the product actually does, up front: one card per feature, its
+          screen on the left and its name on the right. Both are content, so the
+          titles can be reworded and the thumbnails swapped from admin.
+          The thumbnails crop from the centre, which is where each screen's own
+          panel sits -- cropping from the top gives the same chat header on
+          every one of them. */}
+      <section className="pb-4 sm:pb-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+            {arc.features.map((feature, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-colors duration-300 hover:border-primary/30"
+              >
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+                  <EditableImage
+                    path={`arcatext.features.${i}.image`}
+                    alt={feature.title}
+                    className="h-full w-full object-cover"
+                    wrapperClassName="h-full w-full"
+                  />
+                </div>
+                <Editable
+                  as="h3"
+                  path={`arcatext.features.${i}.title`}
+                  className="min-w-0 text-base font-semibold text-foreground"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Interactive keyboard diagram — breaks out to the full page width,
           clearing the left section-nav rail at >=1600px. */}

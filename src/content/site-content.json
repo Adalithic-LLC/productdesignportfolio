@@ -451,6 +451,36 @@
       "surfaceLabel": "Surface",
       "surfaceValue": "Any messaging app (iMessage, WhatsApp, HelloTalk, …)"
     },
+    "features": [
+      {
+        "title": "Reword",
+        "image": "/hero-tiles/arcatext-reword.webp"
+      },
+      {
+        "title": "Check",
+        "image": "/hero-tiles/arcatext-homographs.webp"
+      },
+      {
+        "title": "Paste",
+        "image": "/hero-tiles/arcatext-translate-received.webp"
+      },
+      {
+        "title": "Send a Copy",
+        "image": "/project-arcatext-placeholder.svg"
+      },
+      {
+        "title": "Study Guide",
+        "image": "/hero-tiles/arcatext-study-guide.webp"
+      },
+      {
+        "title": "Glide Calibration",
+        "image": "/project-arcatext-placeholder.svg"
+      },
+      {
+        "title": "Arcatext Tuning",
+        "image": "/hero-tiles/arcatext-tuning.webp"
+      }
+    ],
     "overview": {
       "eyebrow": "OVERVIEW",
       "titleLead": "What is",

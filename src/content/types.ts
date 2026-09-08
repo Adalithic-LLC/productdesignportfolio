@@ -176,6 +176,12 @@ export interface ArcatextQuestion {
   q: string;
 }
 
+/** A feature card at the top of the Arcatext page: a thumbnail and its name. */
+export interface ArcatextFeature {
+  title: string;
+  image: string;
+}
+
 export interface ArcatextContent {
   backToPortfolio: string;
   brand: string;
@@ -194,6 +200,7 @@ export interface ArcatextContent {
     surfaceLabel: string;
     surfaceValue: string;
   };
+  features: ArcatextFeature[];
   overview: {
     eyebrow: string;
     titleLead: string;
