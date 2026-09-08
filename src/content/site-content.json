@@ -83,6 +83,32 @@
         ],
         "link": "#/memberhome",
         "timeframe": "2 years"
+      },
+      {
+        "id": 5,
+        "title": "Design 2 Code",
+        "description": "A plugin bridge between Figma and Claude for translating frames into code and pulling screens from the codebase into Figma.",
+        "image": "/hero-tiles/d2c.webp",
+        "tags": [
+          "Figma Plugin",
+          "AI Tooling",
+          "Design ↔ Code"
+        ],
+        "link": "",
+        "timeframe": ""
+      },
+      {
+        "id": 6,
+        "title": "Socrates",
+        "description": "A customizable speed reading app with doc upload and free book search.",
+        "image": "/project-socrates-placeholder.svg",
+        "tags": [
+          "iOS",
+          "Reading",
+          "Consumer App"
+        ],
+        "link": "",
+        "timeframe": ""
       }
     ]
   },

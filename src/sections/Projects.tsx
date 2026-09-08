@@ -189,15 +189,19 @@ export default function Projects() {
           ref={cardsRef}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
         >
-          {projects.map((project, index) => (
+          {projects.map((project, index) => {
+            // A project without a case study page yet: the card still reads,
+            // but nothing about it should promise a page to open.
+            const hasPage = Boolean(project.link);
+            return (
             <div
               key={project.id}
               className="project-card group relative"
               style={{ transform: `rotate(${index % 2 === 0 ? '-1' : '1'}deg)` }}
             >
               <a
-                href={project.link}
-                onClick={(e) => handleProjectClick(e, project.link)}
+                href={hasPage ? project.link : undefined}
+                onClick={hasPage ? (e) => handleProjectClick(e, project.link) : undefined}
                 className={`block relative overflow-hidden rounded-2xl lg:rounded-3xl bg-card border border-border/50 transition-all duration-500 ease-expo-out hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 ${
                   litIndex === index ? 'project-lit' : ''
                 }`}
@@ -213,16 +217,21 @@ export default function Projects() {
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                   
-                  {/* Timeframe badge */}
-                  <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground/90">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
-                    <Editable as="span" path={`projects.items.${index}.timeframe`} />
-                  </div>
+                  {/* Timeframe badge — skipped when there is no duration to
+                      show, rather than rendering an empty pill. */}
+                  {(project.timeframe || isAdmin) && (
+                    <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground/90">
+                      <Clock className="w-3.5 h-3.5 text-primary" />
+                      <Editable as="span" path={`projects.items.${index}.timeframe`} />
+                    </div>
+                  )}
 
                   {/* View Project Button */}
-                  <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-expo-out">
-                    <ArrowUpRight className="w-5 h-5 text-foreground" />
-                  </div>
+                  {hasPage && (
+                    <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-expo-out">
+                      <ArrowUpRight className="w-5 h-5 text-foreground" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
@@ -255,14 +264,17 @@ export default function Projects() {
                   />
 
                   {/* Link */}
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-expo-out">
-                    <Editable as="span" path="projects.viewProject" />
-                    <ExternalLink className="w-4 h-4" />
-                  </div>
+                  {hasPage && (
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-expo-out">
+                      <Editable as="span" path="projects.viewProject" />
+                      <ExternalLink className="w-4 h-4" />
+                    </div>
+                  )}
                 </div>
               </a>
             </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>
