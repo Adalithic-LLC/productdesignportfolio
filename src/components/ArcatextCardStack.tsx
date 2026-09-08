@@ -13,6 +13,7 @@
 import { CardDeck, type DeckCard } from '@/components/CardDeck';
 
 const CARDS: DeckCard[] = [
+  { src: 'arcatext-keyboard.webp', alt: 'Arcatext — the keyboard toolbar, with a message ready to reword' },
   { src: 'arcatext-reword.webp', alt: 'Arcatext — checking a reword before it sends' },
   { src: 'arcatext-homographs.webp', alt: 'Arcatext — disambiguating "bank" and gendering "friends"' },
   { src: 'arcatext-analysis.webp', alt: 'Arcatext — the reword analysed word by word' },
