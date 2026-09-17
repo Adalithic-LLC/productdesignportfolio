@@ -109,7 +109,7 @@ export default function Hero() {
             where the copy sat in the middle, so the copy keeps the width it had
             and the deck keeps its own. DOM order puts the copy first, which is
             also the order it wants when the grid collapses to one column. */}
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.68fr)_minmax(0,1fr)_minmax(0,1.43fr)] lg:gap-12">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.68fr)_minmax(0,1fr)_minmax(0,1.43fr)] lg:gap-12">
           <div className="max-w-2xl text-left lg:col-start-1 lg:row-start-1">
             <h1
               ref={titleRef}

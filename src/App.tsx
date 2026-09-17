@@ -61,14 +61,15 @@ function App() {
     };
   }, []);
 
+  // Reduced motion is handled where each animation is built, not by stopping
+  // GSAP's clock here. Freezing the global timeline held every reveal at its
+  // opening frame -- and reveals open at opacity 0, so the hero title, the
+  // subtitle, the Work heading and every project card stayed invisible. A
+  // scroll-triggered reveal cannot be rescued by a global freeze either: it is
+  // played long after this runs.
   useEffect(() => {
     gsap.config({ nullTargetWarn: false });
     ScrollTrigger.refresh();
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      gsap.globalTimeline.timeScale(0);
-    }
 
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());

@@ -116,10 +116,12 @@ export default function Projects() {
         // seamless. Cards are phase-offset so they don't bob in unison.
         const amp = 9; // px — subtle but perceptible
         const dur = 0.9 + (i % 4) * 0.18;
-        let floatTl: gsap.core.Timeline;
+        const stillness = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let floatTl: gsap.core.Timeline | undefined;
         let snap: gsap.core.Tween | null = null;
 
         const startFloat = () => {
+          if (stillness) return;
           floatTl = gsap
             .timeline({ repeat: -1, defaults: { ease: 'sine.inOut' } })
             .to(card, { y: amp, duration: dur })
@@ -128,7 +130,7 @@ export default function Projects() {
         };
 
         startFloat();
-        floatTl!.progress(cards.length ? i / cards.length : 0);
+        floatTl?.progress(cards.length ? i / cards.length : 0);
 
         const onEnter = () => {
           // Stop bobbing and settle to the neutral (y:0) resting position,
