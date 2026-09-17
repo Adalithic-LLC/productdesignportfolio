@@ -137,7 +137,7 @@ export default function Hero() {
             <p
               ref={subtitleRef}
               /* pre-line so the blank line typed into the copy reads as a paragraph break. */
-              className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-bold text-foreground/80 leading-relaxed text-balance"
+              className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
             >
               <Editable as="span" path="hero.subtitle" multiline />
             </p>
