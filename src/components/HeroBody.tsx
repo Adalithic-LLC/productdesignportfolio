@@ -1,5 +1,8 @@
 /**
- * The hero paragraph, read into view a word at a time.
+ * Hero copy, read into view a word at a time. Used for both the title and the
+ * paragraph beneath it, which is why it takes its start time as a prop: the
+ * two are chained so the reveal reads as one sweep down the column rather than
+ * two that overlap.
  *
  * Each word starts as a faded version of the body colour and darkens to it in
  * sequence, so the sentence arrives at about the pace it is read rather than
@@ -26,19 +29,13 @@ import { useEffect, useMemo, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Editable } from '@/content/Editable';
 import { useContent } from '@/content/ContentContext';
+import {
+  FADED_ALPHA,
+  REVEAL_DURATION,
+  REVEAL_STAGGER,
+  REVEAL_START,
+} from '@/lib/heroReveal';
 
-/**
- * The reveal's pace. The stagger sets how fast the leading edge travels and
- * the duration how long a word takes to darken once it is reached, so both
- * have to move together to change the speed without changing the character of
- * it -- halving the speed means doubling each.
- */
-const REVEAL_START = 0.6;
-const REVEAL_STAGGER = 0.09;
-const REVEAL_DURATION = 1;
-
-/** How much of the body colour is left in a word that has not been read yet. */
-const FADED_ALPHA = 0.22;
 
 type Token = { kind: 'gap' | 'word'; text: string };
 
@@ -69,7 +66,16 @@ function faded(color: string): string | null {
   return `rgba(${r}, ${g}, ${b}, ${FADED_ALPHA})`;
 }
 
-export function HeroBody({ path, className }: { path: string; className?: string }) {
+export function HeroBody({
+  path,
+  className,
+  delay = REVEAL_START,
+}: {
+  path: string;
+  className?: string;
+  /** When the reveal starts, in seconds after mount. */
+  delay?: number;
+}) {
   const { content, isAdmin } = useContent();
   const value = String(resolve(content, path) ?? '');
   const root = useRef<HTMLSpanElement>(null);
@@ -97,7 +103,7 @@ export function HeroBody({ path, className }: { path: string; className?: string
           duration: REVEAL_DURATION,
           ease: 'power1.out',
           stagger: REVEAL_STAGGER,
-          delay: REVEAL_START,
+          delay,
           // A finished tween leaves its end colour inline on every word, which
           // would pin the paragraph to whichever theme was live when it
           // played. Handing the colour back to the stylesheet lets the theme
@@ -113,7 +119,7 @@ export function HeroBody({ path, className }: { path: string; className?: string
       cancelAnimationFrame(frame);
       ctx?.revert();
     };
-  }, [isAdmin, tokens]);
+  }, [delay, isAdmin, tokens]);
 
   // Admin edits plain text; the caret has no interest in per-word spans.
   if (isAdmin) {

@@ -1,46 +1,23 @@
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { D2CTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
 import { ArcatextCardStack } from '@/components/ArcatextCardStack';
 import { HeroBody } from '@/components/HeroBody';
+import { afterLeadingEdge } from '@/lib/heroReveal';
 
 export default function Hero() {
-  const { content, isAdmin } = useContent();
+  const { content } = useContent();
   const hero = content.hero;
   const heroRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Title animation - split characters
-      if (titleRef.current) {
-        const chars = titleRef.current.querySelectorAll('.char');
-        gsap.fromTo(
-          chars,
-          { opacity: 0, rotateX: 90, translateZ: -100 },
-          {
-            opacity: 1,
-            rotateX: 0,
-            translateZ: 0,
-            duration: 0.8,
-            ease: 'expo.out',
-            stagger: 0.03,
-            delay: 0.3,
-          }
-        );
-      }
-
-      // The subtitle reads itself in a word at a time -- see HeroBody, which
-      // owns that timeline. Blur-fading the whole paragraph here would hide
-      // the per-word reveal behind it.
-    }, heroRef);
-
-    return () => ctx.revert();
-  }, []);
+  // The title and the paragraph both read themselves in a word at a time --
+  // see HeroBody, which owns that timeline for each of them. The title used to
+  // flip its characters in from 90 degrees; that fought the paragraph's reveal
+  // for attention and needed a 3D context the hero no longer sets up.
 
   // Parallax effect on scroll
   useEffect(() => {
@@ -74,14 +51,15 @@ export default function Hero() {
     requestProjectHighlight(title);
   };
 
-  const titleText = hero.title;
+  /** The paragraph starts where the title's leading edge ends, so the two
+      reveals read as one sweep instead of two that overlap. */
+  const titleWords = hero.title.trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <section
       ref={heroRef}
       id="home"
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
-      style={{ perspective: '1200px' }}
     >
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5 animate-gradient" />
@@ -106,24 +84,8 @@ export default function Hero() {
             <h1
               ref={titleRef}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
-              style={{ transformStyle: 'preserve-3d' }}
             >
-              {isAdmin ? (
-                <Editable as="span" path="hero.title" />
-              ) : (
-                titleText.split(' ').map((word, w) => (
-                  <span key={w} className="inline-block whitespace-nowrap">
-                    {word.split('').map((char, i) => (
-                      <span key={i} className="char inline-block">
-                        {char}
-                      </span>
-                    ))}
-                    {w < titleText.split(' ').length - 1 && (
-                      <span className="char inline-block">&nbsp;</span>
-                    )}
-                  </span>
-                ))
-              )}
+              <HeroBody path="hero.title" />
             </h1>
 
             <p
@@ -131,7 +93,7 @@ export default function Hero() {
               /* pre-line so the blank line typed into the copy reads as a paragraph break. */
               className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
             >
-              <HeroBody path="hero.subtitle" />
+              <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
             </p>
 
             {/* Same shape as the case-study callouts: label over value. */}
