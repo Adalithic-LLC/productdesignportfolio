@@ -27,9 +27,15 @@ import { gsap } from 'gsap';
 import { Editable } from '@/content/Editable';
 import { useContent } from '@/content/ContentContext';
 
+/**
+ * The reveal's pace. The stagger sets how fast the leading edge travels and
+ * the duration how long a word takes to darken once it is reached, so both
+ * have to move together to change the speed without changing the character of
+ * it -- halving the speed means doubling each.
+ */
 const REVEAL_START = 0.6;
-const REVEAL_STAGGER = 0.045;
-const REVEAL_DURATION = 0.5;
+const REVEAL_STAGGER = 0.09;
+const REVEAL_DURATION = 1;
 
 /** How much of the body colour is left in a word that has not been read yet. */
 const FADED_ALPHA = 0.22;
