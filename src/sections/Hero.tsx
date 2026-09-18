@@ -5,6 +5,7 @@ import { Editable } from '@/content/Editable';
 import { D2CTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
 import { ArcatextCardStack } from '@/components/ArcatextCardStack';
+import { HeroBody } from '@/components/HeroBody';
 
 export default function Hero() {
   const { content, isAdmin } = useContent();
@@ -33,18 +34,9 @@ export default function Hero() {
         );
       }
 
-      // Subtitle animation
-      gsap.fromTo(
-        subtitleRef.current,
-        { opacity: 0, filter: 'blur(20px)' },
-        {
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.6,
-          ease: 'smooth',
-          delay: 0.8,
-        }
-      );
+      // The subtitle reads itself in a word at a time -- see HeroBody, which
+      // owns that timeline. Blur-fading the whole paragraph here would hide
+      // the per-word reveal behind it.
     }, heroRef);
 
     return () => ctx.revert();
@@ -139,7 +131,7 @@ export default function Hero() {
               /* pre-line so the blank line typed into the copy reads as a paragraph break. */
               className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
             >
-              <Editable as="span" path="hero.subtitle" multiline />
+              <HeroBody path="hero.subtitle" />
             </p>
 
             {/* Same shape as the case-study callouts: label over value. */}
