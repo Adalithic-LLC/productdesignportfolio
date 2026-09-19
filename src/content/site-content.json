@@ -20,7 +20,7 @@
     ]
   },
   "hero": {
-    "title": "Hi, I'm Andrew Richards!",
+    "title": "Hi, I'm Andrew Richards",
     "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love bringing clarity to complex systems, living in ambiguity, and pushing my limits.",
     "roleLabel": "SPACES I'VE WORKED IN",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
@@ -38,7 +38,7 @@
         "id": 1,
         "title": "Arcatext",
         "description": "A translation keyboard.",
-        "image": "/project-arcatext-keyboard.webp",
+        "image": "/project-arcatext-placeholder.svg",
         "tags": [
           "Mobile",
           "Keyboard",
@@ -83,32 +83,6 @@
         ],
         "link": "#/memberhome",
         "timeframe": "2 years"
-      },
-      {
-        "id": 5,
-        "title": "Design 2 Code",
-        "description": "A plugin bridge between Figma and Claude for translating frames into code and pulling screens from the codebase into Figma.",
-        "image": "/hero-tiles/d2c.webp",
-        "tags": [
-          "Figma Plugin",
-          "AI Tooling",
-          "Design ↔ Code"
-        ],
-        "link": "",
-        "timeframe": ""
-      },
-      {
-        "id": 6,
-        "title": "Socrates",
-        "description": "A customizable speed reading app with doc upload and free book search.",
-        "image": "/project-socrates-placeholder.svg",
-        "tags": [
-          "iOS",
-          "Reading",
-          "Consumer App"
-        ],
-        "link": "",
-        "timeframe": ""
       }
     ]
   },
@@ -2482,6 +2456,9 @@
     },
     "arcatext-06": {
       "6": []
+    },
+    "arcatext-07": {
+      "3": []
     }
   }
 }
