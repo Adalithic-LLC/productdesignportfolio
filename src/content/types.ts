@@ -16,6 +16,13 @@ export interface ProjectItem {
   tags: string[];
   link: string;
   timeframe: string;
+  /**
+   * The image is a flat field -- a product shot on a plain background rather
+   * than a photograph. Those cards skip the gradient scrim, which exists only
+   * to keep the timeframe pill legible over a busy photo and which turns a
+   * white field into a visible white-to-charcoal wash on the dark theme.
+   */
+  flatImage?: boolean;
 }
 
 export interface CaseStudyStat {

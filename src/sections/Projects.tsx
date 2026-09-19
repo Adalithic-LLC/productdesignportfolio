@@ -216,8 +216,13 @@ export default function Projects() {
                     className="w-full h-full object-cover transition-transform duration-700 ease-expo-out group-hover:scale-110"
                     wrapperClassName="w-full h-full"
                   />
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                  {/* Scrim, so the pill and the arrow stay legible over a
+                      photograph. A flat product shot needs no help, and on the
+                      dark theme the gradient would wash its background from
+                      white down to charcoal. */}
+                  {!project.flatImage && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                  )}
                   
                   {/* Timeframe badge — skipped when there is no duration to
                       show, rather than rendering an empty pill. */}
