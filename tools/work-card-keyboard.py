@@ -24,7 +24,12 @@ OUT = 'public/project-arcatext-keyboard.webp'
 PANEL = (226, 228, 232)
 TOL = 6
 CANVAS = (1600, 1200)          # 4:3, matching the card's image area
-MARGIN_Y = 80                  # 6.7% of height; the hover zoom eats 60
+
+# How much of the card's height the keyboard fills. The margin follows from it
+# rather than the other way round, so resizing the keyboard is one number and
+# the centring takes care of itself. The hover zoom crops 60px off each edge,
+# so the margin this leaves (132px) still keeps the zoom off the keys.
+KEYBOARD_HEIGHT = 0.78
 BG = (255, 255, 255)
 
 
@@ -83,7 +88,7 @@ def main():
     radius = corner_radius(px, top, im.height)
 
     keyboard = im.crop((0, top, im.width, im.height))
-    scale = (CANVAS[1] - 2 * MARGIN_Y) / keyboard.height
+    scale = CANVAS[1] * KEYBOARD_HEIGHT / keyboard.height
     size = (round(keyboard.width * scale), round(keyboard.height * scale))
     keyboard = keyboard.resize(size, Image.LANCZOS)
 
