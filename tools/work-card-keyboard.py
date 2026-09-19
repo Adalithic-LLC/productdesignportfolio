@@ -28,8 +28,8 @@ CANVAS = (1600, 1200)          # 4:3, matching the card's image area
 # How much of the card's height the keyboard fills. The margin follows from it
 # rather than the other way round, so resizing the keyboard is one number and
 # the centring takes care of itself. The hover zoom crops 60px off each edge,
-# so the margin this leaves (132px) still keeps the zoom off the keys.
-KEYBOARD_HEIGHT = 0.78
+# so the margin this leaves (225px) still keeps the zoom off the keys.
+KEYBOARD_HEIGHT = 0.624
 BG = (255, 255, 255)
 
 
