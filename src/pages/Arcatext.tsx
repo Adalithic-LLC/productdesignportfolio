@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { EditableImage } from '@/content/EditableImage';
+import { CaseStudyStrip } from '@/components/CaseStudyStrip';
 import { EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
@@ -145,32 +145,18 @@ export default function Arcatext() {
           panel sits -- cropping from the top gives the same chat header on
           every one of them. */}
       <section className="pt-32 pb-2 sm:pt-40 sm:pb-4">
+        {/* The heading keeps the page's text measure; the strip below it does
+            not. It runs wider than the copy so the seven items have room to
+            breathe, and scrolls where the viewport is narrower than they are. */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* One row, always. Seven across does not fit a phone, so below lg
-              the row scrolls sideways rather than wrapping -- wrapping is the
-              one thing a single row cannot do. */}
-          <div
-            data-feature-row
-            className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0"
-          >
-            {arc.features.map((feature, i) => (
-              <div key={i} className="w-28 shrink-0 snap-start lg:w-auto">
-                <div className="aspect-[3/4] overflow-hidden rounded-xl bg-muted">
-                  <EditableImage
-                    path={`arcatext.features.${i}.image`}
-                    alt={feature.title}
-                    className="h-full w-full object-cover"
-                    wrapperClassName="h-full w-full"
-                  />
-                </div>
-                <Editable
-                  as="h3"
-                  path={`arcatext.features.${i}.title`}
-                  className="mt-2 text-center text-[13px] font-medium leading-snug text-foreground"
-                />
-              </div>
-            ))}
-          </div>
+          <Editable
+            as="h2"
+            path="arcatext.featuresTitle"
+            className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          />
+        </div>
+        <div className="mt-6 max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
+          <CaseStudyStrip count={arc.features.length} />
         </div>
       </section>
 

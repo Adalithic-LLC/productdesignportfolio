@@ -207,6 +207,8 @@ export interface ArcatextContent {
     surfaceLabel: string;
     surfaceValue: string;
   };
+  /** Heads the strip of feature case studies at the top of the page. */
+  featuresTitle: string;
   features: ArcatextFeature[];
   overview: {
     eyebrow: string;
