@@ -90,14 +90,15 @@
         "id": 5,
         "title": "Design 2 Code",
         "description": "A plugin bridge between Figma and Claude for translating frames into code and pulling screens from the codebase into Figma.",
-        "image": "/hero-tiles/d2c.webp",
+        "image": "/project-d2c-window.webp",
         "tags": [
           "Figma Plugin",
           "AI Tooling",
           "Design ↔ Code"
         ],
         "link": "",
-        "timeframe": ""
+        "timeframe": "",
+        "flatImage": true
       },
       {
         "id": 6,
