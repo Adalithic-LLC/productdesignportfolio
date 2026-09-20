@@ -85,7 +85,7 @@ export default function Hero() {
             and the deck keeps its own. DOM order puts the copy first, which is
             also the order it wants when the grid collapses to one column. */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.68fr)_minmax(0,1fr)_minmax(0,1.43fr)] lg:gap-12">
-          <div className="max-w-2xl text-left lg:col-start-1 lg:row-start-1">
+          <div className="max-w-2xl text-left lg:col-start-1 lg:row-span-2 lg:row-start-1">
             <h1
               ref={titleRef}
               className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
@@ -127,11 +127,15 @@ export default function Hero() {
           <div className="mx-auto w-11/12 sm:w-3/4 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-full">
             <D2CTile onSelect={scrollToProjects} />
           </div>
-        </div>
 
-        {/* The rest of the work, beneath — flush left, under the card deck. */}
-        <div className="mt-10 w-full lg:mt-12">
-          <HeroWorkCluster onSelect={scrollToProjects} />
+          {/* The remaining panels fill the space under the deck and D2C. They
+              sit inside the grid rather than below it so they land beside the
+              copy column, which spans both rows -- put under the grid they
+              would have cleared the copy column's full height instead, which
+              is the void this closes. */}
+          <div className="w-full lg:col-span-2 lg:col-start-2 lg:row-start-2">
+            <HeroWorkCluster onSelect={scrollToProjects} />
+          </div>
         </div>
       </div>
 

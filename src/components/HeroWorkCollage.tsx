@@ -299,14 +299,16 @@ export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
     <div
-      className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12"
+      className="flex flex-col items-start gap-8 lg:flex-row lg:gap-8"
       /* Every tile here is sized from the admin tool's height, which is what
          they were all once matched to. The tool itself has moved up into the
          copy column, so this is now a reference rather than a tile in the row:
          it is the width the tool WOULD have, and the three panels keep their
-         proportions to it and to each other. Raised from 42% now that the row
-         no longer has to fit the tool as well. */
-      style={{ '--tile': '58%' } as CSSProperties}
+         proportions to it and to each other. It reads against whatever the row
+         is given, which is now two of the hero's three columns rather than the
+         full width, so the number is large: 92% of a container a little over
+         half as wide. */
+      style={{ '--tile': '92%' } as CSSProperties}
     >
       {/* Measured against the whole row, not the space left over, so it stands
           about as tall as the tool beside it rather than taking up the slack. */}
