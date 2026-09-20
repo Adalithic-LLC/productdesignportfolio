@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { D2CTile, HeroWorkCluster } from '@/components/HeroWorkCollage';
+import {
+  AdminToolTile,
+  D2CTile,
+  HeroWorkCluster,
+  UsaaWebTile,
+} from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
 import { ArcatextCardStack } from '@/components/ArcatextCardStack';
 import { HeroBody } from '@/components/HeroBody';
@@ -105,6 +110,15 @@ export default function Hero() {
               />
               <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
             </dl>
+
+            {/* The copy ran out well above the imagery beside it. These two
+                fill the rest of the column instead of leaving it empty, and
+                they stack because the column is narrow -- side by side they
+                would each be too small to read as a screen. */}
+            <div className="mt-10 space-y-8">
+              <AdminToolTile onSelect={scrollToProject('Arcatext')} />
+              <UsaaWebTile onSelect={scrollToProject('USAA Member Home Page')} />
+            </div>
           </div>
 
           <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-2 lg:row-start-1 lg:w-4/5">

@@ -79,13 +79,14 @@
         "id": 4,
         "title": "USAA Member Home Page",
         "description": "An authenticated homepage redesign that turned a cluttered legacy page into a scalable product system — organized around what members own, what needs attention, and what they can do next.",
-        "image": "/project-memberhome-placeholder.svg",
+        "image": "/project-memberhome.webp",
         "tags": [
           "Web",
           "Financial Services"
         ],
         "link": "#/memberhome",
-        "timeframe": "2 years"
+        "timeframe": "2 years",
+        "flatImage": true
       },
       {
         "id": 5,

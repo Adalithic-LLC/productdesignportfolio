@@ -186,6 +186,41 @@ const D2C = {
   h: 1529,
 };
 
+/**
+ * The USAA member home page.
+ *
+ * An edge-to-edge desktop capture with no device frame, so the corners are
+ * rounded here rather than in the asset -- the same treatment the admin tool
+ * above it gets, which keeps the pair reading as one column.
+ */
+const USAA_WEB = {
+  src: 'usaa-web.webp',
+  alt: 'USAA — the member home page, with banking, insurance and investments',
+  w: 1281,
+  h: 1371,
+};
+
+export function UsaaWebTile({ onSelect }: { onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${USAA_WEB.alt} — see the projects`}
+      style={{ rotate: '-0.6deg' }}
+      className="group block w-full overflow-hidden rounded-xl bg-white shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)] transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl"
+    >
+      <img
+        src={`${BASE}hero-tiles/${USAA_WEB.src}`}
+        alt=""
+        width={USAA_WEB.w}
+        height={USAA_WEB.h}
+        decoding="async"
+        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.03]"
+      />
+    </button>
+  );
+}
+
 export function D2CTile({ onSelect }: { onSelect: () => void }) {
   return (
     <button
@@ -224,7 +259,7 @@ const TOOL = {
   h: 897,
 };
 
-function AdminToolTile({ onSelect }: { onSelect: () => void }) {
+export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
 
@@ -265,18 +300,14 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
     <div
       className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12"
-      /* Every tile's width is derived from the tool's share of the row, so the
-         whole cluster scales from this one number. It dropped from 1/2 to 42%
-         to make room for a fourth tile: at a half the row overflowed its
-         container, and the page clips rather than scrolls, so the overflow
-         would have silently cut the last tile off. */
-      style={{ '--tile': '42%' } as CSSProperties}
+      /* Every tile here is sized from the admin tool's height, which is what
+         they were all once matched to. The tool itself has moved up into the
+         copy column, so this is now a reference rather than a tile in the row:
+         it is the width the tool WOULD have, and the three panels keep their
+         proportions to it and to each other. Raised from 42% now that the row
+         no longer has to fit the tool as well. */
+      style={{ '--tile': '58%' } as CSSProperties}
     >
-      <div className="w-full shrink-0 lg:w-[var(--tile)]">
-        <Floating>
-          <AdminToolTile onSelect={onSelect} />
-        </Floating>
-      </div>
       {/* Measured against the whole row, not the space left over, so it stands
           about as tall as the tool beside it rather than taking up the slack. */}
       {/* Width derived so the rail comes out exactly as tall as the tool: the
