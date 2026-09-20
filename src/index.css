@@ -1,5 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
+/* Caveat, self-hosted.
+   The hero's callout labels are hand-lettered, which needs a hand that Inter
+   does not have. Served from here rather than Google's CDN: one request fewer
+   to a third party, and it cannot go missing. Latin subset only, 73KB. Google
+   serves the same file for 500 and 600, so one weight covers both. */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/caveat.woff2') format('woff2');
+}
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -330,4 +344,33 @@
     animation: none;
     box-shadow: 0 0 0 2px hsl(var(--primary) / 0.7), 0 0 30px 6px hsl(var(--primary) / 0.35);
   }
+}
+
+/* The hero callout: a line drawn from a screen to its name, then the name
+   written out under the previews.
+
+   The line is normalised to pathLength 100, so one dash offset animates any
+   length without measuring it. `steps()` on the write is what separates it
+   from a smooth wipe -- letters arrive in bursts, the way a hand moves.
+
+   Both are keyed on the hovered screen in the markup, so switching screens
+   restarts them rather than resuming mid-stroke. The reduced-motion block
+   further down zeroes these durations along with everything else. */
+@keyframes callout-draw {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes callout-write {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 -6% 0 0); }
+}
+
+.callout-line {
+  stroke-dasharray: 100;
+  animation: callout-draw 620ms cubic-bezier(0.45, 0, 0.25, 1) forwards;
+}
+
+.callout-write {
+  animation: callout-write 460ms steps(22, end) 600ms both;
 }

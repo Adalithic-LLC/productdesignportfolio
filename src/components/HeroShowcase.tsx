@@ -10,7 +10,7 @@
  * on every hover, and the analysis tool's iframe is not reloaded each time
  * someone looks at it.
  */
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
@@ -92,57 +92,41 @@ function Shot({
   );
 }
 
+/** Where a callout runs: from a point on the screen to a point by the label. */
+type Arrow = { d: string; angle: number; x: number; y: number };
+
 /**
- * The sketch arrow that points at a screen while it is hovered.
+ * The S curve from a screen to its name.
  *
- * Drawn the way an industrial designer annotates a concept: a wobbling marker
- * line that finds its way to the part, ending in a filled arrowhead. The wobble
- * is a chain of cubics rather than a straight rule, which is what keeps it
- * reading as drawn by hand instead of ruled.
+ * The two ends sit in different grid columns -- the screen on the right, the
+ * label under the previews on the left -- so the geometry cannot live inside
+ * either. It is measured against the grid and drawn on an overlay across the
+ * whole of it.
  *
- * It draws itself on: `pathLength` normalises the line to 100 units whatever
- * its real length, so one dash offset animates it from nothing to whole without
- * measuring anything. The head waits for the line to arrive before appearing.
- *
- * The name it used to carry now sits under the previews -- see the label there.
- * Geometry is fixed pixels rather than a percentage viewBox, so the wobble
- * keeps its shape on a tall phone and a wide dashboard alike.
+ * The control points are pushed above the start and below the end, which is
+ * what bends a single cubic into an S rather than a sag. They are offset along
+ * the run as well as across it, so the curve keeps its shape whether the label
+ * is a little to the left or most of the way across the hero.
  */
-function Callout({ active }: { active: boolean }) {
-  return (
-    <div
-      data-callout
-      /* Above the deck: its cards step their z-index up to 60 as they flick,
-         so an arrow without one of its own is painted under them. */
-      className="pointer-events-none absolute bottom-[12%] left-[8%] z-[70]"
-    >
-      <svg width="128" height="78" viewBox="0 0 128 78" fill="none" className="block">
-        <path
-          d="M4 74 C 28 70, 20 56, 42 51 C 64 46, 54 31, 78 26 C 98 22, 98 15, 112 11"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          pathLength={100}
-          className="text-foreground/75"
-          style={{
-            strokeDasharray: 100,
-            strokeDashoffset: active ? 0 : 100,
-            transition: 'stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        />
-        <path
-          d="M120 7 L108 15 L106 5 Z"
-          className="fill-foreground/75"
-          style={{
-            opacity: active ? 1 : 0,
-            transform: active ? 'scale(1)' : 'scale(0.6)',
-            transformOrigin: '113px 9px',
-            transition: 'opacity 180ms ease-out 520ms, transform 220ms cubic-bezier(0.34,1.56,0.64,1) 520ms',
-          }}
-        />
-      </svg>
-    </div>
-  );
+function arrowBetween(grid: DOMRect, screen: DOMRect, label: DOMRect): Arrow {
+  const x0 = screen.left - grid.left;
+  const y0 = screen.top - grid.top + screen.height * 0.34;
+  const x1 = label.left - grid.left + 12;
+  const y1 = label.top - grid.top - 10;
+
+  const run = x1 - x0;
+  const bend = Math.min(70, Math.abs(run) * 0.3);
+  const c1 = { x: x0 + run * 0.32, y: y0 - bend };
+  const c2 = { x: x1 - run * 0.32, y: y1 + bend };
+
+  return {
+    d: `M ${x0} ${y0} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${x1} ${y1}`,
+    // The head sits at the screen end, pointing back at it: the direction from
+    // the first control point to the start is the tangent there.
+    angle: (Math.atan2(y0 - c1.y, x0 - c1.x) * 180) / Math.PI,
+    x: x0,
+    y: y0,
+  };
 }
 
 const CLUSTERS: Cluster[] = [
@@ -249,6 +233,34 @@ export function HeroShowcase({
   const [hovered, setHovered] = useState<number | null>(null);
   /** The screen the cursor is on in the zone, which the label names. */
   const [named, setNamed] = useState<string | null>(null);
+  const [arrow, setArrow] = useState<Arrow | null>(null);
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLParagraphElement>(null);
+  const screens = useRef(new Map<string, HTMLElement>());
+
+  /**
+   * Measured when the cursor arrives rather than kept in state, because both
+   * ends move with the layout and only the moment of hovering needs them.
+   */
+  const aimAt = useCallback((name: string) => {
+    const grid = gridRef.current;
+    const box = screens.current.get(name);
+    const label = labelRef.current;
+    if (!grid || !box || !label) return;
+    setNamed(name);
+    setArrow(
+      arrowBetween(
+        grid.getBoundingClientRect(),
+        box.getBoundingClientRect(),
+        label.getBoundingClientRect()
+      )
+    );
+  }, []);
+
+  const release = useCallback((name: string) => {
+    setNamed((at) => (at === name ? null : at));
+  }, []);
 
   const open = (project: string) => () => {
     onSelect();
@@ -262,7 +274,10 @@ export function HeroShowcase({
        give up more again inside it, so the screens on show grow twice over.
        The column gap is 32px rather than 48 for the same reason: what the
        gutter does not take, the two columns split by their fractions. */
-    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-8">
+    <div
+      ref={gridRef}
+      className="relative grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-8"
+    >
       <div className="max-w-2xl text-left">
         {children}
 
@@ -305,13 +320,53 @@ export function HeroShowcase({
             height is held whether or not anything is hovered, so pointing at a
             screen does not shift the column under it. */}
         <p
+          ref={labelRef}
           data-screen-name
           aria-live="polite"
-          className="mt-4 min-h-[1.25rem] text-[11px] font-medium uppercase leading-tight tracking-[0.18em] text-foreground/70"
+          className="mt-5 min-h-[1.75rem] text-2xl leading-none text-foreground/80"
+          style={{ fontFamily: "'Caveat', cursive" }}
         >
-          {named ?? '\u00A0'}
+          {named ? (
+            /* Keyed on the name so moving between screens restarts the
+               writing rather than leaving it part-written. */
+            <span key={named} className="callout-write inline-block">
+              {named}
+            </span>
+          ) : (
+            '\u00A0'
+          )}
         </p>
       </div>
+
+      {/* The callout spans both columns, so it is drawn over the grid rather
+          than inside either. Pixel coordinates, no viewBox: the overlay is the
+          grid's own size, so user units are CSS pixels and the curve needs no
+          conversion. */}
+      <svg
+        data-callout
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 z-[80] h-full w-full transition-opacity duration-200 ${
+          named && arrow ? 'opacity-100' : 'opacity-0'
+        }`}
+        fill="none"
+      >
+        {arrow && (
+          <g key={named ?? 'none'}>
+            <path
+              d={arrow.d}
+              className="callout-line stroke-foreground/75"
+              strokeWidth="2"
+              strokeLinecap="round"
+              pathLength={100}
+            />
+            <path
+              d="M0 0 L -14 6 L -14 -6 Z"
+              className="fill-foreground/75"
+              transform={`translate(${arrow.x} ${arrow.y}) rotate(${arrow.angle})`}
+            />
+          </g>
+        )}
+      </svg>
 
       <div className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
         {CLUSTERS.map((cluster, i) => {
@@ -328,15 +383,18 @@ export function HeroShowcase({
               {cluster.screens.map((screen, s) => (
                 <div
                   key={s}
+                  ref={(node) => {
+                    if (node) screens.current.set(screen.name, node);
+                    else screens.current.delete(screen.name);
+                  }}
                   className="relative flex-none"
                   style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
-                  onMouseEnter={() => setNamed(screen.name)}
-                  onMouseLeave={() => setNamed((at) => (at === screen.name ? null : at))}
-                  onFocus={() => setNamed(screen.name)}
-                  onBlur={() => setNamed((at) => (at === screen.name ? null : at))}
+                  onMouseEnter={() => aimAt(screen.name)}
+                  onMouseLeave={() => release(screen.name)}
+                  onFocus={() => aimAt(screen.name)}
+                  onBlur={() => release(screen.name)}
                 >
                   {screen.render(open(cluster.project))}
-                  <Callout active={i === shown && named === screen.name} />
                 </div>
               ))}
             </div>
