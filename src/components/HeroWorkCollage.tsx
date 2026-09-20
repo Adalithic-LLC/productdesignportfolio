@@ -5,7 +5,7 @@
  * live, not a capture of it -- beside a products rail D2C generated.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { gsap } from 'gsap';
 
 const BASE = import.meta.env.BASE_URL;
@@ -138,6 +138,42 @@ function PhoneTile({ onSelect }: { onSelect: () => void }) {
 }
 
 /**
+ * The USAA member home screen.
+ *
+ * Cut from a two-up capture by tools/usaa-home.py. At 395x787 it is the
+ * smallest source in the cluster, so it is placed at a width it can actually
+ * fill rather than sized to the slot.
+ */
+const USAA = {
+  src: 'usaa-home.webp',
+  alt: 'USAA — the member home screen, with banking accounts and insurance',
+  w: 395,
+  h: 787,
+};
+
+function UsaaTile({ onSelect }: { onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${USAA.alt} — see the projects`}
+      style={{ rotate: '-1.4deg' }}
+      className="group block w-full transition-transform duration-300 hover:rotate-0 focus-visible:rotate-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <img
+        src={`${BASE}hero-tiles/${USAA.src}`}
+        alt=""
+        width={USAA.w}
+        height={USAA.h}
+        decoding="async"
+        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.03]"
+        style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.4))' }}
+      />
+    </button>
+  );
+}
+
+/**
  * The D2C plugin window itself, beside the tuning tool. Cut out of its own
  * screenshot, so the window's rounded corners live in the file's alpha rather
  * than in a clip -- which is also why the shadow is a drop-shadow filter: a
@@ -227,9 +263,16 @@ function AdminToolTile({ onSelect }: { onSelect: () => void }) {
 
 export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12">
-      {/* Exactly half the width, so the gap comes out of the other half. */}
-      <div className="w-full shrink-0 lg:w-1/2">
+    <div
+      className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12"
+      /* Every tile's width is derived from the tool's share of the row, so the
+         whole cluster scales from this one number. It dropped from 1/2 to 42%
+         to make room for a fourth tile: at a half the row overflowed its
+         container, and the page clips rather than scrolls, so the overflow
+         would have silently cut the last tile off. */
+      style={{ '--tile': '42%' } as CSSProperties}
+    >
+      <div className="w-full shrink-0 lg:w-[var(--tile)]">
         <Floating>
           <AdminToolTile onSelect={onSelect} />
         </Floating>
@@ -241,16 +284,24 @@ export function HeroWorkCluster({ onSelect }: { onSelect: () => void }) {
           the row times both ratios is the width that matches their heights.
           Stretching to the tool instead would be circular -- the rail's own
           height is part of what sets the row's. */}
-      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(50%*(897/1400)*(1484/3532))]">
+      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(var(--tile)*(897/1400)*(1484/3532))]">
         <Floating phase={0.5}>
           <ProductsTile onSelect={onSelect} />
         </Floating>
       </div>
       {/* The rail's width, rescaled from the rail's source width to this one's,
           so both panels draw their UI at the same size. */}
-      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[calc(50%*(897/1400)*(1484/3532)*(1648/1484))]">
+      <div className="w-3/4 shrink-0 sm:w-1/2 lg:w-[calc(var(--tile)*(897/1400)*(1484/3532)*(1648/1484))]">
         <Floating phase={0.25}>
           <PhoneTile onSelect={onSelect} />
+        </Floating>
+      </div>
+      {/* The tool's height times this phone's own aspect: the width at which it
+          stands exactly as tall as the tool and the rail. The rail's two ratios
+          cancel out of the expression, which is why they are absent here. */}
+      <div className="w-1/2 shrink-0 sm:w-1/3 lg:w-[calc(var(--tile)*(897/1400)*(395/787))]">
+        <Floating phase={0.75}>
+          <UsaaTile onSelect={onSelect} />
         </Floating>
       </div>
     </div>

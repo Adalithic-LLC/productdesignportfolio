@@ -66,13 +66,14 @@
         "id": 3,
         "title": "USAA Mobile App",
         "description": "Native mobile redesign of USAA's app for iOS, Android, and iPad.",
-        "image": "/project-usaa-placeholder.svg",
+        "image": "/project-usaa-home.webp",
         "tags": [
           "Native Mobile",
           "Financial Services"
         ],
         "link": "#/usaa",
-        "timeframe": "3 years"
+        "timeframe": "3 years",
+        "flatImage": true
       },
       {
         "id": 4,
