@@ -1,14 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import {
-  AdminToolTile,
-  D2CTile,
-  HeroWorkCluster,
-  UsaaWebTile,
-} from '@/components/HeroWorkCollage';
-import { requestProjectHighlight } from '@/lib/highlightProject';
-import { ArcatextCardStack } from '@/components/ArcatextCardStack';
+import { HeroShowcase } from '@/components/HeroShowcase';
 import { HeroBody } from '@/components/HeroBody';
 import { afterLeadingEdge } from '@/lib/heroReveal';
 
@@ -50,12 +43,6 @@ export default function Hero() {
     document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  /** Scrolls as before, and lights the work card the tile came from. */
-  const scrollToProject = (title: string) => () => {
-    scrollToProjects();
-    requestProjectHighlight(title);
-  };
-
   /** The paragraph starts where the title's leading edge ends, so the two
       reveals read as one sweep instead of two that overlap. */
   const titleWords = hero.title.trim().split(/\s+/).filter(Boolean).length;
@@ -79,64 +66,35 @@ export default function Hero() {
 
       {/* Main Content */}
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 py-24">
-        {/* The introduction leads from the left, with the deck centred beside it
-            and D2C on the right. The first two column fractions are swapped from
-            where the copy sat in the middle, so the copy keeps the width it had
-            and the deck keeps its own. DOM order puts the copy first, which is
-            also the order it wants when the grid collapses to one column. */}
-        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.68fr)_minmax(0,1fr)_minmax(0,1.43fr)] lg:gap-12">
-          <div className="max-w-2xl text-left lg:col-start-1 lg:row-span-2 lg:row-start-1">
-            <h1
-              ref={titleRef}
-              className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
-            >
-              <HeroBody path="hero.title" />
-            </h1>
+        {/* The copy leads, and the previews beneath it drive the display zone
+            on the right. One zone rather than a scattered collage: every
+            screen now gets the same room instead of competing for it. */}
+        <HeroShowcase onSelect={scrollToProjects}>
+          <h1
+            ref={titleRef}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
+          >
+            <HeroBody path="hero.title" />
+          </h1>
 
-            <p
-              ref={subtitleRef}
-              /* pre-line so the blank line typed into the copy reads as a paragraph break. */
-              className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
-            >
-              <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
-            </p>
+          <p
+            ref={subtitleRef}
+            /* pre-line so the blank line typed into the copy reads as a paragraph break. */
+            className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
+          >
+            <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
+          </p>
 
-            {/* Same shape as the case-study callouts: label over value. */}
-            <dl className="mt-8">
-              <Editable
-                as="dt"
-                path="hero.roleLabel"
-                className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block"
-              />
-              <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
-            </dl>
-
-            {/* The copy ran out well above the imagery beside it. These two
-                fill the rest of the column instead of leaving it empty, and
-                they stack because the column is narrow -- side by side they
-                would each be too small to read as a screen. */}
-            <div className="mt-10 space-y-8">
-              <AdminToolTile onSelect={scrollToProject('Arcatext')} />
-              <UsaaWebTile onSelect={scrollToProject('USAA Member Home Page')} />
-            </div>
-          </div>
-
-          <div className="mx-auto w-2/3 sm:w-1/2 lg:col-start-2 lg:row-start-1 lg:w-4/5">
-            <ArcatextCardStack onSelect={scrollToProject('Arcatext')} />
-          </div>
-          <div className="mx-auto w-11/12 sm:w-3/4 lg:col-start-3 lg:row-start-1 lg:ml-auto lg:mr-0 lg:w-full">
-            <D2CTile onSelect={scrollToProjects} />
-          </div>
-
-          {/* The remaining panels fill the space under the deck and D2C. They
-              sit inside the grid rather than below it so they land beside the
-              copy column, which spans both rows -- put under the grid they
-              would have cleared the copy column's full height instead, which
-              is the void this closes. */}
-          <div className="w-full lg:col-span-2 lg:col-start-2 lg:row-start-2">
-            <HeroWorkCluster onSelect={scrollToProjects} />
-          </div>
-        </div>
+          {/* Same shape as the case-study callouts: label over value. */}
+          <dl className="mt-8">
+            <Editable
+              as="dt"
+              path="hero.roleLabel"
+              className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block"
+            />
+            <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
+          </dl>
+        </HeroShowcase>
       </div>
 
       {/* Bottom Gradient Fade */}
