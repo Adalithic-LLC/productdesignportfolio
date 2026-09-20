@@ -93,39 +93,54 @@ function Shot({
 }
 
 /**
- * The leader line and label that name a screen on hover.
+ * The sketch arrow that points at a screen while it is hovered.
  *
- * Drawn the way a part is called out on a spec drawing: a dot on the object, a
- * 45-degree leader away from it, a short shelf, and the name sitting under the
- * shelf. The line is fixed pixel geometry rather than a percentage viewBox, so
- * the diagonal stays at 45 degrees whether it sits on a phone or a dashboard
- * instead of skewing with the box.
+ * Drawn the way an industrial designer annotates a concept: a wobbling marker
+ * line that finds its way to the part, ending in a filled arrowhead. The wobble
+ * is a chain of cubics rather than a straight rule, which is what keeps it
+ * reading as drawn by hand instead of ruled.
  *
- * It lives inside the screen's own box and the label wraps to fit, because the
- * zone has no room to spare at the sides: a callout that reached past a screen
- * would reach past the page at the right-hand edge.
+ * It draws itself on: `pathLength` normalises the line to 100 units whatever
+ * its real length, so one dash offset animates it from nothing to whole without
+ * measuring anything. The head waits for the line to arrive before appearing.
+ *
+ * The name it used to carry now sits under the previews -- see the label there.
+ * Geometry is fixed pixels rather than a percentage viewBox, so the wobble
+ * keeps its shape on a tall phone and a wide dashboard alike.
  */
-function Callout({ name }: { name: string }) {
+function Callout({ active }: { active: boolean }) {
   return (
     <div
       data-callout
       /* Above the deck: its cards step their z-index up to 60 as they flick,
-         so a callout without one of its own is painted under them. */
-      className="pointer-events-none absolute bottom-[7%] left-[6%] z-[70] w-[88%] opacity-0 transition-opacity duration-300 group-hover/screen:opacity-100"
+         so an arrow without one of its own is painted under them. */
+      className="pointer-events-none absolute bottom-[12%] left-[8%] z-[70]"
     >
-      <svg width="104" height="60" viewBox="0 0 104 60" fill="none" className="block">
+      <svg width="128" height="78" viewBox="0 0 128 78" fill="none" className="block">
         <path
-          d="M96 8 L 52 52 L 4 52"
+          d="M4 74 C 28 70, 20 56, 42 51 C 64 46, 54 31, 78 26 C 98 22, 98 15, 112 11"
           stroke="currentColor"
-          strokeWidth="1.25"
-          className="text-foreground/55"
+          strokeWidth="2"
+          strokeLinecap="round"
+          pathLength={100}
+          className="text-foreground/75"
+          style={{
+            strokeDasharray: 100,
+            strokeDashoffset: active ? 0 : 100,
+            transition: 'stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
         />
-        <circle cx="96" cy="8" r="3.25" className="fill-primary" />
-        <circle cx="96" cy="8" r="7" className="fill-primary/20" />
+        <path
+          d="M120 7 L108 15 L106 5 Z"
+          className="fill-foreground/75"
+          style={{
+            opacity: active ? 1 : 0,
+            transform: active ? 'scale(1)' : 'scale(0.6)',
+            transformOrigin: '113px 9px',
+            transition: 'opacity 180ms ease-out 520ms, transform 220ms cubic-bezier(0.34,1.56,0.64,1) 520ms',
+          }}
+        />
       </svg>
-      <span className="mt-1 inline-block rounded bg-background/85 px-2 py-1 text-[11px] font-medium uppercase leading-tight tracking-[0.08em] text-foreground/90 ring-1 ring-border backdrop-blur-sm">
-        {name}
-      </span>
     </div>
   );
 }
@@ -232,6 +247,8 @@ export function HeroShowcase({
 }) {
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
+  /** The screen the cursor is on in the zone, which the label names. */
+  const [named, setNamed] = useState<string | null>(null);
 
   const open = (project: string) => () => {
     onSelect();
@@ -283,6 +300,17 @@ export function HeroShowcase({
             </button>
           ))}
         </div>
+
+        {/* The arrow in the zone points; this names what it points at. Its
+            height is held whether or not anything is hovered, so pointing at a
+            screen does not shift the column under it. */}
+        <p
+          data-screen-name
+          aria-live="polite"
+          className="mt-4 min-h-[1.25rem] text-[11px] font-medium uppercase leading-tight tracking-[0.18em] text-foreground/70"
+        >
+          {named ?? '\u00A0'}
+        </p>
       </div>
 
       <div className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
@@ -300,11 +328,15 @@ export function HeroShowcase({
               {cluster.screens.map((screen, s) => (
                 <div
                   key={s}
-                  className="group/screen relative flex-none"
+                  className="relative flex-none"
                   style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
+                  onMouseEnter={() => setNamed(screen.name)}
+                  onMouseLeave={() => setNamed((at) => (at === screen.name ? null : at))}
+                  onFocus={() => setNamed(screen.name)}
+                  onBlur={() => setNamed((at) => (at === screen.name ? null : at))}
                 >
                   {screen.render(open(cluster.project))}
-                  <Callout name={screen.name} />
+                  <Callout active={i === shown && named === screen.name} />
                 </div>
               ))}
             </div>
