@@ -172,11 +172,13 @@ export function HeroShowcase({
   const shown = hovered ?? selected;
 
   return (
-    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-12">
+    /* The copy column gives up a little width to the zone, and the previews
+       give up more again inside it, so the screens on show grow twice over. */
+    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-12">
       <div className="max-w-2xl text-left">
         {children}
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:max-w-[85%]">
           {CLUSTERS.map((cluster, i) => (
             <button
               key={cluster.id}
