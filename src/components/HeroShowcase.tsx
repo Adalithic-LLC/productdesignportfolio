@@ -10,7 +10,7 @@
  * on every hover, and the analysis tool's iframe is not reloaded each time
  * someone looks at it.
  */
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
@@ -34,13 +34,18 @@ const MAX_HEIGHT = 0.94;
  * of a cluster -- or of the clusters -- can change without relabelling
  * anything.
  */
-type Screen = { name: string; aspect: number; render: (open: () => void) => ReactNode };
+type Screen = {
+  name: string;
+  /** The work card this screen opens. Per screen, not per cluster: the two
+      USAA screens are two different projects sitting in one slot. */
+  project: string;
+  aspect: number;
+  render: (open: () => void) => ReactNode;
+};
 
 type Cluster = {
   id: string;
   label: string;
-  /** The work card this cluster belongs to. */
-  project: string;
   screens: Screen[];
 };
 
@@ -92,56 +97,20 @@ function Shot({
   );
 }
 
-/** Where a callout runs: from a point on the screen to a point by the label. */
-type Arrow = { d: string; angle: number; x: number; y: number };
-
-/**
- * The S curve from a screen to its name.
- *
- * The two ends sit in different grid columns -- the screen on the right, the
- * label under the previews on the left -- so the geometry cannot live inside
- * either. It is measured against the grid and drawn on an overlay across the
- * whole of it.
- *
- * The control points are pushed above the start and below the end, which is
- * what bends a single cubic into an S rather than a sag. They are offset along
- * the run as well as across it, so the curve keeps its shape whether the label
- * is a little to the left or most of the way across the hero.
- */
-function arrowBetween(grid: DOMRect, screen: DOMRect, label: DOMRect): Arrow {
-  const x0 = screen.left - grid.left;
-  const y0 = screen.top - grid.top + screen.height * 0.34;
-  const x1 = label.left - grid.left + 12;
-  const y1 = label.top - grid.top - 10;
-
-  const run = x1 - x0;
-  const bend = Math.min(70, Math.abs(run) * 0.3);
-  const c1 = { x: x0 + run * 0.32, y: y0 - bend };
-  const c2 = { x: x1 - run * 0.32, y: y1 + bend };
-
-  return {
-    d: `M ${x0} ${y0} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${x1} ${y1}`,
-    // The head sits at the screen end, pointing back at it: the direction from
-    // the first control point to the start is the tangent there.
-    angle: (Math.atan2(y0 - c1.y, x0 - c1.x) * 180) / Math.PI,
-    x: x0,
-    y: y0,
-  };
-}
-
 const CLUSTERS: Cluster[] = [
   {
     id: 'arcatext',
     label: 'Arcatext — the keyboard toolbar and everything it opens',
-    project: 'Arcatext',
     screens: [
       {
         name: 'Arcatext Keyboard',
+        project: 'Arcatext',
         aspect: 1206 / 2622,
         render: (open) => <ArcatextKeyboardStill onSelect={open} />,
       },
       {
         name: 'Arcatext Keyboard States',
+        project: 'Arcatext',
         aspect: 1206 / 2622,
         render: (open) => <ArcatextCardStack onSelect={open} />,
       },
@@ -150,10 +119,10 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'arcatext-analysis',
     label: 'Arcatext — the typing performance tool',
-    project: 'Arcatext',
     screens: [
       {
         name: 'Arcatext Typing Performance Analysis & Improvement',
+        project: 'Arcatext',
         aspect: 1400 / 897,
         render: (open) => <AdminToolTile onSelect={open} />,
       },
@@ -162,10 +131,10 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'd2c',
     label: 'Design 2 Code — the Figma plugin',
-    project: 'Design 2 Code',
     screens: [
       {
         name: 'Design 2 Code plugin',
+        project: 'Design 2 Code',
         aspect: 700 / 746,
         render: (open) => (
           <Shot src="d2c.webp" alt="Design 2 Code — the plugin window" w={700} h={746} open={open} />
@@ -176,10 +145,10 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'conversant',
     label: 'Conversant — the products panel and call controls',
-    project: 'Conversant',
     screens: [
       {
         name: 'Conversant Products Panel',
+        project: 'Conversant',
         aspect: 640 / 1523,
         render: (open) => (
           <Shot src="d2c-products.webp" alt="Conversant — the products panel" w={640} h={1523} open={open} />
@@ -187,6 +156,7 @@ const CLUSTERS: Cluster[] = [
       },
       {
         name: 'Conversant Phone Tool',
+        project: 'Conversant',
         aspect: 800 / 798,
         render: (open) => (
           <Shot src="conversant-phone.webp" alt="Conversant — call controls" w={800} h={798} open={open} />
@@ -197,10 +167,10 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'usaa',
     label: 'USAA — the member home page and app',
-    project: 'USAA Member Home Page',
     screens: [
       {
         name: 'USAA Member Home',
+        project: 'USAA Member Home Page',
         aspect: 1281 / 1371,
         render: (open) => (
           <Shot src="usaa-web.webp" alt="USAA — the member home page" w={1281} h={1371} open={open} />
@@ -208,6 +178,7 @@ const CLUSTERS: Cluster[] = [
       },
       {
         name: 'USAA Mobile App',
+        project: 'USAA Mobile App',
         aspect: 395 / 787,
         render: (open) => (
           <Shot src="usaa-home.webp" alt="USAA — the member home screen" w={395} h={787} open={open} />
@@ -231,36 +202,6 @@ export function HeroShowcase({
 }) {
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
-  /** The screen the cursor is on in the zone, which the label names. */
-  const [named, setNamed] = useState<string | null>(null);
-  const [arrow, setArrow] = useState<Arrow | null>(null);
-
-  const gridRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLParagraphElement>(null);
-  const screens = useRef(new Map<string, HTMLElement>());
-
-  /**
-   * Measured when the cursor arrives rather than kept in state, because both
-   * ends move with the layout and only the moment of hovering needs them.
-   */
-  const aimAt = useCallback((name: string) => {
-    const grid = gridRef.current;
-    const box = screens.current.get(name);
-    const label = labelRef.current;
-    if (!grid || !box || !label) return;
-    setNamed(name);
-    setArrow(
-      arrowBetween(
-        grid.getBoundingClientRect(),
-        box.getBoundingClientRect(),
-        label.getBoundingClientRect()
-      )
-    );
-  }, []);
-
-  const release = useCallback((name: string) => {
-    setNamed((at) => (at === name ? null : at));
-  }, []);
 
   const open = (project: string) => () => {
     onSelect();
@@ -275,8 +216,7 @@ export function HeroShowcase({
        The column gap is 32px rather than 48 for the same reason: what the
        gutter does not take, the two columns split by their fractions. */
     <div
-      ref={gridRef}
-      className="relative grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-8"
+      className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-8"
     >
       <div className="max-w-2xl text-left">
         {children}
@@ -316,57 +256,7 @@ export function HeroShowcase({
           ))}
         </div>
 
-        {/* The arrow in the zone points; this names what it points at. Its
-            height is held whether or not anything is hovered, so pointing at a
-            screen does not shift the column under it. */}
-        <p
-          ref={labelRef}
-          data-screen-name
-          aria-live="polite"
-          className="mt-5 min-h-[1.75rem] text-2xl leading-none text-foreground/80"
-          style={{ fontFamily: "'Caveat', cursive" }}
-        >
-          {named ? (
-            /* Keyed on the name so moving between screens restarts the
-               writing rather than leaving it part-written. */
-            <span key={named} className="callout-write inline-block">
-              {named}
-            </span>
-          ) : (
-            '\u00A0'
-          )}
-        </p>
       </div>
-
-      {/* The callout spans both columns, so it is drawn over the grid rather
-          than inside either. Pixel coordinates, no viewBox: the overlay is the
-          grid's own size, so user units are CSS pixels and the curve needs no
-          conversion. */}
-      <svg
-        data-callout
-        aria-hidden
-        className={`pointer-events-none absolute inset-0 z-[80] h-full w-full transition-opacity duration-200 ${
-          named && arrow ? 'opacity-100' : 'opacity-0'
-        }`}
-        fill="none"
-      >
-        {arrow && (
-          <g key={named ?? 'none'}>
-            <path
-              d={arrow.d}
-              className="callout-line stroke-foreground/75"
-              strokeWidth="2"
-              strokeLinecap="round"
-              pathLength={100}
-            />
-            <path
-              d="M0 0 L -14 6 L -14 -6 Z"
-              className="fill-foreground/75"
-              transform={`translate(${arrow.x} ${arrow.y}) rotate(${arrow.angle})`}
-            />
-          </g>
-        )}
-      </svg>
 
       <div className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
         {CLUSTERS.map((cluster, i) => {
@@ -383,18 +273,10 @@ export function HeroShowcase({
               {cluster.screens.map((screen, s) => (
                 <div
                   key={s}
-                  ref={(node) => {
-                    if (node) screens.current.set(screen.name, node);
-                    else screens.current.delete(screen.name);
-                  }}
                   className="relative flex-none"
                   style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
-                  onMouseEnter={() => aimAt(screen.name)}
-                  onMouseLeave={() => release(screen.name)}
-                  onFocus={() => aimAt(screen.name)}
-                  onBlur={() => release(screen.name)}
                 >
-                  {screen.render(open(cluster.project))}
+                  {screen.render(open(screen.project))}
                 </div>
               ))}
             </div>
