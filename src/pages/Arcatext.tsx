@@ -146,13 +146,16 @@ export default function Arcatext() {
           every one of them. */}
       <section className="pt-32 pb-2 sm:pt-40 sm:pb-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+          {/* One row, always. Seven across does not fit a phone, so below lg
+              the row scrolls sideways rather than wrapping -- wrapping is the
+              one thing a single row cannot do. */}
+          <div
+            data-feature-row
+            className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0"
+          >
             {arc.features.map((feature, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 rounded-2xl border border-border/50 bg-card p-3 transition-colors duration-300 hover:border-primary/30"
-              >
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+              <div key={i} className="w-28 shrink-0 snap-start lg:w-auto">
+                <div className="aspect-[3/4] overflow-hidden rounded-xl bg-muted">
                   <EditableImage
                     path={`arcatext.features.${i}.image`}
                     alt={feature.title}
@@ -163,7 +166,7 @@ export default function Arcatext() {
                 <Editable
                   as="h3"
                   path={`arcatext.features.${i}.title`}
-                  className="min-w-0 text-base font-semibold text-foreground"
+                  className="mt-2 text-center text-[13px] font-medium leading-snug text-foreground"
                 />
               </div>
             ))}
