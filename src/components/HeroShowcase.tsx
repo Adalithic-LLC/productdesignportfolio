@@ -12,7 +12,7 @@
  */
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { ArcatextCardStack } from '@/components/ArcatextCardStack';
+import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
 
@@ -27,8 +27,14 @@ const GAP = 0.04;
 /** No cluster fills the zone edge to edge; this is the most it may take. */
 const MAX_HEIGHT = 0.94;
 
-/** `open` scrolls to the work card this screen belongs to and lights it. */
-type Screen = { aspect: number; render: (open: () => void) => ReactNode };
+/**
+ * `open` scrolls to the work card this screen belongs to and lights it.
+ *
+ * `name` travels with the screen rather than with its position, so the order
+ * of a cluster -- or of the clusters -- can change without relabelling
+ * anything.
+ */
+type Screen = { name: string; aspect: number; render: (open: () => void) => ReactNode };
 
 type Cluster = {
   id: string;
@@ -86,14 +92,72 @@ function Shot({
   );
 }
 
+/**
+ * The leader line and label that name a screen on hover.
+ *
+ * Drawn the way a part is called out on a spec drawing: a dot on the object, a
+ * 45-degree leader away from it, a short shelf, and the name sitting under the
+ * shelf. The line is fixed pixel geometry rather than a percentage viewBox, so
+ * the diagonal stays at 45 degrees whether it sits on a phone or a dashboard
+ * instead of skewing with the box.
+ *
+ * It lives inside the screen's own box and the label wraps to fit, because the
+ * zone has no room to spare at the sides: a callout that reached past a screen
+ * would reach past the page at the right-hand edge.
+ */
+function Callout({ name }: { name: string }) {
+  return (
+    <div
+      data-callout
+      /* Above the deck: its cards step their z-index up to 60 as they flick,
+         so a callout without one of its own is painted under them. */
+      className="pointer-events-none absolute bottom-[7%] left-[6%] z-[70] w-[88%] opacity-0 transition-opacity duration-300 group-hover/screen:opacity-100"
+    >
+      <svg width="104" height="60" viewBox="0 0 104 60" fill="none" className="block">
+        <path
+          d="M96 8 L 52 52 L 4 52"
+          stroke="currentColor"
+          strokeWidth="1.25"
+          className="text-foreground/55"
+        />
+        <circle cx="96" cy="8" r="3.25" className="fill-primary" />
+        <circle cx="96" cy="8" r="7" className="fill-primary/20" />
+      </svg>
+      <span className="mt-1 inline-block rounded bg-background/85 px-2 py-1 text-[11px] font-medium uppercase leading-tight tracking-[0.08em] text-foreground/90 ring-1 ring-border backdrop-blur-sm">
+        {name}
+      </span>
+    </div>
+  );
+}
+
 const CLUSTERS: Cluster[] = [
   {
     id: 'arcatext',
-    label: 'Arcatext — the keyboard and its tuning tool',
+    label: 'Arcatext — the keyboard toolbar and everything it opens',
     project: 'Arcatext',
     screens: [
-      { aspect: 1206 / 2622, render: (open) => <ArcatextCardStack onSelect={open} /> },
-      { aspect: 1400 / 897, render: (open) => <AdminToolTile onSelect={open} /> },
+      {
+        name: 'Arcatext Keyboard',
+        aspect: 1206 / 2622,
+        render: (open) => <ArcatextKeyboardStill onSelect={open} />,
+      },
+      {
+        name: 'Arcatext Keyboard States',
+        aspect: 1206 / 2622,
+        render: (open) => <ArcatextCardStack onSelect={open} />,
+      },
+    ],
+  },
+  {
+    id: 'arcatext-analysis',
+    label: 'Arcatext — the typing performance tool',
+    project: 'Arcatext',
+    screens: [
+      {
+        name: 'Arcatext Typing Performance Analysis & Improvement',
+        aspect: 1400 / 897,
+        render: (open) => <AdminToolTile onSelect={open} />,
+      },
     ],
   },
   {
@@ -102,6 +166,7 @@ const CLUSTERS: Cluster[] = [
     project: 'Design 2 Code',
     screens: [
       {
+        name: 'Design 2 Code plugin',
         aspect: 700 / 746,
         render: (open) => (
           <Shot src="d2c.webp" alt="Design 2 Code — the plugin window" w={700} h={746} open={open} />
@@ -115,12 +180,14 @@ const CLUSTERS: Cluster[] = [
     project: 'Conversant',
     screens: [
       {
+        name: 'Conversant Products Panel',
         aspect: 640 / 1523,
         render: (open) => (
           <Shot src="d2c-products.webp" alt="Conversant — the products panel" w={640} h={1523} open={open} />
         ),
       },
       {
+        name: 'Conversant Phone Tool',
         aspect: 800 / 798,
         render: (open) => (
           <Shot src="conversant-phone.webp" alt="Conversant — call controls" w={800} h={798} open={open} />
@@ -134,12 +201,14 @@ const CLUSTERS: Cluster[] = [
     project: 'USAA Member Home Page',
     screens: [
       {
+        name: 'USAA Member Home',
         aspect: 1281 / 1371,
         render: (open) => (
           <Shot src="usaa-web.webp" alt="USAA — the member home page" w={1281} h={1371} open={open} />
         ),
       },
       {
+        name: 'USAA Mobile App',
         aspect: 395 / 787,
         render: (open) => (
           <Shot src="usaa-home.webp" alt="USAA — the member home screen" w={395} h={787} open={open} />
@@ -180,7 +249,10 @@ export function HeroShowcase({
       <div className="max-w-2xl text-left">
         {children}
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:max-w-[85%]">
+        {/* One row of five. The 85% cap the four previews carried is gone
+            with it: spread across five, the full column width lands them at
+            about the size four occupied at 85%. */}
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
           {CLUSTERS.map((cluster, i) => (
             <button
               key={cluster.id}
@@ -228,10 +300,11 @@ export function HeroShowcase({
               {cluster.screens.map((screen, s) => (
                 <div
                   key={s}
-                  className="flex-none"
+                  className="group/screen relative flex-none"
                   style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
                 >
                   {screen.render(open(cluster.project))}
+                  <Callout name={screen.name} />
                 </div>
               ))}
             </div>

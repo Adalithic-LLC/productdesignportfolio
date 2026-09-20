@@ -23,7 +23,10 @@ CONTENT_WIDTH = 0.88     # the row is squeezed to this if height alone overflows
 GAP = 0.05               # of the canvas width
 
 CLUSTERS = {
-    'arcatext': ['arcatext-keyboard.webp', 'arcatext-tuning.webp'],
+    # The toolbar still beside one of the states it opens, which is how the
+    # zone shows this cluster.
+    'arcatext': ['arcatext-keyboard.webp', 'arcatext-reword.webp'],
+    'arcatext-analysis': ['arcatext-tuning.webp'],
     'd2c': ['d2c.webp'],
     'conversant': ['d2c-products.webp', 'conversant-phone.webp'],
     'usaa': ['usaa-web.webp', 'usaa-home.webp'],
