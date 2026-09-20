@@ -52,14 +52,15 @@
         "id": 2,
         "title": "Conversant",
         "description": "Enterprise desktop platform for USAA call center and back-office servicing.",
-        "image": "/project-conversant-placeholder.svg",
+        "image": "/project-conversant-screens.webp",
         "tags": [
           "Enterprise UX",
           "Desktop Platform",
           "Design Systems"
         ],
         "link": "#/conversant",
-        "timeframe": "3 years"
+        "timeframe": "3 years",
+        "flatImage": true
       },
       {
         "id": 3,
