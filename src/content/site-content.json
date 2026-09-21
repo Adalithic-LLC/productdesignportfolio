@@ -21,7 +21,7 @@
   },
   "hero": {
     "title": "Hi, I'm Andrew",
-    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love bringing clarity to complex systems, living in ambiguity, and pushing my limits.",
+    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality and how the right features in the right order with the right limits bring a long term business vision to life.",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
     "intro": [
@@ -284,9 +284,9 @@
   "about": {
     "headingLead": "About",
     "headingHighlight": "Me",
-    "bio1": "I'm a senior digital product designer with over 8 years of experience crafting digital experiences that matter. My approach combines strategic thinking with pixel-perfect execution, ensuring every design decision serves both user needs and business goals.",
-    "bio2": "I believe great design is invisible—it simply works. My process is rooted in empathy, validated by research, and refined through iteration. I've had the privilege of working with startups and Fortune 500 companies alike, helping them transform complex challenges into intuitive solutions.",
-    "skillsTitle": "Skills & Expertise",
+    "bio1": "I'm a digital product designer with over 8 years of experience conducting research and designing experiences for multiple platforms, collaborating closely with web and native developers, and supporting business teams.\n\nI've worked on everything from long term research and complex system projects to 2 week handoffs.\n\n\nMy most challenging project so far has been my own app, Arcatext. This required me to wear multiple hats of research, design, development, and business. I gained a unique perspective on trade-offs in decision making, how to move fast while maintaining quality, and how the right features in the right order enables a long term business vision.",
+    "bio2": "",
+    "skillsTitle": "Skills",
     "skills": [
       "UI/UX Design",
       "Design Systems",
