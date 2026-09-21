@@ -536,33 +536,33 @@
         "slug": "translate-received",
         "title": "Translate Received Messages",
         "body": "Quick translation for the other side of the chat, without leaving the app.",
-        "whatItIs": "",
-        "whyItMattered": "",
-        "problem": "The keyboard could only help with what the user was writing. Half of every conversation — what the other person said — still sent them out to a separate app.",
-        "constraints": "",
-        "keyDecision": "",
-        "solution": "Translation for incoming messages from inside the keyboard, so both sides of the chat are handled in one place without leaving the conversation.",
-        "tradeoff": "",
-        "validation": "",
-        "impact": "",
+        "whatItIs": "Translate Received Messages helps users understand the other side of a conversation without leaving the app. Instead of copying a message into a separate translator, users can bring incoming text into Arcatext, translate it, preserve context, and reply from the same communication surface.",
+        "whyItMattered": "Arcatext could not only support what users wanted to say. Real conversations are two-sided, and learners also need help understanding what they receive.\n\nWithout that support, users would still have to leave the conversation, open another translation tool, interpret the message, then return to reply — recreating the same fragmented workflow Arcatext was designed to remove.",
+        "problem": "The challenge was to make incoming-message translation feel fast and obvious despite iOS keyboard limitations.\n\nA keyboard cannot simply read messages from the host app, so Arcatext needed a practical interaction that worked within platform restrictions without making the user feel like they were performing a technical workaround.",
+        "constraints": "Privacy and iOS sandboxing limited direct access to conversation content, so the experience had to rely on user-initiated actions such as copying and pasting. The interaction also needed to preserve enough conversational context to make the translation useful without adding unnecessary steps.",
+        "keyDecision": "The key decision was to treat received-message translation as part of the same keyboard system rather than redirecting users into a separate Arcatext screen.\n\nThat kept comprehension and response closer together: users could translate what they received, understand it, then immediately continue writing their reply.\n\nI also explored ways to preserve translated context across exchanges so users would not have to repeatedly reconstruct the conversation.",
+        "solution": "The final interaction centers on a lightweight Paste to Translate action.\n\nAfter copying an incoming message, the user can translate it from the keyboard, understand the meaning, and move directly into composing a response. This extends Arcatext from a writing assistant into a full conversational support layer.",
+        "tradeoff": "Copying is not as seamless as automatically reading the conversation, but it respects platform boundaries and keeps the user in control of what content Arcatext processes.\n\nThe design therefore prioritized a predictable, privacy-conscious interaction over a more automated experience that iOS did not safely or reliably support.",
+        "validation": "This feature closed an important gap in the original keyboard concept: Arcatext could now support both production and comprehension.\n\nFor launch, useful signals would include Paste-to-Translate usage, repeat use during the same conversation, time from incoming message to reply, and whether users return to external translation tools less often.",
+        "impact": "Translate Received Messages expanded Arcatext from “help me write this” to “help me participate in this conversation.”\n\nThat distinction matters strategically: the product is not only a translation keyboard, but a communication layer that supports both sides of multilingual interaction.",
         "figures": {
           "whatItIs": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Hero sequence: an incoming message, the user bringing it into Arcatext, and the translated result."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Before/after workflow. Before: Receive → Copy → Leave app → Open translator → Paste → Translate → Return → Reply. Arcatext: Receive → Copy → Translate in keyboard → Reply. Probably the strongest visual in the case study."
           },
           "solution": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Main flow, 3–4 screens: Copy received message → Paste to Translate → Understand → Reply. If the “send a copy” concept is available, show it as a secondary interaction for preserving translated context."
           },
           "tradeoff": {
             "src": "",
@@ -574,13 +574,13 @@
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Usage-flow prototypes or usability feedback showing people switching between apps. Otherwise keep this section text-only."
           },
           "impact": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Optional closing visual — a simple two-sided conversation diagram: Incoming → Understand → Reply → Reword → Check → Send. Ties this case study back into the larger Arcatext product system."
           }
         }
       },
