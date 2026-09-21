@@ -1,6 +1,7 @@
 /**
- * One Arcatext feature, on its own page: title, brief description, problem,
- * solution.
+ * One Arcatext feature, on its own page, as a run of labelled sections: what
+ * it is, why it mattered, problem, constraints, key decision, solution,
+ * tradeoff, validation, impact.
  *
  * One component for all six rather than six near-identical files. The six
  * differ only in their copy, which already lives in `arcatext.features`, so
@@ -8,9 +9,39 @@
  * existing content path.
  */
 import { ArrowLeft } from 'lucide-react';
+import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
+import type { ArcatextFeature } from '@/content/types';
+
+/**
+ * The sections, in page order: the content field on the feature, and the label
+ * beside it. Driving the page off a list rather than nine hand-written blocks
+ * means adding or reordering a section is a line here.
+ *
+ * `body` leads because it is the brief description the strip's card already
+ * shows -- one field, so the card and the page cannot drift apart.
+ */
+const SECTIONS: { field: keyof ArcatextFeature; label: string }[] = [
+  { field: 'body', label: 'whatItIsTitle' },
+  { field: 'whyItMattered', label: 'whyItMatteredTitle' },
+  { field: 'problem', label: 'problemTitle' },
+  { field: 'constraints', label: 'constraintsTitle' },
+  { field: 'keyDecision', label: 'keyDecisionTitle' },
+  { field: 'solution', label: 'solutionTitle' },
+  { field: 'tradeoff', label: 'tradeoffTitle' },
+  { field: 'validation', label: 'validationTitle' },
+  { field: 'impact', label: 'impactTitle' },
+];
 
 export default function CaseStudy({ index }: { index: number }) {
+  const { content, isAdmin } = useContent();
+  const feature = content.arcatext.features[index];
+
+  /* A section with nothing written in it is left off the page rather than
+     shown as a heading over blank space -- but it is kept in admin, where an
+     empty slot is the only way to reach the field and fill it. */
+  const shown = SECTIONS.filter(({ field }) => isAdmin || feature[field]);
+
   return (
     <div className="min-h-screen">
       {/* Same bar as the project pages, but pointing one level up: these are
@@ -36,35 +67,35 @@ export default function CaseStudy({ index }: { index: number }) {
           className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
         />
 
-        <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+        <h1 className="mb-14 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
-        {/* The brief description carries the page, so it is set larger than
-            the section bodies below it rather than at the same size. */}
-        <Editable
-          as="p"
-          path={`arcatext.features.${index}.body`}
-          multiline
-          className="mt-6 text-xl leading-snug text-foreground/80 text-balance"
-        />
-
-        <Section titlePath="arcatext.caseStudy.problemTitle" bodyPath={`arcatext.features.${index}.problem`} />
-        <Section titlePath="arcatext.caseStudy.solutionTitle" bodyPath={`arcatext.features.${index}.solution`} />
+        {shown.map(({ field, label }, i) => (
+          <section
+            key={field}
+            /* The rule sits above each section but the first, so the title is
+               not fenced off from the copy it heads. */
+            className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
+          >
+            <Editable
+              as="h2"
+              path={`arcatext.caseStudy.${label}`}
+              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+            />
+            <Editable
+              as="p"
+              path={`arcatext.features.${index}.${field}`}
+              multiline
+              /* min-h in admin only: an empty paragraph collapses to nothing,
+                 and a target with no height cannot be clicked into. */
+              className={`text-lg leading-relaxed text-foreground/90 ${
+                isAdmin ? 'min-h-7' : ''
+              }`}
+            />
+          </section>
+        ))}
       </article>
     </div>
-  );
-}
-
-function Section({ titlePath, bodyPath }: { titlePath: string; bodyPath: string }) {
-  return (
-    <section className="mt-14 border-t border-border/40 pt-10">
-      <Editable
-        as="h2"
-        path={titlePath}
-        className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-      />
-      <Editable as="p" path={bodyPath} multiline className="text-lg leading-relaxed text-foreground/90" />
-    </section>
   );
 }

@@ -432,43 +432,79 @@
         "slug": "reword",
         "title": "Reword",
         "body": "The core translation & correction experience with options for specifying context and changing script.",
+        "whyItMattered": "",
         "problem": "Translating mid-conversation meant leaving the chat for a separate app, and a raw machine translation drops the things that carry meaning: who you are speaking to, how formal you are, and which script the reader expects.",
-        "solution": "Translation and correction inside the keyboard itself, with the context controls promoted to first-class options. Specify the situation, set gendered forms, and switch script without retyping the message."
+        "constraints": "",
+        "keyDecision": "",
+        "solution": "Translation and correction inside the keyboard itself, with the context controls promoted to first-class options. Specify the situation, set gendered forms, and switch script without retyping the message.",
+        "tradeoff": "",
+        "validation": "",
+        "impact": ""
       },
       {
         "slug": "check",
         "title": "Check",
-        "body": "Intent verification, deeper analysis, and expanding the learning potential of each message.",
-        "problem": "A translation you cannot read is a translation you have to trust blindly. There was no way to confirm a message said what was meant, and nothing to learn from it afterwards.",
-        "solution": "A verification pass over the translated message: intent confirmation, word-level analysis of ambiguous terms, and alternatives. Each sent message becomes something the user can check and learn from."
+        "body": "A pre-send review layer that helps users verify what an AI-generated translation actually means.",
+        "whyItMattered": "Arcatext could generate fluent translations, but fluency does not guarantee that tone, intent, gender, or nuance were preserved.",
+        "problem": "Users may trust fluent-looking output without realizing the meaning has shifted.",
+        "constraints": "The review experience could not become so heavy that it interrupted texting or made users distrust every translation.",
+        "keyDecision": "Instead of forcing a full review after every Reword action, Check became an optional layer for higher-risk moments.",
+        "solution": "Reverse translation, clarification, naturalness feedback, and alternate phrasing help users inspect the result before sending.",
+        "tradeoff": "More verification increases confidence, but too much explanation slows the core experience. The default path therefore stays lightweight.",
+        "validation": "Use research or prototype feedback here, plus planned metrics such as Check usage and send-after-check rate.",
+        "impact": "Check became part of Arcatext’s broader principle of treating translation as an interactive learning process rather than a final answer."
       },
       {
         "slug": "translate-received",
         "title": "Translate Received Messages",
         "body": "Quick translation for the other side of the chat, without leaving the app.",
+        "whyItMattered": "",
         "problem": "The keyboard could only help with what the user was writing. Half of every conversation — what the other person said — still sent them out to a separate app.",
-        "solution": "Translation for incoming messages from inside the keyboard, so both sides of the chat are handled in one place without leaving the conversation."
+        "constraints": "",
+        "keyDecision": "",
+        "solution": "Translation for incoming messages from inside the keyboard, so both sides of the chat are handled in one place without leaving the conversation.",
+        "tradeoff": "",
+        "validation": "",
+        "impact": ""
       },
       {
         "slug": "study-guide",
         "title": "Study Guide",
         "body": "A personalized vocabulary list derived from user translations.",
+        "whyItMattered": "",
         "problem": "Every translation was a learning opportunity that disappeared the moment the message was sent. Nothing accumulated.",
-        "solution": "A vocabulary list built automatically from the user's own translations, so study material comes from the conversations they actually had rather than a generic word list."
+        "constraints": "",
+        "keyDecision": "",
+        "solution": "A vocabulary list built automatically from the user's own translations, so study material comes from the conversations they actually had rather than a generic word list.",
+        "tradeoff": "",
+        "validation": "",
+        "impact": ""
       },
       {
         "slug": "glide-calibration",
         "title": "Glide Calibration",
         "body": "An interactive calibration for personalizing glide typing.",
+        "whyItMattered": "",
         "problem": "Glide typing has to recover a word from a smeared path, and every finger travels differently. The usual fix — asking users to train individual words — does not generalize past the words they trained.",
-        "solution": "A short sequence of drills (straight rows, diagonals, zigzags, circles, figure-8s) that measures how this user's finger actually moves and reduces it to a bias profile. The decoder consults that profile to improve predictions on every word, not only the drilled ones."
+        "constraints": "",
+        "keyDecision": "",
+        "solution": "A short sequence of drills (straight rows, diagonals, zigzags, circles, figure-8s) that measures how this user's finger actually moves and reduces it to a bias profile. The decoder consults that profile to improve predictions on every word, not only the drilled ones.",
+        "tradeoff": "",
+        "validation": "",
+        "impact": ""
       },
       {
         "slug": "arcatext-tuning",
         "title": "Arcatext Tuning",
         "body": "An admin app for understanding and improving typing performance.",
+        "whyItMattered": "",
         "problem": "Typing performance was invisible. With no way to see where the decoder was failing, tuning it was guesswork.",
-        "solution": "An admin app that surfaces accuracy, coverage and per-tap precision, with live knobs for the decoder so a change can be tested on a device before it is published."
+        "constraints": "",
+        "keyDecision": "",
+        "solution": "An admin app that surfaces accuracy, coverage and per-tap precision, with live knobs for the decoder so a change can be tested on a device before it is published.",
+        "tradeoff": "",
+        "validation": "",
+        "impact": ""
       }
     ],
     "overview": {
@@ -955,9 +991,16 @@
     },
     "caseStudy": {
       "eyebrow": "Case Study",
+      "back": "Back to Arcatext",
+      "whatItIsTitle": "What it is",
+      "whyItMatteredTitle": "Why it mattered",
       "problemTitle": "Problem",
+      "constraintsTitle": "Constraints",
+      "keyDecisionTitle": "Key decision",
       "solutionTitle": "Solution",
-      "back": "Back to Arcatext"
+      "tradeoffTitle": "Tradeoff",
+      "validationTitle": "Validation / outcome",
+      "impactTitle": "Impact on product"
     }
   },
   "conversant": {

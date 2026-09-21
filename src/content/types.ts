@@ -156,14 +156,25 @@ export interface ArcatextQuestion {
 }
 
 /** A feature card at the top of the Arcatext page: a thumbnail and its name. */
+/**
+ * One feature's case study. The section fields are in page order; every one
+ * but `body` may be empty, and an empty section is left off the page (it still
+ * shows in admin, so it can be filled in).
+ */
 export interface ArcatextFeature {
   /** Also its route: `#/arcatext/<slug>`. */
   slug: string;
   title: string;
-  /** The brief description, shown on the card and again on its own page. */
+  /** "What it is" -- doubles as the brief description on the strip's card. */
   body: string;
+  whyItMattered: string;
   problem: string;
+  constraints: string;
+  keyDecision: string;
   solution: string;
+  tradeoff: string;
+  validation: string;
+  impact: string;
 }
 
 export interface ArcatextContent {
@@ -189,12 +200,19 @@ export interface ArcatextContent {
   /** Heads the strip of feature case studies at the top of the page. */
   featuresTitle: string;
   features: ArcatextFeature[];
-  /** Shared labels for the per-feature case study pages. */
+  /** Shared section labels for the per-feature case study pages. */
   caseStudy: {
     eyebrow: string;
-    problemTitle: string;
-    solutionTitle: string;
     back: string;
+    whatItIsTitle: string;
+    whyItMatteredTitle: string;
+    problemTitle: string;
+    constraintsTitle: string;
+    keyDecisionTitle: string;
+    solutionTitle: string;
+    tradeoffTitle: string;
+    validationTitle: string;
+    impactTitle: string;
   };
   overview: {
     eyebrow: string;
