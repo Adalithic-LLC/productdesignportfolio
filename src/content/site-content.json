@@ -692,33 +692,33 @@
         "slug": "arcatext-tuning",
         "title": "Arcatext Tuning",
         "body": "An admin app for understanding and improving typing performance.",
-        "whatItIs": "",
-        "whyItMattered": "",
-        "problem": "Typing performance was invisible. With no way to see where the decoder was failing, tuning it was guesswork.",
-        "constraints": "",
-        "keyDecision": "",
-        "solution": "An admin app that surfaces accuracy, coverage and per-tap precision, with live knobs for the decoder so a change can be tested on a device before it is published.",
-        "tradeoff": "",
-        "validation": "",
-        "impact": "",
+        "whatItIs": "Arcatext Tuning is an internal admin app for understanding and improving keyboard performance. It aggregates typing behavior, surfaces accuracy issues, scores performance, and helps tune autocorrect and typing parameters without requiring changes directly inside the consumer app.",
+        "whyItMattered": "Once Arcatext became a daily-use keyboard, typing quality became a product problem, not just an implementation detail.\n\nUsers could value the translation features and still abandon the keyboard if autocorrect, key targeting, or glide behavior felt noticeably worse than Apple or Google keyboards. I needed a way to understand typing failures systematically and improve them over time.",
+        "problem": "The challenge was that typing performance is difficult to diagnose from isolated bug reports.\n\nA mistyped word could come from key targeting, autocorrect weighting, individual typing habits, language behavior, or a poorly tuned parameter. Improving the keyboard required turning raw interaction data into something I could actually use to make product and technical decisions.",
+        "constraints": "The system needed to make large amounts of typing behavior understandable without exposing sensitive message content unnecessarily. It also had to distinguish between individual-user behavior and broader keyboard problems so that personalization did not hide systemic issues.",
+        "keyDecision": "The key decision was to build internal tooling instead of tuning the keyboard manually through trial and error.\n\nI created a feedback loop in which typing data could be aggregated, scored, compared, and translated into recommended parameter changes. This expanded the project from designing the user-facing keyboard into designing the system used to improve it.",
+        "solution": "Arcatext Tuning gives me a dedicated environment for reviewing keyboard performance, identifying patterns, and adjusting the parameters that influence typing and autocorrect behavior.\n\nThe goal is not simply to expose analytics. The tool turns user behavior into actionable tuning decisions so keyboard quality can improve as more interaction data becomes available.",
+        "tradeoff": "More telemetry can improve typing performance, but collecting unnecessary input data would create privacy risk and operational complexity. The system therefore needs to capture the minimum behavioral signals required for tuning while keeping user content appropriately protected.\n\nThere is also a risk of over-optimizing for aggregate behavior. Global improvements need to coexist with personalized typing profiles so changes that help the average user do not make the experience worse for individuals.",
+        "validation": "Arcatext Tuning created a repeatable way to improve typing quality instead of treating keyboard accuracy as a one-time implementation task.\n\nIt also gave me a way to evaluate whether changes to autocorrect, personalization, glide behavior, or typing parameters actually improved performance rather than relying on subjective impressions.",
+        "impact": "Arcatext Tuning turned keyboard quality into an operational product system.\n\nInstead of shipping a fixed keyboard and hoping it performed well, Arcatext could create a feedback loop between real usage and product improvement. That made the admin tool part of the product strategy: the consumer experience generates signals, the tuning system turns those signals into decisions, and those decisions improve the keyboard users experience next.",
         "figures": {
           "whatItIs": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Hero screenshot: the admin dashboard with typing-performance metrics, recommendations, or parameter controls."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "System diagram: Typing behavior → telemetry → performance scoring → tuning recommendation → parameter update → improved keyboard. Probably the most important visual in the case study."
           },
           "solution": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "2–3 key admin views: performance overview; problem or error breakdown; parameter recommendation / tuning controls. Annotate each screenshot so the reviewer understands what decision the interface enables."
           },
           "tradeoff": {
             "src": "",
@@ -730,7 +730,7 @@
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Before/after accuracy results, parameter changes, or an example of an issue discovered through the tool. A single concrete “detected → adjusted → improved” example would be more compelling than another dashboard screenshot."
           },
           "impact": {
             "src": "",
