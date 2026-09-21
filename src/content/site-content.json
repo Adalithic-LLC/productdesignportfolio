@@ -640,33 +640,33 @@
         "slug": "glide-calibration",
         "title": "Glide Calibration",
         "body": "An interactive calibration for personalizing glide typing.",
-        "whatItIs": "",
-        "whyItMattered": "",
-        "problem": "Glide typing has to recover a word from a smeared path, and every finger travels differently. The usual fix — asking users to train individual words — does not generalize past the words they trained.",
-        "constraints": "",
-        "keyDecision": "",
-        "solution": "A short sequence of drills (straight rows, diagonals, zigzags, circles, figure-8s) that measures how this user's finger actually moves and reduces it to a bias profile. The decoder consults that profile to improve predictions on every word, not only the drilled ones.",
-        "tradeoff": "",
-        "validation": "",
-        "impact": "",
+        "whatItIs": "Glide Calibration is an interactive setup experience that personalizes swipe typing to the user’s movement patterns. Instead of relying on one generic glide model, Arcatext uses calibration data to better interpret how each person moves across the keyboard.",
+        "whyItMattered": "Arcatext had to earn a place as a daily-use keyboard, not just as a translation tool. If glide typing felt inaccurate or unpredictable, users would fall back to their default keyboard regardless of the value of Reword or Check.\n\nCalibration became a way to improve typing quality at the individual level rather than treating all users as if they glide the same way.",
+        "problem": "The challenge was to collect useful personalization data without turning setup into a chore.\n\nThe calibration had to be short, understandable, and engaging enough that users would complete it, while still capturing enough signal to meaningfully improve glide interpretation.",
+        "constraints": "The experience had to work within limited keyboard space, avoid excessive setup time, and produce data that could actually be translated into better typing behavior.\n\nIt also had to explain why calibration was worth doing without overwhelming users with technical detail.",
+        "keyDecision": "The key decision was to make calibration interactive and task-based rather than asking users to configure technical settings manually.\n\nUsers perform representative glide gestures, and Arcatext uses those movements to build a more personalized typing profile.",
+        "solution": "The final experience guides users through a short set of glide exercises, captures their movement patterns, and applies that information to improve future swipe interpretation.\n\nThe calibration is designed to feel like a quick setup step rather than a training session.",
+        "tradeoff": "More calibration data could improve personalization, but a longer setup increases abandonment risk. The experience therefore had to balance model quality with completion time.\n\nThere was also a product tradeoff between automatic adaptation and explicit calibration. Calibration creates a stronger initial signal, while ongoing personalization can continue refining the typing profile over time.",
+        "validation": "Glide Calibration expanded Arcatext’s scope from translation into the quality of the underlying keyboard itself.\n\nThe feature supports the broader adoption requirement that Arcatext must feel accurate and forgiving enough to compete with default keyboards in everyday use.\n\nUseful validation signals would include calibration completion rate, glide accuracy before vs. after calibration, correction frequency, and repeat use of glide typing.",
+        "impact": "Glide Calibration reinforced a broader product principle: keyboard quality is part of the core value proposition, not infrastructure underneath it.\n\nImproving translation alone would not be enough if users did not trust the keyboard they were typing on. Calibration became one part of a larger personalization system alongside autocorrect tuning, typing profiles, and admin tools for improving keyboard performance.",
         "figures": {
           "whatItIs": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Hero screenshot or short sequence showing the calibration exercise and the personalized result."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Prompted word → user glide path → captured movement pattern → personalized typing profile. The strongest explanatory diagram for the feature."
           },
           "solution": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Main sequence: Start calibration → glide sample words → progress feedback → completion / personalized state."
           },
           "tradeoff": {
             "src": "",
