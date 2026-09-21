@@ -161,7 +161,18 @@ function deepMerge<T>(base: T, override: unknown): T {
     }
     return out as T;
   }
-  // Arrays and primitives: take the draft's value when present, else the base.
+  // Arrays merge element by element, for the same reason objects do. Taking the
+  // draft's array whole was the hole in the rule above: a field added inside an
+  // array's items -- a new section on each case study, say -- was missing from
+  // every item of a draft saved before it existed, and the page rendering it
+  // read `undefined`. The draft still decides the length, so an item it added
+  // or removed is honoured; each item it kept falls back to the default's keys.
+  if (Array.isArray(base) && Array.isArray(override)) {
+    return override.map((item, i) =>
+      i < base.length ? deepMerge(base[i], item) : item
+    ) as unknown as T;
+  }
+  // Primitives: take the draft's value when present, else the base.
   return (override === undefined ? base : (override as T));
 }
 

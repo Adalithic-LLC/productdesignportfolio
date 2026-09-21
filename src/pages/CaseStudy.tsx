@@ -128,8 +128,13 @@ export default function CaseStudy({ index }: { index: number }) {
  */
 function Figure({ index, section }: { index: number; section: FigureSection }) {
   const { content, isAdmin } = useContent();
-  const figure = content.arcatext.features[index].figures[section];
-  if (!figure.src && !isAdmin) return null;
+  /* Optional, not assumed. An admin save writes back the whole content file
+     from the page that was open, so a save made before a slot existed drops
+     it -- and reading `.src` off the missing key used to throw and blank the
+     whole page. A slot the content does not carry is simply not rendered. */
+  const figure = content.arcatext.features[index]?.figures?.[section];
+  if (!figure?.src && !isAdmin) return null;
+  if (!figure) return null;
 
   const base = `arcatext.features.${index}.figures.${section}`;
   return (
