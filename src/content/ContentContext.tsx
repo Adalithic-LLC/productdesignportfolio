@@ -516,11 +516,27 @@ export function ContentProvider({
           }),
         });
 
-      // Commit, and on a stale-SHA conflict re-read the latest SHA and retry.
-      let putRes = await commit(await fetchSha());
-      for (let attempt = 0; putRes.status === 409 && attempt < 2; attempt++) {
-        putRes = await commit(await fetchSha());
+      // Refuse a stale write rather than force one through.
+      //
+      // A save sends the WHOLE content file, built from what this page loaded.
+      // If the file on the branch has moved since this bundle was built, the
+      // fields edited elsewhere in the meantime are still at their old values
+      // here, and saving reverts every one of them. That is not a conflict to
+      // retry past -- retrying is precisely what overwrites the newer work --
+      // so the save stops and asks for a reload.
+      const currentSha = await fetchSha();
+      if (currentSha && currentSha !== __CONTENT_SHA__) {
+        throw new Error(
+          'This page was loaded before the content changed on GitHub, so saving ' +
+            'would revert those changes. Reload the page, then redo this edit. ' +
+            '(Your unsaved edits are kept in this browser until you Discard.)'
+        );
       }
+
+      // A 409 now means the file moved between that check and the PUT, which
+      // is the same hazard a moment later -- so it also stops rather than
+      // retrying over the top of it.
+      const putRes = await commit(currentSha);
 
       if (!putRes.ok) {
         let detail = `${putRes.status}`;
@@ -533,7 +549,7 @@ export function ContentProvider({
         if (putRes.status === 401 || putRes.status === 403) {
           detail = 'Authentication failed — check the token has "Contents: write" on this repo.';
         } else if (putRes.status === 409) {
-          detail = 'The file changed during save — click Save again.';
+          detail = 'The file changed while saving — reload the page and redo this edit.';
         }
         throw new Error(detail);
       }
