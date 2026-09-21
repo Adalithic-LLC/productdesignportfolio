@@ -284,11 +284,8 @@
   "about": {
     "headingLead": "About",
     "headingHighlight": "Me",
-    "location": "San Francisco, CA",
     "bio1": "I'm a senior digital product designer with over 8 years of experience crafting digital experiences that matter. My approach combines strategic thinking with pixel-perfect execution, ensuring every design decision serves both user needs and business goals.",
     "bio2": "I believe great design is invisible—it simply works. My process is rooted in empathy, validated by research, and refined through iteration. I've had the privilege of working with startups and Fortune 500 companies alike, helping them transform complex challenges into intuitive solutions.",
-    "philosophyTitle": "Design Philosophy",
-    "philosophyQuote": "“Design is not just what it looks like and feels like. Design is how it works.” — Steve Jobs",
     "skillsTitle": "Skills & Expertise",
     "skills": [
       "UI/UX Design",
@@ -299,60 +296,6 @@
       "Motion Design",
       "Figma",
       "Adobe Creative Suite"
-    ],
-    "experienceTitle": "Experience",
-    "experiences": [
-      {
-        "role": "Senior Product Designer",
-        "company": "Tech Innovations Inc.",
-        "period": "2021 - Present"
-      },
-      {
-        "role": "Product Designer",
-        "company": "Digital Agency Studio",
-        "period": "2018 - 2021"
-      },
-      {
-        "role": "UI/UX Designer",
-        "company": "StartupXYZ",
-        "period": "2016 - 2018"
-      }
-    ],
-    "personal": [
-      {
-        "icon": "Coffee",
-        "text": "Coffee enthusiast"
-      },
-      {
-        "icon": "Heart",
-        "text": "Cat lover"
-      }
-    ],
-    "badgeLabel": "Recognition",
-    "badgeValue": "Top Designer 2024",
-    "portrait": "/about-portrait.jpg",
-    "portraitAlt": "Portrait",
-    "stats": [
-      {
-        "value": 8,
-        "suffix": "+",
-        "label": "Years Experience"
-      },
-      {
-        "value": 50,
-        "suffix": "+",
-        "label": "Projects Delivered"
-      },
-      {
-        "value": 30,
-        "suffix": "+",
-        "label": "Happy Clients"
-      },
-      {
-        "value": 12,
-        "suffix": "",
-        "label": "Design Awards"
-      }
     ]
   },
   "contact": {

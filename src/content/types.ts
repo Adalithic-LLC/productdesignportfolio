@@ -47,23 +47,6 @@ export interface CaseStudyItem {
   highlights: CaseStudyHighlight[];
 }
 
-export interface Experience {
-  role: string;
-  company: string;
-  period: string;
-}
-
-export interface PersonalItem {
-  icon: string;
-  text: string;
-}
-
-export interface AboutStat {
-  value: number;
-  suffix: string;
-  label: string;
-}
-
 export interface SocialLink {
   name: string;
   icon: string;
@@ -95,21 +78,10 @@ export interface SiteContent {
   about: {
     headingLead: string;
     headingHighlight: string;
-    location: string;
     bio1: string;
     bio2: string;
-    philosophyTitle: string;
-    philosophyQuote: string;
     skillsTitle: string;
     skills: string[];
-    experienceTitle: string;
-    experiences: Experience[];
-    personal: PersonalItem[];
-    badgeLabel: string;
-    badgeValue: string;
-    portrait: string;
-    portraitAlt: string;
-    stats: AboutStat[];
   };
   contact: {
     headingLead: string;

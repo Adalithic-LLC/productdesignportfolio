@@ -10,8 +10,8 @@
  * on every hover, and the analysis tool's iframe is not reloaded each time
  * someone looks at it.
  */
-import { useState } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
@@ -197,6 +197,27 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
 
+  /* The copy starts level with the artwork, not with the box around it.
+     Clusters are centred in the zone and none of them fills it, so the zone's
+     top edge sits above the first pixel of any screen -- align the title to
+     that edge and it reads as floating high of the images.
+
+     The reference is the inset a cluster at MAX_HEIGHT gets, which is the
+     tallest a cluster may be. Measuring the zone rather than the shown
+     cluster is deliberate twice over: it holds at any viewport, and it does
+     not move, so the copy cannot jump about as previews are hovered. */
+  const zone = useRef<HTMLDivElement>(null);
+  const [artInset, setArtInset] = useState(0);
+  useEffect(() => {
+    const el = zone.current;
+    if (!el) return;
+    const measure = () => setArtInset(((1 - MAX_HEIGHT) / 2) * el.clientHeight);
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, []);
+
   /* The highlight request carries the scroll with it: the projects grid knows
      where each card is, so it goes to the card rather than to the top of the
      section. Scrolling from here too would put two smooth scrolls on the page
@@ -213,7 +234,12 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
     <div
       className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-8"
     >
-      <div className="max-w-2xl text-left">
+      {/* Only from lg: below it the columns stack, so there is nothing to be
+          level with and the inset would just be a gap under the navigation. */}
+      <div
+        className="max-w-2xl text-left lg:pt-[var(--art-inset)]"
+        style={{ '--art-inset': `${artInset}px` } as CSSProperties}
+      >
         {children}
 
         {/* One row of five. The 85% cap the four previews carried is gone
@@ -253,7 +279,7 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
 
       </div>
 
-      <div className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
+      <div ref={zone} className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
         {CLUSTERS.map((cluster, i) => {
           const height = rowHeight(cluster.screens);
           return (
