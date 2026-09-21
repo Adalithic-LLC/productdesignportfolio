@@ -18,6 +18,7 @@ import { EditableImage } from '@/content/EditableImage';
 /** One item plus one gap, which is what an arrow press should advance by. */
 const STEP = 160 + 32;
 
+
 export function CaseStudyStrip({ count }: { count: number }) {
   const rail = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
@@ -54,7 +55,18 @@ export function CaseStudyStrip({ count }: { count: number }) {
         ref={rail}
         data-feature-row
         onScroll={measure}
-        className="flex snap-x gap-8 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        /* The 28px of padding is room for the hover glow (18px blur plus 8px
+           spread) inside the scroll box. `overflow-x: auto` is not
+           one-dimensional -- the vertical axis stops being `visible` along
+           with it -- so without this the rail clips the glow off flat, top
+           and bottom. The matching negative margins take the same amount back
+           off the layout so nothing around the rail moves.
+           
+           The right side is padded but not pulled back in: the rail already
+           runs off the side of the page, so that padding is scroll runway for
+           the last item's glow rather than anything seen. `scroll-pl-7` keeps
+           snapping aligned to the padded edge instead of 28px left of it. */
+        className="-my-7 -ml-7 flex snap-x scroll-pl-7 gap-8 overflow-x-auto px-7 py-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {Array.from({ length: count }, (_, i) => (
           <div key={i} className="w-40 shrink-0 snap-start">
