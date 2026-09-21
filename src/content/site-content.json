@@ -429,28 +429,46 @@
     "featuresTitle": "Case Studies",
     "features": [
       {
+        "slug": "reword",
         "title": "Reword",
-        "body": "The core translation & correction experience with options for specifying context and changing script."
+        "body": "The core translation & correction experience with options for specifying context and changing script.",
+        "problem": "Translating mid-conversation meant leaving the chat for a separate app, and a raw machine translation drops the things that carry meaning: who you are speaking to, how formal you are, and which script the reader expects.",
+        "solution": "Translation and correction inside the keyboard itself, with the context controls promoted to first-class options. Specify the situation, set gendered forms, and switch script without retyping the message."
       },
       {
+        "slug": "check",
         "title": "Check",
-        "body": "Intent verification, deeper analysis, and expanding the learning potential of each message."
+        "body": "Intent verification, deeper analysis, and expanding the learning potential of each message.",
+        "problem": "A translation you cannot read is a translation you have to trust blindly. There was no way to confirm a message said what was meant, and nothing to learn from it afterwards.",
+        "solution": "A verification pass over the translated message: intent confirmation, word-level analysis of ambiguous terms, and alternatives. Each sent message becomes something the user can check and learn from."
       },
       {
+        "slug": "translate-received",
         "title": "Translate Received Messages",
-        "body": "Quick translation for the other side of the chat, without leaving the app."
+        "body": "Quick translation for the other side of the chat, without leaving the app.",
+        "problem": "The keyboard could only help with what the user was writing. Half of every conversation — what the other person said — still sent them out to a separate app.",
+        "solution": "Translation for incoming messages from inside the keyboard, so both sides of the chat are handled in one place without leaving the conversation."
       },
       {
+        "slug": "study-guide",
         "title": "Study Guide",
-        "body": "A personalized vocabulary list derived from user translations."
+        "body": "A personalized vocabulary list derived from user translations.",
+        "problem": "Every translation was a learning opportunity that disappeared the moment the message was sent. Nothing accumulated.",
+        "solution": "A vocabulary list built automatically from the user's own translations, so study material comes from the conversations they actually had rather than a generic word list."
       },
       {
+        "slug": "glide-calibration",
         "title": "Glide Calibration",
-        "body": "An interactive calibration for personalizing glide typing."
+        "body": "An interactive calibration for personalizing glide typing.",
+        "problem": "Glide typing has to recover a word from a smeared path, and every finger travels differently. The usual fix — asking users to train individual words — does not generalize past the words they trained.",
+        "solution": "A short sequence of drills (straight rows, diagonals, zigzags, circles, figure-8s) that measures how this user's finger actually moves and reduces it to a bias profile. The decoder consults that profile to improve predictions on every word, not only the drilled ones."
       },
       {
+        "slug": "arcatext-tuning",
         "title": "Arcatext Tuning",
-        "body": "An admin app for understanding and improving typing performance."
+        "body": "An admin app for understanding and improving typing performance.",
+        "problem": "Typing performance was invisible. With no way to see where the decoder was failing, tuning it was guesswork.",
+        "solution": "An admin app that surfaces accuracy, coverage and per-tap precision, with live knobs for the decoder so a change can be tested on a device before it is published."
       }
     ],
     "overview": {
@@ -934,6 +952,12 @@
       "titleLead": "The keyboard,",
       "titleHighlight": "in motion",
       "description": "An interactive walkthrough of the Arcatext keyboard."
+    },
+    "caseStudy": {
+      "eyebrow": "Case Study",
+      "problemTitle": "Problem",
+      "solutionTitle": "Solution",
+      "back": "Back to Arcatext"
     }
   },
   "conversant": {

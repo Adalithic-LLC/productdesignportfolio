@@ -14,14 +14,26 @@ import Arcatext from '@/pages/Arcatext';
 import Conversant from '@/pages/Conversant';
 import UsaaApp from '@/pages/UsaaApp';
 import MemberHome from '@/pages/MemberHome';
+import CaseStudy from '@/pages/CaseStudy';
+import { caseStudyIndex } from '@/lib/caseStudyRoute';
+import siteContent from '@/content/site-content.json';
 import { ProjectGate } from '@/components/ProjectGate';
 import { AdminToggle } from '@/components/AdminToggle';
 import { isAdminUnlocked, unlockAdminSession, ADMIN_CHANGE_EVENT } from '@/lib/adminAuth';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Routes whose pages carry a section nav, which hosts its own Admin entry. */
+/** Routes whose pages carry a section nav, which hosts its own Admin entry.
+    The case study pages are not among them -- they have no section nav, so
+    they take the floating Admin toggle like the home page does. */
 const PROJECT_ROUTES = ['arcatext', 'conversant', 'usaa', 'memberhome'];
+
+/**
+ * Case study slugs, read from the shipped content rather than from context:
+ * routing happens above `ContentProvider`, and a page's address is structural
+ * anyway -- it should not change because someone is mid-edit in admin.
+ */
+const CASE_STUDY_SLUGS = siteContent.arcatext.features.map((f) => f.slug);
 
 /**
  * Resolves the current route and whether the URL carries an admin flag.
@@ -42,6 +54,11 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(
     () => parseLocation().urlAdmin || isAdminUnlocked()
   );
+
+  /** -1 unless the route names a real case study, which also means an
+      unknown `#/arcatext/<typo>` falls through to the home page rather than
+      rendering an empty shell. */
+  const caseStudy = caseStudyIndex(route, CASE_STUDY_SLUGS);
 
   useEffect(() => {
     const sync = () => {
@@ -80,7 +97,11 @@ function App() {
     <ThemeProvider>
       <ContentProvider isAdmin={isAdmin}>
         <div className="relative min-h-screen bg-background text-foreground overflow-x-clip">
-          {route === 'arcatext' ? (
+          {caseStudy !== -1 ? (
+            <ProjectGate bypass={isAdmin}>
+              <CaseStudy index={caseStudy} />
+            </ProjectGate>
+          ) : route === 'arcatext' ? (
             <ProjectGate bypass={isAdmin}>
               <Arcatext />
             </ProjectGate>

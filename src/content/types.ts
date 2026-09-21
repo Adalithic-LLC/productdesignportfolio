@@ -157,8 +157,13 @@ export interface ArcatextQuestion {
 
 /** A feature card at the top of the Arcatext page: a thumbnail and its name. */
 export interface ArcatextFeature {
+  /** Also its route: `#/arcatext/<slug>`. */
+  slug: string;
   title: string;
+  /** The brief description, shown on the card and again on its own page. */
   body: string;
+  problem: string;
+  solution: string;
 }
 
 export interface ArcatextContent {
@@ -184,6 +189,13 @@ export interface ArcatextContent {
   /** Heads the strip of feature case studies at the top of the page. */
   featuresTitle: string;
   features: ArcatextFeature[];
+  /** Shared labels for the per-feature case study pages. */
+  caseStudy: {
+    eyebrow: string;
+    problemTitle: string;
+    solutionTitle: string;
+    back: string;
+  };
   overview: {
     eyebrow: string;
     titleLead: string;

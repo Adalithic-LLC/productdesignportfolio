@@ -161,7 +161,7 @@ export default function Arcatext() {
             that rail appears -- the two overlapped. */}
         <div className="mt-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mr-[calc(50%-50vw)]">
-            <CaseStudyStrip count={arc.features.length} />
+            <CaseStudyStrip slugs={arc.features.map((f) => f.slug)} />
           </div>
         </div>
       </section>

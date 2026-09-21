@@ -22,7 +22,8 @@ const GAP = 32;
 const STEP = CARD + GAP;
 
 
-export function CaseStudyStrip({ count }: { count: number }) {
+export function CaseStudyStrip({ slugs }: { slugs: string[] }) {
+  const count = slugs.length;
   const rail = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(true);
@@ -75,10 +76,11 @@ export function CaseStudyStrip({ count }: { count: number }) {
           /* A min-height rather than a fixed aspect: the cards are as tall as
              the longest body among them, so the row stays even without any
              one of them clipping its own copy. */
-          <div
+          <a
             key={i}
+            href={`#/arcatext/${slugs[i]}`}
             style={{ width: CARD }}
-            className="flex min-h-44 shrink-0 snap-start flex-col gap-2 rounded-xl border border-border/50 bg-white p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] dark:bg-card"
+            className="flex min-h-44 shrink-0 snap-start flex-col gap-2 rounded-xl border border-border/50 bg-white p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-card"
           >
             <Editable
               as="h3"
@@ -91,7 +93,7 @@ export function CaseStudyStrip({ count }: { count: number }) {
               multiline
               className="text-sm leading-relaxed text-neutral-600 dark:text-muted-foreground"
             />
-          </div>
+          </a>
         ))}
       </div>
 
