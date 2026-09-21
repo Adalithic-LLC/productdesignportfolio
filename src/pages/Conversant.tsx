@@ -144,6 +144,15 @@ export default function Conversant() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Heads the hero the way the Arcatext page's does, above the
+              status pill so it reads as the section's name rather than as a
+              second label on the pill. */}
+          <Editable
+            as="h2"
+            path="conversant.hero.eyebrow"
+            className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          />
+
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             <Editable as="span" path="conversant.hero.status" className="text-xs font-medium text-primary tracking-wide" />

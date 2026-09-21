@@ -1014,6 +1014,7 @@
     ],
     "hero": {
       "status": "USAA · Internal platform",
+      "eyebrow": "Project Overview",
       "title": "Conversant",
       "subtitle": "Enterprise desktop platform for call center and back-office servicing.",
       "typeTags": [
@@ -1539,6 +1540,7 @@
     ],
     "hero": {
       "status": "USAA · Native mobile",
+      "eyebrow": "Project Overview",
       "title": "USAA Mobile",
       "subtitle": "iOS, Android, and iPadOS redesign for USAA members",
       "typeTags": [
@@ -1949,6 +1951,7 @@
     ],
     "hero": {
       "status": "USAA · Authenticated web",
+      "eyebrow": "Project Overview",
       "title": "Member Home",
       "subtitle": "Authenticated homepage redesign for USAA members",
       "typeTags": [
