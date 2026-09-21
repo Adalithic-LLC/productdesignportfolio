@@ -193,20 +193,15 @@ const CLUSTERS: Cluster[] = [
  * under it in the left column while the zone they drive is the right one.
  * Owning both columns is what lets a single piece of state serve the two.
  */
-export function HeroShowcase({
-  onSelect,
-  children,
-}: {
-  onSelect: () => void;
-  children: ReactNode;
-}) {
+export function HeroShowcase({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
 
-  const open = (project: string) => () => {
-    onSelect();
-    requestProjectHighlight(project);
-  };
+  /* The highlight request carries the scroll with it: the projects grid knows
+     where each card is, so it goes to the card rather than to the top of the
+     section. Scrolling from here too would put two smooth scrolls on the page
+     at once, fighting over the same viewport. */
+  const open = (project: string) => () => requestProjectHighlight(project);
 
   const shown = hovered ?? selected;
 

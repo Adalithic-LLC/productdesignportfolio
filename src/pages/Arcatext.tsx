@@ -189,8 +189,14 @@ export default function Arcatext() {
           {/* Two rows: the title has row 1 of the left column to itself and the
               subtitle follows in row 2, while the role column spans both so it
               starts level with the title. Doing it with rows rather than a
-              fixed offset keeps them aligned as the title resizes. */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-14">
+              fixed offset keeps them aligned as the title resizes.
+
+              Row 1 is sized to the title and row 2 takes the rest. Left to
+              auto/auto, the taller spanning role column has its excess height
+              shared between the two rows, which pads row 1 and drops the
+              subtitle well clear of the title; giving row 2 the free space
+              sends all of it there instead. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-14">
             {/* Row 1, left: the project's name. */}
             <div className="lg:col-start-1 lg:row-start-1">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-balance">

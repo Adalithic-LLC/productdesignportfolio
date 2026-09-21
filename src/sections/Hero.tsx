@@ -39,10 +39,6 @@ export default function Hero() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToProjects = () => {
-    document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   /** The paragraph starts where the title's leading edge ends, so the two
       reveals read as one sweep instead of two that overlap. */
   const titleWords = hero.title.trim().split(/\s+/).filter(Boolean).length;
@@ -69,7 +65,7 @@ export default function Hero() {
         {/* The copy leads, and the previews beneath it drive the display zone
             on the right. One zone rather than a scattered collage: every
             screen now gets the same room instead of competing for it. */}
-        <HeroShowcase onSelect={scrollToProjects}>
+        <HeroShowcase>
           <h1
             ref={titleRef}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"

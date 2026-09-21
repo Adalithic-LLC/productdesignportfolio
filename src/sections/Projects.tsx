@@ -26,6 +26,11 @@ export default function Projects() {
     : -1;
   /** Read inside the GSAP closures, which are built once and never re-run. */
   const litIndexRef = useRef(-1);
+  /** Same, for the highlight listener: it is registered once, with no deps. */
+  const projectsRef = useRef(projects);
+  useEffect(() => {
+    projectsRef.current = projects;
+  }, [projects]);
   /** Per-card float controls, so the lit card can be held still from outside. */
   const floats = useRef(new Map<number, { stop: () => void; start: () => void }>());
 
@@ -35,6 +40,24 @@ export default function Projects() {
       setLitTitle(title);
       clearTimeout(clear);
       clear = setTimeout(() => setLitTitle(null), HIGHLIGHT_MS);
+
+      // Go to the card, not to the top of the section. The grid is several
+      // rows tall, so landing on the heading regularly leaves the card that
+      // was just lit below the fold -- the highlight would burn its few
+      // seconds out of sight. Centring it also means the last row travels as
+      // far as the browser can take it rather than stopping short.
+      //
+      // A frame's wait lets the effect below settle the card out of its float
+      // first, so the scroll is measured against a card at rest.
+      const index = projectsRef.current.findIndex(
+        (p) => p.title.toLowerCase() === title.toLowerCase()
+      );
+      requestAnimationFrame(() => {
+        const cards = cardsRef.current?.querySelectorAll<HTMLElement>('.project-card');
+        // No card by that name: the section is still the right neighbourhood.
+        const target = (index === -1 ? null : cards?.[index]) ?? sectionRef.current;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     });
     return () => {
       off();
