@@ -18,10 +18,11 @@ import type { ArcatextFeature, FigureSection } from '@/content/types';
  * rather than nine hand-written blocks means adding or reordering a section is
  * a line here.
  *
- * Only five sections take an image, and that is a deliberate rhythm rather
+ * Six of the nine may take an image, and the three that cannot -- why it
+ * mattered, the challenge, key constraints -- are a deliberate rhythm rather
  * than an oversight: a picture under every heading reads as a screenshot dump,
- * so the text-only sections carry the argument and the figures land where they
- * show something words cannot.
+ * so those sections carry the argument in prose and the figures land where
+ * they show something words cannot.
  */
 const SECTIONS: {
   field: keyof ArcatextFeature;
@@ -36,7 +37,7 @@ const SECTIONS: {
   { field: 'solution', label: 'solutionTitle', figure: 'solution' },
   { field: 'tradeoff', label: 'tradeoffTitle', figure: 'tradeoff' },
   { field: 'validation', label: 'validationTitle', figure: 'validation' },
-  { field: 'impact', label: 'impactTitle' },
+  { field: 'impact', label: 'impactTitle', figure: 'impact' },
 ];
 
 export default function CaseStudy({ index }: { index: number }) {
@@ -133,6 +134,12 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
   const base = `arcatext.features.${index}.figures.${section}`;
   return (
     <figure className="mt-8">
+      {/* Direction for the slot, not page copy: admin only. */}
+      {isAdmin && figure.note && (
+        <p className="mb-2 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+          {figure.note}
+        </p>
+      )}
       <div className="overflow-hidden rounded-xl border border-border/50 bg-muted/40">
         <EditableImage
           path={`${base}.src`}

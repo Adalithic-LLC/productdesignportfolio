@@ -160,6 +160,10 @@ export interface CaseStudyFigure {
   src: string;
   alt: string;
   caption: string;
+  /** What artwork belongs here. Shown only in admin, beside the upload frame
+      -- it is direction for whoever fills the slot, not page copy, so it is
+      never rendered to a visitor. */
+  note: string;
 }
 
 /** The sections that may carry a figure -- deliberately not all of them. */
@@ -168,7 +172,8 @@ export type FigureSection =
   | 'keyDecision'
   | 'solution'
   | 'tradeoff'
-  | 'validation';
+  | 'validation'
+  | 'impact';
 
 /**
  * One feature's case study. Every section field may be empty, and an empty

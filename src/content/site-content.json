@@ -445,27 +445,38 @@
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Polished hero image: Reword inside the keyboard — original message, Reword action, translated/corrected result."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Comparison or progression: an early, more complex concept with many options; the simplified Reword interaction; optional context controls moved behind progressive disclosure."
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Main flow visual — Write → set context if needed → Reword → review result. 3–4 screens in sequence."
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Detail view of the optional controls: gender, script/romanization, alternate phrasing, clarification. Proves deeper control exists without cluttering the default."
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Research artifact or metrics, if available."
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
           }
         }
       },
@@ -473,40 +484,51 @@
         "slug": "check",
         "title": "Check",
         "body": "A pre-send review layer that helps users verify what an AI-generated translation actually means.",
-        "whatItIs": "",
-        "whyItMattered": "Arcatext could generate fluent translations, but fluency does not guarantee that tone, intent, gender, or nuance were preserved.",
-        "problem": "Users may trust fluent-looking output without realizing the meaning has shifted.",
-        "constraints": "The review experience could not become so heavy that it interrupted texting or made users distrust every translation.",
-        "keyDecision": "Instead of forcing a full review after every Reword action, Check became an optional layer for higher-risk moments.",
-        "solution": "Reverse translation, clarification, naturalness feedback, and alternate phrasing help users inspect the result before sending.",
-        "tradeoff": "More verification increases confidence, but too much explanation slows the core experience. The default path therefore stays lightweight.",
-        "validation": "Use research or prototype feedback here, plus planned metrics such as Check usage and send-after-check rate.",
-        "impact": "Check became part of Arcatext’s broader principle of treating translation as an interactive learning process rather than a final answer.",
+        "whatItIs": "Check is Arcatext's pre-send verification and analysis experience. It helps users confirm that a Reworded message still matches their intended meaning, then lets them go deeper into naturalness, alternate phrasing, clarification, and learning.",
+        "whyItMattered": "A translation can look fluent while still changing tone, intent, formality, gender, or nuance. That creates a trust problem: users may send something that appears correct without actually knowing whether it says what they meant.\n\nCheck addresses that gap by giving users a way to inspect AI output before sending instead of treating translation as a final answer.",
+        "problem": "The challenge was to increase confidence without making users second-guess every translation.\n\nIf Check became too heavy, critical, or academic, it could slow texting, undermine trust in Reword, and create unnecessary correction anxiety. The experience had to support deeper analysis when it mattered while keeping the default communication flow lightweight.",
+        "constraints": "Check had to balance trust, latency, token cost, AI variability, and limited keyboard space. Deeper analysis could improve confidence and learning, but running every analysis automatically would make the experience slower and more expensive.\n\nThat led me to separate Check-related API calls from the default Reword response and make deeper analysis available on demand.",
+        "keyDecision": "The most important decision was to make Check optional rather than mandatory.\n\nFor low-risk messages, users could Reword and send immediately. For higher-stakes messages, Check became a deeper layer where users could verify intent, inspect naturalness, clarify ambiguity, and understand why a translation worked.\n\nI also treated the tone of feedback as part of the design problem. Check needed to reassure and explain, not frame every variation as an error.",
+        "solution": "The core Check experience starts with intent verification: users can compare the translated output against a reverse translation to confirm that meaning was preserved.\n\nFrom there, they can go deeper when needed through clarification, alternate wording, naturalness feedback, and teacher-style explanations. The result is a layered experience: fast verification first, deeper learning second.",
+        "tradeoff": "More analysis can increase trust, but too much analysis can also make the product feel slow or make users doubt otherwise acceptable translations. I therefore kept the first layer of Check focused on confidence and progressively disclosed deeper feedback.\n\nThere was also a cost tradeoff: reverse translation, naturalness analysis, clarification, and explanations could require additional model calls. Separating these from the default Reword response reduced unnecessary latency and token usage.",
+        "validation": "Check became the trust layer between AI generation and real-world communication.\n\nPrototype feedback and product reasoning reinforced the need for users to verify meaning before sending, especially for emotional, casual, romantic, or formal messages. For launch, I planned to measure Check usage, send-after-check rate, edit/regenerate behavior, and whether users returned to deeper analysis tools over time.",
+        "impact": "Check expanded Arcatext from a translation tool into a learning system.\n\nIt established a broader product principle: AI output should be inspectable, explainable, and controllable. That principle informed clarification tools, naturalness feedback, teacher-style explanations, and future learning insights.",
         "figures": {
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Polished Check-view screenshot: the translated message, the reverse translation, and one or two deeper analysis options."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Exploration comparison: an earlier “everything returned at once” concept versus the separated Reword + optional Check model. A strong place to visualize the latency/cost tradeoff."
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Main flow visual — Reword → Check intent → Explore deeper analysis → Send. 3–4 screens in sequence."
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": "Research quotes or prototype feedback about trust, as a small evidence block. Otherwise a simple metrics mockup, or leave the section text-only."
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": "Optional closing diagram: Translation → Verification → Understanding → Learning. Useful to end on the product vision rather than another UI screenshot."
           }
         }
       },
@@ -527,27 +549,38 @@
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
           }
         }
       },
@@ -568,27 +601,38 @@
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
           }
         }
       },
@@ -609,27 +653,38 @@
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
           }
         }
       },
@@ -650,27 +705,38 @@
           "whatItIs": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "keyDecision": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "solution": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "tradeoff": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
           },
           "validation": {
             "src": "",
             "alt": "",
-            "caption": ""
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
           }
         }
       }
@@ -1161,7 +1227,7 @@
       "eyebrow": "Case Study",
       "back": "Back to Arcatext",
       "whatItIsTitle": "What it is",
-      "whyItMatteredTitle": "Why this problem mattered",
+      "whyItMatteredTitle": "Why it mattered",
       "problemTitle": "The challenge",
       "constraintsTitle": "Key constraints",
       "keyDecisionTitle": "Exploration & key decisions",
