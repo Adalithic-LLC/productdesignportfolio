@@ -158,7 +158,7 @@ export interface ArcatextQuestion {
 /** A feature card at the top of the Arcatext page: a thumbnail and its name. */
 export interface ArcatextFeature {
   title: string;
-  image: string;
+  body: string;
 }
 
 export interface ArcatextContent {

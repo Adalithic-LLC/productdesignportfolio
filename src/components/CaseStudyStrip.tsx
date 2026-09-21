@@ -1,22 +1,25 @@
 /**
  * The strip of feature case studies at the top of the Arcatext page.
  *
- * A row of images with their names beneath, wider than the page's text column
- * and scrolled sideways when it does not fit. The arrows appear only when
- * there is somewhere to go, and each disables itself at its end, so they never
- * offer a scroll that would do nothing.
+ * A row of white cards, each a feature's name over a line about it, wider than
+ * the page's text column and scrolled sideways when it does not fit. The arrows
+ * appear only when there is somewhere to go, and each disables itself at its
+ * end, so they never offer a scroll that would do nothing.
  *
  * The items are a fixed width rather than a fraction of the row: that is what
  * makes overflow a property of the viewport rather than of the item count, so
- * the same markup handles seven items on a phone and on a wide desktop.
+ * the same markup handles six items on a phone and on a wide desktop.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Editable } from '@/content/Editable';
-import { EditableImage } from '@/content/EditableImage';
 
-/** One item plus one gap, which is what an arrow press should advance by. */
-const STEP = 160 + 32;
+/** Card width, and one card plus one gap -- what an arrow press advances by.
+    Wider than the images were: these hold a sentence, and 160px of prose is
+    three words a line. */
+const CARD = 240;
+const GAP = 32;
+const STEP = CARD + GAP;
 
 
 export function CaseStudyStrip({ count }: { count: number }) {
@@ -69,19 +72,24 @@ export function CaseStudyStrip({ count }: { count: number }) {
         className="-my-7 -ml-7 flex snap-x scroll-pl-7 gap-8 overflow-x-auto px-7 py-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {Array.from({ length: count }, (_, i) => (
-          <div key={i} className="w-40 shrink-0 snap-start">
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-muted transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)]">
-              <EditableImage
-                path={`arcatext.features.${i}.image`}
-                alt=""
-                className="h-full w-full object-cover"
-                wrapperClassName="h-full w-full"
-              />
-            </div>
+          /* A min-height rather than a fixed aspect: the cards are as tall as
+             the longest body among them, so the row stays even without any
+             one of them clipping its own copy. */
+          <div
+            key={i}
+            style={{ width: CARD }}
+            className="flex min-h-44 shrink-0 snap-start flex-col gap-2 rounded-xl border border-border/50 bg-white p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] dark:bg-card"
+          >
             <Editable
               as="h3"
               path={`arcatext.features.${i}.title`}
-              className="mt-3 text-center text-sm font-medium leading-snug text-foreground"
+              className="text-base font-semibold leading-snug text-neutral-900 dark:text-foreground"
+            />
+            <Editable
+              as="p"
+              path={`arcatext.features.${i}.body`}
+              multiline
+              className="text-sm leading-relaxed text-neutral-600 dark:text-muted-foreground"
             />
           </div>
         ))}
@@ -113,14 +121,14 @@ function Arrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={side === 'left' ? 'Scroll left' : 'Scroll right'}
-      /* Sat against the images rather than the whole strip, whose height
-         includes the names underneath -- centred on the strip it would ride
-         low of the thing it scrolls.
+      /* Centred on the strip: the names now sit inside the cards, so the
+         strip's height is the cards' height and nothing hangs below them to
+         pull the arrows off centre.
 
          The right arrow sits inside the rail rather than outside it: the rail
          now runs to the viewport's edge, and anything beyond that is clipped
          by the page. The left one still has the gutter to sit in. */
-      className={`absolute top-[38%] z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-opacity duration-200 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+      className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-opacity duration-200 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         side === 'left' ? '-left-4' : 'right-3'
       } ${disabled ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
     >

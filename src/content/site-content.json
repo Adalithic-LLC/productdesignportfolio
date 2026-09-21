@@ -430,27 +430,27 @@
     "features": [
       {
         "title": "Reword",
-        "image": "/hero-tiles/arcatext-reword.webp"
+        "body": "The core translation & correction experience with options for specifying context and changing script."
       },
       {
         "title": "Check",
-        "image": "/hero-tiles/arcatext-homographs.webp"
+        "body": "Intent verification, deeper analysis, and expanding the learning potential of each message."
       },
       {
-        "title": "Paste",
-        "image": "/hero-tiles/arcatext-translate-received.webp"
+        "title": "Translate Received Messages",
+        "body": "Quick translation for the other side of the chat, without leaving the app."
       },
       {
         "title": "Study Guide",
-        "image": "/hero-tiles/arcatext-study-guide.webp"
+        "body": "A personalized vocabulary list derived from user translations."
       },
       {
         "title": "Glide Calibration",
-        "image": "/project-arcatext-placeholder.svg"
+        "body": "An interactive calibration for personalizing glide typing."
       },
       {
         "title": "Arcatext Tuning",
-        "image": "/hero-tiles/arcatext-tuning.webp"
+        "body": "An admin app for understanding and improving typing performance."
       }
     ],
     "overview": {
