@@ -588,33 +588,33 @@
         "slug": "study-guide",
         "title": "Study Guide",
         "body": "A personalized vocabulary list derived from user translations.",
-        "whatItIs": "",
-        "whyItMattered": "",
-        "problem": "Every translation was a learning opportunity that disappeared the moment the message was sent. Nothing accumulated.",
-        "constraints": "",
-        "keyDecision": "",
-        "solution": "A vocabulary list built automatically from the user's own translations, so study material comes from the conversations they actually had rather than a generic word list.",
-        "tradeoff": "",
-        "validation": "",
-        "impact": "",
+        "whatItIs": "Study Guide turns the language users actually translate into a personalized vocabulary list. Instead of studying a generic word set, users can review words and phrases that came directly from their own conversations and communication needs.",
+        "whyItMattered": "One of Arcatext’s core ideas is that real conversations can become the curriculum. But that learning value would be lost if useful vocabulary disappeared as soon as a message was sent.\n\nStudy Guide creates continuity between communication and deliberate practice by capturing the language users are already encountering and using.",
+        "problem": "The challenge was deciding what from a conversation was actually worth saving.\n\nIf Arcatext captured everything, the list could become noisy and repetitive. If it captured too little, the feature would not feel personalized enough to be useful.",
+        "constraints": "The system had to identify meaningful vocabulary from translation activity, avoid excessive duplication, preserve enough context for words to remain understandable, and keep the feature lightweight rather than turning it into a full flashcard app.",
+        "keyDecision": "The key decision was to derive the Study Guide from real user behavior rather than a predefined curriculum.\n\nThat meant prioritizing vocabulary and phrases users had already needed in conversation, then organizing them into a reusable learning resource instead of asking users to manually build study lists.",
+        "solution": "Study Guide automatically collects useful vocabulary from the user’s translation history and presents it as a personalized review list.\n\nThe experience is designed to connect each word back to real use, helping users reinforce language that is relevant to their relationships, interests, and recurring communication needs.",
+        "tradeoff": "Automation makes the feature effortless, but it creates a relevance problem: not every translated word deserves to become study material. The system therefore needs rules for filtering repetition, prioritizing meaningful terms, and preventing the list from becoming cluttered.\n\nThere is also a balance between depth and scope. Study Guide should strengthen Arcatext’s learning loop without trying to become a full standalone spaced-repetition system.",
+        "validation": "Study Guide extends the value of each translation beyond the immediate conversation and creates a reason for users to return to Arcatext outside the moment of texting.\n\nUseful launch signals would include Study Guide opens, repeat review sessions, words revisited or mastered, and whether vocabulary generated from real conversations drives stronger retention than passive translation history.",
+        "impact": "Study Guide is an important bridge between Arcatext’s communication layer and its learning layer.\n\nIt demonstrates how repeated product usage can generate increasingly personalized learning content: conversations create vocabulary, vocabulary creates study material, and that learning can eventually inform future practice, recommendations, and progress insights.",
         "figures": {
           "whatItIs": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Hero screenshot: the Study Guide populated with vocabulary pulled from past translations."
           },
           "keyDecision": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Simple transformation diagram: Real conversation → translated words/phrases → Study Guide → review. The strongest visual for explaining the concept."
           },
           "solution": {
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "The main interface, showing: vocabulary item; translation; original sentence/context; optional save/mastered state, if those exist."
           },
           "tradeoff": {
             "src": "",
@@ -632,7 +632,7 @@
             "src": "",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Optional closing visual — Conversation → Translation → Vocabulary → Review → Future practice. Ties Study Guide directly into the long-term personalized learning system."
           }
         }
       },
