@@ -1,7 +1,5 @@
 /**
- * One Arcatext feature, on its own page, as a run of labelled sections: what
- * it is, why it mattered, problem, constraints, key decision, solution,
- * tradeoff, validation, impact.
+ * One Arcatext feature, on its own page, as a run of labelled sections.
  *
  * One component for all six rather than six near-identical files. The six
  * differ only in their copy, which already lives in `arcatext.features`, so
@@ -11,25 +9,33 @@
 import { ArrowLeft } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import type { ArcatextFeature } from '@/content/types';
+import { EditableImage } from '@/content/EditableImage';
+import type { ArcatextFeature, FigureSection } from '@/content/types';
 
 /**
- * The sections, in page order: the content field on the feature, and the label
- * beside it. Driving the page off a list rather than nine hand-written blocks
- * means adding or reordering a section is a line here.
+ * The sections, in page order: the content field on the feature, the label
+ * beside it, and whether it may carry a figure. Driving the page off a list
+ * rather than nine hand-written blocks means adding or reordering a section is
+ * a line here.
  *
- * `body` leads because it is the brief description the strip's card already
- * shows -- one field, so the card and the page cannot drift apart.
+ * Only five sections take an image, and that is a deliberate rhythm rather
+ * than an oversight: a picture under every heading reads as a screenshot dump,
+ * so the text-only sections carry the argument and the figures land where they
+ * show something words cannot.
  */
-const SECTIONS: { field: keyof ArcatextFeature; label: string }[] = [
-  { field: 'body', label: 'whatItIsTitle' },
+const SECTIONS: {
+  field: keyof ArcatextFeature;
+  label: string;
+  figure?: FigureSection;
+}[] = [
+  { field: 'whatItIs', label: 'whatItIsTitle', figure: 'whatItIs' },
   { field: 'whyItMattered', label: 'whyItMatteredTitle' },
   { field: 'problem', label: 'problemTitle' },
   { field: 'constraints', label: 'constraintsTitle' },
-  { field: 'keyDecision', label: 'keyDecisionTitle' },
-  { field: 'solution', label: 'solutionTitle' },
-  { field: 'tradeoff', label: 'tradeoffTitle' },
-  { field: 'validation', label: 'validationTitle' },
+  { field: 'keyDecision', label: 'keyDecisionTitle', figure: 'keyDecision' },
+  { field: 'solution', label: 'solutionTitle', figure: 'solution' },
+  { field: 'tradeoff', label: 'tradeoffTitle', figure: 'tradeoff' },
+  { field: 'validation', label: 'validationTitle', figure: 'validation' },
   { field: 'impact', label: 'impactTitle' },
 ];
 
@@ -37,10 +43,15 @@ export default function CaseStudy({ index }: { index: number }) {
   const { content, isAdmin } = useContent();
   const feature = content.arcatext.features[index];
 
-  /* A section with nothing written in it is left off the page rather than
-     shown as a heading over blank space -- but it is kept in admin, where an
-     empty slot is the only way to reach the field and fill it. */
-  const shown = SECTIONS.filter(({ field }) => isAdmin || feature[field]);
+  /** What a section renders as its body: its own copy, except "What it is",
+      which falls back to the short line the strip's card uses. */
+  const copy = (field: keyof ArcatextFeature) =>
+    field === 'whatItIs' ? feature.whatItIs || feature.body : String(feature[field] ?? '');
+
+  /** A section with nothing written in it is left off the page rather than
+      shown as a heading over blank space -- but it is kept in admin, where an
+      empty slot is the only way to reach the field and fill it. */
+  const shown = SECTIONS.filter(({ field }) => isAdmin || copy(field));
 
   return (
     <div className="min-h-screen">
@@ -71,7 +82,7 @@ export default function CaseStudy({ index }: { index: number }) {
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
-        {shown.map(({ field, label }, i) => (
+        {shown.map(({ field, label, figure }, i) => (
           <section
             key={field}
             /* The rule sits above each section but the first, so the title is
@@ -85,17 +96,59 @@ export default function CaseStudy({ index }: { index: number }) {
             />
             <Editable
               as="p"
-              path={`arcatext.features.${index}.${field}`}
+              path={
+                field === 'whatItIs' && !feature.whatItIs
+                  ? `arcatext.features.${index}.body`
+                  : `arcatext.features.${index}.${field}`
+              }
               multiline
-              /* min-h in admin only: an empty paragraph collapses to nothing,
+              /* `whitespace-pre-line` is what makes the blank lines in the
+                 stored copy read as paragraph breaks -- HTML would otherwise
+                 collapse them into one run of prose.
+
+                 min-h in admin only: an empty paragraph collapses to nothing,
                  and a target with no height cannot be clicked into. */
-              className={`text-lg leading-relaxed text-foreground/90 ${
+              className={`whitespace-pre-line text-lg leading-relaxed text-foreground/90 ${
                 isAdmin ? 'min-h-7' : ''
               }`}
             />
+            {figure && <Figure index={index} section={figure} />}
           </section>
         ))}
       </article>
     </div>
+  );
+}
+
+/**
+ * A section's image. Hidden entirely until one is set, so a page with no
+ * artwork yet has no empty frames in it; in admin the frame always shows,
+ * because clicking it is how an image gets uploaded.
+ */
+function Figure({ index, section }: { index: number; section: FigureSection }) {
+  const { content, isAdmin } = useContent();
+  const figure = content.arcatext.features[index].figures[section];
+  if (!figure.src && !isAdmin) return null;
+
+  const base = `arcatext.features.${index}.figures.${section}`;
+  return (
+    <figure className="mt-8">
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-muted/40">
+        <EditableImage
+          path={`${base}.src`}
+          altPath={`${base}.alt`}
+          className="block h-auto w-full"
+          wrapperClassName="block w-full min-h-40"
+        />
+      </div>
+      {(figure.caption || isAdmin) && (
+        <Editable
+          as="figcaption"
+          path={`${base}.caption`}
+          multiline
+          className={`mt-3 text-sm text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
+        />
+      )}
+    </figure>
   );
 }

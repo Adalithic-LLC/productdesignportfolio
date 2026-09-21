@@ -3,7 +3,7 @@ import type { ElementType } from 'react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 
-type EditableTag = 'span' | 'p' | 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'a' | 'dt' | 'dd';
+type EditableTag = 'span' | 'p' | 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'a' | 'dt' | 'dd' | 'figcaption';
 
 interface EditableProps {
   /** Dot path into the content store, e.g. "hero.title" or "projects.items.0.title". */

@@ -155,18 +155,35 @@ export interface ArcatextQuestion {
   q: string;
 }
 
-/** A feature card at the top of the Arcatext page: a thumbnail and its name. */
+/** An optional image inside a section. */
+export interface CaseStudyFigure {
+  src: string;
+  alt: string;
+  caption: string;
+}
+
+/** The sections that may carry a figure -- deliberately not all of them. */
+export type FigureSection =
+  | 'whatItIs'
+  | 'keyDecision'
+  | 'solution'
+  | 'tradeoff'
+  | 'validation';
+
 /**
- * One feature's case study. The section fields are in page order; every one
- * but `body` may be empty, and an empty section is left off the page (it still
- * shows in admin, so it can be filled in).
+ * One feature's case study. Every section field may be empty, and an empty
+ * section is left off the page (it still shows in admin, so it can be filled
+ * in). Same for a figure with no `src`.
  */
 export interface ArcatextFeature {
   /** Also its route: `#/arcatext/<slug>`. */
   slug: string;
   title: string;
-  /** "What it is" -- doubles as the brief description on the strip's card. */
+  /** The brief line on the strip's card. Kept separate from `whatItIs`, which
+      runs to several paragraphs on a page but would blow out a 240px card. */
   body: string;
+  /** Falls back to `body` when empty. */
+  whatItIs: string;
   whyItMattered: string;
   problem: string;
   constraints: string;
@@ -175,6 +192,7 @@ export interface ArcatextFeature {
   tradeoff: string;
   validation: string;
   impact: string;
+  figures: Record<FigureSection, CaseStudyFigure>;
 }
 
 export interface ArcatextContent {

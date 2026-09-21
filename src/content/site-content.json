@@ -432,19 +432,48 @@
         "slug": "reword",
         "title": "Reword",
         "body": "The core translation & correction experience with options for specifying context and changing script.",
-        "whyItMattered": "",
-        "problem": "Translating mid-conversation meant leaving the chat for a separate app, and a raw machine translation drops the things that carry meaning: who you are speaking to, how formal you are, and which script the reader expects.",
-        "constraints": "",
-        "keyDecision": "",
-        "solution": "Translation and correction inside the keyboard itself, with the context controls promoted to first-class options. Specify the situation, set gendered forms, and switch script without retyping the message.",
-        "tradeoff": "",
-        "validation": "",
-        "impact": ""
+        "whatItIs": "Reword is Arcatext's core translation and correction experience. It transforms what the user writes into a more natural target-language version while preserving intent, and it can also improve grammar, clarity, and naturalness when the user is writing in the same language.\n\nIt supports contextual controls for things like gender, tone, script, romanization, and alternate phrasing so users can shape the output instead of accepting a single generic translation.",
+        "whyItMattered": "Most translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.\n\nReword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter.",
+        "problem": "The main challenge was balancing speed, control, and simplicity.\n\nA translation keyboard has very limited space and has to fit into an interaction people expect to feel immediate. At the same time, language is highly contextual: meaning can shift based on gender, formality, ambiguity, regional phrasing, script, or who the user is speaking to.\n\nThe challenge was to expose enough control to improve translation quality without turning the keyboard into a dense settings panel.",
+        "constraints": "Reword had to work inside iOS custom-keyboard limitations, manage API latency and token cost, return predictable AI outputs, and support language-specific edge cases without slowing the default texting flow.\n\nSelected examples: iOS “Allow Full Access” requirements led to deep links, setup instructions, and redirects; API latency and token cost led me to separate Check-related calls from the default Reword response package; AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls.",
+        "keyDecision": "The most important decision was to keep Reword as one primary action rather than expose translation, correction, tone, grammar, and learning as separate top-level tools.\n\nThat reduced cognitive load and matched the user's mental model: “help me say this better.”\n\nI also separated the default response from deeper AI support. Reword returns the core result quickly, while additional checks, explanations, and clarification can be requested when the user needs more confidence or learning depth.\n\nContext controls were treated as optional modifiers rather than requirements. This kept the default interaction lightweight while still allowing users to specify things like recipient gender, script, or romanization when those details affected meaning.",
+        "solution": "The final Reword experience follows a simple pattern:\n\nWrite → adjust context if needed → Reword → review result\n\nThe system uses the user's text plus any relevant context to generate a more natural version. The interaction stays focused on the rewritten output, while deeper tools remain available when needed.\n\nFor translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.",
+        "tradeoff": "More context can improve output quality, but asking for too much information would slow the user down. I therefore treated context as optional and progressively disclosed rather than mandatory.\n\nLLMs also created a tradeoff between flexibility and predictability. Their contextual reasoning enabled richer language support than direct machine translation, but output variability meant prompts and response structure had to be tightly controlled.\n\nFinally, putting more AI work into every Reword request would improve depth but increase latency and token cost. I kept the default response focused and moved deeper analysis into optional follow-up actions.",
+        "validation": "Reword became the core product behavior and the interaction around which the MVP was built.\n\nEarly prototype testing helped validate that users understood the value of being able to write naturally inside their existing conversations rather than switching to a separate translator. Building the feature in code then exposed implementation constraints that shaped the final interaction, including response structure, latency, typing behavior, and language-specific controls.\n\nFor launch, I planned to measure signals such as Reword completion rate, time-to-translation, regenerate/edit behavior, repeat keyboard usage, and send-after-Reword behavior.",
+        "impact": "Reword established the core interaction model for Arcatext: keep communication fast, then reveal more learning depth when the user wants it.\n\nThat principle influenced the rest of the product, including Check, clarification tools, gender and script controls, and the broader strategy of turning translation from a one-shot output into an interactive learning experience.",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       },
       {
         "slug": "check",
         "title": "Check",
         "body": "A pre-send review layer that helps users verify what an AI-generated translation actually means.",
+        "whatItIs": "",
         "whyItMattered": "Arcatext could generate fluent translations, but fluency does not guarantee that tone, intent, gender, or nuance were preserved.",
         "problem": "Users may trust fluent-looking output without realizing the meaning has shifted.",
         "constraints": "The review experience could not become so heavy that it interrupted texting or made users distrust every translation.",
@@ -452,12 +481,40 @@
         "solution": "Reverse translation, clarification, naturalness feedback, and alternate phrasing help users inspect the result before sending.",
         "tradeoff": "More verification increases confidence, but too much explanation slows the core experience. The default path therefore stays lightweight.",
         "validation": "Use research or prototype feedback here, plus planned metrics such as Check usage and send-after-check rate.",
-        "impact": "Check became part of Arcatext’s broader principle of treating translation as an interactive learning process rather than a final answer."
+        "impact": "Check became part of Arcatext’s broader principle of treating translation as an interactive learning process rather than a final answer.",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       },
       {
         "slug": "translate-received",
         "title": "Translate Received Messages",
         "body": "Quick translation for the other side of the chat, without leaving the app.",
+        "whatItIs": "",
         "whyItMattered": "",
         "problem": "The keyboard could only help with what the user was writing. Half of every conversation — what the other person said — still sent them out to a separate app.",
         "constraints": "",
@@ -465,12 +522,40 @@
         "solution": "Translation for incoming messages from inside the keyboard, so both sides of the chat are handled in one place without leaving the conversation.",
         "tradeoff": "",
         "validation": "",
-        "impact": ""
+        "impact": "",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       },
       {
         "slug": "study-guide",
         "title": "Study Guide",
         "body": "A personalized vocabulary list derived from user translations.",
+        "whatItIs": "",
         "whyItMattered": "",
         "problem": "Every translation was a learning opportunity that disappeared the moment the message was sent. Nothing accumulated.",
         "constraints": "",
@@ -478,12 +563,40 @@
         "solution": "A vocabulary list built automatically from the user's own translations, so study material comes from the conversations they actually had rather than a generic word list.",
         "tradeoff": "",
         "validation": "",
-        "impact": ""
+        "impact": "",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       },
       {
         "slug": "glide-calibration",
         "title": "Glide Calibration",
         "body": "An interactive calibration for personalizing glide typing.",
+        "whatItIs": "",
         "whyItMattered": "",
         "problem": "Glide typing has to recover a word from a smeared path, and every finger travels differently. The usual fix — asking users to train individual words — does not generalize past the words they trained.",
         "constraints": "",
@@ -491,12 +604,40 @@
         "solution": "A short sequence of drills (straight rows, diagonals, zigzags, circles, figure-8s) that measures how this user's finger actually moves and reduces it to a bias profile. The decoder consults that profile to improve predictions on every word, not only the drilled ones.",
         "tradeoff": "",
         "validation": "",
-        "impact": ""
+        "impact": "",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       },
       {
         "slug": "arcatext-tuning",
         "title": "Arcatext Tuning",
         "body": "An admin app for understanding and improving typing performance.",
+        "whatItIs": "",
         "whyItMattered": "",
         "problem": "Typing performance was invisible. With no way to see where the decoder was failing, tuning it was guesswork.",
         "constraints": "",
@@ -504,7 +645,34 @@
         "solution": "An admin app that surfaces accuracy, coverage and per-tap precision, with live knobs for the decoder so a change can be tested on a device before it is published.",
         "tradeoff": "",
         "validation": "",
-        "impact": ""
+        "impact": "",
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": ""
+          }
+        }
       }
     ],
     "overview": {
@@ -993,14 +1161,14 @@
       "eyebrow": "Case Study",
       "back": "Back to Arcatext",
       "whatItIsTitle": "What it is",
-      "whyItMatteredTitle": "Why it mattered",
-      "problemTitle": "Problem",
-      "constraintsTitle": "Constraints",
-      "keyDecisionTitle": "Key decision",
-      "solutionTitle": "Solution",
-      "tradeoffTitle": "Tradeoff",
+      "whyItMatteredTitle": "Why this problem mattered",
+      "problemTitle": "The challenge",
+      "constraintsTitle": "Key constraints",
+      "keyDecisionTitle": "Exploration & key decisions",
+      "solutionTitle": "The solution",
+      "tradeoffTitle": "Tradeoffs & risks",
       "validationTitle": "Validation / outcome",
-      "impactTitle": "Impact on product"
+      "impactTitle": "Impact on the larger product"
     }
   },
   "conversant": {
