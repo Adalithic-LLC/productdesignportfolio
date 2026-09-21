@@ -155,8 +155,14 @@ export default function Arcatext() {
             className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
           />
         </div>
-        <div className="mt-6 max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8">
-          <CaseStudyStrip count={arc.features.length} />
+        {/* Left edge with the copy, right edge with the viewport.
+            Centring a wider container instead put the strip's left edge into
+            the gutter the section nav is fixed in, and from 1600px up -- where
+            that rail appears -- the two overlapped. */}
+        <div className="mt-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mr-[calc(50%-50vw)]">
+            <CaseStudyStrip count={arc.features.length} />
+          </div>
         </div>
       </section>
 

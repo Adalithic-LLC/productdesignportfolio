@@ -103,9 +103,13 @@ function Arrow({
       aria-label={side === 'left' ? 'Scroll left' : 'Scroll right'}
       /* Sat against the images rather than the whole strip, whose height
          includes the names underneath -- centred on the strip it would ride
-         low of the thing it scrolls. */
+         low of the thing it scrolls.
+
+         The right arrow sits inside the rail rather than outside it: the rail
+         now runs to the viewport's edge, and anything beyond that is clipped
+         by the page. The left one still has the gutter to sit in. */
       className={`absolute top-[38%] z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground shadow-sm backdrop-blur-sm transition-opacity duration-200 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-        side === 'left' ? '-left-3' : '-right-3'
+        side === 'left' ? '-left-4' : 'right-3'
       } ${disabled ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
     >
       <Icon className="h-5 w-5" />
