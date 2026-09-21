@@ -468,6 +468,7 @@
     ],
     "hero": {
       "status": "In development",
+      "eyebrow": "Project Overview",
       "title": "Arcatext",
       "subtitle": "A translation-keyboard that turns real conversations into self-directed language practice, with features that provide control and insight.",
       "typeTags": [

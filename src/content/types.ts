@@ -197,6 +197,8 @@ export interface ArcatextContent {
   sectionOrder?: string[];
   hero: {
     status: string;
+    /** Heads the block, in the same style as the case study strip's. */
+    eyebrow: string;
     title: string;
     subtitle: string;
     typeTags: string[];

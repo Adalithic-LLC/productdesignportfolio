@@ -176,6 +176,16 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Above the grid rather than above the title inside it. The role
+              column spans both of the grid's rows and so starts level with
+              whatever begins row one -- put the eyebrow there and the prose
+              would align to it instead of to the title. */}
+          <Editable
+            as="h2"
+            path="arcatext.hero.eyebrow"
+            className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          />
+
           {/* Two rows: the title has row 1 of the left column to itself and the
               subtitle follows in row 2, while the role column spans both so it
               starts level with the title. Doing it with rows rather than a
