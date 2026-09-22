@@ -26,6 +26,11 @@ import type { ArcatextFeature, FigureSection } from '@/content/types';
  * so those sections carry the argument in prose and the figures land where
  * they show something words cannot.
  */
+/* `label` is the key of the heading each section opens with. The heading is a
+   block in the section's own list now, not something the page prints above it,
+   so it can be retitled, restyled, moved or deleted like any other block --
+   and a section can carry more than one. The key is kept because it is what
+   seeds a heading that a draft predates. */
 const SECTIONS: {
   field: keyof ArcatextFeature;
   label: string;
@@ -86,26 +91,13 @@ export default function CaseStudy({ index }: { index: number }) {
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
-        {shown.map(({ field, label, figure }, i) => (
+        {shown.map(({ field, figure }, i) => (
           <section
             key={field}
             /* The rule sits above each section but the first, so the title is
                not fenced off from the copy it heads. */
             className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
           >
-            {/* This page's own heading, not the shared label: retitling a
-                section here should not retitle it on the other five. Falls
-                back to the shared one when a page has not got its own -- which
-                is also what an older draft looks like. */}
-            <Editable
-              as="h2"
-              path={
-                feature.headings?.[label] !== undefined
-                  ? `arcatext.features.${index}.headings.${label}`
-                  : `arcatext.caseStudy.${label}`
-              }
-              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-            />
             <Prose>
               <EditableBlocks path={`arcatext.features.${index}.${field}`} />
             </Prose>

@@ -240,9 +240,43 @@ function migrateDraft(draft: unknown): unknown {
     return f;
   });
 
+  /* Section headings became the first block of each section's own list. A
+     draft written before that has them nowhere in its own data -- the page
+     used to print them -- so a section would come up untitled. Seed one from
+     whatever that draft still carries the label in. */
+  const shared = isPlainObject((arcatext as Record<string, unknown>).caseStudy)
+    ? ((arcatext as Record<string, unknown>).caseStudy as Record<string, unknown>)
+    : {};
+  const SECTION_KEYS: [string, string][] = [
+    ['whatItIs', 'whatItIsTitle'],
+    ['whyItMattered', 'whyItMatteredTitle'],
+    ['problem', 'problemTitle'],
+    ['constraints', 'constraintsTitle'],
+    ['keyDecision', 'keyDecisionTitle'],
+    ['solution', 'solutionTitle'],
+    ['tradeoff', 'tradeoffTitle'],
+    ['validation', 'validationTitle'],
+    ['impact', 'impactTitle'],
+  ];
+  const titled = migrated.map((raw) => {
+    if (!isPlainObject(raw)) return raw;
+    const f = { ...(raw as Record<string, unknown>) };
+    const own = isPlainObject(f.headings) ? (f.headings as Record<string, unknown>) : {};
+    for (const [field, key] of SECTION_KEYS) {
+      const blocks = f[field];
+      if (!Array.isArray(blocks)) continue;
+      const first = blocks[0];
+      if (isPlainObject(first) && (first as Record<string, unknown>).type === 'heading') continue;
+      const text = String(own[key] ?? shared[key] ?? '');
+      if (!text) continue;
+      f[field] = [{ type: 'heading', style: 'sectionLabel', text }, ...blocks];
+    }
+    return f;
+  });
+
   return {
     ...(draft as Record<string, unknown>),
-    arcatext: { ...(arcatext as Record<string, unknown>), features: migrated },
+    arcatext: { ...(arcatext as Record<string, unknown>), features: titled },
   };
 }
 
