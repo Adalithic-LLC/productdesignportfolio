@@ -12,7 +12,6 @@ import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks } from '@/content/EditableBlocks';
-import { CaseStudyCards } from '@/components/CaseStudyCards';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 
 /**
@@ -31,13 +30,9 @@ const SECTIONS: {
   field: keyof ArcatextFeature;
   label: string;
   figure?: FigureSection;
-  /** Show the feature's cards after this section's opening prose. */
-  cards?: true;
-  /** Field holding the prose that resumes after those cards. */
-  more?: keyof ArcatextFeature;
 }[] = [
   { field: 'whatItIs', label: 'whatItIsTitle', figure: 'whatItIs' },
-  { field: 'whyItMattered', label: 'whyItMatteredTitle', cards: true, more: 'whyItMatteredMore' },
+  { field: 'whyItMattered', label: 'whyItMatteredTitle' },
   { field: 'problem', label: 'problemTitle' },
   { field: 'constraints', label: 'constraintsTitle' },
   { field: 'keyDecision', label: 'keyDecisionTitle', figure: 'keyDecision' },
@@ -91,7 +86,7 @@ export default function CaseStudy({ index }: { index: number }) {
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
-        {shown.map(({ field, label, figure, cards, more }, i) => (
+        {shown.map(({ field, label, figure }, i) => (
           <section
             key={field}
             /* The rule sits above each section but the first, so the title is
@@ -106,12 +101,6 @@ export default function CaseStudy({ index }: { index: number }) {
             <Prose>
               <EditableBlocks path={`arcatext.features.${index}.${field}`} />
             </Prose>
-            {cards && <CaseStudyCards index={index} />}
-            {more && (isAdmin || blocks(more) > 0) && (
-              <Prose className="mt-8">
-                <EditableBlocks path={`arcatext.features.${index}.${more}`} />
-              </Prose>
-            )}
             {figure && <Figure index={index} section={figure} />}
           </section>
         ))}

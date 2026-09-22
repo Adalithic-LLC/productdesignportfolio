@@ -1,6 +1,9 @@
 import type { ElementType, ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { Editable } from './Editable';
+import { useContent } from './ContentContext';
+import { Mark } from '@/components/BrandMark';
+import { MARK_KEYS } from '@/lib/brandMarks';
 import type { ProseBlock } from './proseBlocks';
 
 /**
@@ -44,7 +47,65 @@ function makeField(ctx: ElementCtx) {
   };
 }
 
+/**
+ * A card headed by one or more logos.
+ *
+ * The marks are stored as a comma-separated list of keys in a single `icons`
+ * field, because element data is a flat string map. That field is not much use
+ * as prose, so it is surfaced only in admin, as a small hint line naming the
+ * keys that are available -- a visitor sees the marks alone.
+ */
+function LogoCard({ ctx }: { ctx: ElementCtx }) {
+  const { isAdmin } = useContent();
+  const keys = (ctx.data.icons ?? '')
+    .split(',')
+    .map((k) => k.trim().toLowerCase())
+    .filter(Boolean);
+
+  return (
+    <div className="flex h-full flex-col gap-4 rounded-xl border border-border/50 bg-card/60 p-5">
+      <div className="flex items-center gap-3">
+        {keys.map((name) => (
+          <Mark key={name} name={name} />
+        ))}
+      </div>
+      {/* Rendered directly rather than through `makeField`: that builds a
+          component during render, which remounts the field on every keystroke
+          and drops the caret. */}
+      {ctx.path ? (
+        <Editable
+          as="p"
+          path={`${ctx.path}.data.body`}
+          multiline
+          className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
+        />
+      ) : (
+        <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+          {ctx.data.body ?? ''}
+        </p>
+      )}
+      {ctx.path && isAdmin && (
+        <p className="mt-auto text-left text-xs text-muted-foreground/70">
+          <span className="font-medium">Logos:</span>{' '}
+          <Editable as="span" path={`${ctx.path}.data.icons`} />
+          <span className="ml-1 opacity-60">— one or more of {MARK_KEYS.join(', ')}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
 export const ELEMENTS: ElementDef[] = [
+  {
+    id: 'card-logo',
+    label: 'Card — logos & text',
+    group: 'Cards',
+    defaultData: {
+      icons: 'google, apple',
+      body: 'What this product does, and why it falls short.',
+    },
+    body: (ctx) => <LogoCard ctx={ctx} />,
+  },
   {
     id: 'card-basic',
     label: 'Card — title & text',

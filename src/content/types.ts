@@ -157,13 +157,6 @@ export interface ArcatextQuestion {
   q: string;
 }
 
-/** A logo-headed card inside a section; see CaseStudyCards. */
-export interface CaseStudyCard {
-  /** Marks to show above the copy: a brand key, or 'keyboard' for a category. */
-  icons: string[];
-  body: string;
-}
-
 /** An optional image inside a section. */
 export interface CaseStudyFigure {
   src: string;
@@ -200,8 +193,6 @@ export interface ArcatextFeature {
      inside it. A plain string in the list still renders as a paragraph. */
   whatItIs: ProseItem[];
   whyItMattered: ProseItem[];
-  /** Blocks that follow the cards, where a section has them. */
-  whyItMatteredMore: ProseItem[];
   problem: ProseItem[];
   constraints: ProseItem[];
   keyDecision: ProseItem[];
@@ -210,7 +201,6 @@ export interface ArcatextFeature {
   validation: ProseItem[];
   impact: ProseItem[];
   figures: Record<FigureSection, CaseStudyFigure>;
-  cards: CaseStudyCard[];
 }
 
 export interface ArcatextContent {

@@ -437,7 +437,36 @@
           "Reword supports contextual controls like gender, script, and native vs romanization script so users can shape the output to their needs instead of accepting a single generic translation."
         ],
         "whyItMattered": [
-          "Current translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app."
+          "Current translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.",
+          {
+            "type": "element",
+            "variant": "card-logo",
+            "data": {
+              "icons": "google, apple",
+              "body": "Translating with Gboard requires 2-3 taps, necessitates frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation that can all be eliminated with a focused tool."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-logo",
+            "data": {
+              "icons": "deepl",
+              "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-logo",
+            "data": {
+              "icons": "keyboard",
+              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow comes bundled with a host of issues. These custom keyboards are generally not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use."
+            }
+          },
+          "Translation quality of LLMs is another lever that most existing solutions do not pull. Typical Machine Translation is cheap, but produces awkward & inaccurate results, doesn't handle same language correction, nor does it offer code-switching support. These shortcomings make Machine Translation ill-suited for facilitating natural conversations that can also serve as reliable learning material. LLMs become feasible for this space when the business accepts tighter profit margins and balance pricing with realistic usage limits, making profit predictable.",
+          "For translation to offer more value inside a texting conversation, we need a new baseline. Translation must happen in the same place as the chat. It must require less taps. And it must not create new UX problems for the user.",
+          "Goals:\n1. Offer translation in any messaging app\n2. Make translation a one-step process\n3. Do not introduce new problems to the user",
+          "Most translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.",
+          "Reword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
         ],
         "problem": [
           "The main challenge was balancing speed, control, and simplicity.",
@@ -512,35 +541,7 @@
             "caption": "",
             "note": ""
           }
-        },
-        "whyItMatteredMore": [
-          "Translation quality of LLMs is another lever that most existing solutions do not pull. Typical Machine Translation is cheap, but produces awkward & inaccurate results, doesn't handle same language correction, nor does it offer code-switching support. These shortcomings make Machine Translation ill-suited for facilitating natural conversations that can also serve as reliable learning material. LLMs become feasible for this space when the business accepts tighter profit margins and balance pricing with realistic usage limits, making profit predictable.",
-          "For translation to offer more value inside a texting conversation, we need a new baseline. Translation must happen in the same place as the chat. It must require less taps. And it must not create new UX problems for the user.",
-          "Goals:\n1. Offer translation in any messaging app\n2. Make translation a one-step process\n3. Do not introduce new problems to the user",
-          "Most translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.",
-          "Reword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
-        ],
-        "cards": [
-          {
-            "icons": [
-              "google",
-              "apple"
-            ],
-            "body": "Translating with Gboard requires 2-3 taps, necessitates frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation that can all be eliminated with a focused tool."
-          },
-          {
-            "icons": [
-              "deepl"
-            ],
-            "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation."
-          },
-          {
-            "icons": [
-              "keyboard"
-            ],
-            "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow comes bundled with a host of issues. These custom keyboards are generally not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use."
-          }
-        ]
+        }
       },
       {
         "slug": "check",
@@ -619,9 +620,7 @@
             "caption": "",
             "note": "Optional closing diagram: Translation → Verification → Understanding → Learning. Useful to end on the product vision rather than another UI screenshot."
           }
-        },
-        "whyItMatteredMore": [],
-        "cards": []
+        }
       },
       {
         "slug": "translate-received",
@@ -699,9 +698,7 @@
             "caption": "",
             "note": "Optional closing visual — a simple two-sided conversation diagram: Incoming → Understand → Reply → Reword → Check → Send. Ties this case study back into the larger Arcatext product system."
           }
-        },
-        "whyItMatteredMore": [],
-        "cards": []
+        }
       },
       {
         "slug": "study-guide",
@@ -778,9 +775,7 @@
             "caption": "",
             "note": "Optional closing visual — Conversation → Translation → Vocabulary → Review → Future practice. Ties Study Guide directly into the long-term personalized learning system."
           }
-        },
-        "whyItMatteredMore": [],
-        "cards": []
+        }
       },
       {
         "slug": "glide-calibration",
@@ -859,9 +854,7 @@
             "caption": "",
             "note": ""
           }
-        },
-        "whyItMatteredMore": [],
-        "cards": []
+        }
       },
       {
         "slug": "arcatext-tuning",
@@ -938,9 +931,7 @@
             "caption": "",
             "note": ""
           }
-        },
-        "whyItMatteredMore": [],
-        "cards": []
+        }
       }
     ],
     "overview": {
