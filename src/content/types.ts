@@ -1,3 +1,5 @@
+import type { ProseItem } from './proseBlocks';
+
 export interface NavLink {
   name: string;
   href: string;
@@ -191,21 +193,22 @@ export interface ArcatextFeature {
   /** Also its route: `#/arcatext/<slug>`. */
   slug: string;
   title: string;
-  /** The brief line on the strip's card. Kept separate from `whatItIs`, which
-      runs to several paragraphs on a page but would blow out a 240px card. */
+  /** The brief line on the strip's card; a plain string, not a block list. */
   body: string;
-  /** Falls back to `body` when empty. */
-  whatItIs: string;
-  whyItMattered: string;
-  /** Prose that follows the cards, where a section has them. Empty otherwise. */
-  whyItMatteredMore: string;
-  problem: string;
-  constraints: string;
-  keyDecision: string;
-  solution: string;
-  tradeoff: string;
-  validation: string;
-  impact: string;
+  /* Every section below is a list of prose blocks rather than one run of text,
+     so admin can add, reorder and delete a paragraph, heading or element
+     inside it. A plain string in the list still renders as a paragraph. */
+  whatItIs: ProseItem[];
+  whyItMattered: ProseItem[];
+  /** Blocks that follow the cards, where a section has them. */
+  whyItMatteredMore: ProseItem[];
+  problem: ProseItem[];
+  constraints: ProseItem[];
+  keyDecision: ProseItem[];
+  solution: ProseItem[];
+  tradeoff: ProseItem[];
+  validation: ProseItem[];
+  impact: ProseItem[];
   figures: Record<FigureSection, CaseStudyFigure>;
   cards: CaseStudyCard[];
 }

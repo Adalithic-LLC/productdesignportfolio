@@ -6,10 +6,12 @@
  * the slug in the route picks the entry and every field stays editable at its
  * existing content path.
  */
+import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
+import { EditableBlocks } from '@/content/EditableBlocks';
 import { CaseStudyCards } from '@/components/CaseStudyCards';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 
@@ -49,15 +51,16 @@ export default function CaseStudy({ index }: { index: number }) {
   const { content, isAdmin } = useContent();
   const feature = content.arcatext.features[index];
 
-  /** What a section renders as its body: its own copy, except "What it is",
-      which falls back to the short line the strip's card uses. */
-  const copy = (field: keyof ArcatextFeature) =>
-    field === 'whatItIs' ? feature.whatItIs || feature.body : String(feature[field] ?? '');
+  /** How many blocks a section holds. */
+  const blocks = (field: keyof ArcatextFeature) => {
+    const value = feature[field];
+    return Array.isArray(value) ? value.length : 0;
+  };
 
   /** A section with nothing written in it is left off the page rather than
       shown as a heading over blank space -- but it is kept in admin, where an
       empty slot is the only way to reach the field and fill it. */
-  const shown = SECTIONS.filter(({ field }) => isAdmin || copy(field));
+  const shown = SECTIONS.filter(({ field }) => isAdmin || blocks(field));
 
   return (
     <div className="min-h-screen">
@@ -100,39 +103,36 @@ export default function CaseStudy({ index }: { index: number }) {
               path={`arcatext.caseStudy.${label}`}
               className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
             />
-            <Editable
-              as="p"
-              path={
-                field === 'whatItIs' && !feature.whatItIs
-                  ? `arcatext.features.${index}.body`
-                  : `arcatext.features.${index}.${field}`
-              }
-              multiline
-              /* `whitespace-pre-line` is what makes the blank lines in the
-                 stored copy read as paragraph breaks -- HTML would otherwise
-                 collapse them into one run of prose.
-
-                 min-h in admin only: an empty paragraph collapses to nothing,
-                 and a target with no height cannot be clicked into. */
-              className={`whitespace-pre-line text-lg leading-relaxed text-foreground/90 ${
-                isAdmin ? 'min-h-7' : ''
-              }`}
-            />
+            <Prose>
+              <EditableBlocks path={`arcatext.features.${index}.${field}`} />
+            </Prose>
             {cards && <CaseStudyCards index={index} />}
-            {more && (isAdmin || feature[more]) && (
-              <Editable
-                as="p"
-                path={`arcatext.features.${index}.${more}`}
-                multiline
-                className={`mt-8 whitespace-pre-line text-lg leading-relaxed text-foreground/90 ${
-                  isAdmin ? 'min-h-7' : ''
-                }`}
-              />
+            {more && (isAdmin || blocks(more) > 0) && (
+              <Prose className="mt-8">
+                <EditableBlocks path={`arcatext.features.${index}.${more}`} />
+              </Prose>
             )}
             {figure && <Figure index={index} section={figure} />}
           </section>
         ))}
       </article>
+    </div>
+  );
+}
+
+/**
+ * The body text's measure and rhythm. `EditableBlocks` renders each block as a
+ * bare element so it can be selected and reordered, which leaves the styling to
+ * whatever wraps it -- hence a wrapper rather than a className on each block.
+ */
+function Prose({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed ${
+        className ?? ''
+      }`}
+    >
+      {children}
     </div>
   );
 }
