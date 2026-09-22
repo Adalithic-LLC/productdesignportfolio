@@ -447,7 +447,7 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "Current translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.",
+          "The feature set and value proposition are built around Reword. Without a reliable and accurate Reword feature, Arcatext would have no competitive advantage.\n\nReword has the opportunity to solve issues in the competitive landscape. Current translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.",
           {
             "type": "element",
             "variant": "card-logo",
@@ -482,7 +482,7 @@
           },
           {
             "type": "heading",
-            "style": "eyebrow",
+            "style": "sectionLabel",
             "text": "GOALS"
           },
           "For a translation product to facilitate natural conversations that can also serve as reliable learning material, we need a new baseline.\n1. Translation must happen in the same place as the chat.\n2. The flow must require fewer taps.\n3. The product must not create new UX problems for the user",
