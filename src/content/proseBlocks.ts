@@ -7,7 +7,7 @@
  * treated as paragraphs, so no existing content needs migrating.
  */
 
-export type HeaderStyle = 'h2' | 'h3' | 'h4' | 'eyebrow';
+export type HeaderStyle = 'h2' | 'h3' | 'h4' | 'eyebrow' | 'sectionLabel';
 
 export interface ProseBlock {
   type: 'paragraph' | 'heading' | 'element';
@@ -79,6 +79,16 @@ export const HEADER_STYLES: HeaderStyleConfig[] = [
     tag: 'p',
     className: 'text-xs uppercase tracking-[0.2em] text-muted-foreground',
     previewText: 'Eyebrow label',
+  },
+  {
+    /* The style the case study pages head each section with -- "WHY IT
+       MATTERS". Heavier and a step larger than the eyebrow above, which is
+       why it is its own entry rather than a reuse of it. */
+    style: 'sectionLabel',
+    label: 'Section label',
+    tag: 'h2',
+    className: 'text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground',
+    previewText: 'Section label',
   },
 ];
 

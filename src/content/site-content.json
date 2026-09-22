@@ -542,6 +542,17 @@
             "caption": "",
             "note": ""
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       },
       {
@@ -621,6 +632,17 @@
             "caption": "",
             "note": "Optional closing diagram: Translation → Verification → Understanding → Learning. Useful to end on the product vision rather than another UI screenshot."
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       },
       {
@@ -699,6 +721,17 @@
             "caption": "",
             "note": "Optional closing visual — a simple two-sided conversation diagram: Incoming → Understand → Reply → Reword → Check → Send. Ties this case study back into the larger Arcatext product system."
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       },
       {
@@ -776,6 +809,17 @@
             "caption": "",
             "note": "Optional closing visual — Conversation → Translation → Vocabulary → Review → Future practice. Ties Study Guide directly into the long-term personalized learning system."
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       },
       {
@@ -855,6 +899,17 @@
             "caption": "",
             "note": ""
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       },
       {
@@ -932,6 +987,17 @@
             "caption": "",
             "note": ""
           }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
         }
       }
     ],

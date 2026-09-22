@@ -201,6 +201,10 @@ export interface ArcatextFeature {
   validation: ProseItem[];
   impact: ProseItem[];
   figures: Record<FigureSection, CaseStudyFigure>;
+  /** This page's own section headings, keyed as `caseStudy` keys them. Seeded
+      from the shared labels, so a page can be retitled without retitling the
+      other five. */
+  headings: Record<string, string>;
 }
 
 export interface ArcatextContent {

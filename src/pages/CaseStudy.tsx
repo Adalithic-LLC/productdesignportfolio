@@ -93,9 +93,17 @@ export default function CaseStudy({ index }: { index: number }) {
                not fenced off from the copy it heads. */
             className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
           >
+            {/* This page's own heading, not the shared label: retitling a
+                section here should not retitle it on the other five. Falls
+                back to the shared one when a page has not got its own -- which
+                is also what an older draft looks like. */}
             <Editable
               as="h2"
-              path={`arcatext.caseStudy.${label}`}
+              path={
+                feature.headings?.[label] !== undefined
+                  ? `arcatext.features.${index}.headings.${label}`
+                  : `arcatext.caseStudy.${label}`
+              }
               className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
             />
             <Prose>
