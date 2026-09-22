@@ -172,6 +172,27 @@ function deepMerge<T>(base: T, override: unknown): T {
       i < base.length ? deepMerge(base[i], item) : item
     ) as unknown as T;
   }
+  // A field that became a block list after the draft was saved. The draft still
+  // holds it as one string, and handing that to a component expecting a list
+  // renders nothing -- which reads as the text having been lost, when it is
+  // sitting right there in the draft. Split it back into blocks on the same
+  // blank lines that separated its paragraphs.
+  if (Array.isArray(base) && typeof override === 'string') {
+    return override
+      .split('\n\n')
+      .map((part) => part.trim())
+      .filter(Boolean) as unknown as T;
+  }
+  // The reverse, for the same reason: a list where the schema now wants one
+  // string joins back up rather than rendering "[object Object]".
+  if (typeof base === 'string' && Array.isArray(override)) {
+    return override
+      .map((item) =>
+        typeof item === 'string' ? item : String((item as { text?: string })?.text ?? '')
+      )
+      .filter(Boolean)
+      .join('\n\n') as unknown as T;
+  }
   // Primitives: take the draft's value when present, else the base.
   return (override === undefined ? base : (override as T));
 }
