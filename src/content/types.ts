@@ -155,6 +155,13 @@ export interface ArcatextQuestion {
   q: string;
 }
 
+/** A logo-headed card inside a section; see CaseStudyCards. */
+export interface CaseStudyCard {
+  /** Marks to show above the copy: a brand key, or 'keyboard' for a category. */
+  icons: string[];
+  body: string;
+}
+
 /** An optional image inside a section. */
 export interface CaseStudyFigure {
   src: string;
@@ -190,6 +197,8 @@ export interface ArcatextFeature {
   /** Falls back to `body` when empty. */
   whatItIs: string;
   whyItMattered: string;
+  /** Prose that follows the cards, where a section has them. Empty otherwise. */
+  whyItMatteredMore: string;
   problem: string;
   constraints: string;
   keyDecision: string;
@@ -198,6 +207,7 @@ export interface ArcatextFeature {
   validation: string;
   impact: string;
   figures: Record<FigureSection, CaseStudyFigure>;
+  cards: CaseStudyCard[];
 }
 
 export interface ArcatextContent {
