@@ -197,10 +197,59 @@ function deepMerge<T>(base: T, override: unknown): T {
   return (override === undefined ? base : (override as T));
 }
 
+/**
+ * Bring a saved draft's shape up to date before it is merged.
+ *
+ * A draft holds whatever shape the page had when it was written, and a field
+ * the schema has since dropped is simply not rendered -- so writing that is
+ * sitting right there in the draft reads as lost. The case study sections went
+ * through exactly that: `cards` and `whyItMatteredMore` were folded into
+ * `whyItMattered` as ordinary blocks, so a draft from before that carries its
+ * cards and its closing paragraphs in fields nothing reads any more.
+ *
+ * Fold them back in, in the order they appeared on the page: the opening
+ * prose, then the cards, then the rest.
+ */
+function migrateDraft(draft: unknown): unknown {
+  if (!isPlainObject(draft)) return draft;
+  const arcatext = (draft as Record<string, unknown>).arcatext;
+  if (!isPlainObject(arcatext)) return draft;
+  const features = (arcatext as Record<string, unknown>).features;
+  if (!Array.isArray(features)) return draft;
+
+  const migrated = features.map((raw) => {
+    if (!isPlainObject(raw)) return raw;
+    const f = { ...(raw as Record<string, unknown>) };
+    if (!('cards' in f) && !('whyItMatteredMore' in f)) return f;
+
+    const lead = Array.isArray(f.whyItMattered) ? f.whyItMattered : [];
+    const cards = Array.isArray(f.cards) ? f.cards : [];
+    const rest = Array.isArray(f.whyItMatteredMore) ? f.whyItMatteredMore : [];
+
+    f.whyItMattered = [
+      ...lead,
+      ...cards.map((c) => {
+        const card = isPlainObject(c) ? (c as Record<string, unknown>) : {};
+        const icons = Array.isArray(card.icons) ? card.icons.join(', ') : String(card.icons ?? '');
+        return { type: 'element', variant: 'card-logo', data: { icons, body: String(card.body ?? '') } };
+      }),
+      ...rest,
+    ];
+    delete f.cards;
+    delete f.whyItMatteredMore;
+    return f;
+  });
+
+  return {
+    ...(draft as Record<string, unknown>),
+    arcatext: { ...(arcatext as Record<string, unknown>), features: migrated },
+  };
+}
+
 function readDraft(): SiteContent | null {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
-    return raw ? (JSON.parse(raw) as SiteContent) : null;
+    return raw ? (migrateDraft(JSON.parse(raw)) as SiteContent) : null;
   } catch {
     return null;
   }
