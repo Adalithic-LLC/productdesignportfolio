@@ -116,7 +116,14 @@ export function EditableBlocks({ path }: { path: string }) {
         }
         out.push(
           run.length > 1 ? (
-            <div key={`grid-${start}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              key={`grid-${start}`}
+              /* Marked so a page can restyle a run of cards -- the case
+                 study pages put theirs on one row -- without this default
+                 having to know about them. */
+              data-card-row
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
               {run.map((idx) => (
                 <Block key={idx} path={path} index={idx} item={items[idx]} editable={isAdmin} />
               ))}

@@ -116,8 +116,14 @@ export default function CaseStudy({ index }: { index: number }) {
  */
 function Prose({ children, className }: { children: ReactNode; className?: string }) {
   return (
+    /* A run of cards goes on one row and breaks out past the prose column.
+       The article is held to a reading measure, which is right for paragraphs
+       but would put four cards in two rows of very narrow columns. `grid-cols-none`
+       clears the default three-column track so `grid-flow-col` + `auto-cols-fr`
+       can lay every card in the run out in equal widths, however many there
+       are. Stacked below lg, where a row of four would be unreadable. */
     <div
-      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed ${
+      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed lg:[&_[data-card-row]]:-mx-24 lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none xl:[&_[data-card-row]]:-mx-40 ${
         className ?? ''
       }`}
     >
