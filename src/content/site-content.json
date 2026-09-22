@@ -482,7 +482,8 @@
           "The most important decision was to keep Reword as one primary action rather than expose translation, correction, tone, grammar, and learning as separate top-level tools.",
           "That reduced cognitive load and matched the user's mental model: “help me say this better.”",
           "I also separated the default response from deeper AI support. Reword returns the core result quickly, while additional checks, explanations, and clarification can be requested when the user needs more confidence or learning depth.",
-          "Context controls were treated as optional modifiers rather than requirements. This kept the default interaction lightweight while still allowing users to specify things like recipient gender, script, or romanization when those details affected meaning."
+          "Context controls were treated as optional modifiers rather than requirements. This kept the default interaction lightweight while still allowing users to specify things like recipient gender, script, or romanization when those details affected meaning.",
+          "Build an experience powered by the best translation engine, ChatGPT."
         ],
         "solution": [
           "The final Reword experience follows a simple pattern:",
