@@ -477,13 +477,8 @@
             "variant": "card-logo",
             "data": {
               "icons": "NMT",
-              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheap, but can produce awkward & inaccurate results, doesn't always handle same language correction, nor does it consistently offer code-switching support."
+              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support."
             }
-          },
-          {
-            "type": "heading",
-            "style": "sectionLabel",
-            "text": "GOALS"
           },
           "For a translation product to facilitate natural conversations that can also serve as reliable learning material, we need a new baseline.\n1. Translation must happen in the same place as the chat.\n2. The flow must require fewer taps.\n3. The product must not create new UX problems for the user",
           "Goals:\n1. Offer translation in any messaging app\n2. Make translation a one-step process\n3. Do not introduce new problems to the user",
