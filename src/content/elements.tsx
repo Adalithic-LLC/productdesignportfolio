@@ -1,6 +1,7 @@
 import type { ElementType, ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { Editable } from './Editable';
+import { EditableImage } from './EditableImage';
 import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
 import { MARK_KEYS } from '@/lib/brandMarks';
@@ -62,6 +63,12 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
     .map((k) => k.trim().toLowerCase())
     .filter(Boolean);
 
+  /* Both optional, and both shown in admin even when empty: an empty slot is
+     the only way to reach the field and fill it, and clearing the text is how
+     one is removed again. A visitor sees only what has been filled in. */
+  const title = ctx.data.title ?? '';
+  const image = ctx.data.image ?? '';
+
   return (
     <div className="flex h-full flex-col gap-4 rounded-xl border border-border/50 bg-card/60 p-5">
       <div className="flex items-center gap-3">
@@ -69,6 +76,34 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
           <Mark key={name} name={name} />
         ))}
       </div>
+
+      {(image || (ctx.path && isAdmin)) && (
+        <div className="overflow-hidden rounded-lg border border-border/50 bg-muted/40">
+          {ctx.path ? (
+            <EditableImage
+              path={`${ctx.path}.data.image`}
+              altPath={`${ctx.path}.data.imageAlt`}
+              className="block h-auto w-full"
+              wrapperClassName="block w-full min-h-24"
+            />
+          ) : (
+            image && <img src={image} alt="" className="block h-auto w-full" />
+          )}
+        </div>
+      )}
+
+      {(title || (ctx.path && isAdmin)) &&
+        (ctx.path ? (
+          <Editable
+            as="h4"
+            path={`${ctx.path}.data.title`}
+            className={`text-base font-semibold leading-snug text-foreground ${
+              isAdmin ? 'min-h-6' : ''
+            }`}
+          />
+        ) : (
+          <h4 className="text-base font-semibold leading-snug text-foreground">{title}</h4>
+        ))}
       {/* Rendered directly rather than through `makeField`: that builds a
           component during render, which remounts the field on every keystroke
           and drops the caret. */}
@@ -102,6 +137,9 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Cards',
     defaultData: {
       icons: 'google, apple',
+      title: '',
+      image: '',
+      imageAlt: '',
       body: 'What this product does, and why it falls short.',
     },
     body: (ctx) => <LogoCard ctx={ctx} />,
