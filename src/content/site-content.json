@@ -453,7 +453,8 @@
             "variant": "card-logo",
             "data": {
               "icons": "google, apple",
-              "body": "Translating with Gboard requires 2-3 taps, necessitates frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation that can all be eliminated with a focused tool."
+              "body": "Translating with Gboard requires 2-3 taps, necessitates frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation that can all be eliminated with a focused tool.",
+              "title": "In-App"
             }
           },
           {
@@ -461,7 +462,8 @@
             "variant": "card-logo",
             "data": {
               "icons": "deepl",
-              "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation."
+              "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation.",
+              "title": "Standalone App"
             }
           },
           {
@@ -469,7 +471,8 @@
             "variant": "card-logo",
             "data": {
               "icons": "keyboard",
-              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow comes bundled with a host of issues. These custom keyboards are generally not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use."
+              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow comes bundled with a host of issues. These custom keyboards are generally not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use.",
+              "title": "Other Custom Keyboards"
             }
           },
           {
@@ -477,7 +480,9 @@
             "variant": "card-logo",
             "data": {
               "icons": "NMT",
-              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support."
+              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
+              "title": "NMT",
+              "image": ""
             }
           },
           "For a translation product to facilitate natural conversations that can also serve as reliable learning material, we need a new baseline.\n1. Translation must happen in the same place as the chat.\n2. The flow must require fewer taps.\n3. The product must not create new UX problems for the user",
@@ -525,7 +530,7 @@
           "The final Reword experience follows a simple pattern:",
           "Write → adjust context if needed → Reword → review result",
           "The system uses the user's text plus any relevant context to generate a more natural version. The interaction stays focused on the rewritten output, while deeper tools remain available when needed.",
-          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode."
+          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were"
         ],
         "tradeoff": [
           {
