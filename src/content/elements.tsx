@@ -68,13 +68,30 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
      one is removed again. A visitor sees only what has been filled in. */
   const title = ctx.data.title ?? '';
   const image = ctx.data.image ?? '';
+  const markText = ctx.data.markText ?? '';
 
   return (
     <div className="flex h-full flex-col gap-4 rounded-xl border border-border/50 bg-card/60 p-5">
-      <div className="flex items-center gap-3">
+      {/* Marks row: logos, and a typed one beside them for anything with no
+          logo to borrow -- "NMT", say. Set at the icons' own 24px so a
+          wordmark lines up with the glyphs on the other cards rather than
+          sitting a size below them. */}
+      <div className="flex min-h-6 items-center gap-3">
         {keys.map((name) => (
           <Mark key={name} name={name} />
         ))}
+        {(markText || (ctx.path && isAdmin)) &&
+          (ctx.path ? (
+            <Editable
+              as="span"
+              path={`${ctx.path}.data.markText`}
+              className={`text-2xl font-semibold leading-6 text-foreground/70 ${
+                isAdmin ? 'inline-block min-h-6 min-w-10' : ''
+              }`}
+            />
+          ) : (
+            <span className="text-2xl font-semibold leading-6 text-foreground/70">{markText}</span>
+          ))}
       </div>
 
       {(image || (ctx.path && isAdmin)) && (
@@ -123,7 +140,9 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
         <p className="mt-auto text-left text-xs text-muted-foreground/70">
           <span className="font-medium">Logos:</span>{' '}
           <Editable as="span" path={`${ctx.path}.data.icons`} />
-          <span className="ml-1 opacity-60">— one or more of {MARK_KEYS.join(', ')}</span>
+          <span className="ml-1 opacity-60">
+            — one or more of {MARK_KEYS.join(', ')}; anything else goes in the text mark beside them
+          </span>
         </p>
       )}
     </div>
@@ -137,6 +156,7 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Cards',
     defaultData: {
       icons: 'google, apple',
+      markText: '',
       title: '',
       image: '',
       imageAlt: '',
