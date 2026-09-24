@@ -481,7 +481,7 @@
             "data": {
               "icons": "",
               "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
-              "title": "NMT",
+              "title": "Neural Machine Translation",
               "image": "",
               "markText": "NMT"
             }
