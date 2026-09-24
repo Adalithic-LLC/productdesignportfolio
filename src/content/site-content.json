@@ -491,7 +491,7 @@
             "style": "sectionLabel",
             "text": "GOALS"
           },
-          "For a translation product to facilitate natural conversations and be a learning experience, we need a new baseline.",
+          "For a translation product to facilitate natural conversations and be a learning experience, we needed a new baseline.",
           {
             "type": "element",
             "variant": "card-numbered",
@@ -518,9 +518,7 @@
               "title": "Quality",
               "desc": "Do not introduce new problems to the user"
             }
-          },
-          "Most translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.",
-          "Reword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
+          }
         ],
         "problem": [
           {
@@ -528,10 +526,12 @@
             "style": "sectionLabel",
             "text": "The challenge"
           },
-          "The main challenge was balancing speed, control, and simplicity.",
-          "A translation keyboard has very limited space and has to fit into an interaction people expect to feel immediate. Being a purpose-built keyboard app allowed the entire translation workflow to be a one tap process.",
-          "At the same time, language is highly contextual: meaning can shift based on gender, formality, ambiguity, regional phrasing, script, or who the user is speaking to.",
-          "The challenge was to expose enough control to improve translation quality without turning the keyboard into a dense settings panel."
+          "The main challenge of the Reword feature was not integrating an action into the chat workflow, but rather managing contextual options, which are not offered by competitors and differentiate Arcatext as a product.",
+          {
+            "type": "paragraph",
+            "text": "Meaning can shift based on speaker gender, recipient gender, individual vs group conversations, and script choice."
+          },
+          "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting were crucial decisions to avoid choice overload and creating a dense settings panel."
         ],
         "constraints": [
           {
@@ -562,7 +562,7 @@
           "The final Reword experience follows a simple pattern:",
           "Write → adjust context if needed → Reword → review result",
           "The system uses the user's text plus any relevant context to generate a more natural version. The interaction stays focused on the rewritten output, while deeper tools remain available when needed.",
-          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were"
+          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were\n\n\nA keyboard also has very limited space. Reword had to exist with related high-frequency functions, providing the user a clear but flexible workflow.\n\nMost translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.\n\n\n\n\nReword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
         ],
         "tradeoff": [
           {
