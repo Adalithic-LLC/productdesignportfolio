@@ -302,6 +302,17 @@ export const ELEMENTS: ElementDef[] = [
     },
   },
   {
+    /* The rule the case study pages set between sections -- same token, same
+       weight -- so one dropped inside a section matches the ones around it.
+       Not in the "Cards" group, so a run of them is never gridded; a divider
+       is always full width. */
+    id: 'divider',
+    label: 'Divider line',
+    group: 'Layout',
+    defaultData: {},
+    body: () => <div className="my-2 border-t border-border/40" aria-hidden="true" />,
+  },
+  {
     id: 'quote',
     label: 'Quote',
     group: 'Callouts',
