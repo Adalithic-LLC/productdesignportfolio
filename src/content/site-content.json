@@ -486,6 +486,11 @@
               "markText": "NMT"
             }
           },
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "GOALS"
+          },
           "For a translation product to facilitate natural conversations and be a learning experience, we need a new baseline.",
           {
             "type": "element",
@@ -502,7 +507,7 @@
             "data": {
               "num": "02",
               "title": "Workflow",
-              "desc": "Fewer taps to translation, ideally 1"
+              "desc": "Make translation a one-step process"
             }
           },
           {
@@ -510,11 +515,10 @@
             "variant": "card-numbered",
             "data": {
               "num": "03",
-              "title": "Numbered card",
-              "desc": "The product must not create new UX problems for the user"
+              "title": "Quality",
+              "desc": "Do not introduce new problems to the user"
             }
           },
-          "Goals:\n1. Offer translation in any messaging app\n2. Make translation a one-step process\n3. Do not introduce new problems to the user",
           "Most translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.",
           "Reword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
         ],
