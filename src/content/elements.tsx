@@ -149,6 +149,44 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
   );
 }
 
+/**
+ * Blank vertical space, with the height editable in admin.
+ *
+ * Invisible by definition, which makes it unreachable: a block with no height
+ * and no ink cannot be clicked to edit, select or delete. So in admin it draws
+ * itself as a dashed guide labelled with its height, and a visitor gets the
+ * gap alone.
+ */
+function Spacer({ ctx }: { ctx: ElementCtx }) {
+  const { isAdmin } = useContent();
+  /* Clamped: the height is typed, and a stray keystroke should not push the
+     rest of the page off the bottom of the screen. */
+  const height = Math.min(400, Math.max(0, Number(ctx.data.height) || 0));
+
+  if (!isAdmin) return <div style={{ height }} aria-hidden="true" />;
+
+  return (
+    <div
+      className="relative flex items-center justify-center rounded border border-dashed border-primary/30 bg-primary/5"
+      style={{ height: Math.max(height, 24) }}
+    >
+      <span className="text-[10px] tracking-wide text-muted-foreground/70">
+        <span className="uppercase">Spacer</span>{' '}
+        {ctx.path ? (
+          <Editable
+            as="span"
+            path={`${ctx.path}.data.height`}
+            className="mx-0.5 inline-block min-w-4 normal-case text-foreground/70"
+          />
+        ) : (
+          <span className="mx-0.5">{height}</span>
+        )}
+        px
+      </span>
+    </div>
+  );
+}
+
 export const ELEMENTS: ElementDef[] = [
   {
     id: 'card-logo',
@@ -311,6 +349,13 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Layout',
     defaultData: {},
     body: () => <div className="my-2 border-t border-border/40" aria-hidden="true" />,
+  },
+  {
+    id: 'spacer',
+    label: 'Spacer',
+    group: 'Layout',
+    defaultData: { height: '32' },
+    body: (ctx) => <Spacer ctx={ctx} />,
   },
   {
     id: 'quote',
