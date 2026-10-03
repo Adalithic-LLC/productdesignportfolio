@@ -438,7 +438,7 @@
             "style": "sectionLabel",
             "text": "What it is"
           },
-          "Reword is Arcatext's core translation and correction experience. It lives inside the main toolbar or the Arcatext custom keyboard and transforms user messages into natural target-language versions while preserving intent. It also enables users to write in the target language or a mix of both languages, improving grammar, clarity, and naturalness. This enables more flexibility in language practice.",
+          "Reword is Arcatext's core translation and correction experience. It lives inside the keyboard toolbar and transforms user messages into natural target-language versions no matter what language or script the user writes, even if it's multiple mixed together. It improves grammar, clarity, and naturalness. This input flexibility enables more possibilities, like code-switching, during language practice.",
           "Reword supports contextual controls like gender, script, and native vs romanization script so users can shape the output to their needs instead of accepting a single generic translation."
         ],
         "whyItMattered": [
@@ -485,6 +485,13 @@
               "image": "",
               "markText": "NMT"
             }
+          },
+          {
+            "type": "element",
+            "style": "sectionLabel",
+            "text": "GOALS",
+            "variant": "divider",
+            "data": {}
           },
           {
             "type": "heading",
