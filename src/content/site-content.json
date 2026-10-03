@@ -550,8 +550,8 @@
             "style": "sectionLabel",
             "text": "Key constraints"
           },
-          "Reword had to work inside iOS custom-keyboard limitations, manage API latency and token cost, return predictable AI outputs, and support language-specific edge cases without slowing the default texting flow.",
-          "Selected examples: iOS “Allow Full Access” requirements led to deep links, setup instructions, and redirects; API latency and token cost led me to separate Check-related calls from the default Reword response package; AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls."
+          "iOS rules for keyboards, API latency, token cost, LLM output variability, characteristics & unique to each language...\n\n\n...and of course the user expectation for a fast, fluid texting exchange.",
+          "iOS “Allow Full Access” requirements led to deep links, setup instructions, and redirects; API latency and token cost led me to separate Check-related calls from the default Reword response package; AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls."
         ],
         "keyDecision": [
           {
