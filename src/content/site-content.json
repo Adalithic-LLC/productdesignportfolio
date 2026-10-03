@@ -439,7 +439,7 @@
             "text": "What it is"
           },
           "Reword is Arcatext's core translation and correction experience. It lives inside the keyboard toolbar and transforms user messages into natural target-language versions no matter what language or script the user writes, even if it's multiple mixed together. It improves grammar, clarity, and naturalness. This input flexibility enables more possibilities, like code-switching, during language practice.",
-          "Reword supports contextual controls like gender, script, and native vs romanization script so users can shape the output to their needs instead of accepting a single generic translation."
+          "Reword supports contextual controls like gender and native vs romanization script, so users can shape the output to their needs instead of accepting a single generic translation."
         ],
         "whyItMattered": [
           {
@@ -447,14 +447,14 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "The feature set and value proposition are built around Reword. Without a reliable and accurate Reword feature, Arcatext would have no competitive advantage.\n\nReword has the opportunity to solve issues in the competitive landscape. Current translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.",
+          "Reword is one of Arcatext's biggest competitive advantages. It has the opportunity to solve multiple issues present in the competitive landscape.\n\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\n\nHere are some examples.",
           {
             "type": "element",
             "variant": "card-logo",
             "data": {
               "icons": "google, apple",
-              "body": "Translating with Gboard requires 2-3 taps, necessitates frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation that can all be eliminated with a focused tool.",
-              "title": "In-App"
+              "body": "Translating with Gboard requires 2-3 taps, frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation.",
+              "title": "Integrated"
             }
           },
           {
@@ -471,7 +471,7 @@
             "variant": "card-logo",
             "data": {
               "icons": "keyboard",
-              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow comes bundled with a host of issues. These custom keyboards are generally not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use.",
+              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow typically comes bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use.",
               "title": "Other Custom Keyboards"
             }
           },
@@ -480,7 +480,7 @@
             "variant": "card-logo",
             "data": {
               "icons": "",
-              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to power translation. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
+              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to execute translation tasks. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
               "title": "Neural Machine Translation",
               "image": "",
               "markText": "NMT"
@@ -498,7 +498,7 @@
             "style": "sectionLabel",
             "text": "GOALS"
           },
-          "For a translation product to facilitate natural conversations and be a learning experience, we needed a new baseline.",
+          "For a translation product to facilitate natural conversations and offer a learning experience, we needed a new baseline.",
           {
             "type": "element",
             "variant": "card-numbered",
@@ -523,7 +523,7 @@
             "data": {
               "num": "03",
               "title": "Quality",
-              "desc": "Do not introduce new problems to the user"
+              "desc": "Remove all blockers to easy and reliable use"
             }
           }
         ],
@@ -533,12 +533,16 @@
             "style": "sectionLabel",
             "text": "The challenge"
           },
-          "The main challenge of the Reword feature was not integrating an action into the chat workflow, but rather managing contextual options, which are not offered by competitors and differentiate Arcatext as a product.",
+          "The main challenge of the Reword feature was not integrating an action into the chat workflow, but rather managing contextual translation options & creating a scalable and modular prompt system.",
           {
             "type": "paragraph",
-            "text": "Meaning can shift based on speaker gender, recipient gender, individual vs group conversations, and script choice."
+            "text": "Output can change based on speaker gender, recipient gender, individual vs group conversations, and script choice."
           },
-          "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting were crucial decisions to avoid choice overload and creating a dense settings panel."
+          "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting were crucial decisions to avoid choice overload and creating a dense settings panel.",
+          {
+            "type": "paragraph",
+            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable contextual options for 70+ languages. The prompt system had to scale to the unique needs of each language. It also had to allow the app to send or withold certain instructions, depending on user selections."
+          }
         ],
         "constraints": [
           {
