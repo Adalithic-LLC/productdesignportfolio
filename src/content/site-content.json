@@ -550,8 +550,7 @@
             "style": "sectionLabel",
             "text": "Key constraints"
           },
-          "iOS rules for keyboards, API latency, token cost, LLM output variability, characteristics & unique to each language...\n\n\n...and of course the user expectation for a fast, fluid texting exchange.",
-          "iOS “Allow Full Access” requirements led to deep links, setup instructions, and redirects; API latency and token cost led me to separate Check-related calls from the default Reword response package; AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls."
+          "iOS \"Allow Full Access\" to read textfield, API latency, token cost, LLM output variability, unique characteristics of each language, and the user expectation for an uninterrupted texting exchange."
         ],
         "keyDecision": [
           {
@@ -559,10 +558,9 @@
             "style": "sectionLabel",
             "text": "Exploration & key decisions"
           },
-          "The most important decision was to keep Reword as one primary action rather than expose translation, correction, tone, grammar, and learning as separate top-level tools.",
-          "That reduced cognitive load and matched the user's mental model: “help me say this better.”",
-          "I also separated the default response from deeper AI support. Reword returns the core result quickly, while additional checks, explanations, and clarification can be requested when the user needs more confidence or learning depth.",
-          "Context controls were treated as optional modifiers rather than requirements. This kept the default interaction lightweight while still allowing users to specify things like recipient gender, script, or romanization when those details affected meaning."
+          "The most important decision was to design Reword as one primary action that could process any input. This design allowed me to consolidate text translation & correction and avoided the need to specify input language.",
+          "That reduced cognitive load and matched the user's mental models: \"translate this\" and “help me say this better.” The system just takes on the responsibility to understand what it's being given.",
+          "To keep the core Reword flow lightwright, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment."
         ],
         "solution": [
           {
@@ -573,7 +571,7 @@
           "The final Reword experience follows a simple pattern:",
           "Write → adjust context if needed → Reword → review result",
           "The system uses the user's text plus any relevant context to generate a more natural version. The interaction stays focused on the rewritten output, while deeper tools remain available when needed.",
-          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were\n\n\nA keyboard also has very limited space. Reword had to exist with related high-frequency functions, providing the user a clear but flexible workflow.\n\nMost translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.\n\n\n\n\nReword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
+          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\nFor example, the iOS “Allow Full Access” requirement led the design to include deep links, setup instructions, and redirects. API latency and token cost led me to separate reverse translation and synonym calls from the default Reword response. AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls.\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were\n\nA keyboard also has very limited space. Reword had to exist with related high-frequency functions, providing the user a clear but flexible workflow.\n\nMost translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.\n\nReword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
         ],
         "tradeoff": [
           {
