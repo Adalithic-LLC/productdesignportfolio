@@ -551,7 +551,7 @@
             "style": "sectionLabel",
             "text": "Key constraints"
           },
-          "1. In iOS \"Allow Full Access\" is required to read the textfield, which restricted certain features when off and necessitated a messaging system throughout the app.\n2. API latency determined user wait time and influenced length and complexity of prompts.\n3. LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical.\n4. LLM output variability & unique characteristics of each language necessitated longer instructions.\n5. The user expectation for an uninterrupted texting exchange influenced all decisions made in response to these key constraints."
+          "1. In iOS the \"Allow Full Access\" setting is required to read the textfield, which restricted certain features when off and meant that we needed a messaging system throughout the app.\n2. API latency determined user wait time and influenced the length and complexity of prompts.\n3. LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical.\n4. LLM output variability & unique characteristics of each language necessitated longer instructions, so balancing that with token cost was necessary\n5. The user expectation for an uninterrupted texting exchange influenced all the decisions made in response to these key constraints.\n6. Business objective of creating learning moments led to Reword-adjacent feature depth."
         ],
         "keyDecision": [
           {
@@ -560,8 +560,8 @@
             "text": "Exploration & key decisions"
           },
           "The most important decision was to design Reword as one primary action that could process any input. This design allowed me to consolidate text translation & correction and avoided the need to specify input language.",
-          "That reduced cognitive load and matched the user's mental models: \"translate this\" and “help me say this better.” The system just takes on the responsibility to understand what it's being given.",
-          "To keep the core Reword flow lightwright, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment."
+          "That reduced cognitive load and matched the user's mental models: \"translate this\" and “help me say this better.” The responsibility of the system is to understand what it's being given and what output the user is asking for.",
+          "To keep the core Reword flow lightweight for users and the API, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment to their translations."
         ],
         "solution": [
           {
@@ -570,7 +570,6 @@
             "text": "The solution"
           },
           "The final Reword experience follows a simple pattern:",
-          "Write → adjust context if needed → Reword → review result",
           {
             "type": "element",
             "variant": "card-numbered",
@@ -586,7 +585,7 @@
             "data": {
               "num": "02",
               "title": "Tap Reword",
-              "desc": "One simple tap of  the Reword button translates or correct any input text to the target language, carrying all context settings."
+              "desc": "One tap of the Reword button translates or correct any input text to the target language, carrying all context settings."
             }
           },
           {
@@ -594,21 +593,11 @@
             "variant": "card-numbered",
             "data": {
               "num": "03",
-              "title": "(Check)",
-              "desc": "Optionally check Reword details or learn more about the translation."
-            }
-          },
-          {
-            "type": "element",
-            "variant": "card-numbered",
-            "data": {
-              "num": "04",
               "title": "Send it!",
               "desc": "Send the message on its own or with an optional translation copy turned on."
             }
           },
-          "The system uses the user's text plus any relevant context to generate a more natural version. The interaction stays focused on the rewritten output, while deeper tools remain available when needed.",
-          "For translation, Reword handles meaning transfer and natural phrasing. For same-language writing, it can improve grammar, clarity, and fluency without forcing the user into a separate correction mode.\n\nFor example, the iOS “Allow Full Access” requirement led the design to include deep links, setup instructions, and redirects. API latency and token cost led me to separate reverse translation and synonym calls from the default Reword response. AI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls.\n\nDeeper research into language mechanics revealed opportunities to expand the functionality of the Reword feature, making it more accurately represent certain languages. The missing pieces were\n\nA keyboard also has very limited space. Reword had to exist with related high-frequency functions, providing the user a clear but flexible workflow.\n\nMost translation tools optimize for producing an answer. Arcatext needed to support the moment around that answer: helping users communicate naturally, preserve meaning, and learn from the language they were actually trying to use.\n\nReword became the core interaction because it sits directly inside the writing moment. If it was too slow, too generic, or too complicated, the broader learning system would not matter."
+          "Reword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input.\n\n\nDeeper research into linguistics and user behavior inside text conversations revealed opportunities to expand the functionality of the Reword feature. I included multiple gender controls, script options, and translation copy.\n\nMost translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use.\n\nmeh:\nAI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls."
         ],
         "tradeoff": [
           {
