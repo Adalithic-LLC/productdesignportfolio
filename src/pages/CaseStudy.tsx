@@ -87,23 +87,26 @@ export default function CaseStudy({ index }: { index: number }) {
         </div>
       </div>
 
-      <article className="mx-auto max-w-3xl px-4 pb-32 pt-20 sm:px-6 sm:pt-28 lg:px-8">
+      <article className="mx-auto max-w-6xl px-4 pb-32 pt-20 sm:px-6 sm:pt-28 lg:px-8">
         <Editable
           as="h2"
           path="arcatext.caseStudy.eyebrow"
           className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
         />
 
-        <h1 className="mb-14 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+        <h1 className="mb-14 max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
         {shown.map(({ field, figure }, i) => {
           const slot = figure ? feature.figures?.[figure] : undefined;
           /* Side-by-side only when the slot actually holds something. An empty
-             slot still shows in admin, but stacked, so the editor is not
-             squeezed into a column while there is nothing in it. */
+             slot still shows in admin, so the image can be uploaded. */
           const media = !!(slot?.src || slot?.demo);
+          /* The column appears in admin even when the slot is empty: that
+             frame is how an image gets uploaded, and it has to be in the
+             place the image will occupy for the layout to be judged. */
+          const twoCol = media || (isAdmin && !!figure);
           return (
           <section
             key={field}
@@ -111,15 +114,13 @@ export default function CaseStudy({ index }: { index: number }) {
                not fenced off from the copy it heads. */
             className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
           >
-            {/* Two columns only where there is something to show. A rigid
+            {/* Two columns only where there is something to show: a rigid
                 page-wide grid would leave half the width empty beside the
-                three prose-only sections; this widens the page exactly where
-                a section has media and leaves the reading measure alone
-                elsewhere. The media sticks, so a tall animation stays in view
-                while its prose scrolls past. */}
-            {media ? (
-              <div className="lg:-mr-32 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,23rem)] lg:gap-10 xl:-mr-64 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
-                <Prose>
+                prose-only sections. The media sticks, so a tall animation
+                stays in view while its prose scrolls past. */}
+            {twoCol ? (
+              <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
+                <Prose stacked>
                   <EditableBlocks path={`arcatext.features.${index}.${field}`} />
                 </Prose>
                 <div className="mt-8 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
@@ -147,18 +148,30 @@ export default function CaseStudy({ index }: { index: number }) {
  * bare element so it can be selected and reordered, which leaves the styling to
  * whatever wraps it -- hence a wrapper rather than a className on each block.
  */
-function Prose({ children, className }: { children: ReactNode; className?: string }) {
+function Prose({
+  children,
+  className,
+  stacked = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  /* Beside a media column there is no room for cards abreast, so a run
+     stacks instead of laying out on one row. */
+  stacked?: boolean;
+}) {
+  const cardRun = stacked
+    ? '[&_[data-card-row]]:grid-cols-1'
+    : 'lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none';
   return (
-    /* A run of cards goes on one row and breaks out past the prose column.
-       The article is held to a reading measure, which is right for paragraphs
-       but would put four cards in two rows of very narrow columns. `grid-cols-none`
-       clears the default three-column track so `grid-flow-col` + `auto-cols-fr`
-       can lay every card in the run out in equal widths, however many there
-       are. Stacked below lg, where a row of four would be unreadable.
-       `data-wide` gets the same breakout without the grid, for a single block
-       that needs the width -- the prompt-system diagram. */
+    /* The reading measure lives on the blocks, not on this wrapper, so a block
+       that wants the room can take the column's full width: a run of cards
+       (`data-card-row`) and the prompt diagram (`data-wide`) opt out with
+       `max-w-none`. `grid-cols-none` clears the default three-column track so
+       `grid-flow-col` + `auto-cols-fr` lay every card in a run out in equal
+       widths, however many there are -- stacked below lg, where a row of four
+       would be unreadable. */
     <div
-      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed lg:[&_[data-card-row]]:-mx-24 lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none xl:[&_[data-card-row]]:-mx-40 lg:[&_[data-wide]]:-mx-24 xl:[&_[data-wide]]:-mx-40 ${
+      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&>*]:max-w-3xl [&_p]:text-lg [&_p]:leading-relaxed [&>[data-card-row]]:max-w-none [&>[data-wide]]:max-w-none ${cardRun} ${
         className ?? ''
       }`}
     >
