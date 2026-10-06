@@ -12,6 +12,7 @@ import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks } from '@/content/EditableBlocks';
+import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 
@@ -77,7 +78,12 @@ export default function CaseStudy({ index }: { index: number }) {
             <ArrowLeft className="h-4 w-4" />
             <Editable as="span" path="arcatext.caseStudy.back" />
           </a>
-          <Editable as="span" path="arcatext.brand" className="text-sm font-semibold gradient-text" />
+          {/* The brand holds the centre of the bar, so Admin sits beyond it on
+              the far right. It renders nothing once admin is unlocked. */}
+          <div className="flex items-center gap-4">
+            <Editable as="span" path="arcatext.brand" className="text-sm font-semibold gradient-text" />
+            <AdminNavEntry />
+          </div>
         </div>
       </div>
 

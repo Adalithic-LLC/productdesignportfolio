@@ -17,7 +17,10 @@ import {
 import { Editable } from '@/content/Editable';
 // Keyboard glyphs, from the Arcatext design assets (shared with adalithic.com),
 // so the toolbar and action keys match the shipping app rather than approximating it.
-import menuUrl from '@/assets/keyboard/menu.svg';
+// The first toolbar button is the app's Study destination: StandardToolbar
+// draws it with `leaf.fill`, the Study tab's icon, because the menu's main
+// destination is the Study Guide. Sized 24pt x the toolbar's 0.8 leaf scale.
+import studyUrl from '@/assets/keyboard/study.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
@@ -97,6 +100,9 @@ const BLURB = {
 };
 
 type Scene = 'type' | 'reword' | 'check' | 'paste' | 'menu' | 'options';
+
+/** Last scene the compact demo plays before cycling back to the first. */
+const COMPACT_LAST = 1;
 
 // Ordered steps with their context-card copy.
 const SCENES: { key: Scene; blurb: keyof typeof BLURB; eyebrow: string }[] = [
@@ -219,6 +225,10 @@ export default function ArcatextKeyboard({
   const endedRef = useRef(false);
   const posRef = useRef(0);
   const playRef = useRef(true);
+  /* `schedule` is built once with no deps, so it reads compact through a ref
+     rather than closing over the prop. */
+  const compactRef = useRef(compact);
+  compactRef.current = compact;
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const bubbleId = useRef(1);
 
@@ -234,8 +244,20 @@ export default function ArcatextKeyboard({
     const beats = beatsRef.current;
     const bounds = boundsRef.current[stepRef.current];
     if (!beats.length || !bounds) return;
-    // Stop (auto-pause) at the end of the current step.
     if (posRef.current >= bounds.end) {
+      /* Compact has no play button to restart it with, so a step that ended
+         would strand the demo mid-flow -- which is what happened after the
+         message finished typing. It cycles the first two scenes instead:
+         write, reword, send, and round again. */
+      if (compactRef.current) {
+        const nextStep = stepRef.current >= COMPACT_LAST ? 0 : stepRef.current + 1;
+        stepRef.current = nextStep;
+        setStep(nextStep);
+        posRef.current = boundsRef.current[nextStep]?.start ?? 0;
+        tRef.current = setTimeout(schedule, 900);
+        return;
+      }
+      // Stop (auto-pause) at the end of the current step.
       playRef.current = false;
       endedRef.current = true;
       setPlaying(false);
@@ -297,6 +319,18 @@ export default function ArcatextKeyboard({
       setRewordLoading(false);
       setText(JA);
     }, 1100);
+    if (compact) {
+      // Compact ends the flow the way a real one does -- the reworded message
+      // goes. The full feature does not need this: its `paste` scene already
+      // opens with the message sent.
+      b(() => setPressed('send'), 1400);
+      b(() => {
+        setPressed(null);
+        setSent([{ id: bubbleId.current++, text: JA }]);
+        setText('');
+      }, 420);
+      b(() => {}, 2200);
+    }
 
     // SCENE: check
     starts.check = beats.length;
@@ -488,7 +522,10 @@ export default function ArcatextKeyboard({
 
       <div className="relative w-full">
         {/* The live interactive demo (Phase 1). */}
-        <div>
+        {/* Compact centres this wrapper, not just the phone inside it: the
+            controls are a sibling of the phone's row, so left-aligning here
+            put Restart half a phone-width off centre. */}
+        <div className={compact ? 'flex flex-col items-center' : undefined}>
           {!compact && (
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" aria-hidden />
@@ -630,9 +667,9 @@ export default function ArcatextKeyboard({
                 <div style={{ backgroundColor: C.toolbarBar }} className="px-[5px] pb-1 pt-2">
                   {/* Toolbar */}
                   <div className="mb-2 flex items-center" style={{ height: 50, gap: 8 }}>
-                    <button onClick={() => jump('menu')} className="relative ml-2 mr-[3px]" aria-label="Open menu">
+                    <button onClick={() => jump('menu')} className="relative ml-2 mr-[3px]" aria-label="Open study guide and settings">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <img src={menuUrl} alt="" style={{ width: 21, height: 21 }} />
+                        <img src={studyUrl} alt="" style={{ width: 19, height: 19 }} />
                       </div>
                     </button>
                     <button onClick={() => jump('paste')} className="relative mr-[3px]" aria-label="Open paste">
