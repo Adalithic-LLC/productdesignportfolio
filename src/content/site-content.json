@@ -551,7 +551,7 @@
             "style": "sectionLabel",
             "text": "Key constraints"
           },
-          "iOS \"Allow Full Access\" to read textfield, API latency, token cost, LLM output variability, unique characteristics of each language, and the user expectation for an uninterrupted texting exchange."
+          "1. In iOS \"Allow Full Access\" is required to read the textfield, which restricted certain features when off and necessitated a messaging system throughout the app.\n2. API latency determined user wait time and influenced length and complexity of prompts.\n3. LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical.\n4. LLM output variability & unique characteristics of each language necessitated longer instructions.\n5. The user expectation for an uninterrupted texting exchange influenced all decisions made in response to these key constraints."
         ],
         "keyDecision": [
           {
