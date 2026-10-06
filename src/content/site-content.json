@@ -470,7 +470,7 @@
             "type": "element",
             "variant": "card-logo",
             "data": {
-              "icons": "",
+              "icons": "keyboard",
               "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to execute translation tasks. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
               "title": "Neural Machine Translation",
               "markText": "NMT"
@@ -480,7 +480,7 @@
             "type": "element",
             "variant": "card-logo",
             "data": {
-              "icons": "keyboard",
+              "icons": "",
               "body": "Other \"translator keyboard apps\" offer similar utility to Reword, but they typically come bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Poor UX & technical performance are blockers to fluid use.",
               "title": "Other Custom Keyboards",
               "image": "",
@@ -524,7 +524,7 @@
             "data": {
               "num": "03",
               "title": "Quality",
-              "desc": "Remove all blockers to easy and reliable use"
+              "desc": "Remove all blockers to easy and reliable use, supporting the value Reword creates"
             }
           }
         ],
@@ -534,15 +534,15 @@
             "style": "sectionLabel",
             "text": "The challenge"
           },
-          "The main challenge of the Reword feature was not integrating an action into the chat workflow, but rather managing contextual translation options & creating a scalable and modular prompt system.",
+          "The main challenge of the Reword feature was managing the UX of translation options & creating a scalable and modular prompt system.",
           {
             "type": "paragraph",
-            "text": "Output can change based on speaker gender, recipient gender, individual vs group conversations, and script choice."
+            "text": "The translation output can change based on speaker gender, recipient gender, individual vs group conversations, and script choice."
           },
-          "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting were crucial decisions to avoid choice overload and creating a dense settings panel.",
+          "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting for gathering key data inputs were crucial decisions to avoid choice overload and creating a dense settings panel.",
           {
             "type": "paragraph",
-            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable contextual options for 70+ languages. The prompt system had to scale to the unique needs of each language. It also had to allow the app to send or withold certain instructions, depending on user selections."
+            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 70+ languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language."
           }
         ],
         "constraints": [
