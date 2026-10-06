@@ -1,7 +1,4 @@
 import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Mic, X } from 'lucide-react';
-import studyUrl from '@/assets/keyboard/study.svg';
-import pasteUrl from '@/assets/keyboard/paste.svg';
-import checkUrl from '@/assets/keyboard/check.svg';
 
 /**
  * RewordOptionScreen
@@ -24,9 +21,6 @@ import checkUrl from '@/assets/keyboard/check.svg';
 
 // Light-appearance colors from the asset catalog, as in ArcatextKeyboard.
 const C = {
-  toolbarBar: '#D0D3DA',
-  toolButtonBg: '#E6E6EB',
-  rewordBg: '#0040DD',
   send: '#0A7AFF',
   viewBg: '#F2F2F7',
   cardBg: '#FFFFFF',
@@ -117,42 +111,6 @@ function ChatHeader() {
         <div className="flex items-center gap-1">
           <span className="text-[15px] font-semibold text-black">+1 (888) 555-1212</span>
           <ChevronRight className="h-4 w-4 text-black/50" strokeWidth={2.4} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** The toolbar strip, drawn above every panel exactly as the keyboard does. */
-function Toolbar() {
-  return (
-    <div style={{ backgroundColor: C.toolbarBar }} className="px-[5px] pb-2 pt-2">
-      <div className="flex items-center" style={{ height: 50, gap: 8 }}>
-        {[
-          { src: studyUrl, w: 19, h: 19 },
-          { src: pasteUrl, w: 16, h: 20 },
-          { src: checkUrl, w: 20, h: 20 },
-        ].map((icon, i) => (
-          <div
-            key={i}
-            className={`grid place-items-center rounded-[12px] ${i === 0 ? 'ml-2' : ''}`}
-            style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}
-          >
-            <img src={icon.src} alt="" style={{ width: icon.w, height: icon.h }} />
-          </div>
-        ))}
-        <div className="flex-1" />
-        <div
-          className="mr-2 flex items-stretch overflow-hidden rounded-[12px]"
-          style={{ height: 50, backgroundColor: C.rewordBg }}
-        >
-          <span className="flex items-center px-3 text-[16px] font-medium text-white">Reword</span>
-          <span className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.5)' }} />
-          <span className="grid place-items-center" style={{ width: 40 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M6 9l6 6 6-6" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
         </div>
       </div>
     </div>
@@ -359,9 +317,8 @@ export default function RewordOptionScreen({
             </div>
           </div>
 
-          <Toolbar />
-
-          {/* Panel, in place of the keyboard */}
+          {/* Panel, in place of the toolbar and keys -- an open view replaces
+              both, so no toolbar shows above it. */}
           <div className="relative flex flex-col" style={{ height: PANEL_H, background: C.viewBg }}>
             <PanelHeader title={screen === 'copy' ? 'Menu' : 'Reword Options'} />
             {screen === 'gender' && <GenderPanel />}
