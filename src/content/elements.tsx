@@ -5,6 +5,7 @@ import { EditableImage } from './EditableImage';
 import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
+import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { MARK_KEYS } from '@/lib/brandMarks';
 import type { ProseBlock } from './proseBlocks';
 
@@ -403,6 +404,21 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Layout',
     defaultData: {},
     body: () => <div className="my-2 border-t border-border/40" aria-hidden="true" />,
+  },
+  {
+    /* The Arcatext page's modular prompt diagram, insertable into a case
+       study. It is interactive and two-column, so it carries `data-wide` to
+       claim the same breakout past the reading measure that a row of cards
+       gets -- a reading-width column would squeeze it to nothing. */
+    id: 'prompt-system',
+    label: 'Modular prompt diagram',
+    group: 'Layout',
+    defaultData: {},
+    body: () => (
+      <div data-wide>
+        <PromptArchitecture />
+      </div>
+    ),
   },
   {
     id: 'spacer',
