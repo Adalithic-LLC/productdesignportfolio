@@ -4,6 +4,7 @@ import { Editable } from './Editable';
 import { EditableImage } from './EditableImage';
 import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
+import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { MARK_KEYS } from '@/lib/brandMarks';
 import type { ProseBlock } from './proseBlocks';
 
@@ -187,6 +188,49 @@ function Spacer({ ctx }: { ctx: ElementCtx }) {
   );
 }
 
+/**
+ * A still of one Arcatext option screen with a caption under it.
+ *
+ * The screen itself is a fixed render keyed by name rather than an uploaded
+ * image, so it stays in step with the app's colors and labels; only the
+ * caption is content. An unrecognised name falls back to the first screen so
+ * a typo in admin never blanks the card.
+ */
+function ScreenCard({ ctx }: { ctx: ElementCtx }) {
+  const { isAdmin } = useContent();
+  const name = (ctx.data.screen ?? '').trim().toLowerCase() as OptionScreen;
+  const screen = OPTION_SCREENS.includes(name) ? name : OPTION_SCREENS[0];
+
+  return (
+    <figure className="flex h-full flex-col items-center gap-5">
+      <RewordOptionScreen screen={screen} />
+      {/* Rendered directly rather than through `makeField`: that builds a
+          component during render, which drops the caret on every keystroke. */}
+      <figcaption className="w-full">
+        {ctx.path ? (
+          <Editable
+            as="p"
+            path={`${ctx.path}.data.caption`}
+            multiline
+            className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
+          />
+        ) : (
+          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+            {ctx.data.caption ?? ''}
+          </p>
+        )}
+        {ctx.path && isAdmin && (
+          <p className="mt-2 text-xs text-muted-foreground/70">
+            <span className="font-medium">Screen:</span>{' '}
+            <Editable as="span" path={`${ctx.path}.data.screen`} />
+            <span className="ml-1 opacity-60">— one of {OPTION_SCREENS.join(', ')}</span>
+          </p>
+        )}
+      </figcaption>
+    </figure>
+  );
+}
+
 export const ELEMENTS: ElementDef[] = [
   {
     id: 'card-logo',
@@ -201,6 +245,16 @@ export const ELEMENTS: ElementDef[] = [
       body: 'What this product does, and why it falls short.',
     },
     body: (ctx) => <LogoCard ctx={ctx} />,
+  },
+  {
+    id: 'screen-reword',
+    label: 'Screen — Reword option',
+    group: 'Cards',
+    defaultData: {
+      screen: 'gender',
+      caption: 'What this screen shows, and why it sits here.',
+    },
+    body: (ctx) => <ScreenCard ctx={ctx} />,
   },
   {
     id: 'card-basic',
