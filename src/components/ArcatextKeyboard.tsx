@@ -1093,6 +1093,10 @@ export default function ArcatextKeyboard({
 
         {/* Controls — under the phone */}
         <div style={{ width: OUTER_W * phoneScale }} className="mt-6 flex items-center justify-center gap-3">
+          {/* Play/pause is for the full feature, where someone is studying one
+              scene. Beside a case study the demo just runs, and Restart is the
+              only control that earns its space. */}
+          {!compact && (
           <button
             onClick={togglePlay}
             className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white gradient-bg"
@@ -1100,6 +1104,7 @@ export default function ArcatextKeyboard({
             {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             {playing ? 'Pause' : ended ? 'Replay step' : 'Play'}
           </button>
+          )}
           <button
             onClick={restart}
             aria-label="Restart"
@@ -1110,13 +1115,16 @@ export default function ArcatextKeyboard({
           </button>
         </div>
 
-        {/* Helper hint — under the controls */}
+        {/* Helper hint — under the controls. Only on the full feature: the
+            case study's prose is already saying what the flow does. */}
+        {!compact && (
         <p
           style={{ width: OUTER_W * phoneScale }}
           className="mt-3 text-center text-xs leading-relaxed text-muted-foreground"
         >
           Explore the prototype by clicking any button in the toolbar! You can also close any view.
         </p>
+        )}
         </div>
       </div>
     </div>

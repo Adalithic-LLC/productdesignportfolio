@@ -112,7 +112,7 @@ export default function CaseStudy({ index }: { index: number }) {
                 elsewhere. The media sticks, so a tall animation stays in view
                 while its prose scrolls past. */}
             {media ? (
-              <div className="lg:-mr-24 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-10 xl:-mr-56 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+              <div className="lg:-mr-32 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,23rem)] lg:gap-10 xl:-mr-64 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
                 <Prose>
                   <EditableBlocks path={`arcatext.features.${index}.${field}`} />
                 </Prose>
@@ -185,7 +185,9 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
   if (figure.demo === 'reword') {
     return (
       <figure className="mt-0">
-        <ArcatextKeyboard compact scale={0.52} />
+        {/* Same scale as the Arcatext page's full feature, so the phone reads
+            at one size across the site. The media column is sized to fit it. */}
+        <ArcatextKeyboard compact />
         {(figure.caption || isAdmin) && (
           <Editable
             as="figcaption"
