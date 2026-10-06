@@ -438,7 +438,7 @@
             "style": "sectionLabel",
             "text": "WHAT IT IS"
           },
-          "Reword is how users get natural translations and corrections for messages they type. It transforms user messages no matter what mix of languages or script the user writes, supports contextual controls, like gender, so users can shape the output to their needs instead of accepting a single generic translation.",
+          "Reword is how users get natural translations and corrections for messages they type with one tap. It transforms user messages no matter what mix of languages or script the user writes and supports contextual controls, like gender, so users can shape the output to their needs instead of accepting a single generic translation.",
           "This flexibility enables learners of any level to utilize Reword as a learning tool."
         ],
         "whyItMattered": [
@@ -447,7 +447,7 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "Arcatext needed to enable a fast workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
+          "Arcatext needed to enable a fast translation workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
           {
             "type": "element",
             "variant": "card-logo",
