@@ -471,8 +471,9 @@
             "variant": "card-logo",
             "data": {
               "icons": "keyboard",
-              "body": "While the \"translator keyboard app\" category is closer to a universal solution, they typically come bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Poor UX & technical performance are blockers to fluid use.",
-              "title": "Other Custom Keyboards"
+              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to execute translation tasks. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
+              "title": "Neural Machine Translation",
+              "markText": "NMT"
             }
           },
           {
@@ -480,10 +481,10 @@
             "variant": "card-logo",
             "data": {
               "icons": "",
-              "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to execute translation tasks. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
-              "title": "Neural Machine Translation",
+              "body": "Honorable mention: while the \"translator keyboard app\" category is closer to a universal solution, they typically come bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Poor UX & technical performance are blockers to fluid use.",
+              "title": "Other Custom Keyboards",
               "image": "",
-              "markText": "NMT"
+              "markText": ""
             }
           },
           {
