@@ -601,30 +601,6 @@
           {
             "type": "paragraph",
             "text": "With deeper research into linguistics and user behavior inside text conversations I learned of opportunities to expand the functionality of the Reword feature. To avoid feature overload and pinpoint the highest value additions, I tested multiple writing style options, script and gender controls, and a toggleable translation copy.\n\n\nThese related controls were placed one level lower in the IA and save state across chats, messaging apps, and Reword languages."
-          },
-          {
-            "type": "element",
-            "variant": "screen-reword",
-            "data": {
-              "screen": "gender",
-              "caption": "Recipient gender. Arabic inflects verbs and adjectives for the person being addressed, so the same English sentence has two correct translations. Setting it here resolves the ambiguity once instead of asking at every reword."
-            }
-          },
-          {
-            "type": "element",
-            "variant": "screen-reword",
-            "data": {
-              "screen": "script",
-              "caption": "Script. The same translation can be rendered in Arabic script or romanized, which serves two different users: someone writing to a native speaker, and a learner who cannot yet read the script. The choice is saved per language."
-            }
-          },
-          {
-            "type": "element",
-            "variant": "screen-reword",
-            "data": {
-              "screen": "copy",
-              "caption": "Translation copy. When it is on, Reword sends the translation with a copy in the chosen language below it, so the recipient can read both and the sender keeps a record of what they meant to say."
-            }
           }
         ],
         "tradeoff": [
@@ -643,9 +619,8 @@
             "style": "sectionLabel",
             "text": "Validation / outcome"
           },
-          "Reword became the core product behavior and the interaction around which the MVP was built.",
-          "Early prototype testing helped validate that users understood the value of being able to write naturally inside their existing conversations rather than switching to a separate translator. Building the feature in code then exposed implementation constraints that shaped the final interaction, including response structure, latency, typing behavior, and language-specific controls.",
-          "For launch, I planned to measure signals such as Reword completion rate, time-to-translation, regenerate/edit behavior, repeat keyboard usage, and send-after-Reword behavior."
+          "Early prototype testing helped validate that users understood the value of writing naturally inside their existing conversations rather than switching to a separate translation tool. Building the feature in code then exposed implementation constraints that shaped the final interaction, including IA, LLM response structure & latency, and language-specific controls.",
+          "At launch, I'm measuring signals such as Reword completion rate, time-to-translation, regenerate/edit behavior, repeat keyboard usage, and send-after-Reword behavior. These analytics will help me understand various aspects of Reword utilization."
         ],
         "impact": [
           {
@@ -654,7 +629,7 @@
             "text": "Impact on the larger product"
           },
           "Reword established the core interaction model for Arcatext: keep communication fast, then reveal more learning depth when the user wants it.",
-          "That principle influenced the rest of the product, including Check, clarification tools, gender and script controls, and the broader strategy of turning translation from a one-shot output into an interactive learning experience."
+          "That principle influenced the rest of the product, including reverse translation, clarification tools, gender and script controls, Study guide, and the broader strategy of turning translation from a single output into an interactive learning experience."
         ],
         "figures": {
           "whatItIs": {
