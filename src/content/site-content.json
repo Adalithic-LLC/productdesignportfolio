@@ -499,7 +499,7 @@
             "style": "sectionLabel",
             "text": "GOALS"
           },
-          "For a translation product to facilitate natural conversations and offer a learning experience, we needed a new baseline.",
+          "For a translation product to facilitate natural conversations and offer a learning experience, we needed a new baseline for the core translation feature.",
           {
             "type": "element",
             "variant": "card-numbered",
