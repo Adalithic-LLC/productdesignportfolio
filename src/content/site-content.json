@@ -447,7 +447,7 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "Arcatext needed to enable a fast workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
+          "Arcatext needed to enable a fast translation workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
           {
             "type": "element",
             "variant": "card-logo",
