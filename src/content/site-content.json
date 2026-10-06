@@ -633,6 +633,11 @@
               "screen": "copy",
               "caption": "Translation copy. When it is on, Reword sends the translation with a copy in the chosen language below it, so the recipient can read both and the sender keeps a record of what they meant to say."
             }
+          },
+          {
+            "type": "element",
+            "variant": "prompt-system",
+            "data": {}
           }
         ],
         "tradeoff": [

@@ -154,9 +154,11 @@ function Prose({ children, className }: { children: ReactNode; className?: strin
        but would put four cards in two rows of very narrow columns. `grid-cols-none`
        clears the default three-column track so `grid-flow-col` + `auto-cols-fr`
        can lay every card in the run out in equal widths, however many there
-       are. Stacked below lg, where a row of four would be unreadable. */
+       are. Stacked below lg, where a row of four would be unreadable.
+       `data-wide` gets the same breakout without the grid, for a single block
+       that needs the width -- the prompt-system diagram. */
     <div
-      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed lg:[&_[data-card-row]]:-mx-24 lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none xl:[&_[data-card-row]]:-mx-40 ${
+      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&_p]:text-lg [&_p]:leading-relaxed lg:[&_[data-card-row]]:-mx-24 lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none xl:[&_[data-card-row]]:-mx-40 lg:[&_[data-wide]]:-mx-24 xl:[&_[data-wide]]:-mx-40 ${
         className ?? ''
       }`}
     >
