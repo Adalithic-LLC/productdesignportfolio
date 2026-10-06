@@ -162,6 +162,9 @@ export interface CaseStudyFigure {
   src: string;
   alt: string;
   caption: string;
+  /** A built-in animation shown instead of an image. 'reword' is the keyboard
+      walkthrough; empty means this slot holds an image. */
+  demo?: string;
   /** What artwork belongs here. Shown only in admin, beside the upload frame
       -- it is direction for whoever fills the slot, not page copy, so it is
       never rendered to a visitor. */

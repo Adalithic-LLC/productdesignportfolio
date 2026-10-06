@@ -171,7 +171,20 @@ const Radio = ({ on }: { on?: boolean }) => (
   </span>
 );
 
-export default function ArcatextKeyboard() {
+/**
+ * `compact` strips this back to the phone, its controls and the hint: no
+ * section header, no "Phase 1" badge, no context card. That is what fits a
+ * case study's media column, where the prose beside it already explains the
+ * step. `scale` sizes the phone for that narrower space.
+ */
+export default function ArcatextKeyboard({
+  compact = false,
+  scale,
+}: {
+  compact?: boolean;
+  scale?: number;
+} = {}) {
+  const phoneScale = scale ?? BASE_SCALE;
   // ── visual state driven by the timeline ──
   const [text, setText] = useState('');
   const [sent, setSent] = useState<Bubble[]>([]);
@@ -449,7 +462,8 @@ export default function ArcatextKeyboard() {
   const nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
   return (
-    <div className="reveal">
+    <div className={compact ? '' : 'reveal'}>
+      {!compact && (
       <div className="mb-8">
         <div className="mb-3 flex items-baseline gap-4">
           <span className="font-mono text-sm tracking-wider text-primary/70">00</span>
@@ -470,17 +484,26 @@ export default function ArcatextKeyboard() {
           className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base"
         />
       </div>
+      )}
 
       <div className="relative w-full">
         {/* The live interactive demo (Phase 1). */}
         <div>
+          {!compact && (
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" aria-hidden />
             Phase 1 · Live today
           </div>
-          <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:gap-8">
+          )}
+          <div
+            className={
+              compact
+                ? 'flex flex-col items-center gap-6'
+                : 'flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:gap-8'
+            }
+          >
           {/* iPhone */}
-          <div style={{ width: OUTER_W * BASE_SCALE, height: OUTER_H * BASE_SCALE }}>
+          <div style={{ width: OUTER_W * phoneScale, height: OUTER_H * phoneScale }}>
             <div
               className="relative bg-black"
               style={{
@@ -488,7 +511,7 @@ export default function ArcatextKeyboard() {
                 height: OUTER_H,
                 padding: BEZEL,
                 borderRadius: 56,
-                transform: `scale(${BASE_SCALE})`,
+                transform: `scale(${phoneScale})`,
                 transformOrigin: 'top left',
                 boxShadow: '0 30px 60px -20px rgba(20,10,40,0.5)',
               }}
@@ -1028,6 +1051,7 @@ export default function ArcatextKeyboard() {
           </div>
 
           {/* Context card — explains the current step and steps through them */}
+          {!compact && (
           <div className="w-full max-w-sm lg:w-[300px]">
             <div className="overflow-hidden rounded-2xl border border-primary/25 bg-card shadow-lg">
               <div className="h-1 w-full gradient-bg" />
@@ -1064,10 +1088,11 @@ export default function ArcatextKeyboard() {
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* Controls — under the phone */}
-        <div style={{ width: OUTER_W * BASE_SCALE }} className="mt-6 flex items-center justify-center gap-3">
+        <div style={{ width: OUTER_W * phoneScale }} className="mt-6 flex items-center justify-center gap-3">
           <button
             onClick={togglePlay}
             className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white gradient-bg"
@@ -1087,7 +1112,7 @@ export default function ArcatextKeyboard() {
 
         {/* Helper hint — under the controls */}
         <p
-          style={{ width: OUTER_W * BASE_SCALE }}
+          style={{ width: OUTER_W * phoneScale }}
           className="mt-3 text-center text-xs leading-relaxed text-muted-foreground"
         >
           Explore the prototype by clicking any button in the toolbar! You can also close any view.

@@ -12,6 +12,7 @@ import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks } from '@/content/EditableBlocks';
+import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 
 /**
@@ -91,19 +92,45 @@ export default function CaseStudy({ index }: { index: number }) {
           <Editable as="span" path={`arcatext.features.${index}.title`} className="gradient-text" />
         </h1>
 
-        {shown.map(({ field, figure }, i) => (
+        {shown.map(({ field, figure }, i) => {
+          const slot = figure ? feature.figures?.[figure] : undefined;
+          /* Side-by-side only when the slot actually holds something. An empty
+             slot still shows in admin, but stacked, so the editor is not
+             squeezed into a column while there is nothing in it. */
+          const media = !!(slot?.src || slot?.demo);
+          return (
           <section
             key={field}
             /* The rule sits above each section but the first, so the title is
                not fenced off from the copy it heads. */
             className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
           >
-            <Prose>
-              <EditableBlocks path={`arcatext.features.${index}.${field}`} />
-            </Prose>
-            {figure && <Figure index={index} section={figure} />}
+            {/* Two columns only where there is something to show. A rigid
+                page-wide grid would leave half the width empty beside the
+                three prose-only sections; this widens the page exactly where
+                a section has media and leaves the reading measure alone
+                elsewhere. The media sticks, so a tall animation stays in view
+                while its prose scrolls past. */}
+            {media ? (
+              <div className="lg:-mr-24 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-10 xl:-mr-56 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+                <Prose>
+                  <EditableBlocks path={`arcatext.features.${index}.${field}`} />
+                </Prose>
+                <div className="mt-8 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
+                  <Figure index={index} section={figure!} />
+                </div>
+              </div>
+            ) : (
+              <>
+                <Prose>
+                  <EditableBlocks path={`arcatext.features.${index}.${field}`} />
+                </Prose>
+                {figure && <Figure index={index} section={figure} />}
+              </>
+            )}
           </section>
-        ))}
+          );
+        })}
       </article>
     </div>
   );
@@ -144,10 +171,33 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
      it -- and reading `.src` off the missing key used to throw and blank the
      whole page. A slot the content does not carry is simply not rendered. */
   const figure = content.arcatext.features[index]?.figures?.[section];
-  if (!figure?.src && !isAdmin) return null;
   if (!figure) return null;
+  /* A slot earns its place with an image OR a built-in demo; without either
+     there is nothing to show a visitor. */
+  if (!figure.src && !figure.demo && !isAdmin) return null;
 
   const base = `arcatext.features.${index}.figures.${section}`;
+
+  /* A slot can name a built-in animation instead of carrying an image. The
+     keyboard runs in compact mode here: the prose beside it is the commentary,
+     so it needs the phone and its controls, not the full feature's header and
+     context card. */
+  if (figure.demo === 'reword') {
+    return (
+      <figure className="mt-0">
+        <ArcatextKeyboard compact scale={0.52} />
+        {(figure.caption || isAdmin) && (
+          <Editable
+            as="figcaption"
+            path={`${base}.caption`}
+            multiline
+            className={`mt-3 text-sm text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
+          />
+        )}
+      </figure>
+    );
+  }
+
   return (
     <figure className="mt-8">
       {/* Direction for the slot, not page copy: admin only. */}

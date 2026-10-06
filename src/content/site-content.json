@@ -643,7 +643,8 @@
             "src": "",
             "alt": "",
             "caption": "",
-            "note": "Polished hero image: Reword inside the keyboard — original message, Reword action, translated/corrected result."
+            "note": "Polished hero image: Reword inside the keyboard — original message, Reword action, translated/corrected result.",
+            "demo": "reword"
           },
           "keyDecision": {
             "src": "",
