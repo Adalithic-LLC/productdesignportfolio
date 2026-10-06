@@ -567,7 +567,7 @@
           {
             "type": "heading",
             "style": "sectionLabel",
-            "text": "The solution"
+            "text": "THE SOLUTION"
           },
           "The final Reword experience follows a simple pattern:",
           {
@@ -597,7 +597,11 @@
               "desc": "Send the message on its own or with an optional translation copy turned on."
             }
           },
-          "Reword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input.\n\n\nDeeper research into linguistics and user behavior inside text conversations revealed opportunities to expand the functionality of the Reword feature. I included multiple gender controls, script options, and translation copy.\n\nMost translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use.\n\nmeh:\nAI variability required a structured modular prompt system; and language-specific edge cases shaped gender, romanization, and clarification controls."
+          "After iterating on the design with feedback from students and teachers, I chose to place the Reword button at the top level of keyboard IA, making it available at any time without an additional tap to expose the toolbar controls.\n\n\nReword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input.\n\nMost translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use.",
+          {
+            "type": "paragraph",
+            "text": "With deeper research into linguistics and user behavior inside text conversations I learned of opportunities to expand the functionality of the Reword feature. To avoid feature overload and pinpoint the highest value additions, I tested multiple writing style options, script and gender controls, and a toggleable translation copy.\n\n\nThese related controls were placed one level lower in the IA and save state across chats, messaging apps, and Reword languages."
+          }
         ],
         "tradeoff": [
           {
@@ -605,9 +609,9 @@
             "style": "sectionLabel",
             "text": "Tradeoffs & risks"
           },
-          "More context can improve output quality, but asking for too much information would slow the user down. I therefore treated context as optional and progressively disclosed rather than mandatory.",
-          "LLMs also created a tradeoff between flexibility and predictability. Their contextual reasoning enabled richer language support than direct machine translation, but output variability meant prompts and response structure had to be tightly controlled.",
-          "Finally, putting more AI work into every Reword request would improve depth but increase latency and token cost. I kept the default response focused and moved deeper analysis into optional follow-up actions."
+          "More context can improve output quality, but asking for too much information would slow the user down. I treated context as optional and progressively disclosed rather than mandatory.",
+          "LLMs also created a tradeoff between flexibility and predictability that had to be balanced. Their contextual reasoning enabled richer language support than NMT, but output variability meant prompts and response structure had to be controlled.",
+          "Asking each Reword request to handle related features would improve depth but increase latency, token cost, and token consumption rates for users who otherwise wouldn't have engaged with these related features. For those reasons, I kept the default response focused on the core value and moved the deeper analysis into optional follow-up actions."
         ],
         "validation": [
           {
