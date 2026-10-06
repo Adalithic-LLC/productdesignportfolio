@@ -436,7 +436,7 @@
           {
             "type": "heading",
             "style": "sectionLabel",
-            "text": "What it is"
+            "text": "WHAT IT IS"
           },
           "Reword is Arcatext's core translation and correction experience. It lives inside the keyboard toolbar and transforms user messages into natural target-language versions no matter what language or script the user writes, even if it's multiple mixed together. It improves grammar, clarity, and naturalness. This input flexibility enables more possibilities, like code-switching, during language practice.",
           "Reword supports contextual controls like gender and native vs romanization script, so users can shape the output to their needs instead of accepting a single generic translation."
@@ -447,7 +447,7 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "Reword is one of Arcatext's biggest competitive advantages. It has the opportunity to solve multiple issues present in the competitive landscape.\n\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\n\nHere are some examples.",
+          "We needed to enable a fast workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages. It has the opportunity to solve multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples.",
           {
             "type": "element",
             "variant": "card-logo",
