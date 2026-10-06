@@ -438,8 +438,8 @@
             "style": "sectionLabel",
             "text": "WHAT IT IS"
           },
-          "Reword is Arcatext's core translation and correction experience. It lives inside the keyboard toolbar and transforms user messages into natural target-language versions no matter what language or script the user writes, even if it's multiple mixed together. It improves grammar, clarity, and naturalness. This input flexibility enables more possibilities, like code-switching, during language practice.",
-          "Reword supports contextual controls like gender and native vs romanization script, so users can shape the output to their needs instead of accepting a single generic translation."
+          "Reword is how users get natural translations and corrections for messages they type. It transforms user messages no matter what mix of languages or script the user writes, supports contextual controls, like gender, so users can shape the output to their needs instead of accepting a single generic translation.",
+          "This flexibility enables learners of any level to utilize Reword as a learning tool."
         ],
         "whyItMattered": [
           {
@@ -447,14 +447,14 @@
             "style": "sectionLabel",
             "text": "WHY IT MATTERS"
           },
-          "We needed to enable a fast workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages. It has the opportunity to solve multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples.",
+          "Arcatext needed to enable a fast workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
           {
             "type": "element",
             "variant": "card-logo",
             "data": {
               "icons": "google, apple",
               "body": "Translating with Gboard requires 2-3 taps, frequent text field switching, and limits users to low character counts for each translation batch. Similarly, Apple Translate requires multiple steps to access. These issues create friction during a texting conversation.",
-              "title": "Integrated"
+              "title": "Google & Apple"
             }
           },
           {
@@ -462,8 +462,8 @@
             "variant": "card-logo",
             "data": {
               "icons": "deepl",
-              "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation.",
-              "title": "Standalone App"
+              "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation. This means it's slower to use and also creates friction during a conversation.",
+              "title": "DeepL & Similar Apps"
             }
           },
           {
@@ -471,7 +471,7 @@
             "variant": "card-logo",
             "data": {
               "icons": "keyboard",
-              "body": "While the translator keyboard app category is closer to a universal solution, the single tap translation flow typically comes bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Technical performance is a blocker to fluid use.",
+              "body": "While the \"translator keyboard app\" category is closer to a universal solution, they typically come bundled with a host of issues. They're not optimized for accurate and easy typing. Subscription prices are too high to justify. Poor UX & technical performance are blockers to fluid use.",
               "title": "Other Custom Keyboards"
             }
           },
