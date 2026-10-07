@@ -26,7 +26,7 @@ export function AdminBar() {
     isAdmin, dirty, token, branch, saveState,
     insertTool, setInsertTool,
     moveMode, selection, startMove, cancelMove,
-    setToken, setBranch, save, discardChanges,
+    setToken, setBranch, save, discardChanges, setPreviewing,
   } = useContent();
   const [showToken, setShowToken] = useState(false);
   const [open, setOpen] = useState(true);
@@ -342,6 +342,17 @@ export function AdminBar() {
               >
                 <List className="h-4 w-4" />
                 Edit all content
+              </Button>
+              {/* Shows the draft as the site itself, for checking formatting
+                  without waiting on a deploy. */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPreviewing(true)}
+                className="gap-1.5"
+              >
+                <Eye className="h-4 w-4" />
+                Preview
               </Button>
               <Button
                 size="sm"

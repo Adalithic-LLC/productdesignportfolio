@@ -33,7 +33,11 @@ export type SaveState =
 
 interface ContentContextValue {
   content: SiteContent;
+  /** False while previewing, so every consumer renders as a visitor would. */
   isAdmin: boolean;
+  /** True while admin is showing the draft as the site, editing affordances off. */
+  previewing: boolean;
+  setPreviewing: (on: boolean) => void;
   dirty: boolean;
   token: string;
   branch: string;
@@ -290,12 +294,19 @@ function readDraft(): SiteContent | null {
 }
 
 export function ContentProvider({
-  isAdmin,
+  isAdmin: unlocked,
   children,
 }: {
   isAdmin: boolean;
   children: ReactNode;
 }) {
+  /* Preview turns every editing affordance off without ending the admin
+     session: `isAdmin` goes false for consumers, so the page renders exactly
+     as a visitor's would, while the draft stays in memory and the bar that
+     turns preview off reads `previewing` instead. */
+  const [previewing, setPreviewing] = useState(false);
+  const isAdmin = unlocked && !previewing;
+
   const base = defaultContent as SiteContent;
   const [content, setContent] = useState<SiteContent>(() => {
     const draft = readDraft();
@@ -716,6 +727,8 @@ export function ContentProvider({
     () => ({
       content,
       isAdmin,
+      previewing,
+      setPreviewing,
       dirty,
       token,
       branch,
@@ -742,7 +755,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, moveSectionsTo, moveBlocksTo, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, moveSectionsTo, moveBlocksTo, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

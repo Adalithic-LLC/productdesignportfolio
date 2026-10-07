@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { ContentProvider } from '@/content/ContentContext';
+import { PreviewBar } from '@/content/PreviewBar';
 import { AdminBar } from '@/content/AdminBar';
 import Navigation from '@/sections/Navigation';
 import Hero from '@/sections/Hero';
@@ -141,6 +142,7 @@ function App() {
             }}
           />
 
+          <PreviewBar />
           <AdminBar />
         </div>
       </ContentProvider>

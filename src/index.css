@@ -436,3 +436,11 @@
   }
 }
 
+/* Admin preview band: the page and any sticky header move down by its height,
+   so previewing changes nothing about the layout except where it starts. */
+html[data-preview] body {
+  padding-top: 36px;
+}
+html[data-preview] .sticky.top-0 {
+  top: 36px;
+}
