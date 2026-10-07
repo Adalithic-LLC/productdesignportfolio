@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -133,7 +134,10 @@ export default function Arcatext() {
             <Editable as="span" path="arcatext.backToPortfolio" />
           </a>
           <SectionNavDropdown items={tocItems} labels={content.arcatext.toc} routeHash="#/arcatext" order={content.arcatext.sectionOrder} />
-          <Editable as="span" path="arcatext.brand" className="text-sm font-semibold gradient-text" />
+          <div className="flex items-center gap-2">
+            <Editable as="span" path="arcatext.brand" className="text-sm font-semibold gradient-text" />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

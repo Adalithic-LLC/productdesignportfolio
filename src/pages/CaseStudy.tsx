@@ -6,6 +6,7 @@
  * the slug in the route picks the entry and every field stays editable at its
  * existing content path.
  */
+import { ThemeToggle } from '@/components/ThemeToggle';
 import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
@@ -86,6 +87,7 @@ export default function CaseStudy({ index }: { index: number }) {
           <div className="flex items-center gap-4">
             <Editable as="span" path="arcatext.brand" className="text-sm font-semibold gradient-text" />
             <AdminNavEntry />
+            <ThemeToggle />
           </div>
         </div>
       </div>

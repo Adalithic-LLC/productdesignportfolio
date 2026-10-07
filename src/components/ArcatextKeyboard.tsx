@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Plus, ArrowUp, Mic, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, ArrowUp, Mic, RotateCcw, Pause, Play } from 'lucide-react';
 // Keyboard glyphs, from the Arcatext design assets (shared with adalithic.com),
 // so the toolbar and action keys match the shipping app rather than approximating it.
 // The first toolbar button is the app's Study destination: StandardToolbar
@@ -200,10 +200,22 @@ function ToolButton({
 export default function ArcatextKeyboard({
   scenes = ['type', 'reword'],
   scale,
+  running = true,
+  onPause,
+  onPlay,
+  onRestart,
 }: {
   /** The scenes this phone plays, in order, looping. */
   scenes?: Scene[];
   scale?: number;
+  /** Whether this phone may play (a row pauses its phones together). */
+  running?: boolean;
+  /** Given by a row: a Pause button left of Restart (pauses the whole row)… */
+  onPause?: () => void;
+  /** …and a Play button right of it (plays this phone alone). */
+  onPlay?: () => void;
+  /** Called on Restart or a toolbar tap, so a paused row can let this phone run. */
+  onRestart?: () => void;
   /** Accepted for older call sites; the demo is always the compact phone. */
   compact?: boolean;
 } = {}) {
@@ -237,6 +249,8 @@ export default function ArcatextKeyboard({
   const playRef = useRef(true);
   /** On screen. */
   const visibleRef = useRef(false);
+  /** Allowed to play by the row. */
+  const runningRef = useRef(running);
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const bubbleId = useRef(1);
   const scenesKey = scenes.join(',');
@@ -249,7 +263,7 @@ export default function ArcatextKeyboard({
 
   const schedule = useCallback(() => {
     clearTimeout(tRef.current);
-    if (!playRef.current || !visibleRef.current) return;
+    if (!playRef.current || !visibleRef.current || !runningRef.current) return;
     const beats = beatsRef.current;
     const bounds = boundsRef.current[stepRef.current];
     if (!beats.length || !bounds) return;
@@ -430,11 +444,20 @@ export default function ArcatextKeyboard({
     return () => io.disconnect();
   }, [schedule]);
 
+  // The row pausing or playing this phone: hold where it is, or carry on from
+  // the same beat.
+  useEffect(() => {
+    runningRef.current = running;
+    if (running) schedule();
+    else clearTimeout(tRef.current);
+  }, [running, schedule]);
+
   const restart = () => {
     clearTimeout(tRef.current);
     stepRef.current = 0;
     posRef.current = 0;
     playRef.current = true;
+    onRestart?.();
     schedule();
   };
 
@@ -446,6 +469,7 @@ export default function ArcatextKeyboard({
     stepRef.current = i;
     posRef.current = boundsRef.current[i]?.start ?? 0;
     playRef.current = true;
+    onRestart?.();
     schedule();
   };
 
@@ -768,14 +792,38 @@ export default function ArcatextKeyboard({
         </div>
       </div>
 
-      <button
-        onClick={restart}
-        aria-label="Restart"
-        className="mt-5 inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-muted"
-      >
-        <RotateCcw className="h-4 w-4" />
-        Restart
-      </button>
+      <div className="mt-5 flex items-center gap-2">
+        {onPause && (
+          <button
+            onClick={onPause}
+            disabled={!running}
+            aria-label="Pause all"
+            title="Pause all"
+            className="grid h-9 w-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-opacity hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent"
+          >
+            <Pause className="h-4 w-4" />
+          </button>
+        )}
+        <button
+          onClick={restart}
+          aria-label="Restart"
+          className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-muted"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Restart
+        </button>
+        {onPlay && (
+          <button
+            onClick={onPlay}
+            disabled={running}
+            aria-label="Play this one"
+            title="Play this one"
+            className="grid h-9 w-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-opacity hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent"
+          >
+            <Play className="h-4 w-4 translate-x-[1px]" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

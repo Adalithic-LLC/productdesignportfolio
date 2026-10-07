@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -129,7 +130,10 @@ export default function UsaaApp() {
             <Editable as="span" path="usaa.backToPortfolio" />
           </a>
           <SectionNavDropdown items={tocItems} labels={content.usaa.toc} routeHash="#/usaa" order={content.usaa.sectionOrder} />
-          <Editable as="span" path="usaa.brand" className="text-sm font-semibold gradient-text" />
+          <div className="flex items-center gap-2">
+            <Editable as="span" path="usaa.brand" className="text-sm font-semibold gradient-text" />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

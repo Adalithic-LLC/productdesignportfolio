@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -130,7 +131,10 @@ export default function Conversant() {
             <Editable as="span" path="conversant.backToPortfolio" />
           </a>
           <SectionNavDropdown items={tocItems} labels={content.conversant.toc} routeHash="#/conversant" order={content.conversant.sectionOrder} />
-          <Editable as="span" path="conversant.brand" className="text-sm font-semibold gradient-text" />
+          <div className="flex items-center gap-2">
+            <Editable as="span" path="conversant.brand" className="text-sm font-semibold gradient-text" />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

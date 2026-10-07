@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ArcatextKeyboard, { type Scene } from '@/components/ArcatextKeyboard';
 import { Editable } from '@/content/Editable';
 
@@ -9,6 +10,10 @@ import { Editable } from '@/content/Editable';
  *
  * Copy is content (arcatext.interactive): the heading, and an eyebrow and a
  * description under each phone, in the same order as PHONES.
+ *
+ * Playback: every phone plays on its own while on screen. Pause, under any
+ * phone, holds the whole row; Play plays that one phone alone (the others stay
+ * held); Restart replays a phone, and lets it play if the row is held.
  */
 
 const PHONES: Scene[][] = [['type', 'reword'], ['check'], ['paste'], ['study'], ['options']];
@@ -18,6 +23,11 @@ const SCALE = 0.62;
 const CARD_W = 264;
 
 export default function ArcatextDemoRow() {
+  const [paused, setPaused] = useState(false);
+  /** The one phone playing while the row is paused. */
+  const [solo, setSolo] = useState<number | null>(null);
+  const isRunning = (i: number) => (solo !== null ? solo === i : !paused);
+
   return (
     // --g matches SectionBody's gutters (px-4 sm:px-6 lg:px-8); the column's
     // left edge is half the space the 72rem column leaves, plus that gutter.
@@ -55,7 +65,22 @@ export default function ArcatextDemoRow() {
       >
         {PHONES.map((scenes, i) => (
           <figure key={i} className="flex shrink-0 snap-start flex-col" style={{ width: CARD_W }}>
-            <ArcatextKeyboard scenes={scenes} scale={SCALE} />
+            <ArcatextKeyboard
+              scenes={scenes}
+              scale={SCALE}
+              running={isRunning(i)}
+              onPause={() => {
+                setPaused(true);
+                setSolo(null);
+              }}
+              onPlay={() => {
+                setPaused(true);
+                setSolo(i);
+              }}
+              onRestart={() => {
+                if (!isRunning(i)) setSolo(i);
+              }}
+            />
             <figcaption className="mt-5">
               <Editable
                 as="div"
