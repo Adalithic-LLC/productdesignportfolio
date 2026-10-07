@@ -551,7 +551,61 @@
             "style": "sectionLabel",
             "text": "Key constraints"
           },
-          "1. In iOS the \"Allow Full Access\" setting is required to read the textfield, which restricted certain features when off and meant that we needed a messaging system throughout the app.\n2. API latency determined user wait time and influenced the length and complexity of prompts.\n3. LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical.\n4. LLM output variability & unique characteristics of each language necessitated longer instructions, so balancing that with token cost was necessary\n5. The user expectation for an uninterrupted texting exchange influenced all the decisions made in response to these key constraints.\n6. Business objective of creating learning moments led to Reword-adjacent feature depth."
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "1. \"Allow Full Access\"",
+              "desc": "In iOS the \"Allow Full Access\" setting is required to read the textfield, which restricted certain features when off and meant that we needed a messaging system throughout the app."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "2. API latency",
+              "desc": "API latency determined user wait time and influenced the length and complexity of prompts."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "3. Token Cost",
+              "desc": "LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "spacer",
+            "data": {
+              "height": "32"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "4. Output Variability",
+              "desc": "LLM output variability & unique characteristics of each language necessitated longer instructions, so balancing that with token cost was necessary"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "5. Fluid Texting",
+              "desc": "The user expectation for an uninterrupted texting exchange influenced all the decisions made in response to these key constraints."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "6. Learning Moments",
+              "desc": "The business objective of creating learning moments led to Reword-adjacent feature depth."
+            }
+          }
         ],
         "keyDecision": [
           {
