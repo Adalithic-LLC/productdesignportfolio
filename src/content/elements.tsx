@@ -1,6 +1,7 @@
 import type { ElementType, ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { Editable } from './Editable';
+import { BlockSlot } from './EditableBlocks';
 import { EditableImage } from './EditableImage';
 import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
@@ -208,10 +209,14 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
 
   return (
     <figure className="flex h-full flex-col items-center gap-5">
-      <RewordOptionScreen screen={screen} />
+      <RewordOptionScreen screen={screen} scale={0.68} />
       {/* Rendered directly rather than through `makeField`: that builds a
           component during render, which drops the caret on every keystroke. */}
       <figcaption className="w-full">
+        {/* Room for more than the one line this card defines: a heading over
+            the text, a note under it, another element entirely. Both slots
+            render nothing until something is put in them. */}
+        {ctx.path && <BlockSlot path={`${ctx.path}.above`} className="mb-4 mt-0" />}
         {ctx.path ? (
           <Editable
             as="p"
@@ -224,6 +229,7 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
             {ctx.data.caption ?? ''}
           </p>
         )}
+        {ctx.path && <BlockSlot path={`${ctx.path}.below`} className="mb-0 mt-4" />}
         {ctx.path && isAdmin && (
           <p className="mt-2 text-xs text-muted-foreground/70">
             <span className="font-medium">Screen:</span>{' '}

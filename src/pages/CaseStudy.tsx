@@ -187,12 +187,13 @@ function Prose({
      two across, because a phone and its caption need the width and a third
      column would set both too small to read. The `:not()` keeps the two rules
      from being settled by stylesheet order, which two bare attribute
-     selectors of equal specificity would be. A card left alone on the last
-     row keeps its column's width and its picture-over-text shape, so it
-     reads as one more of the same examples rather than a wider variant. */
+     selectors of equal specificity would be. A run of pictures gives each
+     example a row of its own -- picture one side, its text the other -- and
+     alternates which side the picture takes, so a reader's eye crosses the
+     page rather than running down one edge. */
   const cardRun = stacked
     ? '[&_[data-card-row]]:grid-cols-1 sm:[&_[data-card-row]>figure]:flex-row sm:[&_[data-card-row]>figure]:items-start sm:[&_[data-card-row]>figure]:gap-6 sm:[&_[data-card-row]>figure>figcaption]:flex-1'
-    : 'lg:[&_[data-card-row]:not([data-media-row])]:auto-cols-fr lg:[&_[data-card-row]:not([data-media-row])]:grid-flow-col lg:[&_[data-card-row]:not([data-media-row])]:grid-cols-none lg:[&_[data-media-row]]:grid-cols-2 lg:[&_[data-media-row]]:gap-10';
+    : 'lg:[&_[data-card-row]:not([data-media-row])]:auto-cols-fr lg:[&_[data-card-row]:not([data-media-row])]:grid-flow-col lg:[&_[data-card-row]:not([data-media-row])]:grid-cols-none lg:[&_[data-media-row]]:grid-cols-1 lg:[&_[data-media-row]]:gap-14 lg:[&_[data-media-row]>*]:flex-row lg:[&_[data-media-row]>*]:items-center lg:[&_[data-media-row]>*]:gap-12 lg:[&_[data-media-row]>*:nth-child(even)]:flex-row-reverse lg:[&_[data-media-row]_figcaption]:flex-1';
   return (
     /* The reading measure lives on the blocks, not on this wrapper, so a block
        that wants the room can take the column's full width: a run of cards

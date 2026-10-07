@@ -19,6 +19,11 @@ export interface ProseBlock {
   variant?: string;
   /** Set for `element` blocks: the element's editable field values. */
   data?: Record<string, string>;
+  /* Free block lists an element may offer around its own text, so a card is
+     not limited to the fields its definition names. Created on first insert,
+     so an element that never uses them carries neither key. */
+  above?: ProseItem[];
+  below?: ProseItem[];
 }
 
 /** A single entry in a prose array: a legacy string (= paragraph) or a block. */
