@@ -37,7 +37,7 @@
       {
         "id": 1,
         "title": "Arcatext",
-        "description": "A translation keyboard.",
+        "description": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
         "image": "/project-arcatext-keyboard.webp",
         "imageDark": "/project-arcatext-keyboard-dark.webp",
         "tags": [
