@@ -21,7 +21,7 @@
   },
   "hero": {
     "title": "Hi, I'm Andrew",
-    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality by balancing feature set, roadmap, and technical constraints to bring a business vision to life.",
+    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality and how the right balance of features, roadmap, and limits bring a business vision to life.",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
     "intro": [
@@ -444,8 +444,8 @@
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "Arcatext needed to enable a fast translation workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
           {
