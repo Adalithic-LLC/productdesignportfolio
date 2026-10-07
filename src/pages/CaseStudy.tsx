@@ -119,9 +119,10 @@ export default function CaseStudy({ index }: { index: number }) {
           return (
           <section
             key={field}
-            /* The rule sits above each section but the first, so the title is
-               not fenced off from the copy it heads. */
-            className={i === 0 ? '' : 'mt-12 border-t border-border/40 pt-10'}
+            /* No rule between sections: the titles are set large enough to
+               divide the page on their own, and a line above each one fenced
+               the title off from the copy it heads. The space stays. */
+            className={i === 0 ? '' : 'mt-20'}
           >
             {/* Two columns only where there is something to show: a rigid
                 page-wide grid would leave half the width empty beside the
