@@ -715,6 +715,11 @@
             "text": "The Modular Prompt System"
           },
           {
+            "type": "heading",
+            "style": "h4",
+            "text": "Interactive Visual Representation of How the App Works"
+          },
+          {
             "type": "element",
             "variant": "prompt-system",
             "data": {}
