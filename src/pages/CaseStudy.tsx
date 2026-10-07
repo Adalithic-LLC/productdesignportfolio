@@ -269,6 +269,24 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
     );
   }
 
+  /* Check's case study: the Check view, loaded, scrolled slowly from top to
+     bottom so each part can be read. Same placement and scale as Reword's. */
+  if (figure.demo === 'check') {
+    return (
+      <figure className="mt-0">
+        <ArcatextKeyboard scenes={['checkTour']} />
+        {(figure.caption || isAdmin) && (
+          <Editable
+            as="figcaption"
+            path={`${base}.caption`}
+            multiline
+            className={`mt-3 text-sm text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
+          />
+        )}
+      </figure>
+    );
+  }
+
   /* The same slot can name a still instead: the keyboard mid-reword, drawn
      rather than animated, so the prose beside it does the explaining. */
   if (figure.demo === 'reword-still') {
