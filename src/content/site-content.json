@@ -448,6 +448,10 @@
             "style": "h2",
             "text": "Why It Matters"
           },
+          {
+            "type": "paragraph",
+            "text": "In my research, I found many gaps in existing tools and methods across the language learning spectrum; learners were asking for things that didn't exist or were poorly executed. The Reword feature was the result of a strategic choice to focus on \"reading & writing\" as a learning method (as opposed to speaking or listening), having seen the most opportunity for differentiation in this area. With that narrowed focus, I learned about gaps specifically in writing tools that revealed unmet user needs."
+          },
           "Arcatext needed to enable a fast translation workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
           {
             "type": "element",
@@ -464,7 +468,9 @@
             "data": {
               "icons": "deepl",
               "body": "DeepL leverages a separate app, forcing translation to happen outside of the messaging app and requiring constant context-switching during the conversation. This means it's slower to use and also creates friction during a conversation.",
-              "title": "DeepL & Similar Apps"
+              "title": "DeepL & Similar Apps",
+              "image": "",
+              "markText": "NMT"
             }
           },
           {
@@ -474,12 +480,14 @@
               "icons": "",
               "body": "Existing solutions mainly rely on neural machine translation (NMT) as a technology to execute translation tasks. It's cheaper than large language models (LLMs), but has limitations. It can produce awkward & inaccurate results, doesn't always handle same language correction or contextual inputs, nor does it consistently offer code-switching support.",
               "title": "Neural Machine Translation",
-              "image": "",
-              "markText": "NMT"
+              "markText": "NMT",
+              "image": ""
             }
           },
           {
             "type": "element",
+            "style": "sectionLabel",
+            "text": "GOALS",
             "variant": "card-logo",
             "data": {
               "icons": "keyboard",
