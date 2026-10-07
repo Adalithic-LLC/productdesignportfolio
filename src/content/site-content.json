@@ -496,8 +496,8 @@
           },
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "GOALS"
+            "style": "h2",
+            "text": "Goals"
           },
           "For a translation product to facilitate natural conversations and offer a learning experience, we needed a new baseline for the core translation feature.",
           {
