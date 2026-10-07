@@ -14,6 +14,7 @@ import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks } from '@/content/EditableBlocks';
 import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
+import RewordOptionScreen from '@/components/RewordOptionScreen';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 
 /**
@@ -159,8 +160,11 @@ function Prose({
      stacks instead of laying out on one row. */
   stacked?: boolean;
 }) {
+  /* Stacked, a run of screen cards would be a tower of phones with a caption
+     under each -- the column is wide enough to set the phone and its caption
+     side by side instead, which keeps the run to a readable height. */
   const cardRun = stacked
-    ? '[&_[data-card-row]]:grid-cols-1'
+    ? '[&_[data-card-row]]:grid-cols-1 sm:[&_[data-card-row]>figure]:flex-row sm:[&_[data-card-row]>figure]:items-start sm:[&_[data-card-row]>figure]:gap-6 sm:[&_[data-card-row]>figure>figcaption]:flex-1'
     : 'lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none';
   return (
     /* The reading measure lives on the blocks, not on this wrapper, so a block
@@ -215,6 +219,24 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
             path={`${base}.caption`}
             multiline
             className={`mt-3 text-sm text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
+          />
+        )}
+      </figure>
+    );
+  }
+
+  /* The same slot can name a still instead: the keyboard mid-reword, drawn
+     rather than animated, so the prose beside it does the explaining. */
+  if (figure.demo === 'reword-still') {
+    return (
+      <figure className="mt-0">
+        <RewordOptionScreen screen="reword" scale={0.68} />
+        {(figure.caption || isAdmin) && (
+          <Editable
+            as="figcaption"
+            path={`${base}.caption`}
+            multiline
+            className={`mt-4 text-sm leading-relaxed text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
           />
         )}
       </figure>
