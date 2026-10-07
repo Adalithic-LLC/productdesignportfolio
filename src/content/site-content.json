@@ -679,7 +679,7 @@
             "variant": "screen-reword",
             "data": {
               "screen": "gender",
-              "caption": "For 42/75 Arcatext-supported languages, recipient gender is enabled. This settings changes the form of certain words in each language, allowing for more accurate translations depending on who a user is texting. This is a micro-learning moment, as it's inherently exposing users to the contextually correct language, but not offering an explanation or calling attention to the gender distinction in that moment.\n\nRecipient gender is chosen once and Reword applies that choice to each translation in the current chat, other recipients, and even other apps until the user chooses a different gender for a different context.\n\n\nThis augmentation to typical capability of standard translation tools was well recieved by students and teachers who claimed it filled an important and overlooked gap."
+              "caption": "42/75 supported languages contain words that are recipient gender-dependent. This settings changes the form of certain words in each language, allowing for more accurate translations depending on who a user is texting. This is a micro-learning moment, as it's inherently exposing users to the contextually correct language, but not offering an explanation or calling attention to the gender distinction in that moment.\n\nRecipient gender is chosen once and Reword applies that choice to each translation in the current chat, other recipients, and even other apps until the user chooses a different gender for a different context.\n\nThis augmentation to typical capability of standard translation tools was well recieved by students and teachers who claimed it filled an important and overlooked gap."
             }
           },
           {
@@ -687,7 +687,7 @@
             "variant": "screen-reword",
             "data": {
               "screen": "script",
-              "caption": "Script. The same translation can be rendered in Arabic script or romanized, which serves two different users: someone writing to a native speaker, and a learner who cannot yet read the script. The choice is saved per language."
+              "caption": "30/75 supported languages have non-Roman scripts and give users the option to Reword messages natively or non-natively.\n\n\nFor Japanese, we offer 3 options.\n1. \"Standard\" gives a mix of Kanji, Hiragana, and Katakana.\n2. \"No kanji\" gives hiragana and katakana only.\n3. Romanized excludes all native alphabets and renders translations in the roman alphabet (ABC).\n\n\nThis flexibility is a stepping stone to native scripts in the learning process. Modulating how translations are read allows beginner and intermediate students to focus on vocabulary acquisition and sentence structure. It contributes to reduced learning anxiety and student drop-out rates and is supported by linguistics and SLA research.\n\nThis feature was also met with enthusiasm in user testing. The majority of insights converged on script controls providing a helpful stepping stone in early language acquisition phases."
             }
           },
           {
