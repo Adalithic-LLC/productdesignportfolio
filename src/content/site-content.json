@@ -414,7 +414,7 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "subtitle": "A user-driven language learning system leveraging a translation keyboard that turns real conversations into self-directed language practice, with features that provide control and insight.",
+      "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",
         "Language-Learning Tool",
@@ -1932,7 +1932,7 @@
       "launchLead": "Measurement as part of",
       "launchHighlight": "launch readiness.",
       "launch": [
-        "Since Arcatext had not yet launched publicly, I treated measurement as part of launch readiness. I defined success around five questions."
+        "Leveraging PostHog for app analytics, I defined success around five questions."
       ],
       "launchQuestions": [
         {
