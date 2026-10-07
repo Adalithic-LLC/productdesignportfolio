@@ -699,6 +699,15 @@
             }
           },
           {
+            "type": "element",
+            "variant": "spacer",
+            "data": {
+              "height": "32"
+            },
+            "style": "h3",
+            "text": "The Modular Prompt System"
+          },
+          {
             "type": "heading",
             "variant": "prompt-system",
             "data": {},
