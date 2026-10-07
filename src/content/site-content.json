@@ -450,9 +450,9 @@
           },
           {
             "type": "paragraph",
-            "text": "In my research, I found many gaps in existing tools and methods across the language learning spectrum; learners were asking for things that didn't exist or were poorly executed. The Reword feature was the result of a strategic choice to focus on \"reading & writing\" as a learning method (as opposed to speaking or listening), having seen the most opportunity for differentiation in this area. With that narrowed focus, I learned about gaps specifically in writing tools that revealed unmet user needs."
+            "text": "In my research, I found many gaps in existing tools and methods across the language learning spectrum. Learners were asking for things that didn't exist or were poorly executed. The Reword feature was the result of a strategic choice to focus on \"reading & writing\" as a learning method as opposed to speaking or listening. Having seen the most opportunity for differentiation in this area, I narrowed my focus and learned about gaps specifically in writing tools that revealed unmet user needs."
           },
-          "Arcatext needed to enable a fast translation workflow that would give users a preview of results and the ability to make changes before sending the message.\n\nReword is one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.\n\nCurrent translation options suffer from suboptimal user flows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nHere are some examples:",
+          "What I learned is that translation & writing could be leveraged as a much more powerful learning method, with a few adjustments and new ideas.\n\n\nCurrent translation options suffer from suboptimal workflows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\n\n\nReword became one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.",
           {
             "type": "element",
             "variant": "card-logo",
@@ -551,7 +551,7 @@
           "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting for gathering key data inputs were crucial decisions to avoid choice overload and creating a dense settings panel.",
           {
             "type": "paragraph",
-            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 75 languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language."
+            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 75 languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language.\n\n\n\n\n\n\n!!!!--------------!!!!\nhere???\nI needed to create a faster translation workflow with contextual accuracy and flexibility in inputs and outputs, that could also serve as a foundation for learning features."
           }
         ],
         "constraints": [
