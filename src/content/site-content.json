@@ -20,7 +20,7 @@
     ]
   },
   "hero": {
-    "title": "Hi, I'm Andrew",
+    "title": "Hey, I'm Andrew",
     "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality and how the right balance of features, roadmap, and limits bring a business vision to life.",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
@@ -796,10 +796,10 @@
             "demo": "reword"
           },
           "keyDecision": {
-            "src": "",
+            "src": "/uploads/previousarchitecture-muyhanlf.svg",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Comparison or progression: an early, more complex concept with many options; the simplified Reword interaction; optional context controls moved behind progressive disclosure."
           },
           "solution": {
             "src": "",
