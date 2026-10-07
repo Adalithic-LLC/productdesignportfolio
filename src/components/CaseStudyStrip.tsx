@@ -1,8 +1,9 @@
 /**
  * The strip of feature case studies at the top of the Arcatext page.
  *
- * A row of white cards, each a feature's name over a line about it, wider than
- * the page's text column and scrolled sideways when it does not fit. The arrows
+ * A row of cards built like the deeper case-study cards further down the page
+ * -- number, arrow, name, question -- wider than the page's text column and
+ * scrolled sideways when it does not fit. The arrows
  * appear only when there is somewhere to go, and each disables itself at its
  * end, so they never offer a scroll that would do nothing.
  *
@@ -11,7 +12,7 @@
  * the same markup handles six items on a phone and on a wide desktop.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Editable } from '@/content/Editable';
 
 /** Card width, and one card plus one gap -- what an arrow press advances by.
@@ -80,18 +81,29 @@ export function CaseStudyStrip({ slugs }: { slugs: string[] }) {
             key={i}
             href={`#/arcatext/${slugs[i]}`}
             style={{ width: CARD }}
-            className="flex min-h-44 shrink-0 snap-start flex-col gap-2 rounded-xl border border-border/50 bg-white p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-card"
+            className="flex min-h-44 shrink-0 snap-start flex-col rounded-xl bg-muted/40 p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
+            {/* Same parts, in the same order, as the deeper case-study cards
+                lower down the page -- number, arrow, name, question -- at the
+                smaller type this strip's width allows. The number is the
+                card's position rather than content: the strip is generated
+                from the feature list, so there is nothing to keep in step. */}
+            <div className="flex items-start justify-between gap-3">
+              <span className="font-mono text-[11px] text-primary/70">
+                Case {String(i + 1).padStart(2, '0')}
+              </span>
+              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            </div>
             <Editable
               as="h3"
               path={`arcatext.features.${i}.title`}
-              className="text-base font-semibold leading-snug text-neutral-900 dark:text-foreground"
+              className="mb-2 mt-2 text-base font-semibold leading-snug text-foreground"
             />
             <Editable
               as="p"
               path={`arcatext.features.${i}.body`}
               multiline
-              className="text-sm leading-relaxed text-neutral-600 dark:text-muted-foreground"
+              className="text-sm italic leading-relaxed text-muted-foreground"
             />
           </a>
         ))}
