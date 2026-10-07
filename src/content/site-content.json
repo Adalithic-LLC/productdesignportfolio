@@ -556,7 +556,15 @@
             "type": "element",
             "variant": "card-basic",
             "data": {
-              "title": "1. \"Allow Full Access\"",
+              "title": "1. Token Cost vs Model Performance",
+              "desc": "LLM token cost depended on  AI company, model choice, and prompt length, so striking a balancing between affordability and accuracy was critical."
+            }
+          },
+          {
+            "type": "element",
+            "variant": "card-basic",
+            "data": {
+              "title": "2. \"Allow Full Access\"",
               "desc": "In iOS the \"Allow Full Access\" setting is required to read the textfield, which restricted certain features when off and meant that we needed a messaging system throughout the app."
             }
           },
@@ -564,16 +572,8 @@
             "type": "element",
             "variant": "card-basic",
             "data": {
-              "title": "2. API latency",
-              "desc": "API latency determined user wait time and influenced the length and complexity of prompts."
-            }
-          },
-          {
-            "type": "element",
-            "variant": "card-basic",
-            "data": {
-              "title": "3. Token Cost",
-              "desc": "LLM token cost depended on prompt length, so striking a balancing between affordable and accurate was critical."
+              "title": "3. API latency",
+              "desc": "API latency determined user wait time and influenced the length and complexity of prompts. Related to cost vs performance, the hosted model route enabled key features whereas on-device nano-LLM architecture was too limited for our needs. This is an ongoing assessment as the technology evolves."
             }
           },
           {
@@ -616,7 +616,11 @@
           },
           "The most important decision was to design Reword as one primary action that could process any input. This design allowed me to consolidate text translation & correction and avoided the need to specify input language.",
           "That reduced cognitive load and matched the user's mental models: \"translate this\" and “help me say this better.” The responsibility of the system is to understand what it's being given and what output the user is asking for.",
-          "To keep the core Reword flow lightweight for users and the API, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment to their translations."
+          "To keep the core Reword flow lightweight for users and the API, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment to their translations.",
+          {
+            "type": "paragraph",
+            "text": "I tested many LLM models including ChatGPT, Gemini, Llama, Deepseek and on-device nano-LLM models. The best performers were ChatGPT models, so choosing the right option was a question of cost vs quality and range of capability."
+          }
         ],
         "solution": [
           {
@@ -640,7 +644,7 @@
             "data": {
               "num": "02",
               "title": "Tap Reword",
-              "desc": "One tap of the Reword button translates or correct any input text to the target language, carrying all context settings."
+              "desc": "One tap of the Reword button translates or corrects any input text to the target language."
             }
           },
           {
@@ -655,18 +659,27 @@
           "After iterating on the design with feedback from students and teachers, I chose to place the Reword button at the top level of keyboard IA, making it available at any time without an additional tap to expose the toolbar controls.",
           {
             "type": "paragraph",
-            "text": "Reword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input."
+            "text": "Reword preserves the meaning and writing style of the original message. With the prompt design, I strived to keep outputs as similar as possible to the original user input."
           },
           {
             "type": "paragraph",
-            "text": "Most translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use."
+            "text": "Reword supports 72 languages from around the world. These were carefully vetted through a gauntlet of translation tests. I assessed model translations with the top performing OpenAI model until I landed on ChatGPT4o-mini, based on translation performance, language range, token cost, and ability to handle more complex tasks like homograph detection."
+          },
+          {
+            "type": "paragraph",
+            "variant": "screen-reword",
+            "data": {
+              "screen": "gender",
+              "caption": "Recipient gender. Arabic inflects verbs and adjectives for the person being addressed, so the same English sentence has two correct translations. Setting it here resolves the ambiguity once instead of asking at every reword."
+            },
+            "text": "Most tools produce a generic translation, but Arcatext needed to create a real learning moment at each translation or correction. That meant Reword needed to first understand the user's context to achieve the highest level of accuracy, then it needed to enable deeper learning features like \"Script\", \"Synonyms\", \"Reword Analysis\", and \"Study\"."
           },
           {
             "type": "element",
             "variant": "screen-reword",
             "data": {
               "screen": "gender",
-              "caption": "Recipient gender. Arabic inflects verbs and adjectives for the person being addressed, so the same English sentence has two correct translations. Setting it here resolves the ambiguity once instead of asking at every reword."
+              "caption": "In certain languages Recipient gender is chosen once and Reword applies that choice to each translation in the current chat, other recipients, and even other apps until the user chooses a different gender for a different context."
             }
           },
           {
@@ -736,7 +749,7 @@
           "solution": {
             "src": "",
             "alt": "",
-            "caption": "",
+            "caption": "The Reword button lives in the keyboard toolbar and uses a split button for related options and controls.",
             "note": "Main flow visual — Write → set context if needed → Reword → review result. 3–4 screens in sequence.",
             "demo": "reword-still"
           },
