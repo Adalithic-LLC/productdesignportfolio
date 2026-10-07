@@ -469,3 +469,18 @@ html[data-preview] body {
 html[data-preview] .sticky.top-0 {
   top: 36px;
 }
+
+/* The Check tour's arrow: drawn in, then a gentle nudge toward its target. */
+@keyframes ax-arrow-draw {
+  to { stroke-dashoffset: 0; }
+}
+.ax-arrow-draw {
+  animation: ax-arrow-draw 0.35s ease-out forwards;
+}
+@keyframes ax-arrow-nudge {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--nx, 5px), var(--ny, 0px)); }
+}
+.ax-arrow-nudge {
+  animation: ax-arrow-nudge 1.1s ease-in-out 0.35s infinite;
+}

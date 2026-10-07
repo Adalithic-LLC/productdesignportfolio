@@ -2069,7 +2069,41 @@
       "tradeoffTitle": "Tradeoffs & risks",
       "validationTitle": "Validation / outcome",
       "impactTitle": "Impact on the larger product"
-    }
+    },
+    "checkTour": [
+      {
+        "title": "Reverse translation",
+        "body": "The reword translated back into English, so you can confirm it still says what you meant before you send it."
+      },
+      {
+        "title": "Fix Words",
+        "body": "If one word came out wrong, pick it and type the word you meant. The reword is redone around your fix."
+      },
+      {
+        "title": "Reword",
+        "body": "The message exactly as it will be sent, selected by default. Choose another option below to send that instead."
+      },
+      {
+        "title": "Analyze Reword",
+        "body": "Breaks the reword into chunks, each paired with what it means, so you learn how the sentence is built, not just what it says."
+      },
+      {
+        "title": "Original message",
+        "body": "What you typed, kept beside the reword. Select it to send your own words instead."
+      },
+      {
+        "title": "Synonyms",
+        "body": "Three other natural ways to say the same thing. Pick one and it replaces the reword."
+      },
+      {
+        "title": "Homographs",
+        "body": "“Bank” has more than one meaning. The one in use is selected; choose another and the reword is redone with it."
+      },
+      {
+        "title": "Gendered words",
+        "body": "In Spanish, “friends” changes with gender. Choose who you mean, all male, all female or both, and the reword follows."
+      }
+    ]
   },
   "conversant": {
     "backToPortfolio": "Back to portfolio",

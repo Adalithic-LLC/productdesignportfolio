@@ -20,6 +20,7 @@ import backspaceDarkUrl from '@/assets/keyboard/backspace-dark.svg';
 import localesUrl from '@/assets/keyboard/locales.svg';
 import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
 import { AX, AxIcon } from '@/lib/arcatextTheme';
+import { Editable } from '@/content/Editable';
 import ArcatextOptionsPage, { type OptionsConfig } from '@/components/ArcatextOptionsPage';
 import {
   CheckPanel,
@@ -120,9 +121,10 @@ const japaneseOptions = (alphabet: 'standard' | 'romanized'): OptionsConfig => (
   speakerGender: 'Male',
 });
 
-/** `checkTour`: Check fully loaded, scrolled slowly top to bottom (the Check
-    case study's figure). */
-export type Scene = 'type' | 'reword' | 'check' | 'checkTour' | 'paste' | 'study' | 'options';
+/** `checkTour`: Check fully loaded, scrolled slowly top to bottom.
+    `checkGuide`: Check walked through stop by stop — a yellow arrow and a
+    caption at each element, waiting for Next (the Check case study's figure). */
+export type Scene = 'type' | 'reword' | 'check' | 'checkTour' | 'checkGuide' | 'paste' | 'study' | 'options';
 
 type View = 'none' | 'check' | 'paste' | 'study' | 'options';
 type Bubble = { id: number; text: string };
@@ -134,7 +136,60 @@ const OUTER_W = DESIGN_W + BEZEL * 2;
 const OUTER_H = SCREEN_H + BEZEL * 2;
 const BASE_SCALE = 0.8;
 
-const CHECK_IDLE: CheckState = { opening: true, reverse: 'loading', synonyms: 'idle', homographs: 'idle' };
+const CHECK_IDLE: CheckState = {
+  opening: true,
+  reverse: 'loading',
+  synonyms: 'idle',
+  homographs: 'idle',
+  analysis: 'idle',
+  gender: 'idle',
+};
+
+/** The guided Check tour's example: Spanish, as the app's own Check captures
+    show it, because it has real results at every stop (a homograph, a
+    gendered word, a word-by-word analysis). */
+const ES = 'Conocí a tus amigos en el banco la semana pasada.';
+const CHECK_ES = {
+  reverse: 'I met your friends at the bank last week.',
+  reword: ES,
+  original: 'I met your friends at the bank last week.',
+  synonyms: [
+    'Conocí a tus amigos en la entidad financiera la semana pasada.',
+    'Conocí a tus amigos en la oficina bancaria la semana pasada.',
+    'Conocí a tus amigos en el local bancario la semana pasada.',
+  ],
+  homograph: {
+    word: 'bank',
+    meanings: [
+      { title: 'banco', gloss: 'a financial institution;' },
+      { title: 'orilla', gloss: 'the side of a river;' },
+    ],
+  },
+  analysis: [
+    { gloss: 'I met', chunk: 'Conocí' },
+    { gloss: '(to)', chunk: 'a' },
+    { gloss: 'your', chunk: 'tus' },
+    { gloss: 'friends', chunk: 'amigos' },
+    { gloss: '(at)', chunk: 'en' },
+    { gloss: 'the', chunk: 'el' },
+    { gloss: 'bank', chunk: 'banco' },
+    { gloss: '(last)', chunk: 'la' },
+    { gloss: 'week', chunk: 'semana' },
+    { gloss: 'last.', chunk: 'pasada.' },
+  ],
+  gender: {
+    word: 'friend',
+    options: [
+      { word: 'friends', label: 'All Male' },
+      { word: 'friends', label: 'All Female' },
+      { word: 'friends', label: 'Both' },
+    ],
+  },
+};
+
+/** The guided tour's stops, in order; copy is content at arcatext.checkTour.N. */
+const TOUR_STOPS = ['reverse', 'fixWords', 'reword', 'analysis', 'original', 'synonyms', 'homographs', 'gender'] as const;
+type TourStop = (typeof TOUR_STOPS)[number];
 
 function Key({
   label,
@@ -199,6 +254,143 @@ function ToolButton({
   );
 }
 
+/** The tour's yellow (Experimental amber, brightened for an overlay). */
+const TOUR_YELLOW = '#FFC21A';
+
+/**
+ * A tour stop's callout: a yellow arrow drawn over the phone, pointing at the
+ * element tagged `data-tour={tag}` (it may run past the phone's edge), and a
+ * caption box with Next. The box sits beside the phone when the page has room
+ * to its left, otherwise under it.
+ */
+function TourCallout({
+  phoneRef,
+  tag,
+  index,
+  total,
+  onNext,
+}: {
+  phoneRef: React.RefObject<HTMLDivElement | null>;
+  tag: string;
+  index: number;
+  total: number;
+  onNext: () => void;
+}) {
+  const [geo, setGeo] = useState<{ x: number; y: number; w: number; h: number; pw: number; side: boolean } | null>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const wrap = phoneRef.current;
+      const el = wrap?.querySelector<HTMLElement>(`[data-tour="${tag}"]`);
+      if (!wrap || !el) return;
+      const w = wrap.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      setGeo({
+        x: r.left - w.left,
+        y: r.top - w.top,
+        w: r.width,
+        h: r.height,
+        pw: w.width,
+        // Room for a 260px box and its gap to the phone's left?
+        side: w.left >= 300,
+      });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [phoneRef, tag]);
+
+  if (!geo) return null;
+
+  // Point at the element's left edge, at the middle of its first line or so.
+  // Elements on the right half are reached from below-left at an angle, so the
+  // arrow passes under whatever shares their row instead of through it.
+  const tipX = geo.x - 2;
+  const tipY = geo.y + Math.min(geo.h / 2, 22);
+  const tailX = geo.side ? -30 : -22;
+  const rightHalf = geo.x > geo.pw * 0.45;
+  const tailY = rightHalf ? tipY + 56 : tipY;
+  const dx = tipX - tailX;
+  const dy = tipY - tailY;
+  const len = Math.hypot(dx, dy);
+  const ux = dx / len;
+  const uy = dy / len;
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+  const box = (
+    <div
+      className="w-[260px] rounded-2xl border border-border bg-card p-4 text-left shadow-xl animate-in fade-in-0 zoom-in-95 duration-200"
+      style={{ borderLeft: `4px solid ${TOUR_YELLOW}` }}
+    >
+      <div className="mb-1 font-mono text-[11px] text-muted-foreground">
+        {index + 1} / {total}
+      </div>
+      <Editable as="div" path={`arcatext.checkTour.${index}.title`} className="text-sm font-semibold text-foreground" />
+      <Editable
+        as="p"
+        path={`arcatext.checkTour.${index}.body`}
+        multiline
+        className="mt-1 text-sm leading-relaxed text-muted-foreground"
+      />
+      <div className="mt-3 flex justify-end">
+        <button
+          onClick={onNext}
+          className="rounded-full px-4 py-1.5 text-sm font-semibold text-black transition-[filter] hover:brightness-95"
+          style={{ background: TOUR_YELLOW }}
+        >
+          {index + 1 === total ? 'Start over' : 'Next'}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* The arrow, over the phone; free to run past its edge. Drawn in the
+          wrapper's own coordinates from a zero-size, overflow-visible SVG. */}
+      <svg aria-hidden className="pointer-events-none absolute left-0 top-0 z-20 overflow-visible" width={1} height={1}>
+        <g
+          className="ax-arrow-nudge"
+          style={{
+            filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.45))',
+            ['--nx' as string]: `${ux * 5}px`,
+            ['--ny' as string]: `${uy * 5}px`,
+          }}
+        >
+          <line
+            x1={tailX}
+            y1={tailY}
+            x2={tipX - ux * 12}
+            y2={tipY - uy * 12}
+            stroke={TOUR_YELLOW}
+            strokeWidth={5}
+            strokeLinecap="round"
+            className="ax-arrow-draw"
+            style={{ strokeDasharray: len, strokeDashoffset: len }}
+          />
+          <path
+            d="M -16 -10 L 0 0 L -16 10 Z"
+            fill={TOUR_YELLOW}
+            transform={`translate(${tipX} ${tipY}) rotate(${angle})`}
+          />
+        </g>
+      </svg>
+
+      {geo.side ? (
+        <div
+          className="absolute z-30"
+          style={{ right: `calc(100% + ${-tailX + 8}px)`, top: Math.max(0, tipY - 44) }}
+        >
+          {box}
+        </div>
+      ) : (
+        // Under the phone, past the Restart row, when there is no room beside it.
+        <div className="absolute left-1/2 top-full z-30 mt-[68px] -translate-x-1/2">{box}</div>
+      )}
+    </>
+  );
+}
+
 export default function ArcatextKeyboard({
   scenes = ['type', 'reword'],
   scale,
@@ -230,6 +422,8 @@ export default function ArcatextKeyboard({
   const [rewordLoading, setRewordLoading] = useState(false);
   const [pressed, setPressed] = useState<string | null>(null);
   const [check, setCheck] = useState<CheckState>(CHECK_IDLE);
+  /** The guided tour's current stop, while it waits for Next. */
+  const [callout, setCallout] = useState<TourStop | null>(null);
   const [pasteStage, setPasteStage] = useState<PasteStage>('empty');
   const [studyStage, setStudyStage] = useState<StudyStage>('spinner');
   const [studyScroll, setStudyScroll] = useState(0);
@@ -254,6 +448,9 @@ export default function ArcatextKeyboard({
   /** Allowed to play by the row. */
   const runningRef = useRef(running);
   const tRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /** Holding at a tour stop until Next. */
+  const waitRef = useRef(false);
+  const phoneRef = useRef<HTMLDivElement>(null);
   const bubbleId = useRef(1);
   const scenesKey = scenes.join(',');
 
@@ -262,12 +459,9 @@ export default function ArcatextKeyboard({
   /** A slow, continuous scroll to the bottom of a view over `ms`, eased at
       both ends, so each element can be read as it passes. */
   const glideRef = useRef<number | undefined>(undefined);
-  const glideToBottom = (ref: React.RefObject<HTMLDivElement | null>, ms: number) => {
-    const el = ref.current;
-    if (!el) return;
+  const glideTo = (el: HTMLElement, to: number, ms: number) => {
     cancelAnimationFrame(glideRef.current ?? 0);
     const from = el.scrollTop;
-    const to = el.scrollHeight - el.clientHeight;
     const t0 = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - t0) / ms);
@@ -277,13 +471,24 @@ export default function ArcatextKeyboard({
     };
     glideRef.current = requestAnimationFrame(step);
   };
+  const glideToBottom = (ref: React.RefObject<HTMLDivElement | null>, ms: number) => {
+    const el = ref.current;
+    if (el) glideTo(el, el.scrollHeight - el.clientHeight, ms);
+  };
+  /** Brings a tour target into view, a little below the top of the view. */
+  const scrollToTag = (tag: string) => {
+    const c = checkScrollRef.current;
+    const el = c?.querySelector<HTMLElement>(`[data-tour="${tag}"]`);
+    if (!c || !el) return;
+    glideTo(c, Math.max(0, Math.min(el.offsetTop - 70, c.scrollHeight - c.clientHeight)), 700);
+  };
   const scrollToEl = (cont: React.RefObject<HTMLDivElement | null>, el: React.RefObject<HTMLElement | null>) => {
     if (cont.current && el.current) cont.current.scrollTo({ top: Math.max(0, el.current.offsetTop - 14), behavior: 'smooth' });
   };
 
   const schedule = useCallback(() => {
     clearTimeout(tRef.current);
-    if (!playRef.current || !visibleRef.current || !runningRef.current) return;
+    if (waitRef.current || !playRef.current || !visibleRef.current || !runningRef.current) return;
     const beats = beatsRef.current;
     const bounds = boundsRef.current[stepRef.current];
     if (!beats.length || !bounds) return;
@@ -307,6 +512,8 @@ export default function ArcatextKeyboard({
     const b = (fn: () => void, ms: number) => beats.push({ fn, ms });
     const reset = (opts: { text?: string; sent?: string[]; received?: string | null } = {}) => {
       cancelAnimationFrame(glideRef.current ?? 0);
+      waitRef.current = false;
+      setCallout(null);
       setRewordLoading(false);
       setPressed(null);
       setView('none');
@@ -385,6 +592,41 @@ export default function ArcatextKeyboard({
         b(() => setCheck({ opening: false, reverse: 'done', synonyms: 'done', homographs: 'done' }), 1800);
         b(() => glideToBottom(checkScrollRef, 16000), 16000 + 2200);
         b(() => scrollTo(checkScrollRef, 0), 1600);
+      },
+      checkGuide: () => {
+        /** Scroll the stop into view, point at it, and hold for Next. */
+        const stop = (tag: TourStop) => {
+          b(() => scrollToTag(tag), 850);
+          b(() => {
+            waitRef.current = true;
+            setCallout(tag);
+          }, 0);
+        };
+        /** Tap a control in the view, let it load, show its result. */
+        const run = (control: string, key: keyof CheckState, scrollTag: string) => {
+          b(() => scrollToTag(scrollTag), 850);
+          tap(control, () => setCheck((s) => ({ ...s, [key]: 'loading' })), 260);
+          b(() => {}, 1500);
+          b(() => setCheck((s) => ({ ...s, [key]: 'done' })), 450);
+        };
+        b(() => reset({ text: ES }), 900);
+        tap('check', () => setView('check'));
+        b(() => {}, 500);
+        b(() => setCheck((s) => ({ ...s, opening: false })), 900);
+        b(() => setCheck((s) => ({ ...s, reverse: 'done' })), 900);
+        stop('reverse');
+        stop('fixWords');
+        stop('reword');
+        run('analyze', 'analysis', 'analyze');
+        stop('analysis');
+        stop('original');
+        run('synonyms', 'synonyms', 'synonyms');
+        stop('synonyms');
+        run('homographs', 'homographs', 'homographsButton');
+        stop('homographs');
+        run('gender', 'gender', 'genderButton');
+        stop('gender');
+        b(() => scrollTo(checkScrollRef, 0), 1400);
       },
       paste: () => {
         b(() => reset({ sent: [JA] }), 800);
@@ -483,7 +725,16 @@ export default function ArcatextKeyboard({
     else clearTimeout(tRef.current);
   }, [running, schedule]);
 
+  /** Next, at a tour stop: drop the callout and carry on. */
+  const nextStop = () => {
+    waitRef.current = false;
+    setCallout(null);
+    schedule();
+  };
+
   const restart = () => {
+    waitRef.current = false;
+    setCallout(null);
     clearTimeout(tRef.current);
     stepRef.current = 0;
     posRef.current = 0;
@@ -523,7 +774,17 @@ export default function ArcatextKeyboard({
   return (
     <div ref={rootRef} className="flex flex-col items-center">
       {/* iPhone */}
-      <div style={{ width: OUTER_W * phoneScale, height: OUTER_H * phoneScale }}>
+      <div ref={phoneRef} className="relative" style={{ width: OUTER_W * phoneScale, height: OUTER_H * phoneScale }}>
+        {callout && (
+          <TourCallout
+            key={callout}
+            phoneRef={phoneRef}
+            tag={callout}
+            index={TOUR_STOPS.indexOf(callout)}
+            total={TOUR_STOPS.length}
+            onNext={nextStop}
+          />
+        )}
         <div
           className="relative bg-black"
           style={{
@@ -769,11 +1030,13 @@ export default function ArcatextKeyboard({
               <div className="shrink-0">
                 <CheckPanel
                   state={check}
-                  data={CHECK_DATA}
+                  data={scenesKey.includes('checkGuide') ? CHECK_ES : CHECK_DATA}
                   scrollRef={checkScrollRef}
                   synRef={synRef}
                   detectRef={detectRef}
                   onClose={closeView}
+                  showAnalyze={scenesKey.includes('checkGuide')}
+                  pressed={pressed}
                 />
               </div>
             )}

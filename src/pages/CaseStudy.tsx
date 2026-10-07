@@ -269,12 +269,13 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
     );
   }
 
-  /* Check's case study: the Check view, loaded, scrolled slowly from top to
-     bottom so each part can be read. Same placement and scale as Reword's. */
+  /* Check's case study: a guided tour of the Check view. A yellow arrow and a
+     caption at each part, holding for Next. Same placement and scale as
+     Reword's. */
   if (figure.demo === 'check') {
     return (
       <figure className="mt-0">
-        <ArcatextKeyboard scenes={['checkTour']} />
+        <ArcatextKeyboard scenes={['checkGuide']} />
         {(figure.caption || isAdmin) && (
           <Editable
             as="figcaption"

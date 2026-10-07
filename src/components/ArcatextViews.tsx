@@ -105,6 +105,10 @@ export type CheckState = {
   reverse: 'loading' | 'done';
   synonyms: 'idle' | 'loading' | 'done';
   homographs: 'idle' | 'loading' | 'done';
+  /** Reword analysis (Analyze Reword). Drawn only when the panel is given
+      `showAnalyze` — the feature is off in the shipping app. */
+  analysis?: 'idle' | 'loading' | 'done';
+  gender?: 'idle' | 'loading' | 'done';
 };
 
 export type CheckData = {
@@ -114,23 +118,57 @@ export type CheckData = {
   synonyms: string[];
   /** The original's word, and its meanings (the reword's word + an English gloss). */
   homograph: { word: string; meanings: { title: string; gloss: string }[] };
+  /** Analysis word pairs: the gloss (bold, on top) over the reword's chunk. */
+  analysis?: { gloss: string; chunk: string }[];
+  /** A gendered word (the original's) and its options; the first is in use. */
+  gender?: { word: string; options: { word: string; label: string }[] };
 };
 
 /** The detection card's "before" state: a description and a pale button. */
-function DetectionButton({ description, label }: { description: string; label: string }) {
+function DetectionButton({
+  description,
+  label,
+  pressed,
+  tour,
+}: {
+  description: string;
+  label: string;
+  pressed?: boolean;
+  tour?: string;
+}) {
   return (
-    <div className="flex flex-col gap-3 px-3">
+    <div className="flex flex-col gap-3 px-3" data-tour={tour}>
       <p className="text-[16px] leading-[26px]" style={{ color: AX.placeholder }}>
         {description}
       </p>
       <div
-        className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium"
-        style={{ background: AX.selectedBg, color: AX.checkText }}
+        className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium transition-[filter] duration-100"
+        style={{ background: AX.selectedBg, color: AX.checkText, filter: pressed ? 'brightness(0.88)' : 'none' }}
       >
         {label}
       </div>
     </div>
   );
+}
+
+/** Tabs + equal-width option cards, as the gendered-words results draw them. */
+function WordTab({ word }: { word: string }) {
+  return (
+    <div className="flex h-10 px-3">
+      <span className="flex flex-col justify-center px-3 pt-1.5 text-[16px] font-medium" style={{ color: AX.accent }}>
+        {word}
+        <span className="mt-1.5 h-[2px] w-full" style={{ background: AX.accent }} />
+      </span>
+    </div>
+  );
+}
+
+function optionCardStyle(on: boolean) {
+  return {
+    background: on ? AX.selectedBg : AX.cardBg,
+    boxShadow: `inset 0 0 0 ${on ? 2 : 1}px ${on ? AX.accent : AX.cardStroke}`,
+    color: on ? AX.accent : AX.label,
+  };
 }
 
 export function CheckPanel({
@@ -140,6 +178,8 @@ export function CheckPanel({
   synRef,
   detectRef,
   onClose,
+  showAnalyze = false,
+  pressed,
 }: {
   state: CheckState;
   data: CheckData;
@@ -147,7 +187,13 @@ export function CheckPanel({
   synRef?: RefObject<HTMLDivElement | null>;
   detectRef?: RefObject<HTMLDivElement | null>;
   onClose?: () => void;
+  /** Draw the Analyze Reword section (off in the shipping app). */
+  showAnalyze?: boolean;
+  /** A control mid-tap: 'analyze' | 'synonyms' | 'homographs' | 'gender'. */
+  pressed?: string | null;
 }) {
+  const analysis = state.analysis ?? 'idle';
+  const gender = state.gender ?? 'idle';
   return (
     <div className="flex flex-col" style={{ height: VIEW_H, background: AX.pageBg, fontFamily: NOTO }}>
       {/* Header: 4 + 38 + 16. */}
@@ -177,7 +223,7 @@ export function CheckPanel({
                     {state.reverse === 'loading' ? (
                       <LoadingBar />
                     ) : (
-                      <p className="text-[16px] leading-[26px]" style={{ color: AX.label }}>
+                      <p data-tour="reverse" className="text-[16px] leading-[26px]" style={{ color: AX.label }}>
                         {data.reverse}
                       </p>
                     )}
@@ -187,7 +233,7 @@ export function CheckPanel({
                       English <ChevronRight className="h-3 w-3" strokeWidth={2.6} />
                     </span>
                     {state.reverse === 'done' && (
-                      <span className="text-[16px] font-medium" style={{ color: AX.accent }}>
+                      <span data-tour="fixWords" className="text-[16px] font-medium" style={{ color: AX.accent }}>
                         Fix Words
                       </span>
                     )}
@@ -196,13 +242,60 @@ export function CheckPanel({
               </div>
               <div className="flex flex-col gap-2.5">
                 <CheckLabel>Reword</CheckLabel>
-                <div className="px-3">
+                <div className="px-3" data-tour="reword">
                   <SelectRow text={data.reword} on />
                 </div>
+                {/* Reword analysis: "Analyze Reword" + Experimental, then a
+                    shimmer, then the word-pair grid with "Hide analysis". */}
+                {showAnalyze && analysis === 'idle' && (
+                  <div className="flex items-center gap-2 px-3" data-tour="analyze">
+                    <span
+                      className="rounded-[12px] p-2 text-[16px] font-medium transition-colors duration-100"
+                      style={{ color: AX.accent, background: pressed === 'analyze' ? AX.cardStroke : undefined }}
+                    >
+                      Analyze Reword
+                    </span>
+                    <span className="flex-1" />
+                    <ExperimentalTag />
+                  </div>
+                )}
+                {showAnalyze && analysis === 'loading' && (
+                  <div className="min-h-[22px] px-6">
+                    <LoadingBar />
+                  </div>
+                )}
+                {showAnalyze && analysis === 'done' && data.analysis && (
+                  <div
+                    data-tour="analysis"
+                    className="mx-3 rounded-[12px] animate-in fade-in-0 duration-300"
+                    style={{ background: AX.cardBg, boxShadow: `inset 0 0 0 1px ${AX.cardStroke}` }}
+                  >
+                    <div className="flex flex-wrap gap-y-1 px-3 py-2.5">
+                      {data.analysis.map((p, i) => (
+                        <div key={i} className="flex">
+                          {i > 0 && <span className="my-0.5 w-[2px]" style={{ background: AX.placeholder, opacity: 0.3 }} />}
+                          <div className={`flex flex-col gap-0.5 py-1.5 pr-2.5 ${i > 0 ? 'pl-2.5' : ''}`}>
+                            <span className="text-[16px] font-bold leading-[20px]" style={{ color: AX.label }}>
+                              {p.gloss}
+                            </span>
+                            <span className="text-[16px] leading-[20px]" style={{ color: AX.placeholder }}>
+                              {p.chunk}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-1 pb-1">
+                      <span className="block py-2 text-center text-[16px] font-medium" style={{ color: AX.accent }}>
+                        Hide analysis
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-2.5">
                 <CheckLabel>Original message</CheckLabel>
-                <div className="px-3">
+                <div className="px-3" data-tour="original">
                   <SelectRow text={data.original} on={false} />
                 </div>
               </div>
@@ -211,13 +304,13 @@ export function CheckPanel({
             {/* Card B: synonyms. */}
             <div ref={synRef} className="mx-3 flex flex-col gap-2.5 rounded-[12px] py-3" style={{ background: AX.cardBg }}>
               <CheckLabel>Synonyms</CheckLabel>
-              <div className="flex flex-col gap-3 px-3">
+              <div className="flex flex-col gap-3 px-3" data-tour="synonyms">
                 {state.synonyms === 'done' ? (
                   data.synonyms.map((s) => <SelectRow key={s} text={s} on={false} />)
                 ) : (
                   <div
-                    className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium text-white"
-                    style={{ background: AX.primary }}
+                    className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium text-white transition-[filter] duration-100"
+                    style={{ background: AX.primary, filter: pressed === 'synonyms' ? 'brightness(0.8)' : 'none' }}
                   >
                     {state.synonyms === 'loading' ? <Spinner size={16} color="#fff" track="rgba(255,255,255,0.35)" /> : 'Show synonyms'}
                   </div>
@@ -235,7 +328,12 @@ export function CheckPanel({
               </div>
               <div className="mx-3 flex flex-col gap-4 rounded-[12px] py-3" style={{ background: AX.cardBg }}>
                 {state.homographs === 'idle' && (
-                  <DetectionButton description="Words with the same spelling, multiple meanings." label="Check homographs" />
+                  <DetectionButton
+                    description="Words with the same spelling, multiple meanings."
+                    label="Check homographs"
+                    pressed={pressed === 'homographs'}
+                    tour="homographsButton"
+                  />
                 )}
                 {state.homographs === 'loading' && (
                   <div className="min-h-[37px] px-3">
@@ -243,7 +341,7 @@ export function CheckPanel({
                   </div>
                 )}
                 {state.homographs === 'done' && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3" data-tour="homographs">
                     {/* Word tabs: the original's words, 2pt bar under the selected one. */}
                     <div className="flex h-10 px-3">
                       <span className="flex flex-col justify-center px-3 pt-1.5 text-[16px] font-medium" style={{ color: AX.accent }}>
@@ -273,7 +371,36 @@ export function CheckPanel({
                     </div>
                   </div>
                 )}
-                <DetectionButton description="Words that change depending on gender." label="Check gendered words" />
+                {gender === 'idle' && (
+                  <DetectionButton
+                    description="Words that change depending on gender."
+                    label="Check gendered words"
+                    pressed={pressed === 'gender'}
+                    tour="genderButton"
+                  />
+                )}
+                {gender === 'loading' && (
+                  <div className="min-h-[37px] px-3">
+                    <LoadingBar />
+                  </div>
+                )}
+                {gender === 'done' && data.gender && (
+                  <div className="flex flex-col gap-3" data-tour="gender">
+                    <WordTab word={data.gender.word} />
+                    <div className="flex gap-2 px-3">
+                      {data.gender.options.map((o, i) => (
+                        <div
+                          key={o.label}
+                          className="flex flex-1 flex-col items-center gap-1 rounded-[10px] p-3 text-center"
+                          style={optionCardStyle(i === 0)}
+                        >
+                          <span className="text-[16px] font-semibold">{o.word}</span>
+                          <span className="text-[16px] font-medium leading-tight">{o.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
