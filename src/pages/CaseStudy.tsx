@@ -105,7 +105,14 @@ export default function CaseStudy({ index }: { index: number }) {
           const slot = figure ? feature.figures?.[figure] : undefined;
           /* Side-by-side only when the slot actually holds something. An empty
              slot still shows in admin, so the image can be uploaded. */
-          const media = !!(slot?.src || slot?.demo);
+          /* Blocks inserted into the media column keep it, even once the
+             figure itself is empty: clearing a picture that a gallery has
+             replaced must not take the column -- and the gallery in it --
+             off the page. */
+          const slots = (feature as { figureSlots?: Record<string, { above?: unknown[]; below?: unknown[] }> })
+            .figureSlots?.[figure ?? ''];
+          const slotted = !!(slots?.above?.length || slots?.below?.length);
+          const media = !!(slot?.src || slot?.demo) || slotted;
           /* The column appears in admin even when the slot is empty: that
              frame is how an image gets uploaded, and it has to be in the
              place the image will occupy for the layout to be judged. */
