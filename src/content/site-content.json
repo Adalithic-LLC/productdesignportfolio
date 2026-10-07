@@ -951,7 +951,8 @@
             "src": "",
             "alt": "",
             "caption": "",
-            "note": "Polished Check-view screenshot: the translated message, the reverse translation, and one or two deeper analysis options."
+            "note": "Polished Check-view screenshot: the translated message, the reverse translation, and one or two deeper analysis options.",
+            "demo": "check"
           },
           "keyDecision": {
             "src": "",

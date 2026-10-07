@@ -120,7 +120,9 @@ const japaneseOptions = (alphabet: 'standard' | 'romanized'): OptionsConfig => (
   speakerGender: 'Male',
 });
 
-export type Scene = 'type' | 'reword' | 'check' | 'paste' | 'study' | 'options';
+/** `checkTour`: Check fully loaded, scrolled slowly top to bottom (the Check
+    case study's figure). */
+export type Scene = 'type' | 'reword' | 'check' | 'checkTour' | 'paste' | 'study' | 'options';
 
 type View = 'none' | 'check' | 'paste' | 'study' | 'options';
 type Bubble = { id: number; text: string };
@@ -257,6 +259,24 @@ export default function ArcatextKeyboard({
 
   const scrollTo = (ref: React.RefObject<HTMLDivElement | null>, top: number) =>
     ref.current?.scrollTo({ top, behavior: 'smooth' });
+  /** A slow, continuous scroll to the bottom of a view over `ms`, eased at
+      both ends, so each element can be read as it passes. */
+  const glideRef = useRef<number | undefined>(undefined);
+  const glideToBottom = (ref: React.RefObject<HTMLDivElement | null>, ms: number) => {
+    const el = ref.current;
+    if (!el) return;
+    cancelAnimationFrame(glideRef.current ?? 0);
+    const from = el.scrollTop;
+    const to = el.scrollHeight - el.clientHeight;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / ms);
+      const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      el.scrollTop = from + (to - from) * eased;
+      if (t < 1) glideRef.current = requestAnimationFrame(step);
+    };
+    glideRef.current = requestAnimationFrame(step);
+  };
   const scrollToEl = (cont: React.RefObject<HTMLDivElement | null>, el: React.RefObject<HTMLElement | null>) => {
     if (cont.current && el.current) cont.current.scrollTo({ top: Math.max(0, el.current.offsetTop - 14), behavior: 'smooth' });
   };
@@ -286,6 +306,7 @@ export default function ArcatextKeyboard({
     const beats: { fn: () => void; ms: number }[] = [];
     const b = (fn: () => void, ms: number) => beats.push({ fn, ms });
     const reset = (opts: { text?: string; sent?: string[]; received?: string | null } = {}) => {
+      cancelAnimationFrame(glideRef.current ?? 0);
       setRewordLoading(false);
       setPressed(null);
       setView('none');
@@ -353,6 +374,16 @@ export default function ArcatextKeyboard({
         b(() => setCheck((s) => ({ ...s, homographs: 'done' })), 500);
         // The cards make the page taller; follow them down.
         b(() => scrollToEl(checkScrollRef, detectRef), 2400);
+        b(() => scrollTo(checkScrollRef, 0), 1600);
+      },
+      checkTour: () => {
+        b(() => reset({ text: JA }), 900);
+        tap('check', () => setView('check'));
+        b(() => {}, 600);
+        b(() => setCheck((s) => ({ ...s, opening: false })), 900);
+        // Everything loaded, so the tour passes every part of the view.
+        b(() => setCheck({ opening: false, reverse: 'done', synonyms: 'done', homographs: 'done' }), 1800);
+        b(() => glideToBottom(checkScrollRef, 16000), 16000 + 2200);
         b(() => scrollTo(checkScrollRef, 0), 1600);
       },
       paste: () => {
