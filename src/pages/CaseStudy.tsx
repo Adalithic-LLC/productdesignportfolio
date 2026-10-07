@@ -11,7 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
-import { EditableBlocks } from '@/content/EditableBlocks';
+import { BlockSlot, EditableBlocks } from '@/content/EditableBlocks';
 import { isMediaBlock } from '@/content/elements';
 import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
@@ -139,8 +139,14 @@ export default function CaseStudy({ index }: { index: number }) {
                   <Prose stacked>
                     <EditableBlocks path={`arcatext.features.${index}.${field}`} to={splitAt} />
                   </Prose>
+                  {/* The media column takes inserted blocks above and below
+                      its figure, so anything from the palette -- a gallery,
+                      a second picture, a note -- can sit where the image is
+                      rather than only in the prose column. */}
                   <div className="mt-8 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
+                    <BlockSlot path={`arcatext.features.${index}.figureSlots.${figure}.above`} className="mt-0" />
                     <Figure index={index} section={figure!} />
+                    <BlockSlot path={`arcatext.features.${index}.figureSlots.${figure}.below`} className="mb-0" />
                   </div>
                 </div>
                 {splitAt < items.length && (
