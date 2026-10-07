@@ -543,7 +543,7 @@
           "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting for gathering key data inputs were crucial decisions to avoid choice overload and creating a dense settings panel.",
           {
             "type": "paragraph",
-            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 70+ languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language."
+            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 75 languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language."
           }
         ],
         "constraints": [
@@ -663,7 +663,7 @@
           },
           {
             "type": "paragraph",
-            "text": "Reword supports 72 languages from around the world. These were carefully vetted through a gauntlet of translation tests. I assessed model translations with the top performing OpenAI model until I landed on ChatGPT4o-mini, based on translation performance, language range, token cost, and ability to handle more complex tasks like homograph detection."
+            "text": "Reword supports 75 languages from around the world. These were carefully vetted through a gauntlet of translation tests. I assessed model translations with the top performing OpenAI model until I landed on ChatGPT4o-mini, based on translation performance, language range, token cost, and ability to handle more complex tasks like homograph detection."
           },
           {
             "type": "paragraph",
@@ -679,7 +679,7 @@
             "variant": "screen-reword",
             "data": {
               "screen": "gender",
-              "caption": "In certain languages Recipient gender is chosen once and Reword applies that choice to each translation in the current chat, other recipients, and even other apps until the user chooses a different gender for a different context."
+              "caption": "For 42/75 Arcatext-supported languages, recipient gender is enabled. This settings changes the form of certain words in each language, allowing for more accurate translations depending on who a user is texting. This is a micro-learning moment, as it's inherently exposing users to the contextually correct language, but not offering an explanation or calling attention to the gender distinction in that moment.\n\nRecipient gender is chosen once and Reword applies that choice to each translation in the current chat, other recipients, and even other apps until the user chooses a different gender for a different context.\n\n\nThis augmentation to typical capability of standard translation tools was well recieved by students and teachers who claimed it filled an important and overlooked gap."
             }
           },
           {
