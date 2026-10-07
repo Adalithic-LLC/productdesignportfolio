@@ -1128,7 +1128,8 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
-        }
+        },
+        "hidden": "hidden"
       },
       {
         "slug": "study-guide",
@@ -1396,7 +1397,8 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
-        }
+        },
+        "hidden": "hidden"
       },
       {
         "slug": "arcatext-tuning",
@@ -1529,6 +1531,123 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
+        }
+      },
+      {
+        "slug": "guided-chats",
+        "title": "Guided Chats",
+        "body": "Preset, branching conversations the user types their way through — practice that costs no tokens.",
+        "whatItIs": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "What It Is"
+          }
+        ],
+        "whyItMattered": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Why It Matters"
+          }
+        ],
+        "problem": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "The Challenge"
+          }
+        ],
+        "constraints": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Key Constraints"
+          }
+        ],
+        "keyDecision": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
+          }
+        ],
+        "solution": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "The Solution"
+          }
+        ],
+        "tradeoff": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
+          }
+        ],
+        "validation": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Validation / Outcome"
+          }
+        ],
+        "impact": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Impact on the Larger Product"
+          }
+        ],
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          }
+        },
+        "headings": {
+          "whatItIsTitle": "What It Is",
+          "whyItMatteredTitle": "Why It Matters",
+          "problemTitle": "The Challenge",
+          "constraintsTitle": "Key Constraints",
+          "keyDecisionTitle": "Exploration & Key Decisions",
+          "solutionTitle": "The Solution",
+          "tradeoffTitle": "Tradeoffs & Risks",
+          "validationTitle": "Validation / Outcome",
+          "impactTitle": "Impact on the Larger Product"
         }
       }
     ],

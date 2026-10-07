@@ -193,6 +193,10 @@ export interface ArcatextFeature {
   title: string;
   /** The brief line on the strip's card; a plain string, not a block list. */
   body: string;
+  /* Any non-empty value takes the case study off the strip while keeping all
+     of its writing: admin's Hidden content panel lists it and puts it back.
+     A string rather than a boolean so the ordinary text setter can write it. */
+  hidden?: string;
   /* Every section below is a list of prose blocks rather than one run of text,
      so admin can add, reorder and delete a paragraph, heading or element
      inside it. A plain string in the list still renders as a paragraph. */

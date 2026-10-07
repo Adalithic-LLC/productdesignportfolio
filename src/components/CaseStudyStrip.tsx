@@ -23,8 +23,11 @@ const GAP = 32;
 const STEP = CARD + GAP;
 
 
-export function CaseStudyStrip({ slugs }: { slugs: string[] }) {
-  const count = slugs.length;
+/* Each card carries the feature's own index, not its place in the row: the
+   titles and bodies are read from the content store by index, so a row that
+   leaves a hidden case study out would otherwise label every later card with
+   the wrong feature's words. */
+export function CaseStudyStrip({ items }: { items: { slug: string; index: number }[] }) {
   const rail = useRef<HTMLDivElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(true);
@@ -73,13 +76,13 @@ export function CaseStudyStrip({ slugs }: { slugs: string[] }) {
            snapping aligned to the padded edge instead of 28px left of it. */
         className="-my-7 -ml-7 flex snap-x scroll-pl-7 gap-8 overflow-x-auto px-7 py-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {Array.from({ length: count }, (_, i) => (
+        {items.map(({ slug, index }, i) => (
           /* A min-height rather than a fixed aspect: the cards are as tall as
              the longest body among them, so the row stays even without any
              one of them clipping its own copy. */
           <a
             key={i}
-            href={`#/arcatext/${slugs[i]}`}
+            href={`#/arcatext/${slug}`}
             style={{ width: CARD }}
             className="flex min-h-44 shrink-0 snap-start flex-col rounded-xl bg-muted/40 p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -96,12 +99,12 @@ export function CaseStudyStrip({ slugs }: { slugs: string[] }) {
             </div>
             <Editable
               as="h3"
-              path={`arcatext.features.${i}.title`}
+              path={`arcatext.features.${index}.title`}
               className="mb-2 mt-2 text-base font-semibold leading-snug text-foreground"
             />
             <Editable
               as="p"
-              path={`arcatext.features.${i}.body`}
+              path={`arcatext.features.${index}.body`}
               multiline
               className="text-sm italic leading-relaxed text-muted-foreground"
             />

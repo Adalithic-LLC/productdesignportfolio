@@ -26,13 +26,14 @@ export function AdminBar() {
     isAdmin, dirty, token, branch, saveState,
     insertTool, setInsertTool,
     moveMode, selection, startMove, cancelMove,
-    setToken, setBranch, save, discardChanges, setPreviewing,
+    setToken, setBranch, save, discardChanges, setPreviewing, content, setText,
   } = useContent();
   const [showToken, setShowToken] = useState(false);
   const [open, setOpen] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
   // Element palette: which variant is being hovered (drives the side preview).
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [hiddenOpen, setHiddenOpen] = useState(false);
   const [hoverVariant, setHoverVariant] = useState<string | null>(null);
 
   // Esc cancels an armed insert tool or move mode.
@@ -49,6 +50,7 @@ export function AdminBar() {
 
   if (!isAdmin) return null;
 
+  const hiddenCount = content.arcatext.features.filter((f) => f.hidden).length;
   const paragraphArmed = insertTool?.kind === 'paragraph';
   const headerArmed = insertTool?.kind === 'heading';
   const elementArmed = insertTool?.kind === 'element';
@@ -387,6 +389,67 @@ export function AdminBar() {
                 <span>{saveState.message}</span>
               </div>
             )}
+
+            {/* Hidden content: case studies kept in full but off the strip.
+                Hiding rather than deleting is what keeps a stale admin save
+                from taking the writing with it. */}
+            <div className="rounded-lg border border-border/60">
+              <button
+                type="button"
+                onClick={() => setHiddenOpen((v) => !v)}
+                className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium"
+              >
+                <span className="flex items-center gap-1.5">
+                  <EyeOff className="h-3.5 w-3.5" />
+                  Hidden content
+                  {hiddenCount > 0 && (
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                      {hiddenCount}
+                    </span>
+                  )}
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${hiddenOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {hiddenOpen && (
+                <div className="border-t border-border/60 px-3 py-2">
+                  <p className="mb-2 text-[11px] leading-snug text-muted-foreground">
+                    A hidden case study keeps every word and picture; it is only off the strip, so
+                    nothing is lost by putting it away.
+                  </p>
+                  <ul className="flex flex-col gap-1">
+                    {content.arcatext.features.map((f, i) => {
+                      const off = !!f.hidden;
+                      return (
+                        <li key={f.slug} className="flex items-center justify-between gap-3">
+                          <span className={`text-xs ${off ? 'text-muted-foreground' : ''}`}>
+                            {f.title}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setText(`arcatext.features.${i}.hidden`, off ? '' : 'hidden')
+                            }
+                            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-0.5 text-[11px] transition-colors hover:bg-muted"
+                          >
+                            {off ? (
+                              <>
+                                <Eye className="h-3 w-3" /> Show
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="h-3 w-3" /> Hide
+                              </>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             <p className="text-[11px] leading-snug text-muted-foreground">
               Click any text on the page to edit it (Enter confirms, click away to finish), or
