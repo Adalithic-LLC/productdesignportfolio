@@ -300,7 +300,7 @@ function Keyboard() {
   return (
     <div style={{ backgroundColor: C.keyboardBg }} className="px-[5px] pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-        <ToolButton src={studyUrl} dark={studyDarkUrl} w={24} h={21} />
+        <ToolButton src={studyUrl} dark={studyDarkUrl} w={20} h={17} />
         <ToolButton src={pasteUrl} dark={pasteDarkUrl} w={16} h={20} />
         <ToolButton src={checkUrl} dark={checkDarkUrl} w={20} h={20} />
         <div className="flex-1" />
