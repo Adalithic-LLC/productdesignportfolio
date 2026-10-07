@@ -506,7 +506,7 @@
             "variant": "card-numbered",
             "data": {
               "num": "01",
-              "title": "Location",
+              "title": "App Integration",
               "desc": "Translation must happen in the same place as the chat"
             }
           },
@@ -515,7 +515,7 @@
             "variant": "card-numbered",
             "data": {
               "num": "02",
-              "title": "Workflow",
+              "title": "Simple Workflow",
               "desc": "Make translation a one-step process"
             }
           },
@@ -524,8 +524,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "03",
-              "title": "Quality",
-              "desc": "Remove all blockers to easy and reliable use, supporting the value Reword creates"
+              "title": "Quality Outputs",
+              "desc": "Offer the best quality translations & corrections"
             }
           }
         ],
