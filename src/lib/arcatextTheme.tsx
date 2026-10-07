@@ -54,6 +54,10 @@ export const AX = {
   toggleOff: v('toggle-off'),
   batteryRing: v('battery-ring'),
   bezelRing: v('bezel-ring'),
+  toolBtnPressed: v('tool-btn-pressed'),
+  grouped: v('grouped'),
+  warningBg: v('warning-bg'),
+  warningStroke: v('warning-stroke'),
   /** CheckView's Experimental badge: a fixed amber in both appearances. */
   experimental: '#FFB200',
 } as const;

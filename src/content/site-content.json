@@ -1990,7 +1990,29 @@
       "eyebrow": "INTERACTIVE",
       "titleLead": "The keyboard,",
       "titleHighlight": "in motion",
-      "description": "An interactive walkthrough of the Arcatext keyboard."
+      "description": "Each of the keyboard’s views, running on its own. Tap Restart under any of them to watch it again.",
+      "cards": [
+        {
+          "eyebrow": "Reword",
+          "body": "Write in your own language, typos and all, and tap Reword. The message is translated or corrected in place, keeping its meaning and tone, and is ready to send."
+        },
+        {
+          "eyebrow": "Check",
+          "body": "Check reverse-translates the reword so you can confirm it says what you meant, offers synonyms, and flags words with more than one meaning so you can pick the right one."
+        },
+        {
+          "eyebrow": "Paste",
+          "body": "Copy a message you received and tap Paste. It is translated right in the keyboard, with the original kept underneath, so you can reply without leaving the conversation."
+        },
+        {
+          "eyebrow": "Study",
+          "body": "The leaf opens Study: the words and phrases taken from your own rewords, with what they mean and how often you needed them, to review the language you actually use."
+        },
+        {
+          "eyebrow": "Options",
+          "body": "The Reword chevron opens Options: script, recipient gender, Reword language and a translation copy. Change one and the message rewords itself when you return to the keyboard."
+        }
+      ]
     },
     "caseStudy": {
       "eyebrow": "ARCATEXT CASE STUDY",

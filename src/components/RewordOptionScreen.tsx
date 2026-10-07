@@ -1,4 +1,4 @@
-import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Mic, X } from 'lucide-react';
+import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Plus, Mic } from 'lucide-react';
 import studyUrl from '@/assets/keyboard/study.svg';
 import studyDarkUrl from '@/assets/keyboard/study-dark.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
@@ -12,6 +12,7 @@ import backspaceDarkUrl from '@/assets/keyboard/backspace-dark.svg';
 import localesUrl from '@/assets/keyboard/locales.svg';
 import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
 import { AX, AxIcon } from '@/lib/arcatextTheme';
+import ArcatextOptionsPage, { type OptionsConfig } from '@/components/ArcatextOptionsPage';
 
 /**
  * RewordOptionScreen
@@ -80,10 +81,6 @@ const BEZEL = 12;
 const OUTER_W = DESIGN_W + BEZEL * 2;
 const OUTER_H = SCREEN_H + BEZEL * 2;
 
-/** ToolbarHelpers.viewHeight() on a 402x874pt phone: 874 x 0.505. */
-const VIEW_H = 441;
-/** ConfigurationsView.headerSection: the Paste view's 44pt top bar. */
-const HEADER_H = 44;
 
 const EN_MSG = 'Can you come pick me up at university?';
 const AR_MSG = 'هل يمكنك أن تأتي لتقلّني من الجامعة؟';
@@ -102,21 +99,6 @@ export const OPTION_SCREENS: OptionScreen[] = ['gender', 'script', 'copy', 'rewo
 const SCROLL: Record<Exclude<OptionScreen, 'reword'>, number> = { gender: 0, script: 0, copy: 228 };
 
 // ── Shared phone chrome ──────────────────────────────────────────────────────
-
-/** iOS switch, drawn at its 51x31pt size. */
-function Toggle({ on }: { on: boolean }) {
-  return (
-    <span
-      className="relative inline-block shrink-0 rounded-full"
-      style={{ width: 51, height: 31, background: on ? C.smsGreen : AX.toggleOff }}
-    >
-      <span
-        className="absolute top-[2px] rounded-full bg-white"
-        style={{ width: 27, height: 27, left: on ? 22 : 2, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' }}
-      />
-    </span>
-  );
-}
 
 function StatusBar() {
   return (
@@ -362,244 +344,24 @@ function Keyboard() {
 
 // ── Options page (the three option stills) ───────────────────────────────────
 
-/** 12pt uppercase section label over a control, 8pt above it. */
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mb-2 px-1 text-[12px] uppercase leading-[16px]" style={{ color: C.detail }}>
-      {children}
-    </div>
-  );
-}
-
-/** A 16pt-radius card with the 1pt menu stroke. */
-function Card({ children, height }: { children: React.ReactNode; height?: number }) {
-  return (
-    <div
-      className="overflow-hidden rounded-[16px]"
-      style={{ background: C.cardBg, border: `1px solid ${C.cardStroke}`, height }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function CardDivider() {
-  return <div className="mx-4" style={{ height: 1, background: C.cardStroke }} />;
-}
-
-/** A 56pt card row: label left, value and chevron right. */
-function ValueRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-4" style={{ height: 56 }}>
-      <span className="text-[16px]" style={{ color: C.label }}>
-        {label}
-      </span>
-      <span className="flex items-center gap-2 text-[16px]" style={{ color: C.detail }}>
-        {value}
-        <ChevronRight className="h-[15px] w-[15px]" strokeWidth={2} />
-      </span>
-    </div>
-  );
-}
-
-/** An 84pt grid card: title at the top, value and chevron at the bottom. */
-function GridCard({ title, value, icon }: { title: string; value?: string; icon?: React.ReactNode }) {
-  return (
-    <Card height={84}>
-      <div className="flex h-full flex-col justify-between pb-4 pt-3">
-        <div className="flex items-start justify-between px-4">
-          <span className="text-[16px]" style={{ color: C.label }}>
-            {title}
-          </span>
-          {icon}
-        </div>
-        <div className="flex items-center justify-between px-4">
-          <span className="text-[16px]" style={{ color: C.detail }}>
-            {value}
-          </span>
-          <ChevronRight className="h-[15px] w-[15px]" style={{ color: C.detail }} strokeWidth={2} />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/** "Who are you texting?" — Male selected, accent ring on the selected tile. */
-function RecipientGender() {
-  return (
-    <div>
-      <SectionLabel>Who are you texting?</SectionLabel>
-      <div className="flex gap-2">
-        {[
-          { name: 'Male', on: true },
-          { name: 'Female', on: false },
-        ].map((g) => (
-          <div
-            key={g.name}
-            className="flex flex-1 items-center justify-center rounded-[10px] text-[16px] font-medium"
-            style={{
-              height: 46,
-              background: g.on ? C.selectedBg : C.cardBg,
-              boxShadow: g.on ? `inset 0 0 0 2.5px ${C.accent}` : undefined,
-              color: g.on ? C.accent : C.label,
-            }}
-          >
-            {g.name}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function GroupChat() {
-  return (
-    <div className="flex items-center justify-between rounded-[10px] px-3" style={{ height: 46, background: C.cardBg }}>
-      <span className="text-[16px]" style={{ color: C.label }}>
-        Group Chat
-      </span>
-      <Toggle on={false} />
-    </div>
-  );
-}
-
-/**
- * Reword Script for Arabic. With the menu open, the menu lists only the
- * script NOT selected — RewordOptionsView filters the current one out — and
- * sits right-aligned under the row, sized to its content, over the card below.
- */
-function RewordScript({ menuOpen }: { menuOpen: boolean }) {
-  return (
-    <div className="relative z-10">
-      <SectionLabel>Reword Script</SectionLabel>
-      <div className="flex items-center rounded-[13px] px-3" style={{ height: 48, background: C.cardBg }}>
-        <span className="text-[16px] font-medium" style={{ color: C.label }} dir="rtl">
-          الأبجدية العربية
-        </span>
-        <span className="flex-1" />
-        <span className="mr-2 text-[15px]" style={{ color: C.detail, fontFamily: SF }}>
-          Al-Abjadiyah Al-ʿArabīyah
-        </span>
-        <ChevronsUpDown className="h-[14px] w-[14px]" style={{ color: C.detail }} strokeWidth={2.2} />
-      </div>
-
-      {menuOpen && (
-        <div
-          className="absolute right-0 flex items-center gap-4 rounded-[12px] p-3"
-          style={{ top: '100%', marginTop: 4, background: C.cardBg, boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
-        >
-          <span className="text-[16px] font-medium" style={{ color: C.label }}>
-            Romanized
-          </span>
-          <span className="text-[15px]" style={{ color: C.detail, fontFamily: SF }}>
-            ABC
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * The Reword language card. Recents lead the chip row (Arabic, selected: a
- * 25pt-radius pill with the accent ring), then a divider, then the default
- * shortcuts minus any already in recents. The row scrolls sideways and is
- * clipped by the card.
- */
-function RewordLanguageCard() {
-  const defaults = ['English', 'Spanish', 'Chinese', 'French', 'German', 'Japanese', 'Italian'];
-  return (
-    <Card>
-      <div className="py-4">
-        <div className="px-4 text-[18px] font-medium leading-[25px]" style={{ color: C.label }}>
-          Reword Language
-        </div>
-        <div className="mt-3 flex items-center gap-2 overflow-hidden whitespace-nowrap pl-4">
-          <span
-            className="flex shrink-0 items-center px-3 text-[16px]"
-            style={{ height: 46, borderRadius: 25, background: C.selectedBg, color: C.accent, boxShadow: `inset 0 0 0 2px ${C.accent}` }}
-          >
-            Arabic
-          </span>
-          <span className="mx-1 shrink-0 rounded-full" style={{ width: 2, height: 32, background: C.chipDivider }} />
-          {defaults.map((name) => (
-            <span
-              key={name}
-              className="flex shrink-0 items-center rounded-[12px] px-3 text-[16px]"
-              style={{ height: 46, background: C.chipBg, color: C.label, boxShadow: `inset 0 0 0 1px ${C.cardStroke}` }}
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-      </div>
-      <CardDivider />
-      <ValueRow label="More Languages" value="Arabic" />
-    </Card>
-  );
-}
-
-function TranslationCopyCard() {
-  return (
-    <Card>
-      <div className="flex items-center justify-between pl-4 pr-3" style={{ height: 56 }}>
-        <span className="text-[16px]" style={{ color: C.label }}>
-          Reword Translation Copy
-        </span>
-        <Toggle on />
-      </div>
-      <CardDivider />
-      <ValueRow label="View Copy In..." value="English" />
-    </Card>
-  );
-}
-
-function OptionsPage({ scroll, scriptMenuOpen }: { scroll: number; scriptMenuOpen: boolean }) {
-  return (
-    <div style={{ height: VIEW_H, background: C.pageBg, fontFamily: NOTO }}>
-      <div className="relative flex items-center justify-center px-1" style={{ height: HEADER_H }}>
-        <span className="pl-[38px] text-[16px] font-semibold" style={{ color: C.label }}>
-          Options
-        </span>
-        <span
-          className="absolute right-1 grid h-[38px] w-[38px] place-items-center rounded-[16px]"
-          style={{ background: C.xBtnBg }}
-        >
-          <X className="h-[18px] w-[18px]" style={{ color: C.xMark }} strokeWidth={2.6} />
-        </span>
-      </div>
-
-      {/* The scroll view, clipped at the keyboard's height. */}
-      <div className="relative overflow-hidden" style={{ height: VIEW_H - HEADER_H }}>
-        <div className="px-3" style={{ transform: `translateY(${-scroll}px)` }}>
-          {/* RewordOptionsView, embedded: 16pt above, 16pt between sections. */}
-          <div className="relative z-10 flex flex-col gap-4 pt-4">
-            <RecipientGender />
-            <GroupChat />
-            <RewordScript menuOpen={scriptMenuOpen} />
-          </div>
-          <div className="flex flex-col gap-4 pb-6 pt-4">
-            <RewordLanguageCard />
-            <TranslationCopyCard />
-            <GridCard
-              title="Autocorrect Languages"
-              value="2 Keyboards"
-              icon={<AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />}
-            />
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <GridCard title="Your Gender" value="Male" />
-              </div>
-              <div className="flex-1">
-                <GridCard title="Typing Settings" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+/** Arabic, as the stills show it: recipient Male, group chat off, Arabic
+    script, translation copy on into English (which has no scripts, so no Copy
+    Script section). From LanguageData.swift. */
+const ARABIC_OPTIONS: OptionsConfig = {
+  language: 'Arabic',
+  recipientGender: 'Male',
+  groupChat: false,
+  script: {
+    selected: { title: 'الأبجدية العربية', subtitle: 'Al-Abjadiyah Al-ʿArabīyah', rtl: true },
+    all: [
+      { title: 'الأبجدية العربية', subtitle: 'Al-Abjadiyah Al-ʿArabīyah', rtl: true },
+      { title: 'Romanized', subtitle: 'ABC' },
+    ],
+  },
+  copy: { on: true, language: 'English' },
+  keyboards: 2,
+  speakerGender: 'Male',
+};
 
 export default function RewordOptionScreen({
   screen,
@@ -644,7 +406,7 @@ export default function RewordOptionScreen({
           {screen === 'reword' ? (
             <Keyboard />
           ) : (
-            <OptionsPage scroll={SCROLL[screen]} scriptMenuOpen={screen === 'script'} />
+            <ArcatextOptionsPage config={ARABIC_OPTIONS} scroll={SCROLL[screen]} scriptMenuOpen={screen === 'script'} />
           )}
           {/* As measured on device captures: 29pt from the last key row to the
               icons (12pt mb-3 + 17pt), 22pt from the bottom of an open view. */}

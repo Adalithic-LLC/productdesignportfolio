@@ -58,6 +58,13 @@
   --ax-toggle-off: #E9E9EB;
   --ax-battery-ring: rgba(0, 0, 0, 0.4);
   --ax-bezel-ring: transparent;
+  --ax-tool-btn-pressed: #BDBDC1; /* ToolbarButtonPressedColor */
+  --ax-grouped: #FFFFFF;          /* secondarySystemGroupedBackground */
+  --ax-warning-bg: #FFD980;       /* TranslationWarningBgColor */
+  --ax-warning-stroke: #FFB200;   /* TranslationWarningStrokeColor */
+  --ax-shimmer-a: #CBCBCB;        /* LoadingBarComponent gradient */
+  --ax-shimmer-b: #FFFFFF;
+  --ax-shimmer-c: #737373;
 }
 
 .dark {
@@ -106,6 +113,24 @@
   --ax-toggle-off: #39393D;
   --ax-battery-ring: rgba(255, 255, 255, 0.45);
   --ax-bezel-ring: rgba(255, 255, 255, 0.14);
+  --ax-tool-btn-pressed: #333333;
+  --ax-grouped: #1C1C1E;
+  --ax-warning-bg: #664D1A;
+  --ax-warning-stroke: #CC8F00;
+  --ax-shimmer-a: #3A3A3A;
+  --ax-shimmer-b: #5E5E5E;
+  --ax-shimmer-c: #2A2A2A;
+}
+
+/* LoadingBarComponent: the gradient sweeps left to right, 1.5s, forever. */
+@keyframes ax-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.ax-shimmer {
+  background: linear-gradient(90deg, var(--ax-shimmer-a), var(--ax-shimmer-b), var(--ax-shimmer-c), var(--ax-shimmer-a));
+  background-size: 200% 100%;
+  animation: ax-shimmer 1.5s linear infinite;
 }
 
 @layer base {

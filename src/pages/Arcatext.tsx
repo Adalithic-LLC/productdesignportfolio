@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ArcatextKeyboard from '@/components/ArcatextKeyboard';
+import ArcatextDemoRow from '@/components/ArcatextDemoRow';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { CaseStudyStrip } from '@/components/CaseStudyStrip';
@@ -251,11 +251,12 @@ export default function Arcatext() {
       </section>
 
 
-      {/* Interactive keyboard diagram — breaks out to the full page width,
-          clearing the left section-nav rail at >=1600px. */}
+      {/* The keyboard in motion: a phone per view in a sideways row. It breaks
+          out to the full window width so the row can run to the right edge,
+          and starts on the page's content column (see ArcatextDemoRow). */}
       <section className="py-12 sm:py-16">
-        <div className="mx-[calc(50%-50vw)] px-4 sm:px-6 lg:px-8 min-[1600px]:pl-56 min-[1600px]:pr-12">
-          <ArcatextKeyboard />
+        <div className="mx-[calc(50%-50vw)]">
+          <ArcatextDemoRow />
         </div>
       </section>
 
