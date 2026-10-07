@@ -651,7 +651,15 @@
               "desc": "Send the message on its own or with an optional translation copy turned on."
             }
           },
-          "After iterating on the design with feedback from students and teachers, I chose to place the Reword button at the top level of keyboard IA, making it available at any time without an additional tap to expose the toolbar controls.\n\n\nReword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input.\n\nMost translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use.",
+          "After iterating on the design with feedback from students and teachers, I chose to place the Reword button at the top level of keyboard IA, making it available at any time without an additional tap to expose the toolbar controls.",
+          {
+            "type": "paragraph",
+            "text": "Reword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input."
+          },
+          {
+            "type": "paragraph",
+            "text": "Most translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use."
+          },
           {
             "type": "element",
             "variant": "screen-reword",
