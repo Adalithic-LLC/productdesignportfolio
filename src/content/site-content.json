@@ -796,10 +796,10 @@
             "demo": "reword"
           },
           "keyDecision": {
-            "src": "",
+            "src": "/uploads/previousarchitecture-muyhanlf.svg",
             "alt": "",
             "caption": "",
-            "note": ""
+            "note": "Comparison or progression: an early, more complex concept with many options; the simplified Reword interaction; optional context controls moved behind progressive disclosure."
           },
           "solution": {
             "src": "",
@@ -837,6 +837,28 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
+        },
+        "figureSlots": {
+          "keyDecision": {
+            "above": [
+              {
+                "type": "element",
+                "variant": "gallery-paged",
+                "data": {
+                  "rows": "2",
+                  "cols": "2",
+                  "img_r1c1": "/uploads/previousarchitecture-muyjrlzo.svg",
+                  "cap_r1c1": "Does Reword require a custom keyboard? Could it sit on top of the OS keyboard? iOS limitations proved this architecture infeasible.",
+                  "img_r2c1": "/uploads/ex1-muyjtcbj.svg",
+                  "cap_r2c1": "Secondary editing area or direct text field editing?",
+                  "img_r1c2": "/uploads/ex2-muyjxbim.svg",
+                  "img_r2c2": "/uploads/ex3-muyjynm0.svg",
+                  "cap_r1c2": "How are Reword results cycled?",
+                  "cap_r2c2": "How are related Reword options accessed?"
+                }
+              }
+            ]
+          }
         }
       },
       {
