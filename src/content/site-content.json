@@ -627,7 +627,7 @@
           "To keep the core Reword flow lightweight for users and the API, I separated deeper AI support into separate processes. Reword returns the core result quickly, while reverse translation, synonyms, homographs, and gendered word options can be requested when the user needs intent verification, learning depth, or adjustment to their translations.",
           {
             "type": "paragraph",
-            "text": "I tested many LLM models including ChatGPT, Gemini, Llama, Deepseek and on-device nano-LLM models. The best performers were ChatGPT models, so choosing the right option was a question of cost vs quality and range of capability."
+            "text": "I tested many LLM models including ChatGPT, Gemini, Llama, Deepseek and on-device nano-LLM models. The best performers were ChatGPT models, so choosing the right option was a question of cost vs quality and range of capability.\n\n\n---------\nsomething about updating text in the textfield rather than a separate field like google translate. choosing not to offer explanation of the translation/correction. comparing what you want to say against the translation is the primary learning moment - seeing how to say that thing - this kept me true to the goal of fluid texting."
           }
         ],
         "solution": [
