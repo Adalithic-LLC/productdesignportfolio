@@ -687,7 +687,7 @@
             "variant": "screen-reword",
             "data": {
               "screen": "script",
-              "caption": "30/75 supported languages have non-Roman scripts and give users the option to Reword messages natively or non-natively.\n\n\nFor Japanese, we offer 3 options.\n1. \"Standard\" gives a mix of Kanji, Hiragana, and Katakana.\n2. \"No kanji\" gives hiragana and katakana only.\n3. Romanized excludes all native alphabets and renders translations in the roman alphabet (ABC).\n\n\nThis flexibility is a stepping stone to native scripts in the learning process. Modulating how translations are read allows beginner and intermediate students to focus on vocabulary acquisition and sentence structure. It contributes to reduced learning anxiety and student drop-out rates and is supported by linguistics and SLA research.\n\nThis feature was also met with enthusiasm in user testing. The majority of insights converged on script controls providing a helpful stepping stone in early language acquisition phases."
+              "caption": "30/75 supported languages have non-Roman scripts and give users the option to Reword messages natively or non-natively.\n\nFor Japanese, we offer 3 options.\n1. \"Standard\" gives a mix of Kanji, Hiragana, and Katakana.\n2. \"No kanji\" gives hiragana and katakana only.\n3. Romanized excludes all native alphabets and renders translations in the roman alphabet (ABC).\n\nThis flexibility is a stepping stone to native scripts in the learning process. Modulating how translations are read allows beginner and intermediate students to focus on vocabulary acquisition and sentence structure. It contributes to reduced learning anxiety and student drop-out rates and is supported by linguistics and SLA research.\n\nThis feature was also met with enthusiasm in user testing. The majority of insights converged on script controls providing a helpful stepping stone in early language acquisition phases."
             }
           },
           {
@@ -697,6 +697,13 @@
               "screen": "copy",
               "caption": "Translation copy. When it is on, Reword sends the translation with a copy in the chosen language below it, so the recipient can read both and the sender keeps a record of what they meant to say."
             }
+          },
+          {
+            "type": "heading",
+            "variant": "prompt-system",
+            "data": {},
+            "style": "h3",
+            "text": "The Modular Prompt System"
           },
           {
             "type": "element",
