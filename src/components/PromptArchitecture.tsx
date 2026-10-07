@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SAMPLE_INPUT, rewordSample } from './rewordSamples';
 
 /**
  * "The modular prompt system" — an interactive read of how Arcatext assembles
@@ -204,6 +205,110 @@ function cardRows(s: State): Row[] {
   return rows;
 }
 
+/* ---------- the scripted result -------------------------------------------- */
+
+/**
+ * The demo beside the diagram. It runs no model: each language stores the
+ * parts of the sentence that actually vary, and the result is assembled from
+ * whatever the modules currently say. A module that a language does not
+ * inflect for leaves the sentence unchanged, which is the honest answer.
+ */
+
+/** The field names the app parses back out, in the order it reads them. */
+const FIELD_LABEL: Record<string, string> = {
+  native_form: 'Native script',
+  native_form_reword: 'Native script',
+  reword: 'Reword',
+  copy: 'Copy',
+  native_form_copy: 'Native script (copy)',
+};
+
+/** Build the response the app would get back, field for field. */
+function scriptedFields(s: State): Record<string, string> {
+  /* The modules store 'male'/'female'; the samples key on 'm'/'f'. Mapping
+     rather than casting -- a cast here type-checked and then looked up a key
+     that does not exist, which silently dropped every gendered language. */
+  const gender = (v: string): 'm' | 'f' => (v === 'female' ? 'f' : 'm');
+  const speaker = s.on.speaker ? gender(s.speaker) : null;
+  const recipient = s.on.recipient ? gender(s.recipient) : null;
+  const group = s.on.group ? (s.group === 'allFemale' || s.group === 'allMale' ? s.group : 'mixed') : null;
+  const out: Record<string, string> = {};
+
+  const ask = (lang: string, romanized: boolean) =>
+    rewordSample({ lang, speaker, recipient, group, romanized });
+
+  /* The romanize module is a two-step generation, so the native form comes
+     back alongside the romanized one -- exactly the fields the diagram lists. */
+  if (cotActive(s)) {
+    const native = ask(s.lang, false);
+    if (native) out[s.on.copy ? 'native_form_reword' : 'native_form'] = native;
+  }
+  const reword = ask(s.lang, romActive(s));
+  if (reword) out.reword = reword;
+
+  if (s.on.copy) {
+    if (copyCoT(s)) {
+      const nativeCopy = ask(s.copyLang, false);
+      if (nativeCopy) out.native_form_copy = nativeCopy;
+    }
+    const copy = ask(s.copyLang, copyCoT(s));
+    if (copy) out.copy = copy;
+  }
+  return out;
+}
+
+function ScriptedReword({ state }: { state: State }) {
+  const [shown, setShown] = useState(false);
+  const fields = scriptedFields(state);
+  /* Re-running is what makes the modules legible: change one and the result
+     is stale until it is asked for again. */
+  const order = ['native_form', 'native_form_reword', 'reword', 'native_form_copy', 'copy'];
+  const keys = order.filter((k) => fields[k]);
+
+  return (
+    <div className="mb-7 rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <div className="mb-3 flex flex-wrap items-baseline gap-2.5">
+        <h4 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Try it</h4>
+        <span className="text-xs text-muted-foreground/80">
+          Set the modules below, then reword this message.
+        </span>
+      </div>
+
+      <p className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-base leading-relaxed text-foreground">
+        {SAMPLE_INPUT}
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setShown(true)}
+        className="mt-3 inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+      >
+        Reword
+      </button>
+
+      {shown &&
+        (keys.length > 0 ? (
+          <dl className="mt-4 grid gap-2.5">
+            {keys.map((key) => (
+              <div key={key} className="rounded-xl border border-border bg-muted/40 px-3.5 py-3">
+                <dt className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                  {FIELD_LABEL[key] ?? key}
+                </dt>
+                <dd className="text-base leading-relaxed text-foreground" dir="auto">
+                  {fields[key]}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="mt-4 text-sm text-muted-foreground">
+            No scripted result for this combination yet.
+          </p>
+        ))}
+    </div>
+  );
+}
+
 /* ---------- pieces --------------------------------------------------------- */
 
 function Select({
@@ -365,6 +470,8 @@ export function PromptArchitecture() {
           <Marked text={narration(s)} />
         </p>
       </div>
+
+      <ScriptedReword state={s} />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         {/* Left: the module menu, one card per row. */}
