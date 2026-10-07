@@ -183,9 +183,17 @@ function Prose({
   /* Stacked, a run of screen cards would be a tower of phones with a caption
      under each -- the column is wide enough to set the phone and its caption
      side by side instead, which keeps the run to a readable height. */
+  /* Text cards go on one row however many there are; a run of pictures goes
+     two across, because a phone and its caption need the width and a third
+     column would set both too small to read. The `:not()` keeps the two rules
+     from being settled by stylesheet order, which two bare attribute
+     selectors of equal specificity would be. An odd card left alone on the
+     last row spans both columns rather than sitting in half the width, and
+     sets its caption beside the picture so the extra width is not one very
+     long line. */
   const cardRun = stacked
     ? '[&_[data-card-row]]:grid-cols-1 sm:[&_[data-card-row]>figure]:flex-row sm:[&_[data-card-row]>figure]:items-start sm:[&_[data-card-row]>figure]:gap-6 sm:[&_[data-card-row]>figure>figcaption]:flex-1'
-    : 'lg:[&_[data-card-row]]:auto-cols-fr lg:[&_[data-card-row]]:grid-flow-col lg:[&_[data-card-row]]:grid-cols-none';
+    : 'lg:[&_[data-card-row]:not([data-media-row])]:auto-cols-fr lg:[&_[data-card-row]:not([data-media-row])]:grid-flow-col lg:[&_[data-card-row]:not([data-media-row])]:grid-cols-none lg:[&_[data-media-row]]:grid-cols-2 lg:[&_[data-media-row]]:gap-10 lg:[&_[data-media-row]>*:last-child:nth-child(odd)]:col-span-2 lg:[&_[data-media-row]>*:last-child:nth-child(odd)]:flex-row lg:[&_[data-media-row]>*:last-child:nth-child(odd)]:items-start lg:[&_[data-media-row]>*:last-child:nth-child(odd)]:gap-10 lg:[&_[data-media-row]>*:last-child:nth-child(odd)_figure]:flex-row lg:[&_[data-media-row]>*:last-child:nth-child(odd)_figure]:items-start lg:[&_[data-media-row]>*:last-child:nth-child(odd)_figure]:gap-10 lg:[&_[data-media-row]>*:last-child:nth-child(odd)_figcaption]:flex-1';
   return (
     /* The reading measure lives on the blocks, not on this wrapper, so a block
        that wants the room can take the column's full width: a run of cards

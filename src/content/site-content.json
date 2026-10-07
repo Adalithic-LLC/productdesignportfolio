@@ -941,140 +941,6 @@
         }
       },
       {
-        "slug": "translate-received",
-        "title": "Translate Received Messages",
-        "body": "Quick translation for the other side of the chat, without leaving the app.",
-        "whatItIs": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "What It Is"
-          },
-          "Translate Received Messages helps users understand the other side of a conversation without leaving the app. Instead of copying a message into a separate translator, users can bring incoming text into Arcatext, translate it, preserve context, and reply from the same communication surface."
-        ],
-        "whyItMattered": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Why It Matters"
-          },
-          "Arcatext could not only support what users wanted to say. Real conversations are two-sided, and learners also need help understanding what they receive.",
-          "Without that support, users would still have to leave the conversation, open another translation tool, interpret the message, then return to reply — recreating the same fragmented workflow Arcatext was designed to remove."
-        ],
-        "problem": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Challenge"
-          },
-          "The challenge was to make incoming-message translation feel fast and obvious despite iOS keyboard limitations.",
-          "A keyboard cannot simply read messages from the host app, so Arcatext needed a practical interaction that worked within platform restrictions without making the user feel like they were performing a technical workaround."
-        ],
-        "constraints": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Key Constraints"
-          },
-          "Privacy and iOS sandboxing limited direct access to conversation content, so the experience had to rely on user-initiated actions such as copying and pasting. The interaction also needed to preserve enough conversational context to make the translation useful without adding unnecessary steps."
-        ],
-        "keyDecision": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Exploration & Key Decisions"
-          },
-          "The key decision was to treat received-message translation as part of the same keyboard system rather than redirecting users into a separate Arcatext screen.",
-          "That kept comprehension and response closer together: users could translate what they received, understand it, then immediately continue writing their reply.",
-          "I also explored ways to preserve translated context across exchanges so users would not have to repeatedly reconstruct the conversation."
-        ],
-        "solution": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Solution"
-          },
-          "The final interaction centers on a lightweight Paste to Translate action.",
-          "After copying an incoming message, the user can translate it from the keyboard, understand the meaning, and move directly into composing a response. This extends Arcatext from a writing assistant into a full conversational support layer."
-        ],
-        "tradeoff": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Tradeoffs & Risks"
-          },
-          "Copying is not as seamless as automatically reading the conversation, but it respects platform boundaries and keeps the user in control of what content Arcatext processes.",
-          "The design therefore prioritized a predictable, privacy-conscious interaction over a more automated experience that iOS did not safely or reliably support."
-        ],
-        "validation": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Validation / Outcome"
-          },
-          "This feature closed an important gap in the original keyboard concept: Arcatext could now support both production and comprehension.",
-          "For launch, useful signals would include Paste-to-Translate usage, repeat use during the same conversation, time from incoming message to reply, and whether users return to external translation tools less often."
-        ],
-        "impact": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Impact on the Larger Product"
-          },
-          "Translate Received Messages expanded Arcatext from “help me write this” to “help me participate in this conversation.”",
-          "That distinction matters strategically: the product is not only a translation keyboard, but a communication layer that supports both sides of multilingual interaction."
-        ],
-        "figures": {
-          "whatItIs": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Hero sequence: an incoming message, the user bringing it into Arcatext, and the translated result."
-          },
-          "keyDecision": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Before/after workflow. Before: Receive → Copy → Leave app → Open translator → Paste → Translate → Return → Reply. Arcatext: Receive → Copy → Translate in keyboard → Reply. Probably the strongest visual in the case study."
-          },
-          "solution": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Main flow, 3–4 screens: Copy received message → Paste to Translate → Understand → Reply. If the “send a copy” concept is available, show it as a secondary interaction for preserving translated context."
-          },
-          "tradeoff": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "validation": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Usage-flow prototypes or usability feedback showing people switching between apps. Otherwise keep this section text-only."
-          },
-          "impact": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Optional closing visual — a simple two-sided conversation diagram: Incoming → Understand → Reply → Reword → Check → Send. Ties this case study back into the larger Arcatext product system."
-          }
-        },
-        "headings": {
-          "whatItIsTitle": "What it is",
-          "whyItMatteredTitle": "WHY IT MATTERS",
-          "problemTitle": "The challenge",
-          "constraintsTitle": "Key constraints",
-          "keyDecisionTitle": "Exploration & key decisions",
-          "solutionTitle": "The solution",
-          "tradeoffTitle": "Tradeoffs & risks",
-          "validationTitle": "Validation / outcome",
-          "impactTitle": "Impact on the larger product"
-        }
-      },
-      {
         "slug": "study-guide",
         "title": "Study Guide",
         "body": "A personalized vocabulary list derived from user translations.",
@@ -1193,141 +1059,6 @@
             "alt": "",
             "caption": "",
             "note": "Optional closing visual — Conversation → Translation → Vocabulary → Review → Future practice. Ties Study Guide directly into the long-term personalized learning system."
-          }
-        },
-        "headings": {
-          "whatItIsTitle": "What it is",
-          "whyItMatteredTitle": "WHY IT MATTERS",
-          "problemTitle": "The challenge",
-          "constraintsTitle": "Key constraints",
-          "keyDecisionTitle": "Exploration & key decisions",
-          "solutionTitle": "The solution",
-          "tradeoffTitle": "Tradeoffs & risks",
-          "validationTitle": "Validation / outcome",
-          "impactTitle": "Impact on the larger product"
-        }
-      },
-      {
-        "slug": "glide-calibration",
-        "title": "Glide Calibration",
-        "body": "An interactive calibration for personalizing glide typing.",
-        "whatItIs": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "What It Is"
-          },
-          "Glide Calibration is an interactive setup experience that personalizes swipe typing to the user’s movement patterns. Instead of relying on one generic glide model, Arcatext uses calibration data to better interpret how each person moves across the keyboard."
-        ],
-        "whyItMattered": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Why It Matters"
-          },
-          "Arcatext had to earn a place as a daily-use keyboard, not just as a translation tool. If glide typing felt inaccurate or unpredictable, users would fall back to their default keyboard regardless of the value of Reword or Check.",
-          "Calibration became a way to improve typing quality at the individual level rather than treating all users as if they glide the same way."
-        ],
-        "problem": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Challenge"
-          },
-          "The challenge was to collect useful personalization data without turning setup into a chore.",
-          "The calibration had to be short, understandable, and engaging enough that users would complete it, while still capturing enough signal to meaningfully improve glide interpretation."
-        ],
-        "constraints": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Key Constraints"
-          },
-          "The experience had to work within limited keyboard space, avoid excessive setup time, and produce data that could actually be translated into better typing behavior.",
-          "It also had to explain why calibration was worth doing without overwhelming users with technical detail."
-        ],
-        "keyDecision": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Exploration & Key Decisions"
-          },
-          "The key decision was to make calibration interactive and task-based rather than asking users to configure technical settings manually.",
-          "Users perform representative glide gestures, and Arcatext uses those movements to build a more personalized typing profile."
-        ],
-        "solution": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Solution"
-          },
-          "The final experience guides users through a short set of glide exercises, captures their movement patterns, and applies that information to improve future swipe interpretation.",
-          "The calibration is designed to feel like a quick setup step rather than a training session."
-        ],
-        "tradeoff": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Tradeoffs & Risks"
-          },
-          "More calibration data could improve personalization, but a longer setup increases abandonment risk. The experience therefore had to balance model quality with completion time.",
-          "There was also a product tradeoff between automatic adaptation and explicit calibration. Calibration creates a stronger initial signal, while ongoing personalization can continue refining the typing profile over time."
-        ],
-        "validation": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Validation / Outcome"
-          },
-          "Glide Calibration expanded Arcatext’s scope from translation into the quality of the underlying keyboard itself.",
-          "The feature supports the broader adoption requirement that Arcatext must feel accurate and forgiving enough to compete with default keyboards in everyday use.",
-          "Useful validation signals would include calibration completion rate, glide accuracy before vs. after calibration, correction frequency, and repeat use of glide typing."
-        ],
-        "impact": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Impact on the Larger Product"
-          },
-          "Glide Calibration reinforced a broader product principle: keyboard quality is part of the core value proposition, not infrastructure underneath it.",
-          "Improving translation alone would not be enough if users did not trust the keyboard they were typing on. Calibration became one part of a larger personalization system alongside autocorrect tuning, typing profiles, and admin tools for improving keyboard performance."
-        ],
-        "figures": {
-          "whatItIs": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Hero screenshot or short sequence showing the calibration exercise and the personalized result."
-          },
-          "keyDecision": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Prompted word → user glide path → captured movement pattern → personalized typing profile. The strongest explanatory diagram for the feature."
-          },
-          "solution": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": "Main sequence: Start calibration → glide sample words → progress feedback → completion / personalized state."
-          },
-          "tradeoff": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "validation": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "impact": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
           }
         },
         "headings": {
@@ -1473,6 +1204,123 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
+        }
+      },
+      {
+        "slug": "guided-chats",
+        "title": "Guided Chats",
+        "body": "Preset, branching conversations the user types their way through — practice that costs no tokens.",
+        "whatItIs": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "What It Is"
+          }
+        ],
+        "whyItMattered": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Why It Matters"
+          }
+        ],
+        "problem": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "The Challenge"
+          }
+        ],
+        "constraints": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Key Constraints"
+          }
+        ],
+        "keyDecision": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
+          }
+        ],
+        "solution": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "The Solution"
+          }
+        ],
+        "tradeoff": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
+          }
+        ],
+        "validation": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Validation / Outcome"
+          }
+        ],
+        "impact": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "Impact on the Larger Product"
+          }
+        ],
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          }
+        },
+        "headings": {
+          "whatItIsTitle": "What It Is",
+          "whyItMatteredTitle": "Why It Matters",
+          "problemTitle": "The Challenge",
+          "constraintsTitle": "Key Constraints",
+          "keyDecisionTitle": "Exploration & Key Decisions",
+          "solutionTitle": "The Solution",
+          "tradeoffTitle": "Tradeoffs & Risks",
+          "validationTitle": "Validation / Outcome",
+          "impactTitle": "Impact on the Larger Product"
         }
       }
     ],

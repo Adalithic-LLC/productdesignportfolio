@@ -11,7 +11,7 @@ import {
   type InsertTool,
   type ProseItem,
 } from './proseBlocks';
-import { ElementPreview, ElementView, getElement, makeElementBlock } from './elements';
+import { ElementPreview, ElementView, getElement, isMediaBlock, makeElementBlock } from './elements';
 
 /** Resolve a nested value out of the content store using a dot path. */
 function getByPath(obj: unknown, path: string): unknown {
@@ -141,6 +141,10 @@ export function EditableBlocks({
                  study pages put theirs on one row -- without this default
                  having to know about them. */
               data-card-row
+              /* A run whose cards are all pictures is marked, so a page can
+                 lay it out by the room a picture needs rather than by the
+                 column count that suits text cards. */
+              data-media-row={run.every((idx) => isMediaBlock(items[idx])) || undefined}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               {run.map((idx) => (
