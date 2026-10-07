@@ -22,21 +22,29 @@ type Lang = {
   roman?: string;
   /** Serbian writes natively in both Cyrillic and Latin, so no chain-of-thought step. */
   nativeLatin?: boolean;
+  /* Which context modules this language actually takes, from the app's own
+     LanguageData (hasSpeakerGender / hasRecipientGender / hasGroupChat). A
+     module a language does not mark is offered nowhere -- not in the prompt,
+     not in the message, not in the result -- the same way Reword Options only
+     shows the sections a language supports. */
+  speakerGender?: boolean;
+  recipientGender?: boolean;
+  groupChat?: boolean;
 };
 
 const LANGS: Record<string, Lang> = {
   en: { name: 'English' },
-  es: { name: 'Spanish' },
-  fr: { name: 'French' },
-  de: { name: 'German' },
-  ja: { name: 'Japanese', nonLatin: true, script: 'Japanese (kanji + kana)', roman: 'Hepburn rōmaji' },
+  es: { name: 'Spanish', speakerGender: true, recipientGender: true, groupChat: true },
+  fr: { name: 'French', speakerGender: true, recipientGender: true, groupChat: true },
+  de: { name: 'German', recipientGender: true, groupChat: true },
+  ja: { name: 'Japanese', nonLatin: true, script: 'Japanese (kanji + kana)', roman: 'Hepburn rōmaji', speakerGender: true },
   ko: { name: 'Korean', nonLatin: true, script: 'Hangul', roman: 'Revised Romanization' },
   yue: { name: 'Cantonese', nonLatin: true, script: 'Traditional Chinese', roman: 'Jyutping' },
-  ru: { name: 'Russian', nonLatin: true, script: 'Cyrillic', roman: 'Latin transliteration' },
-  ar: { name: 'Arabic', nonLatin: true, script: 'Arabic script', roman: 'romanized Arabic' },
-  hi: { name: 'Hindi', nonLatin: true, script: 'Devanagari', roman: 'IAST' },
-  th: { name: 'Thai', nonLatin: true, script: 'Thai script', roman: 'RTGS' },
-  sr: { name: 'Serbian', nonLatin: true, script: 'Cyrillic', roman: 'Serbian Latin (Gaj’s)', nativeLatin: true },
+  ru: { name: 'Russian', nonLatin: true, script: 'Cyrillic', roman: 'Latin transliteration', speakerGender: true, recipientGender: true, groupChat: true },
+  ar: { name: 'Arabic', nonLatin: true, script: 'Arabic script', roman: 'romanized Arabic', speakerGender: true, recipientGender: true, groupChat: true },
+  hi: { name: 'Hindi', nonLatin: true, script: 'Devanagari', roman: 'IAST', recipientGender: true, groupChat: true },
+  th: { name: 'Thai', nonLatin: true, script: 'Thai script', roman: 'RTGS', speakerGender: true },
+  sr: { name: 'Serbian', nonLatin: true, script: 'Cyrillic', roman: 'Serbian Latin (Gaj’s)', nativeLatin: true, recipientGender: true, groupChat: true },
 };
 
 const LANG_ORDER = ['en', 'es', 'fr', 'de', 'ja', 'ko', 'yue', 'ru', 'ar', 'hi', 'th', 'sr'];
@@ -98,6 +106,14 @@ function Marked({ text, jsonField = false }: { text: string; jsonField?: boolean
 /* ---------- derivations ---------------------------------------------------- */
 
 const romActive = (s: State) => s.on.romanize && !!LANGS[s.lang].nonLatin;
+/* A context module counts only where the target language marks it. Russian
+   inflects for both genders, Japanese only for the speaker's, Korean for
+   neither -- so switching to Korean takes those modules off the board rather
+   than leaving them on, changing the prompt, and changing nothing in the
+   result. */
+const speakerActive = (s: State) => s.on.speaker && !!LANGS[s.lang].speakerGender;
+const recipientActive = (s: State) => s.on.recipient && !!LANGS[s.lang].recipientGender;
+const groupActive = (s: State) => s.on.group && !!LANGS[s.lang].groupChat;
 const cotActive = (s: State) => romActive(s) && !LANGS[s.lang].nativeLatin;
 const copyCoT = (s: State) => {
   const c = LANGS[s.copyLang];
@@ -112,11 +128,13 @@ function narration(s: State) {
   if (romActive(s)) lead += `, and romanize it («hl»${L.roman}«/hl»)`;
   parts.push(lead + '.');
 
-  if (s.on.speaker && s.on.recipient) parts.push(`I'm a «hl»${s.speaker}«/hl» talking to a «hl»${s.recipient}«/hl».`);
-  else if (s.on.speaker) parts.push(`I'm a «hl»${s.speaker}«/hl».`);
-  else if (s.on.recipient) parts.push(`I'm talking to a «hl»${s.recipient}«/hl».`);
+  const sp = speakerActive(s);
+  const rc = recipientActive(s);
+  if (sp && rc) parts.push(`I'm a «hl»${s.speaker}«/hl» talking to a «hl»${s.recipient}«/hl».`);
+  else if (sp) parts.push(`I'm a «hl»${s.speaker}«/hl».`);
+  else if (rc) parts.push(`I'm talking to a «hl»${s.recipient}«/hl».`);
 
-  if (s.on.group) {
+  if (groupActive(s)) {
     const g = s.group === 'mixed' ? 'a mix of men and women' : s.group === 'allMale' ? 'all men' : 'all women';
     parts.push(`It's a group chat — «hl»${g}«/hl».`);
   }
@@ -160,21 +178,21 @@ function cardRows(s: State): Row[] {
     if (cotActive(s)) t += `\nFirst emit «fld»native_form«/fld» in ${L.script}, THEN transliterate.`;
     rows.push({ tone: 'frag', kind: 'module', title: 'Romanize', text: t });
   }
-  if (s.on.speaker)
+  if (speakerActive(s))
     rows.push({
       tone: 'frag',
       kind: 'module',
       title: 'Speaker gender',
       text: `Speaker = ${s.speaker}.  «cmt»// 1st-person agreement«/cmt»`,
     });
-  if (s.on.recipient)
+  if (recipientActive(s))
     rows.push({
       tone: 'frag',
       kind: 'module',
       title: 'Recipient gender',
       text: `Recipient = ${s.recipient}.  «cmt»// 2nd-person + gendered nouns«/cmt»`,
     });
-  if (s.on.group)
+  if (groupActive(s))
     rows.push({
       tone: 'frag',
       kind: 'module',
@@ -231,9 +249,9 @@ const gender = (v: string): 'm' | 'f' => (v === 'female' ? 'f' : 'm');
 /** Which clauses the current modules call for. */
 function selections(s: State) {
   return {
-    speaker: s.on.speaker ? gender(s.speaker) : null,
-    recipient: s.on.recipient ? gender(s.recipient) : null,
-    group: s.on.group
+    speaker: speakerActive(s) ? gender(s.speaker) : null,
+    recipient: recipientActive(s) ? gender(s.recipient) : null,
+    group: groupActive(s)
       ? ((s.group === 'allFemale' || s.group === 'allMale' ? s.group : 'mixed') as
           | 'allMale'
           | 'allFemale'
@@ -532,11 +550,15 @@ export function PromptArchitecture() {
 
               <ModuleCard
                 name="Speaker gender"
-                desc="Your gender, so first-person wording agrees."
-                state={s.on.speaker ? 'on' : 'off'}
+                desc={
+                  LANGS[s.lang].speakerGender
+                    ? 'Your gender, so first-person wording agrees.'
+                    : `Not needed — ${LANGS[s.lang].name} does not mark the speaker's gender.`
+                }
+                state={!LANGS[s.lang].speakerGender ? 'na' : s.on.speaker ? 'on' : 'off'}
                 onToggle={() => toggle('speaker')}
               >
-                {s.on.speaker && (
+                {speakerActive(s) && (
                   <Select
                     label="Speaker gender"
                     value={s.speaker}
@@ -548,11 +570,15 @@ export function PromptArchitecture() {
 
               <ModuleCard
                 name="Recipient gender"
-                desc="The reader's gender, for second-person wording."
-                state={s.on.recipient ? 'on' : 'off'}
+                desc={
+                  LANGS[s.lang].recipientGender
+                    ? "The reader's gender, for second-person wording."
+                    : `Not needed — ${LANGS[s.lang].name} does not mark the reader's gender.`
+                }
+                state={!LANGS[s.lang].recipientGender ? 'na' : s.on.recipient ? 'on' : 'off'}
                 onToggle={() => toggle('recipient')}
               >
-                {s.on.recipient && (
+                {recipientActive(s) && (
                   <Select
                     label="Recipient gender"
                     value={s.recipient}
@@ -564,11 +590,15 @@ export function PromptArchitecture() {
 
               <ModuleCard
                 name="Group chat"
-                desc="Handle a plural “you” when writing to a group."
-                state={s.on.group ? 'on' : 'off'}
+                desc={
+                  LANGS[s.lang].groupChat
+                    ? 'Handle a plural “you” when writing to a group.'
+                    : `Not needed — ${LANGS[s.lang].name} does not mark a group's gender.`
+                }
+                state={!LANGS[s.lang].groupChat ? 'na' : s.on.group ? 'on' : 'off'}
                 onToggle={() => toggle('group')}
               >
-                {s.on.group && (
+                {groupActive(s) && (
                   <Select label="Group makeup" value={s.group} options={GROUP_OPTS} onChange={(v) => set({ group: v })} />
                 )}
               </ModuleCard>

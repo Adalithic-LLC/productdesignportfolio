@@ -44,8 +44,8 @@ interface Sample {
 export const INPUT_CLAUSES = {
   base: 'The lecture ran long.',
   speaker: "I'm completely exhausted.",
-  recipient: 'Are you free to come pick me up?',
-  group: 'Are you all free to come pick me up?',
+  recipient: 'Are you the one coming to get me?',
+  group: 'Are you the ones coming to get me?',
 };
 
 const SAMPLES: Record<string, Sample> = {
@@ -58,28 +58,46 @@ const SAMPLES: Record<string, Sample> = {
   es: {
     base: 'La clase se alargó.',
     speaker: { m: 'Estoy agotado.', f: 'Estoy agotada.' },
-    recipient: '¿Estás libre para venir a recogerme?',
-    group: '¿Están libres para venir a recogerme?',
+    recipient: { m: '¿Eres tú el que viene a recogerme?', f: '¿Eres tú la que viene a recogerme?' },
+    group: {
+      allMale: '¿Son ustedes los que vienen a recogerme?',
+      allFemale: '¿Son ustedes las que vienen a recogerme?',
+      mixed: '¿Son ustedes los que vienen a recogerme?',
+    },
   },
   fr: {
     base: "Le cours s'est éternisé.",
     speaker: { m: 'Je suis épuisé.', f: 'Je suis épuisée.' },
-    recipient: 'Tu es libre pour venir me chercher ?',
-    group: 'Vous êtes libres pour venir me chercher ?',
+    recipient: {
+      m: 'Tu es celui qui vient me chercher ?',
+      f: 'Tu es celle qui vient me chercher ?',
+    },
+    group: {
+      allMale: 'Vous êtes ceux qui venez me chercher ?',
+      allFemale: 'Vous êtes celles qui venez me chercher ?',
+      mixed: 'Vous êtes ceux qui venez me chercher ?',
+    },
   },
   de: {
     base: 'Die Vorlesung hat ewig gedauert.',
     speaker: 'Ich bin total erschöpft.',
-    recipient: 'Hast du Zeit, mich abzuholen?',
-    group: 'Habt ihr Zeit, mich abzuholen?',
+    recipient: {
+      m: 'Bist du derjenige, der mich abholt?',
+      f: 'Bist du diejenige, die mich abholt?',
+    },
+    /* German does not gender a plural "you", so the group's makeup changes
+       nothing here -- one string is the honest answer. */
+    group: 'Seid ihr diejenigen, die mich abholen?',
   },
   ja: {
     base: '講義が長引いた。',
-    speaker: 'もうくたくた。',
+    /* Japanese marks the speaker in the first-person pronoun, not in any
+       agreement, which is the only gender the app claims for it. */
+    speaker: { m: '僕はもうくたくただ。', f: '私はもうくたくた。' },
     recipient: '迎えに来られる？',
     group: 'だれか迎えに来られる？',
     baseRoman: 'Kōgi ga nagabiita.',
-    speakerRoman: 'Mō kutakuta.',
+    speakerRoman: { m: 'Boku wa mō kutakuta da.', f: 'Watashi wa mō kutakuta.' },
     recipientRoman: 'Mukae ni korareru?',
     groupRoman: 'Dareka mukae ni korareru?',
   },
@@ -106,52 +124,50 @@ const SAMPLES: Record<string, Sample> = {
   ru: {
     base: 'Лекция затянулась.',
     speaker: { m: 'Я совершенно вымотался.', f: 'Я совершенно вымоталась.' },
-    recipient: { m: 'Ты свободен, чтобы забрать меня?', f: 'Ты свободна, чтобы забрать меня?' },
-    group: 'Вы свободны, чтобы забрать меня?',
+    recipient: { m: 'Ты тот, кто меня заберёт?', f: 'Ты та, кто меня заберёт?' },
+    /* Russian does not gender a plural "you" here. */
+    group: 'Вы те, кто меня заберёт?',
     baseRoman: 'Lektsiya zatyanulas.',
     speakerRoman: { m: 'Ya sovershenno vymotalsya.', f: 'Ya sovershenno vymotalas.' },
-    recipientRoman: {
-      m: 'Ty svoboden, chtoby zabrat menya?',
-      f: 'Ty svobodna, chtoby zabrat menya?',
-    },
-    groupRoman: 'Vy svobodny, chtoby zabrat menya?',
+    recipientRoman: { m: 'Ty tot, kto menya zaberyot?', f: 'Ty ta, kto menya zaberyot?' },
+    groupRoman: 'Vy te, kto menya zaberyot?',
   },
   ar: {
     base: 'المحاضرة طالت.',
     speaker: { m: 'أنا منهك تماماً.', f: 'أنا منهكة تماماً.' },
-    recipient: { m: 'هل أنتَ متفرّغ لتقلّني؟', f: 'هل أنتِ متفرّغة لتقلّيني؟' },
+    recipient: { m: 'هل أنتَ من سيأتي ليقلّني؟', f: 'هل أنتِ من ستأتي لتقلّني؟' },
     group: {
-      allMale: 'هل أنتم متفرّغون لتقلّوني؟',
-      allFemale: 'هل أنتنّ متفرّغات لتقلّنني؟',
-      mixed: 'هل أنتم متفرّغون لتقلّوني؟',
+      allMale: 'هل أنتم من ستأتون لتقلّوني؟',
+      allFemale: 'هل أنتنّ من ستأتين لتقلّنني؟',
+      mixed: 'هل أنتم من ستأتون لتقلّوني؟',
     },
     baseRoman: 'Al-muḥāḍara ṭālat.',
     speakerRoman: { m: 'Ana munhak tamāman.', f: 'Ana munhaka tamāman.' },
     recipientRoman: {
-      m: 'Hal anta mutafarrigh li-tuqillani?',
-      f: 'Hal anti mutafarrigha li-tuqillini?',
+      m: 'Hal anta man sayaʾti li-yuqillani?',
+      f: 'Hal anti man sataʾti li-tuqillani?',
     },
     groupRoman: {
-      allMale: 'Hal antum mutafarrighūn li-tuqilluni?',
-      allFemale: 'Hal antunna mutafarrighāt li-tuqilnani?',
-      mixed: 'Hal antum mutafarrighūn li-tuqilluni?',
+      allMale: 'Hal antum man sataʾtūn li-tuqilluni?',
+      allFemale: 'Hal antunna man sataʾtīna li-tuqilnani?',
+      mixed: 'Hal antum man sataʾtūn li-tuqilluni?',
     },
   },
   hi: {
     base: 'लेक्चर लंबा चला।',
-    speaker: { m: 'मैं पूरी तरह थक गया हूँ।', f: 'मैं पूरी तरह थक गई हूँ।' },
+    speaker: 'मैं पूरी तरह थक गया हूँ।',
     recipient: {
-      m: 'क्या तुम मुझे लेने आ सकते हो?',
-      f: 'क्या तुम मुझे लेने आ सकती हो?',
+      m: 'क्या तुम वही हो जो मुझे लेने आओगे?',
+      f: 'क्या तुम वही हो जो मुझे लेने आओगी?',
     },
-    group: 'क्या तुम लोग मुझे लेने आ सकते हो?',
+    group: 'क्या तुम लोग मुझे लेने आओगे?',
     baseRoman: 'Lekchar lambā chalā.',
-    speakerRoman: { m: 'Maiṁ pūrī tarah thak gayā hūṁ.', f: 'Maiṁ pūrī tarah thak gaī hūṁ.' },
+    speakerRoman: 'Maiṁ pūrī tarah thak gayā hūṁ.',
     recipientRoman: {
-      m: 'Kyā tum mujhe lene ā sakte ho?',
-      f: 'Kyā tum mujhe lene ā saktī ho?',
+      m: 'Kyā tum vahī ho jo mujhe lene āoge?',
+      f: 'Kyā tum vahī ho jo mujhe lene āogī?',
     },
-    groupRoman: 'Kyā tum log mujhe lene ā sakte ho?',
+    groupRoman: 'Kyā tum log mujhe lene āoge?',
   },
   th: {
     /* Thai marks the speaker, in both the pronoun and the polite particle, and
@@ -167,19 +183,19 @@ const SAMPLES: Record<string, Sample> = {
   },
   sr: {
     base: 'Предавање се одужило.',
-    speaker: { m: 'Потпуно сам исцрпљен.', f: 'Потпуно сам исцрпљена.' },
+    speaker: 'Потпуно сам исцрпљен.',
     recipient: {
-      m: 'Јеси ли слободан да дођеш по мене?',
-      f: 'Јеси ли слободна да дођеш по мене?',
+      m: 'Јеси ли ти тај који долази по мене?',
+      f: 'Јеси ли ти та која долази по мене?',
     },
-    group: 'Јесте ли слободни да дођете по мене?',
+    group: 'Јесте ли ви ти који долазе по мене?',
     baseRoman: 'Predavanje se odužilo.',
-    speakerRoman: { m: 'Potpuno sam iscrpljen.', f: 'Potpuno sam iscrpljena.' },
+    speakerRoman: 'Potpuno sam iscrpljen.',
     recipientRoman: {
-      m: 'Jesi li slobodan da dođeš po mene?',
-      f: 'Jesi li slobodna da dođeš po mene?',
+      m: 'Jesi li ti taj koji dolazi po mene?',
+      f: 'Jesi li ti ta koja dolazi po mene?',
     },
-    groupRoman: 'Jeste li slobodni da dođete po mene?',
+    groupRoman: 'Jeste li vi ti koji dolaze po mene?',
   },
 };
 
