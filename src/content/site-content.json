@@ -435,8 +435,8 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHAT IT IS"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Reword is how users get natural translations and corrections for messages they type with one tap. It transforms user messages no matter what mix of languages or script the user writes and supports contextual controls, like gender, so users can shape the output to their needs instead of accepting a single generic translation.",
           "This flexibility enables learners of any level to utilize Reword as a learning tool."
@@ -531,8 +531,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The main challenge of the Reword feature was managing the UX of translation options & creating a scalable and modular prompt system.",
           {
@@ -548,8 +548,8 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           {
             "type": "element",
@@ -610,8 +610,8 @@
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The most important decision was to design Reword as one primary action that could process any input. This design allowed me to consolidate text translation & correction and avoided the need to specify input language.",
           "That reduced cognitive load and matched the user's mental models: \"translate this\" and “help me say this better.” The responsibility of the system is to understand what it's being given and what output the user is asking for.",
@@ -620,8 +620,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "THE SOLUTION"
+            "style": "h2",
+            "text": "The Solution"
           },
           "The final Reword experience follows a simple pattern:",
           {
@@ -703,8 +703,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "More context can improve output quality, but asking for too much information would slow the user down. I treated context as optional and progressively disclosed rather than mandatory.",
           "LLMs also created a tradeoff between flexibility and predictability that had to be balanced. Their contextual reasoning enabled richer language support than NMT, but output variability meant prompts and response structure had to be controlled.",
@@ -713,8 +713,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "Early prototype testing helped validate that users understood the value of writing naturally inside their existing conversations rather than switching to a separate translation tool. Building the feature in code then exposed implementation constraints that shaped the final interaction, including IA, LLM response structure & latency, and language-specific controls.",
           "At launch, I'm measuring signals such as Reword completion rate, time-to-translation, regenerate/edit behavior, repeat keyboard usage, and send-after-Reword behavior. These analytics will help me understand various aspects of Reword utilization."
@@ -722,8 +722,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Reword established the core interaction model for Arcatext: keep communication fast, then reveal more learning depth when the user wants it.",
           "That principle influenced the rest of the product, including reverse translation, clarification tools, gender and script controls, Study guide, and the broader strategy of turning translation from a single output into an interactive learning experience."
@@ -787,16 +787,16 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "What it is"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Check is Arcatext's pre-send verification and analysis experience. It helps users confirm that a Reworded message still matches their intended meaning, then lets them go deeper into naturalness, alternate phrasing, clarification, and learning."
         ],
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "A translation can look fluent while still changing tone, intent, formality, gender, or nuance. That creates a trust problem: users may send something that appears correct without actually knowing whether it says what they meant.",
           "Check addresses that gap by giving users a way to inspect AI output before sending instead of treating translation as a final answer."
@@ -804,8 +804,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The challenge was to increase confidence without making users second-guess every translation.",
           "If Check became too heavy, critical, or academic, it could slow texting, undermine trust in Reword, and create unnecessary correction anxiety. The experience had to support deeper analysis when it mattered while keeping the default communication flow lightweight."
@@ -813,8 +813,8 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           "Check had to balance trust, latency, token cost, AI variability, and limited keyboard space. Deeper analysis could improve confidence and learning, but running every analysis automatically would make the experience slower and more expensive.",
           "That led me to separate Check-related API calls from the default Reword response and make deeper analysis available on demand."
@@ -822,8 +822,8 @@
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The most important decision was to make Check optional rather than mandatory.",
           "For low-risk messages, users could Reword and send immediately. For higher-stakes messages, Check became a deeper layer where users could verify intent, inspect naturalness, clarify ambiguity, and understand why a translation worked.",
@@ -832,8 +832,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The solution"
+            "style": "h2",
+            "text": "The Solution"
           },
           "The core Check experience starts with intent verification: users can compare the translated output against a reverse translation to confirm that meaning was preserved.",
           "From there, they can go deeper when needed through clarification, alternate wording, naturalness feedback, and teacher-style explanations. The result is a layered experience: fast verification first, deeper learning second."
@@ -841,8 +841,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "More analysis can increase trust, but too much analysis can also make the product feel slow or make users doubt otherwise acceptable translations. I therefore kept the first layer of Check focused on confidence and progressively disclosed deeper feedback.",
           "There was also a cost tradeoff: reverse translation, naturalness analysis, clarification, and explanations could require additional model calls. Separating these from the default Reword response reduced unnecessary latency and token usage."
@@ -850,8 +850,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "Check became the trust layer between AI generation and real-world communication.",
           "Prototype feedback and product reasoning reinforced the need for users to verify meaning before sending, especially for emotional, casual, romantic, or formal messages. For launch, I planned to measure Check usage, send-after-check rate, edit/regenerate behavior, and whether users returned to deeper analysis tools over time."
@@ -859,8 +859,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Check expanded Arcatext from a translation tool into a learning system.",
           "It established a broader product principle: AI output should be inspectable, explainable, and controllable. That principle informed clarification tools, naturalness feedback, teacher-style explanations, and future learning insights."
@@ -922,16 +922,16 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "What it is"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Translate Received Messages helps users understand the other side of a conversation without leaving the app. Instead of copying a message into a separate translator, users can bring incoming text into Arcatext, translate it, preserve context, and reply from the same communication surface."
         ],
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "Arcatext could not only support what users wanted to say. Real conversations are two-sided, and learners also need help understanding what they receive.",
           "Without that support, users would still have to leave the conversation, open another translation tool, interpret the message, then return to reply — recreating the same fragmented workflow Arcatext was designed to remove."
@@ -939,8 +939,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The challenge was to make incoming-message translation feel fast and obvious despite iOS keyboard limitations.",
           "A keyboard cannot simply read messages from the host app, so Arcatext needed a practical interaction that worked within platform restrictions without making the user feel like they were performing a technical workaround."
@@ -948,16 +948,16 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           "Privacy and iOS sandboxing limited direct access to conversation content, so the experience had to rely on user-initiated actions such as copying and pasting. The interaction also needed to preserve enough conversational context to make the translation useful without adding unnecessary steps."
         ],
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The key decision was to treat received-message translation as part of the same keyboard system rather than redirecting users into a separate Arcatext screen.",
           "That kept comprehension and response closer together: users could translate what they received, understand it, then immediately continue writing their reply.",
@@ -966,8 +966,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The solution"
+            "style": "h2",
+            "text": "The Solution"
           },
           "The final interaction centers on a lightweight Paste to Translate action.",
           "After copying an incoming message, the user can translate it from the keyboard, understand the meaning, and move directly into composing a response. This extends Arcatext from a writing assistant into a full conversational support layer."
@@ -975,8 +975,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "Copying is not as seamless as automatically reading the conversation, but it respects platform boundaries and keeps the user in control of what content Arcatext processes.",
           "The design therefore prioritized a predictable, privacy-conscious interaction over a more automated experience that iOS did not safely or reliably support."
@@ -984,8 +984,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "This feature closed an important gap in the original keyboard concept: Arcatext could now support both production and comprehension.",
           "For launch, useful signals would include Paste-to-Translate usage, repeat use during the same conversation, time from incoming message to reply, and whether users return to external translation tools less often."
@@ -993,8 +993,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Translate Received Messages expanded Arcatext from “help me write this” to “help me participate in this conversation.”",
           "That distinction matters strategically: the product is not only a translation keyboard, but a communication layer that supports both sides of multilingual interaction."
@@ -1056,16 +1056,16 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "What it is"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Study Guide turns the language users actually translate into a personalized vocabulary list. Instead of studying a generic word set, users can review words and phrases that came directly from their own conversations and communication needs."
         ],
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "One of Arcatext’s core ideas is that real conversations can become the curriculum. But that learning value would be lost if useful vocabulary disappeared as soon as a message was sent.",
           "Study Guide creates continuity between communication and deliberate practice by capturing the language users are already encountering and using."
@@ -1073,8 +1073,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The challenge was deciding what from a conversation was actually worth saving.",
           "If Arcatext captured everything, the list could become noisy and repetitive. If it captured too little, the feature would not feel personalized enough to be useful."
@@ -1082,16 +1082,16 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           "The system had to identify meaningful vocabulary from translation activity, avoid excessive duplication, preserve enough context for words to remain understandable, and keep the feature lightweight rather than turning it into a full flashcard app."
         ],
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The key decision was to derive the Study Guide from real user behavior rather than a predefined curriculum.",
           "That meant prioritizing vocabulary and phrases users had already needed in conversation, then organizing them into a reusable learning resource instead of asking users to manually build study lists."
@@ -1099,8 +1099,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The solution"
+            "style": "h2",
+            "text": "The Solution"
           },
           "Study Guide automatically collects useful vocabulary from the user’s translation history and presents it as a personalized review list.",
           "The experience is designed to connect each word back to real use, helping users reinforce language that is relevant to their relationships, interests, and recurring communication needs."
@@ -1108,8 +1108,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "Automation makes the feature effortless, but it creates a relevance problem: not every translated word deserves to become study material. The system therefore needs rules for filtering repetition, prioritizing meaningful terms, and preventing the list from becoming cluttered.",
           "There is also a balance between depth and scope. Study Guide should strengthen Arcatext’s learning loop without trying to become a full standalone spaced-repetition system."
@@ -1117,8 +1117,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "Study Guide extends the value of each translation beyond the immediate conversation and creates a reason for users to return to Arcatext outside the moment of texting.",
           "Useful launch signals would include Study Guide opens, repeat review sessions, words revisited or mastered, and whether vocabulary generated from real conversations drives stronger retention than passive translation history."
@@ -1126,8 +1126,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Study Guide is an important bridge between Arcatext’s communication layer and its learning layer.",
           "It demonstrates how repeated product usage can generate increasingly personalized learning content: conversations create vocabulary, vocabulary creates study material, and that learning can eventually inform future practice, recommendations, and progress insights."
@@ -1189,16 +1189,16 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "What it is"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Glide Calibration is an interactive setup experience that personalizes swipe typing to the user’s movement patterns. Instead of relying on one generic glide model, Arcatext uses calibration data to better interpret how each person moves across the keyboard."
         ],
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "Arcatext had to earn a place as a daily-use keyboard, not just as a translation tool. If glide typing felt inaccurate or unpredictable, users would fall back to their default keyboard regardless of the value of Reword or Check.",
           "Calibration became a way to improve typing quality at the individual level rather than treating all users as if they glide the same way."
@@ -1206,8 +1206,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The challenge was to collect useful personalization data without turning setup into a chore.",
           "The calibration had to be short, understandable, and engaging enough that users would complete it, while still capturing enough signal to meaningfully improve glide interpretation."
@@ -1215,8 +1215,8 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           "The experience had to work within limited keyboard space, avoid excessive setup time, and produce data that could actually be translated into better typing behavior.",
           "It also had to explain why calibration was worth doing without overwhelming users with technical detail."
@@ -1224,8 +1224,8 @@
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The key decision was to make calibration interactive and task-based rather than asking users to configure technical settings manually.",
           "Users perform representative glide gestures, and Arcatext uses those movements to build a more personalized typing profile."
@@ -1233,8 +1233,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The solution"
+            "style": "h2",
+            "text": "The Solution"
           },
           "The final experience guides users through a short set of glide exercises, captures their movement patterns, and applies that information to improve future swipe interpretation.",
           "The calibration is designed to feel like a quick setup step rather than a training session."
@@ -1242,8 +1242,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "More calibration data could improve personalization, but a longer setup increases abandonment risk. The experience therefore had to balance model quality with completion time.",
           "There was also a product tradeoff between automatic adaptation and explicit calibration. Calibration creates a stronger initial signal, while ongoing personalization can continue refining the typing profile over time."
@@ -1251,8 +1251,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "Glide Calibration expanded Arcatext’s scope from translation into the quality of the underlying keyboard itself.",
           "The feature supports the broader adoption requirement that Arcatext must feel accurate and forgiving enough to compete with default keyboards in everyday use.",
@@ -1261,8 +1261,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Glide Calibration reinforced a broader product principle: keyboard quality is part of the core value proposition, not infrastructure underneath it.",
           "Improving translation alone would not be enough if users did not trust the keyboard they were typing on. Calibration became one part of a larger personalization system alongside autocorrect tuning, typing profiles, and admin tools for improving keyboard performance."
@@ -1324,16 +1324,16 @@
         "whatItIs": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "What it is"
+            "style": "h2",
+            "text": "What It Is"
           },
           "Arcatext Tuning is an internal admin app for understanding and improving keyboard performance. It aggregates typing behavior, surfaces accuracy issues, scores performance, and helps tune autocorrect and typing parameters without requiring changes directly inside the consumer app."
         ],
         "whyItMattered": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "WHY IT MATTERS"
+            "style": "h2",
+            "text": "Why It Matters"
           },
           "Once Arcatext became a daily-use keyboard, typing quality became a product problem, not just an implementation detail.",
           "Users could value the translation features and still abandon the keyboard if autocorrect, key targeting, or glide behavior felt noticeably worse than Apple or Google keyboards. I needed a way to understand typing failures systematically and improve them over time."
@@ -1341,8 +1341,8 @@
         "problem": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The challenge"
+            "style": "h2",
+            "text": "The Challenge"
           },
           "The challenge was that typing performance is difficult to diagnose from isolated bug reports.",
           "A mistyped word could come from key targeting, autocorrect weighting, individual typing habits, language behavior, or a poorly tuned parameter. Improving the keyboard required turning raw interaction data into something I could actually use to make product and technical decisions."
@@ -1350,16 +1350,16 @@
         "constraints": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Key constraints"
+            "style": "h2",
+            "text": "Key Constraints"
           },
           "The system needed to make large amounts of typing behavior understandable without exposing sensitive message content unnecessarily. It also had to distinguish between individual-user behavior and broader keyboard problems so that personalization did not hide systemic issues."
         ],
         "keyDecision": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Exploration & key decisions"
+            "style": "h2",
+            "text": "Exploration & Key Decisions"
           },
           "The key decision was to build internal tooling instead of tuning the keyboard manually through trial and error.",
           "I created a feedback loop in which typing data could be aggregated, scored, compared, and translated into recommended parameter changes. This expanded the project from designing the user-facing keyboard into designing the system used to improve it."
@@ -1367,8 +1367,8 @@
         "solution": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "The solution"
+            "style": "h2",
+            "text": "The Solution"
           },
           "Arcatext Tuning gives me a dedicated environment for reviewing keyboard performance, identifying patterns, and adjusting the parameters that influence typing and autocorrect behavior.",
           "The goal is not simply to expose analytics. The tool turns user behavior into actionable tuning decisions so keyboard quality can improve as more interaction data becomes available."
@@ -1376,8 +1376,8 @@
         "tradeoff": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Tradeoffs & risks"
+            "style": "h2",
+            "text": "Tradeoffs & Risks"
           },
           "More telemetry can improve typing performance, but collecting unnecessary input data would create privacy risk and operational complexity. The system therefore needs to capture the minimum behavioral signals required for tuning while keeping user content appropriately protected.",
           "There is also a risk of over-optimizing for aggregate behavior. Global improvements need to coexist with personalized typing profiles so changes that help the average user do not make the experience worse for individuals."
@@ -1385,8 +1385,8 @@
         "validation": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Validation / outcome"
+            "style": "h2",
+            "text": "Validation / Outcome"
           },
           "Arcatext Tuning created a repeatable way to improve typing quality instead of treating keyboard accuracy as a one-time implementation task.",
           "It also gave me a way to evaluate whether changes to autocorrect, personalization, glide behavior, or typing parameters actually improved performance rather than relying on subjective impressions."
@@ -1394,8 +1394,8 @@
         "impact": [
           {
             "type": "heading",
-            "style": "sectionLabel",
-            "text": "Impact on the larger product"
+            "style": "h2",
+            "text": "Impact on the Larger Product"
           },
           "Arcatext Tuning turned keyboard quality into an operational product system.",
           "Instead of shipping a fixed keyboard and hoping it performed well, Arcatext could create a feedback loop between real usage and product improvement. That made the admin tool part of the product strategy: the consumer experience generates signals, the tuning system turns those signals into decisions, and those decisions improve the keyboard users experience next."
