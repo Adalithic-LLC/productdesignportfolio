@@ -19,7 +19,9 @@ import { Editable } from '@/content/Editable';
 // so the toolbar and action keys match the shipping app rather than approximating it.
 // The first toolbar button is the app's Study destination: StandardToolbar
 // draws it with `leaf.fill`, the Study tab's icon, because the menu's main
-// destination is the Study Guide. Sized 24pt x the toolbar's 0.8 leaf scale.
+// destination is the Study Guide. study.svg is that symbol itself, exported
+// from the SF Symbols app (17pt), drawn at the toolbar's 24pt x 0.8 = 19.2pt:
+// about 24x21.
 import studyUrl from '@/assets/keyboard/study.svg';
 import studyDarkUrl from '@/assets/keyboard/study-dark.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
@@ -713,7 +715,7 @@ export default function ArcatextKeyboard({
                   <div className="mb-2 flex items-center" style={{ height: 50, gap: 8 }}>
                     <button onClick={() => jump('menu')} className="relative ml-2 mr-[3px]" aria-label="Open study guide and settings">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <AxIcon light={studyUrl} dark={studyDarkUrl} width={19} height={19} />
+                        <AxIcon light={studyUrl} dark={studyDarkUrl} width={24} height={21} />
                       </div>
                     </button>
                     <button onClick={() => jump('paste')} className="relative mr-[3px]" aria-label="Open paste">
