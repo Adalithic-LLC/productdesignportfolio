@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ElementType, ReactNode } from 'react';
-import { ArrowRight, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Editable } from './Editable';
 import { BlockSlot } from './EditableBlocks';
 import { EditableImage } from './EditableImage';
@@ -260,6 +261,9 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
 function PagedGallery({ ctx }: { ctx: ElementCtx }) {
   const { isAdmin } = useContent();
   const [col, setCol] = useState(0);
+  /* The picture opened full size, or null. Not open in admin: there a click
+     on a picture is how it gets replaced. */
+  const [zoom, setZoom] = useState<{ src: string; caption: string } | null>(null);
 
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   const rows = clamp(Number(ctx.data.rows) || 2, 1, 8);
@@ -290,8 +294,14 @@ function PagedGallery({ ctx }: { ctx: ElementCtx }) {
               {/* The frame keeps a height while empty so the shape of the
                   gallery reads before anything is in it -- in the palette
                   preview, and in a column just added. */}
-              <div className={`overflow-hidden rounded-xl border border-border/50 bg-muted/40 ${src ? '' : 'min-h-40'}`}>
-                {ctx.path ? (
+              {/* The same glow the case study cards carry, so a picture that
+                  opens looks like the other things on the site that do. */}
+              <div
+                className={`overflow-hidden rounded-xl border border-border/50 bg-muted/40 transition-shadow duration-300 ${
+                  src ? '' : 'min-h-40'
+                } ${src && !isAdmin ? 'hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)]' : ''}`}
+              >
+                {ctx.path && isAdmin ? (
                   <EditableImage
                     path={`${ctx.path}.data.img_${key}`}
                     altPath={`${ctx.path}.data.alt_${key}`}
@@ -299,7 +309,16 @@ function PagedGallery({ ctx }: { ctx: ElementCtx }) {
                     wrapperClassName="block w-full min-h-40"
                   />
                 ) : (
-                  src && <img src={src} alt="" className="block h-auto w-full" />
+                  src && (
+                    <button
+                      type="button"
+                      onClick={() => setZoom({ src, caption })}
+                      aria-label="Open this picture full size"
+                      className="block w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <img src={src} alt={ctx.data[`alt_${key}`] ?? ''} className="block h-auto w-full" />
+                    </button>
+                  )
                 )}
               </div>
               {(caption || (ctx.path && isAdmin)) &&
@@ -332,6 +351,8 @@ function PagedGallery({ ctx }: { ctx: ElementCtx }) {
         </div>
       )}
 
+      {zoom && <Lightbox {...zoom} onClose={() => setZoom(null)} />}
+
       {ctx.path && isAdmin && (
         <p className="mt-3 text-xs text-muted-foreground/70">
           <span className="font-medium">Rows:</span>{' '}
@@ -342,6 +363,72 @@ function PagedGallery({ ctx }: { ctx: ElementCtx }) {
         </p>
       )}
     </figure>
+  );
+}
+
+/**
+ * One picture, opened over the page.
+ *
+ * Rendered into `document.body` rather than in place: the gallery can sit in a
+ * sticky column, and an overlay inside one inherits its stacking order -- the
+ * page's own sticky header would cover it.
+ */
+function Lightbox({
+  src,
+  caption,
+  onClose,
+}: {
+  src: string;
+  caption: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    /* The page behind must not scroll under the overlay. */
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={caption || 'Picture'}
+      onClick={onClose}
+      className="fixed inset-0 z-[80] flex cursor-zoom-out flex-col items-center justify-center gap-4 bg-background/90 p-6 backdrop-blur-sm sm:p-10"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-border/60 bg-background/80 text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <X className="h-5 w-5" />
+      </button>
+      {/* The picture keeps its own click, so only the surround closes. */}
+      <img
+        src={src}
+        alt={caption}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[82vh] max-w-full cursor-default rounded-xl object-contain shadow-2xl"
+      />
+      {caption && (
+        <p
+          onClick={(e) => e.stopPropagation()}
+          className="max-w-2xl cursor-default text-center text-sm leading-relaxed text-muted-foreground"
+        >
+          {caption}
+        </p>
+      )}
+    </div>,
+    document.body,
   );
 }
 
