@@ -70,7 +70,8 @@ const C = {
   selectedBg: AX.selectedBg, // CheckSelectedBgColor
   detail: AX.detail, // MenuDetailColor
   experimental: AX.experimental, // experimental badge
-  smsGreen: AX.smsGreen,
+  // The conversation is iMessage, so sent bubbles are blue (systemBlue).
+  sentBubble: AX.send,
   recvGray: AX.recvBubble,
   xBtnBg: AX.xBtn, // MenuXButtonColor
   xMark: AX.xMark, // ToolbarXMarkColor
@@ -332,7 +333,10 @@ export default function ArcatextKeyboard({
       // Compact ends the flow the way a real one does -- the reworded message
       // goes. The full feature does not need this: its `paste` scene already
       // opens with the message sent.
-      b(() => setPressed('send'), 1400);
+      // A beat to read the reword, then a quick tap: the press is held for
+      // about as long as a finger is down, not the whole pause.
+      b(() => {}, 1150);
+      b(() => setPressed('send'), 260);
       b(() => {
         setPressed(null);
         setSent([{ id: bubbleId.current++, text: JA }]);
@@ -419,7 +423,10 @@ export default function ArcatextKeyboard({
       setText(ROMAJI2);
     }, 1400);
     b(() => setView('none'), 1000);
+    b(() => {}, 160);
+    b(() => setPressed('send'), 260);
     b(() => {
+      setPressed(null);
       setSent((prev) => [...prev, { id: bubbleId.current++, text: ROMAJI2 }]);
       setText('');
     }, 1500);
@@ -634,9 +641,10 @@ export default function ArcatextKeyboard({
                   )}
                   {sent.map((m, i) => (
                     <div key={m.id} className="flex flex-col items-end">
+                      {/* Rises out of the field as it sends. */}
                       <div
-                        className="max-w-[78%] rounded-[20px] px-3.5 py-2 text-[17px] text-white"
-                        style={{ background: C.smsGreen }}
+                        className="max-w-[78%] origin-bottom-right rounded-[20px] px-3.5 py-2 text-[17px] text-white animate-in fade-in-0 zoom-in-90 slide-in-from-bottom-6 duration-300"
+                        style={{ background: C.sentBubble }}
                       >
                         {m.text}
                       </div>
@@ -648,25 +656,52 @@ export default function ArcatextKeyboard({
                 </div>
 
                 {/* Input bar */}
-                <div className="flex items-center gap-2 px-3 pb-2 pt-1">
+                {/* The field grows a line at a time as the message wraps, like
+                    Messages: the + and send buttons stay on its bottom line. */}
+                <div className="flex items-end gap-2 px-3 pb-2 pt-1">
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
                     <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
                   </div>
-                  <div className="flex h-9 flex-1 items-center rounded-full border pl-4 pr-2" style={{ borderColor: AX.fieldBorder }}>
+                  <div
+                    className="flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2"
+                    style={{ borderColor: AX.fieldBorder }}
+                  >
                     {hasText ? (
-                      <span className="text-[15px]" style={{ color: AX.ink }}>{text}</span>
-                    ) : (
-                      <span className="text-[15px]" style={{ color: AX.fieldPlaceholder }}>
-                        iMessage
+                      <span className="min-w-0 flex-1 break-words text-[15px] leading-5" style={{ color: AX.ink }}>
+                        {text}
+                        <span className="ml-[1px] inline-block h-4 w-[2px] translate-y-[3px] animate-pulse" style={{ background: C.send }} />
                       </span>
+                    ) : (
+                      <>
+                        <span className="text-[15px] leading-5" style={{ color: AX.fieldPlaceholder }}>
+                          iMessage
+                        </span>
+                        <span className="ml-[1px] inline-block h-4 w-[2px] self-center animate-pulse" style={{ background: C.send }} />
+                        <div className="flex-1" />
+                        <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />
+                      </>
                     )}
-                    <span className="ml-[1px] inline-block h-4 w-[2px] animate-pulse" style={{ background: C.send }} />
-                    <div className="flex-1" />
-                    {!hasText && <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />}
                   </div>
                   {hasText && (
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ backgroundColor: C.send }}>
-                      <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />
+                    <div className="relative h-9 w-9 shrink-0">
+                      {/* The tap: a touch halo, and the button dips while held. */}
+                      {pressed === 'send' && (
+                        <span
+                          aria-hidden
+                          className="absolute -inset-2 rounded-full bg-black/15 animate-in fade-in-0 zoom-in-50 duration-150 dark:bg-white/25"
+                        />
+                      )}
+                      <div
+                        className="relative grid h-9 w-9 place-items-center rounded-full"
+                        style={{
+                          backgroundColor: C.send,
+                          transform: pressed === 'send' ? 'scale(0.86)' : 'scale(1)',
+                          filter: pressed === 'send' ? 'brightness(0.82)' : 'none',
+                          transition: 'transform 120ms ease-out, filter 120ms ease-out',
+                        }}
+                      >
+                        <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -696,11 +731,15 @@ export default function ArcatextKeyboard({
                       className="relative mr-2 flex items-stretch overflow-hidden rounded-[12px]"
                       style={{ height: 50, backgroundColor: pressed === 'reword' ? C.rewordPressed : C.rewordBg }}
                     >
+                      {/* The label stays in the layout (hidden) under the spinner,
+                          as StandardToolbar does with opacity 0, so the pill
+                          keeps its width while it loads. */}
                       <button onClick={() => jump('reword')} className="relative flex items-center px-3" aria-label="Reword">
-                        {rewordLoading ? (
-                          <span className="block h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                        ) : (
-                          <span className="text-[16px] font-medium text-white">Reword</span>
+                        <span className={`text-[16px] font-medium text-white ${rewordLoading ? 'invisible' : ''}`}>Reword</span>
+                        {rewordLoading && (
+                          <span className="absolute inset-0 grid place-items-center">
+                            <span className="block h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                          </span>
                         )}
                       </button>
                       <div className="self-center" style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.5)' }} />
@@ -1083,8 +1122,15 @@ export default function ArcatextKeyboard({
                     </div>
                   )}
 
-                {/* Bottom utility strip (stays visible under overlays) */}
-                <div style={{ backgroundColor: C.toolbarBar }} className="flex items-center justify-between px-5 pb-2 pt-1">
+                {/* Bottom utility strip (stays visible under overlays). Spaced
+                    as on device captures: 29pt from the last key row to the
+                    icons (12pt of keyboard padding + 17pt), 22pt from the
+                    bottom of an open view, and 28pt under them for the home
+                    indicator. */}
+                <div
+                  style={{ backgroundColor: C.toolbarBar, paddingTop: view === 'none' ? 17 : 22 }}
+                  className="flex items-center justify-between px-5 pb-[28px]"
+                >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
                     <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />

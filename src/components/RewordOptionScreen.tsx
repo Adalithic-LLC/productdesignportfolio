@@ -82,8 +82,6 @@ const OUTER_H = SCREEN_H + BEZEL * 2;
 
 /** ToolbarHelpers.viewHeight() on a 402x874pt phone: 874 x 0.505. */
 const VIEW_H = 441;
-/** The home-indicator inset under the keyboard, filled with the view's color. */
-const BOTTOM_INSET = 45;
 /** ConfigurationsView.headerSection: the Paste view's 44pt top bar. */
 const HEADER_H = 44;
 
@@ -214,6 +212,27 @@ function InputBar({ text, rtl = false }: { text: string; rtl?: boolean }) {
   );
 }
 
+/**
+ * The system row under every keyboard and every open view: globe and dictation,
+ * spaced as on the device (icon centres 40pt above the screen's bottom edge,
+ * ~28pt of home-indicator space under them).
+ */
+function SystemStrip({ gapAbove }: { gapAbove: number }) {
+  return (
+    <div
+      className="flex items-center justify-between px-5 pb-[28px]"
+      style={{ backgroundColor: C.keyboardBg, paddingTop: gapAbove }}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+        <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+        <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
+      </svg>
+      <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
+    </div>
+  );
+}
+
 // ── Keyboard (the reword still) ──────────────────────────────────────────────
 
 function Key({
@@ -279,7 +298,7 @@ function Keyboard() {
   const nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
   return (
-    <div style={{ backgroundColor: C.keyboardBg, paddingBottom: BOTTOM_INSET }} className="px-[5px] pt-2">
+    <div style={{ backgroundColor: C.keyboardBg }} className="px-[5px] pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
         <ToolButton src={studyUrl} dark={studyDarkUrl} w={19} h={19} />
         <ToolButton src={pasteUrl} dark={pasteDarkUrl} w={16} h={20} />
@@ -320,7 +339,7 @@ function Keyboard() {
           <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
         </Key>
       </div>
-      <div className="flex gap-[5px]">
+      <div className="mb-3 flex gap-[5px]">
         <Key bg={C.actionKey} grow={1.6} fontSize={15}>
           123
         </Key>
@@ -537,7 +556,7 @@ function TranslationCopyCard() {
 
 function OptionsPage({ scroll, scriptMenuOpen }: { scroll: number; scriptMenuOpen: boolean }) {
   return (
-    <div style={{ height: VIEW_H + BOTTOM_INSET, background: C.pageBg, fontFamily: NOTO }}>
+    <div style={{ height: VIEW_H, background: C.pageBg, fontFamily: NOTO }}>
       <div className="relative flex items-center justify-center px-1" style={{ height: HEADER_H }}>
         <span className="pl-[38px] text-[16px] font-semibold" style={{ color: C.label }}>
           Options
@@ -627,6 +646,9 @@ export default function RewordOptionScreen({
           ) : (
             <OptionsPage scroll={SCROLL[screen]} scriptMenuOpen={screen === 'script'} />
           )}
+          {/* As measured on device captures: 29pt from the last key row to the
+              icons (12pt mb-3 + 17pt), 22pt from the bottom of an open view. */}
+          <SystemStrip gapAbove={screen === 'reword' ? 17 : 22} />
         </div>
       </div>
     </div>
