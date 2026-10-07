@@ -37,7 +37,7 @@
       {
         "id": 1,
         "title": "Arcatext",
-        "description": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
+        "description": "A translation keyboard.",
         "image": "/project-arcatext-keyboard.webp",
         "imageDark": "/project-arcatext-keyboard-dark.webp",
         "tags": [
@@ -879,6 +879,10 @@
             "style": "h2",
             "text": "Why It Matters"
           },
+          {
+            "type": "paragraph",
+            "text": "Research revealed a large gap in translation trust with existing solutions. Google Translate, for example, is well known to produce awkward or incorrect results\n\n\nEspecially pushing the method of code-switching, encouraging learners to try to write in as much of the target language as possible, it's very likely to use incorrect target language words and produce a translation that doesn't align to the intended message. This learning method requires trust mechanisms that allow users to verify and adjust before sending."
+          },
           "A translation can look fluent while still changing tone, intent, formality, gender, or nuance. That creates a trust problem: users may send something that appears correct without actually knowing whether it says what they meant.",
           "Check addresses that gap by giving users a way to inspect AI output before sending instead of treating translation as a final answer."
         ],
@@ -995,6 +999,20 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
+        },
+        "figureSlots": {
+          "keyDecision": {
+            "above": [
+              {
+                "type": "element",
+                "variant": "gallery-paged",
+                "data": {
+                  "rows": "2",
+                  "cols": "2"
+                }
+              }
+            ]
+          }
         }
       },
       {
@@ -1532,123 +1550,6 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
-        }
-      },
-      {
-        "slug": "guided-chats",
-        "title": "Guided Chats",
-        "body": "Preset, branching conversations the user types their way through — practice that costs no tokens.",
-        "whatItIs": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "What It Is"
-          }
-        ],
-        "whyItMattered": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Why It Matters"
-          }
-        ],
-        "problem": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Challenge"
-          }
-        ],
-        "constraints": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Key Constraints"
-          }
-        ],
-        "keyDecision": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Exploration & Key Decisions"
-          }
-        ],
-        "solution": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "The Solution"
-          }
-        ],
-        "tradeoff": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Tradeoffs & Risks"
-          }
-        ],
-        "validation": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Validation / Outcome"
-          }
-        ],
-        "impact": [
-          {
-            "type": "heading",
-            "style": "h2",
-            "text": "Impact on the Larger Product"
-          }
-        ],
-        "figures": {
-          "whatItIs": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "keyDecision": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "solution": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "tradeoff": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "validation": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          },
-          "impact": {
-            "src": "",
-            "alt": "",
-            "caption": "",
-            "note": ""
-          }
-        },
-        "headings": {
-          "whatItIsTitle": "What It Is",
-          "whyItMatteredTitle": "Why It Matters",
-          "problemTitle": "The Challenge",
-          "constraintsTitle": "Key Constraints",
-          "keyDecisionTitle": "Exploration & Key Decisions",
-          "solutionTitle": "The Solution",
-          "tradeoffTitle": "Tradeoffs & Risks",
-          "validationTitle": "Validation / Outcome",
-          "impactTitle": "Impact on the Larger Product"
         }
       }
     ],
