@@ -21,7 +21,7 @@
   },
   "hero": {
     "title": "Hi, I'm Andrew",
-    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality and how the right features in the right order with the right limits bring a long term business vision to life.",
+    "subtitle": "I'm a digital product designer using AI to create fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Assuming multiple roles on my latest project, Arcatext, has given me a unique perspective on trade-offs across product design, development, and business. I learned how to move fast while maintaining quality and how the right balance of features, roadmap, and limits bring a business vision to life.",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
     "intro": [
@@ -653,7 +653,21 @@
           },
           "After iterating on the design with feedback from students and teachers, I chose to place the Reword button at the top level of keyboard IA, making it available at any time without an additional tap to expose the toolbar controls.\n\n\nReword preserves the meaning and writing style of the original message, whether it's being translated or corrected, I strived to keep outputs as similar as possible to the original user input.\n\nMost translation tools optimize for producing an answer, but Arcatext needed to create a learning moment at each translation or correction. That meant helping users communicate accurately depending on context or intent and learn from the language they were trying to use.",
           {
+            "type": "element",
+            "text": "With deeper research into linguistics and user behavior inside text conversations I learned of opportunities to expand the functionality of the Reword feature. To avoid feature overload and pinpoint the highest value additions, I tested multiple writing style options, script and gender controls, and a toggleable translation copy.\n\n\nThese related controls were placed one level lower in the IA and save state across chats, messaging apps, and Reword languages.",
+            "variant": "screen-reword",
+            "data": {
+              "screen": "reword",
+              "caption": "The basic Reword flow. Write the message the way it comes to mind, in your own language, typos and all, and tap Reword. The keyboard reads everything in the field, sends it with the saved options for the Reword language, and replaces the text in place with the result: here, the English request rewritten in Arabic, addressed to a male recipient. There is nothing to copy back and no app to switch to. The message is ready to send, and Check is one tap away on the same toolbar to confirm it says what was meant."
+            }
+          },
+          {
             "type": "paragraph",
+            "variant": "screen-reword",
+            "data": {
+              "screen": "gender",
+              "caption": "Recipient gender. Arabic inflects verbs and adjectives for the person being addressed, so the same English sentence has two correct translations. Setting it here resolves the ambiguity once instead of asking at every reword."
+            },
             "text": "With deeper research into linguistics and user behavior inside text conversations I learned of opportunities to expand the functionality of the Reword feature. To avoid feature overload and pinpoint the highest value additions, I tested multiple writing style options, script and gender controls, and a toggleable translation copy.\n\n\nThese related controls were placed one level lower in the IA and save state across chats, messaging apps, and Reword languages."
           },
           {
@@ -731,7 +745,7 @@
           "solution": {
             "src": "",
             "alt": "",
-            "caption": "The basic Reword flow. Write the message the way it comes to mind, in your own language, typos and all, and tap Reword. The keyboard reads everything in the field, sends it with the saved options for the Reword language, and replaces the text in place with the result: here, the English request rewritten in Arabic, addressed to a male recipient. There is nothing to copy back and no app to switch to. The message is ready to send, and Check is one tap away on the same toolbar to confirm it says what was meant.",
+            "caption": "",
             "note": "Main flow visual — Write → set context if needed → Reword → review result. 3–4 screens in sequence.",
             "demo": "reword-still"
           },
