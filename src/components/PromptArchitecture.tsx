@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SAMPLE_INPUT, rewordSample } from './rewordSamples';
+import { rewordSample, sampleInput } from './rewordSamples';
 
 /**
  * "The modular prompt system" — an interactive read of how Arcatext assembles
@@ -223,15 +223,28 @@ const FIELD_LABEL: Record<string, string> = {
   native_form_copy: 'Native script (copy)',
 };
 
+/* The modules store 'male'/'female'; the samples key on 'm'/'f'. Mapping
+   rather than casting -- a cast here type-checked and then looked up a key
+   that does not exist, which silently dropped every gendered language. */
+const gender = (v: string): 'm' | 'f' => (v === 'female' ? 'f' : 'm');
+
+/** Which clauses the current modules call for. */
+function selections(s: State) {
+  return {
+    speaker: s.on.speaker ? gender(s.speaker) : null,
+    recipient: s.on.recipient ? gender(s.recipient) : null,
+    group: s.on.group
+      ? ((s.group === 'allFemale' || s.group === 'allMale' ? s.group : 'mixed') as
+          | 'allMale'
+          | 'allFemale'
+          | 'mixed')
+      : null,
+  };
+}
+
 /** Build the response the app would get back, field for field. */
 function scriptedFields(s: State): Record<string, string> {
-  /* The modules store 'male'/'female'; the samples key on 'm'/'f'. Mapping
-     rather than casting -- a cast here type-checked and then looked up a key
-     that does not exist, which silently dropped every gendered language. */
-  const gender = (v: string): 'm' | 'f' => (v === 'female' ? 'f' : 'm');
-  const speaker = s.on.speaker ? gender(s.speaker) : null;
-  const recipient = s.on.recipient ? gender(s.recipient) : null;
-  const group = s.on.group ? (s.group === 'allFemale' || s.group === 'allMale' ? s.group : 'mixed') : null;
+  const { speaker, recipient, group } = selections(s);
   const out: Record<string, string> = {};
 
   const ask = (lang: string, romanized: boolean) =>
@@ -258,8 +271,13 @@ function scriptedFields(s: State): Record<string, string> {
 }
 
 function ScriptedReword({ state }: { state: State }) {
-  const [shown, setShown] = useState(false);
+  const [asked, setAsked] = useState<string | null>(null);
+  const input = sampleInput(selections(state));
   const fields = scriptedFields(state);
+  /* The result is shown only for the message it was asked of. Changing a
+     module rewrites the message, so a result left on screen would be an answer
+     to a sentence no longer there. */
+  const shown = asked === input;
   /* Re-running is what makes the modules legible: change one and the result
      is stale until it is asked for again. */
   const order = ['native_form', 'native_form_reword', 'reword', 'native_form_copy', 'copy'];
@@ -270,17 +288,17 @@ function ScriptedReword({ state }: { state: State }) {
       <div className="mb-3 flex flex-wrap items-baseline gap-2.5">
         <h4 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Try it</h4>
         <span className="text-xs text-muted-foreground/80">
-          Set the modules below, then reword this message.
+          Each module adds the part of the message it changes. Set them below, then reword it.
         </span>
       </div>
 
       <p className="rounded-xl border border-border bg-background px-3.5 py-2.5 text-base leading-relaxed text-foreground">
-        {SAMPLE_INPUT}
+        {input}
       </p>
 
       <button
         type="button"
-        onClick={() => setShown(true)}
+        onClick={() => setAsked(input)}
         className="mt-3 inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
       >
         Reword
