@@ -500,14 +500,14 @@
             "style": "h2",
             "text": "Goals"
           },
-          "For a translation product to facilitate natural conversations and offer a learning experience, we needed a new baseline for the core translation feature.",
+          "For a translation product to facilitate natural conversations and offer a learning experience, I needed a new baseline for the core translation feature.",
           {
             "type": "element",
             "variant": "card-numbered",
             "data": {
               "num": "01",
               "title": "App Integration",
-              "desc": "Translation must happen in the same place as the chat"
+              "desc": "To allow translation to happen inside the messaging app"
             }
           },
           {
@@ -516,7 +516,7 @@
             "data": {
               "num": "02",
               "title": "Simple Workflow",
-              "desc": "Make translation a one-step process"
+              "desc": "To make translation a one-step process"
             }
           },
           {
@@ -525,7 +525,7 @@
             "data": {
               "num": "03",
               "title": "Flexible Inputs & Quality Outputs",
-              "desc": "Offer the highest accuracy translations & corrections"
+              "desc": "To offer the highest accuracy translation & correction"
             }
           }
         ],
