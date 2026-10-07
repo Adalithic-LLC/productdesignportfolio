@@ -796,10 +796,10 @@
             "demo": "reword"
           },
           "keyDecision": {
-            "src": "/uploads/previousarchitecture-muyhanlf.svg",
+            "src": "",
             "alt": "",
-            "caption": "Does Reword require a custom keyboard? Could it sit on top of the OS keyboard? iOS limitations proved this architecture infeasible.",
-            "note": "Comparison or progression: an early, more complex concept with many options; the simplified Reword interaction; optional context controls moved behind progressive disclosure."
+            "caption": "",
+            "note": ""
           },
           "solution": {
             "src": "",
