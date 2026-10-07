@@ -631,7 +631,7 @@
           {
             "type": "heading",
             "style": "h3",
-            "text": "Core Reword Flow"
+            "text": "01. Core Reword Flow"
           },
           "The Reword experience follows a simple flow, with a lot happening behind the scenes.",
           {
@@ -690,7 +690,7 @@
               {
                 "type": "heading",
                 "style": "h3",
-                "text": "Recipient Gender"
+                "text": "02. Recipient Gender"
               }
             ]
           },
@@ -705,7 +705,7 @@
               {
                 "type": "heading",
                 "style": "h3",
-                "text": "Script Selection"
+                "text": "03. Script Selection"
               }
             ]
           },
@@ -720,7 +720,7 @@
               {
                 "type": "heading",
                 "style": "h3",
-                "text": "Translation Copy"
+                "text": "04. Translation Copy"
               }
             ]
           },
