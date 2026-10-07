@@ -72,10 +72,29 @@ function isCardElement(item: ProseItem): boolean {
   );
 }
 
-export function EditableBlocks({ path }: { path: string }) {
+export function EditableBlocks({
+  path,
+  from = 0,
+  to,
+}: {
+  path: string;
+  /* A half-open range of the section to render. Indices stay absolute, since
+     they address the blocks in the content store: a slice only decides what is
+     drawn, never what a block is called. A page splits a section this way to
+     put part of it in a different layout -- a case study runs the blocks above
+     its first media element beside the section figure, and the rest full
+     width. */
+  from?: number;
+  to?: number;
+}) {
   const { content, isAdmin, moveMode, insertTool, selection, moveBlocksTo } = useContent();
   const raw = getByPath(content, path);
-  const items: ProseItem[] = Array.isArray(raw) ? (raw as ProseItem[]) : [];
+  const all: ProseItem[] = Array.isArray(raw) ? (raw as ProseItem[]) : [];
+  const start = Math.max(0, Math.min(from, all.length));
+  const end = Math.max(start, Math.min(to ?? all.length, all.length));
+  /* Kept full-length so every index below is an index into the stored array;
+     `start`/`end` bound the walk instead. */
+  const items = all;
 
   const inMove = isAdmin && moveMode;
   // While actively inserting or moving, show the per-gap insert/move lines as a
@@ -105,19 +124,19 @@ export function EditableBlocks({ path }: { path: string }) {
     // Group consecutive card elements into a responsive 2–3 column grid; render
     // everything else (headings, paragraphs, callouts, …) full width.
     const out: React.ReactNode[] = [];
-    let i = 0;
-    while (i < items.length) {
+    let i = start;
+    while (i < end) {
       if (isCardElement(items[i])) {
-        const start = i;
+        const runStart = i;
         const run: number[] = [];
-        while (i < items.length && isCardElement(items[i])) {
+        while (i < end && isCardElement(items[i])) {
           run.push(i);
           i += 1;
         }
         out.push(
           run.length > 1 ? (
             <div
-              key={`grid-${start}`}
+              key={`grid-${runStart}`}
               /* Marked so a page can restyle a run of cards -- the case
                  study pages put theirs on one row -- without this default
                  having to know about them. */
@@ -129,7 +148,7 @@ export function EditableBlocks({ path }: { path: string }) {
               ))}
             </div>
           ) : (
-            <Block key={start} path={path} index={start} item={items[start]} editable={isAdmin} />
+            <Block key={runStart} path={path} index={runStart} item={items[runStart]} editable={isAdmin} />
           )
         );
       } else {
@@ -142,17 +161,20 @@ export function EditableBlocks({ path }: { path: string }) {
 
   return (
     <>
-      {items.map((item, i) => (
-        <Fragment key={i}>
-          {inMove ? moveLine(i) : <InsertZone path={path} index={i} />}
-          {inMove ? (
-            <MoveBlock path={path} index={i} item={item} />
-          ) : (
-            <Block path={path} index={i} item={item} editable={isAdmin} />
-          )}
-        </Fragment>
-      ))}
-      {inMove ? moveLine(items.length) : <InsertZone path={path} index={items.length} />}
+      {items.slice(start, end).map((item, n) => {
+        const i = start + n;
+        return (
+          <Fragment key={i}>
+            {inMove ? moveLine(i) : <InsertZone path={path} index={i} />}
+            {inMove ? (
+              <MoveBlock path={path} index={i} item={item} />
+            ) : (
+              <Block path={path} index={i} item={item} editable={isAdmin} />
+            )}
+          </Fragment>
+        );
+      })}
+      {inMove ? moveLine(end) : <InsertZone path={path} index={end} />}
     </>
   );
 }

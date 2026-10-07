@@ -7,7 +7,7 @@ import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { MARK_KEYS } from '@/lib/brandMarks';
-import type { ProseBlock } from './proseBlocks';
+import type { ProseBlock, ProseItem } from './proseBlocks';
 
 /**
  * Registry of insertable "UI element" variations (card designs, callouts, …).
@@ -35,6 +35,10 @@ export interface ElementDef {
   id: string;
   label: string;
   group: string;
+  /* Brings its own picture. A case study runs the blocks above its first media
+     element beside the section figure and the rest full width, so the figure
+     stops travelling once a block carries its own. */
+  media?: boolean;
   defaultData: Record<string, string>;
   body: (ctx: ElementCtx) => ReactNode;
 }
@@ -251,6 +255,7 @@ export const ELEMENTS: ElementDef[] = [
     id: 'screen-reword',
     label: 'Screen — Reword option',
     group: 'Cards',
+    media: true,
     defaultData: {
       screen: 'gender',
       caption: 'What this screen shows, and why it sits here.',
@@ -413,6 +418,7 @@ export const ELEMENTS: ElementDef[] = [
     id: 'prompt-system',
     label: 'Modular prompt diagram',
     group: 'Layout',
+    media: true,
     defaultData: {},
     body: () => (
       <div data-wide>
@@ -447,6 +453,16 @@ export const ELEMENTS: ElementDef[] = [
 
 export function getElement(variant: string): ElementDef | undefined {
   return ELEMENTS.find((e) => e.id === variant);
+}
+
+/** True for a block that brings its own picture (see `ElementDef.media`). */
+export function isMediaBlock(item: ProseItem): boolean {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    item.type === 'element' &&
+    !!getElement(item.variant ?? '')?.media
+  );
 }
 
 /** A fresh element block (with default sample data) for the given variant. */

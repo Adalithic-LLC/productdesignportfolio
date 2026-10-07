@@ -12,10 +12,12 @@ import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
 import { EditableBlocks } from '@/content/EditableBlocks';
+import { isMediaBlock } from '@/content/elements';
 import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import RewordOptionScreen from '@/components/RewordOptionScreen';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
+import type { ProseItem } from '@/content/proseBlocks';
 
 /**
  * The sections, in page order: the content field on the feature, the label
@@ -108,6 +110,12 @@ export default function CaseStudy({ index }: { index: number }) {
              frame is how an image gets uploaded, and it has to be in the
              place the image will occupy for the layout to be judged. */
           const twoCol = media || (isAdmin && !!figure);
+          const value = feature[field];
+          const items: ProseItem[] = Array.isArray(value) ? (value as ProseItem[]) : [];
+          /* Where the figure's column ends. No media block means the whole
+             section travels with it, as before. */
+          const firstMedia = items.findIndex(isMediaBlock);
+          const splitAt = firstMedia === -1 ? items.length : firstMedia;
           return (
           <section
             key={field}
@@ -120,14 +128,26 @@ export default function CaseStudy({ index }: { index: number }) {
                 prose-only sections. The media sticks, so a tall animation
                 stays in view while its prose scrolls past. */}
             {twoCol ? (
-              <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
-                <Prose stacked>
-                  <EditableBlocks path={`arcatext.features.${index}.${field}`} />
-                </Prose>
-                <div className="mt-8 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
-                  <Figure index={index} section={figure!} />
+              /* The figure travels with the blocks above the section's first
+                 block that brings its own picture, and stops there: two
+                 columns to that point, full width from it on. Sticking past
+                 that would park the section figure alongside the other
+                 pictures, each competing for the same glance. */
+              <>
+                <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
+                  <Prose stacked>
+                    <EditableBlocks path={`arcatext.features.${index}.${field}`} to={splitAt} />
+                  </Prose>
+                  <div className="mt-8 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
+                    <Figure index={index} section={figure!} />
+                  </div>
                 </div>
-              </div>
+                {splitAt < items.length && (
+                  <Prose className="mt-10">
+                    <EditableBlocks path={`arcatext.features.${index}.${field}`} from={splitAt} />
+                  </Prose>
+                )}
+              </>
             ) : (
               <>
                 <Prose>
