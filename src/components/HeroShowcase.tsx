@@ -15,8 +15,12 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
+import { useTheme } from '@/hooks/useTheme';
 
 const BASE = import.meta.env.BASE_URL;
+
+/** Clusters whose thumbnail has a dark-theme twin in hero-thumbs/dark/. */
+const DARK_THUMBS = new Set(['arcatext', 'arcatext-analysis']);
 
 /**
  * The zone's proportions, and the gap between screens as a share of its width.
@@ -194,6 +198,7 @@ const CLUSTERS: Cluster[] = [
  * Owning both columns is what lets a single piece of state serve the two.
  */
 export function HeroShowcase({ children }: { children: ReactNode }) {
+  const isDark = useTheme().resolvedTheme === 'dark';
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -266,7 +271,7 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
               }`}
             >
               <img
-                src={`${BASE}hero-thumbs/${cluster.id}.webp`}
+                src={`${BASE}hero-thumbs/${isDark && DARK_THUMBS.has(cluster.id) ? 'dark/' : ''}${cluster.id}.webp`}
                 alt=""
                 width={640}
                 height={436}

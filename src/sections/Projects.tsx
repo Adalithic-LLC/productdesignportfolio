@@ -235,6 +235,7 @@ export default function Projects() {
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <EditableImage
                     path={`projects.items.${index}.image`}
+                    darkPath={`projects.items.${index}.imageDark`}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-700 ease-expo-out group-hover:scale-110"
                     wrapperClassName="w-full h-full"

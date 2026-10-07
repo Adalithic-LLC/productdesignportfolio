@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<mask id="vein"><rect width="24" height="24" fill="#fff"/><path d="M2.6 21.4C7.6 15.6 11.6 11.4 17.2 6.8" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></mask>
+<mask id="outside"><rect width="24" height="24" fill="#fff"/><path d="M5.6 18.4C3 13.4 4.6 7.6 10.2 4.9 13.6 3.3 17.6 2.9 21.1 2.9 21.1 6.4 20.7 10.4 19.1 13.8 16.4 19.4 10.6 21 5.6 18.4Z" fill="#000"/></mask>
+</defs>
+<path mask="url(#vein)" d="M5.6 18.4C3 13.4 4.6 7.6 10.2 4.9 13.6 3.3 17.6 2.9 21.1 2.9 21.1 6.4 20.7 10.4 19.1 13.8 16.4 19.4 10.6 21 5.6 18.4Z" fill="#7BA2FF"/>
+<path mask="url(#outside)" d="M2.6 21.4C7.6 15.6 11.6 11.4 17.2 6.8" stroke="#7BA2FF" stroke-width="1.9" stroke-linecap="round"/>
+</svg>

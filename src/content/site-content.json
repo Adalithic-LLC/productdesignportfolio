@@ -39,6 +39,7 @@
         "title": "Arcatext",
         "description": "A translation keyboard.",
         "image": "/project-arcatext-keyboard.webp",
+        "imageDark": "/project-arcatext-keyboard-dark.webp",
         "tags": [
           "Mobile",
           "Keyboard",

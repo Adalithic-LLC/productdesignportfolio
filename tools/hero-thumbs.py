@@ -8,6 +8,10 @@ thumbnail size usefully.
 
 Every cluster is fitted to the same box by height first, then squeezed if the
 row is too wide, so four very differently shaped groups all sit at one size.
+
+`--dark` builds the dark-theme twins instead: tiles from public/hero-tiles/dark/
+on a dark stage, into public/hero-thumbs/dark/, for every cluster whose tiles
+all have a dark twin (HeroShowcase's DARK_THUMBS lists those clusters).
 """
 from PIL import Image
 import sys
@@ -33,12 +37,22 @@ CLUSTERS = {
 }
 
 
+# The dark stage: the site's dark --muted, hsl(215 23% 14%).
+DARK_BG = (27, 34, 44)
+
+
 def main():
     import os
-    os.makedirs(OUT, exist_ok=True)
+    dark = '--dark' in sys.argv
+    tiles = TILES + 'dark/' if dark else TILES
+    out = OUT + 'dark/' if dark else OUT
+    bg = DARK_BG if dark else BG
+    os.makedirs(out, exist_ok=True)
 
     for name, files in CLUSTERS.items():
-        items = [Image.open(TILES + f).convert('RGBA') for f in files]
+        if dark and not all(os.path.exists(tiles + f) for f in files):
+            continue
+        items = [Image.open(tiles + f).convert('RGBA') for f in files]
         gap = round(CANVAS[0] * GAP)
 
         # Height first, then squeeze the whole row if that makes it too wide,
@@ -53,7 +67,7 @@ def main():
             widths = [w * squeeze for w in widths]
             total = limit
 
-        card = Image.new('RGB', CANVAS, BG)
+        card = Image.new('RGB', CANVAS, bg)
         x = round((CANVAS[0] - total) / 2)
         for im, w in zip(items, widths):
             size = (max(1, round(w)), max(1, round(height)))
@@ -61,7 +75,7 @@ def main():
             card.paste(scaled, (x, round((CANVAS[1] - size[1]) / 2)), scaled)
             x += size[0] + gap
 
-        path = f'{OUT}{name}.webp'
+        path = f'{out}{name}.webp'
         card.save(path, 'WEBP', quality=90, method=6)
         print(f'{name:11} {len(items)} screen(s)  row {round(total)}x{round(height)}  -> {path}')
 

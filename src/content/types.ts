@@ -25,6 +25,8 @@ export interface ProjectItem {
    * white field into a visible white-to-charcoal wash on the dark theme.
    */
   flatImage?: boolean;
+  /** Optional dark-theme variant of `image`, shown while the site is dark. */
+  imageDark?: string;
 }
 
 export interface CaseStudyStat {

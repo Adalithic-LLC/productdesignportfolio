@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useContent } from './ContentContext';
+import { useTheme } from '@/hooks/useTheme';
 
 interface EditableImageProps {
   /** Dot path to the image URL string, e.g. "about.portrait". */
@@ -15,6 +16,8 @@ interface EditableImageProps {
   className?: string;
   /** Class for the wrapper element added in admin mode. */
   wrapperClassName?: string;
+  /** Dot path to an optional dark-theme variant, shown when the site is dark. */
+  darkPath?: string;
 }
 
 /**
@@ -22,9 +25,14 @@ interface EditableImageProps {
  * Clicking the image opens a popover to paste a URL/path or upload a file that
  * gets committed to the repo. A locally-uploaded image previews immediately.
  */
-export function EditableImage({ path, altPath, alt, className, wrapperClassName }: EditableImageProps) {
+export function EditableImage({ path, altPath, alt, className, wrapperClassName, darkPath }: EditableImageProps) {
   const { content, isAdmin, setText, uploadAsset } = useContent();
-  const src = String(resolveValue(content, path) ?? '');
+  const { resolvedTheme } = useTheme();
+  const lightSrc = String(resolveValue(content, path) ?? '');
+  const darkSrc = darkPath ? String(resolveValue(content, darkPath) ?? '') : '';
+  // The dark variant stands in only while the site is dark; editing below
+  // always targets the light image, the one every theme falls back to.
+  const src = resolvedTheme === 'dark' && darkSrc ? darkSrc : lightSrc;
   const resolvedAlt = altPath ? String(resolveValue(content, altPath) ?? '') : (alt ?? '');
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -70,7 +78,7 @@ export function EditableImage({ path, altPath, alt, className, wrapperClassName 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Image URL or path</label>
             <Input
-              value={src}
+              value={lightSrc}
               onChange={(e) => {
                 setPreview(null);
                 setText(path, e.target.value);
@@ -80,6 +88,22 @@ export function EditableImage({ path, altPath, alt, className, wrapperClassName 
               className="h-9 text-xs"
             />
           </div>
+
+          {darkPath && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Dark-theme image (optional)</label>
+              <Input
+                value={darkSrc}
+                onChange={(e) => {
+                  setPreview(null);
+                  setText(darkPath, e.target.value);
+                }}
+                placeholder="/uploads/photo-dark.webp"
+                spellCheck={false}
+                className="h-9 text-xs"
+              />
+            </div>
+          )}
 
           {altPath && (
             <div className="space-y-1.5">

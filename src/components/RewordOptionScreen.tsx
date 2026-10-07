@@ -1,10 +1,17 @@
 import { ArrowUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Mic, X } from 'lucide-react';
 import studyUrl from '@/assets/keyboard/study.svg';
+import studyDarkUrl from '@/assets/keyboard/study-dark.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
+import pasteDarkUrl from '@/assets/keyboard/paste-dark.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
+import checkDarkUrl from '@/assets/keyboard/check-dark.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
+import shiftDarkUrl from '@/assets/keyboard/shift-dark.svg';
 import backspaceUrl from '@/assets/keyboard/backspace.svg';
+import backspaceDarkUrl from '@/assets/keyboard/backspace-dark.svg';
 import localesUrl from '@/assets/keyboard/locales.svg';
+import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
+import { AX, AxIcon } from '@/lib/arcatextTheme';
 
 /**
  * RewordOptionScreen
@@ -31,28 +38,35 @@ import localesUrl from '@/assets/keyboard/locales.svg';
  *   Reword Translation Copy card: toggle, View Copy In...
  *   Autocorrect Languages · Your Gender | Typing Settings
  *
- * Sizes, labels and light-appearance colors are from that source, its
- * Localizable.xcstrings (English) and the asset catalog. Arabic's scripts are
- * from LanguageData.swift.
+ * Sizes, labels and colors are from that source, its Localizable.xcstrings
+ * (English) and the asset catalog. Arabic's scripts are from LanguageData.swift.
+ *
+ * Colors are the shared Arcatext palette (src/lib/arcatextTheme.tsx), whose
+ * CSS variables carry each colorset's light and dark value, so the stills
+ * follow the portfolio's theme. Icons with dark artwork swap the same way.
  */
 
-// Light-appearance colors from the asset catalog.
 const C = {
-  send: '#0A7AFF',
-  pageBg: '#F2F2F7', // PasteBgColor
-  cardBg: '#FFFFFF', // MenuCardBgColor / CheckCardBgColor
-  cardStroke: '#E6E6EB', // MenuCardStrokeColor
-  label: '#000000', // MenuLabelColor
-  detail: '#808080', // MenuDetailColor
-  accent: '#0040DD', // ToolbarItemColor / AccentColor
-  selectedBg: '#D9EBFF', // CheckSelectedBgColor
-  chipDivider: '#D1D3D9', // PasteSeperatorColor
-  xBtnBg: '#E6E6EB', // MenuXButtonColor
-  smsGreen: '#34C759',
-  keyboardBg: '#D0D3DA',
-  toolButtonBg: '#FFFFFF', // ToolbarIconButtonBgColor
-  regularKey: '#FFFFFF',
-  actionKey: '#B1C6E0',
+  send: AX.send,
+  pageBg: AX.pageBg, // PasteBgColor
+  cardBg: AX.cardBg, // MenuCardBgColor / CheckCardBgColor
+  cardStroke: AX.cardStroke, // MenuCardStrokeColor
+  label: AX.label, // MenuLabelColor
+  detail: AX.detail, // MenuDetailColor
+  // RewordOptionsView.selectedAccentColor and the chips' Color.accent: blue in
+  // light, #7BA2FF in dark.
+  accent: AX.accent,
+  item: AX.item, // ToolbarItemColor (the Reword pill)
+  selectedBg: AX.selectedBg, // CheckSelectedBgColor
+  chipBg: AX.chipBg,
+  chipDivider: AX.separator, // PasteSeperatorColor
+  xBtnBg: AX.xBtn, // MenuXButtonColor
+  xMark: AX.xMark, // ToolbarXMarkColor
+  smsGreen: AX.smsGreen,
+  keyboardBg: AX.keyboardBg,
+  toolButtonBg: AX.toolBtn, // ToolbarIconButtonBgColor
+  regularKey: AX.key,
+  actionKey: AX.actionKey,
 };
 
 // The keyboard's own type is Noto Sans; `.system` text (the script subtitles,
@@ -96,7 +110,7 @@ function Toggle({ on }: { on: boolean }) {
   return (
     <span
       className="relative inline-block shrink-0 rounded-full"
-      style={{ width: 51, height: 31, background: on ? C.smsGreen : '#E9E9EB' }}
+      style={{ width: 51, height: 31, background: on ? C.smsGreen : AX.toggleOff }}
     >
       <span
         className="absolute top-[2px] rounded-full bg-white"
@@ -108,17 +122,17 @@ function Toggle({ on }: { on: boolean }) {
 
 function StatusBar() {
   return (
-    <div className="relative flex h-11 items-center justify-between px-7 pt-1 text-black">
+    <div className="relative flex h-11 items-center justify-between px-7 pt-1" style={{ color: AX.ink }}>
       <span className="text-[15px] font-semibold">12:11</span>
       <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
       <div className="flex items-center gap-1.5">
         <div className="flex items-end gap-[2px]">
           {[6, 9, 12, 15].map((h, i) => (
-            <span key={i} className="w-[3px] rounded-[1px] bg-black" style={{ height: h }} />
+            <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: AX.ink }} />
           ))}
         </div>
-        <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border border-black/40 p-[1.5px]">
-          <div className="h-full w-full rounded-[1px] bg-black" />
+        <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: AX.batteryRing }}>
+          <div className="h-full w-full rounded-[1px]" style={{ background: AX.ink }} />
         </div>
       </div>
     </div>
@@ -127,7 +141,7 @@ function StatusBar() {
 
 function ChatHeader() {
   return (
-    <div className="flex flex-col items-center border-b border-black/5 px-4 pb-3 pt-1">
+    <div className="flex flex-col items-center border-b px-4 pb-3 pt-1" style={{ borderColor: AX.hairline }}>
       <div className="flex w-full items-center justify-between">
         <ChevronLeft className="h-7 w-7" style={{ color: C.send }} strokeWidth={2.4} />
         <div className="w-7" />
@@ -140,8 +154,8 @@ function ChatHeader() {
           AR
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-[15px] font-semibold text-black">+1 (888) 555-1212</span>
-          <ChevronRight className="h-4 w-4 text-black/50" strokeWidth={2.4} />
+          <span className="text-[15px] font-semibold" style={{ color: AX.ink }}>+1 (888) 555-1212</span>
+          <ChevronRight className="h-4 w-4" style={{ color: AX.inkMuted }} strokeWidth={2.4} />
         </div>
       </div>
     </div>
@@ -162,7 +176,7 @@ function SentWithCopy() {
         <span className="mt-2 block">{COPY_LABEL}</span>
         <span className="block">{EN_MSG}</span>
       </div>
-      <span className="mr-1 mt-0.5 text-[11px] text-black/45">Delivered</span>
+      <span className="mr-1 mt-0.5 text-[11px]" style={{ color: AX.inkMuted }}>Delivered</span>
     </div>
   );
 }
@@ -170,21 +184,24 @@ function SentWithCopy() {
 function InputBar({ text, rtl = false }: { text: string; rtl?: boolean }) {
   return (
     <div className="flex items-center gap-2 px-3 pb-2 pt-1">
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#e6e8ec]">
-        <Plus className="h-5 w-5 text-[#6b7280]" strokeWidth={2.6} />
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
+        <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
       </div>
-      <div className="flex h-9 min-w-0 flex-1 items-center overflow-hidden rounded-full border border-black/15 pl-4 pr-2">
+      <div
+        className="flex h-9 min-w-0 flex-1 items-center overflow-hidden rounded-full border pl-4 pr-2"
+        style={{ borderColor: AX.fieldBorder }}
+      >
         {text ? (
-          <span dir={rtl ? 'rtl' : undefined} className="min-w-0 flex-1 truncate text-[15px] text-black">
+          <span dir={rtl ? 'rtl' : undefined} className="min-w-0 flex-1 truncate text-[15px]" style={{ color: AX.ink }}>
             {text}
           </span>
         ) : (
           <>
-            <span className="text-[15px]" style={{ color: '#9aa0a6' }}>
+            <span className="text-[15px]" style={{ color: AX.fieldPlaceholder }}>
               iMessage
             </span>
             <div className="flex-1" />
-            <Mic className="h-5 w-5 shrink-0" style={{ color: '#9aa0a6' }} strokeWidth={2} />
+            <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />
           </>
         )}
       </div>
@@ -219,17 +236,17 @@ function Key({
       className="relative flex select-none items-center justify-center rounded-[4.6px]"
       style={{
         backgroundColor: bg,
-        color: '#000',
+        color: AX.keyText,
         height: 42,
         flexGrow: grow,
         flexBasis: 0,
-        boxShadow: '0 1px 0 rgba(0,0,0,0.3)',
+        boxShadow: `0 1px 0 ${AX.keyShadow}`,
         fontSize,
         fontFamily: SF,
       }}
     >
       {num && (
-        <span className="absolute right-[5px] top-[3px]" style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>
+        <span className="absolute right-[5px] top-[3px]" style={{ fontSize: 9, color: AX.keyHint }}>
           {num}
         </span>
       )}
@@ -239,13 +256,13 @@ function Key({
 }
 
 /** A 57x50pt toolbar icon button (StandardToolbar's base metrics). */
-function ToolButton({ src, w, h }: { src: string; w: number; h: number }) {
+function ToolButton({ src, dark, w, h }: { src: string; dark: string; w: number; h: number }) {
   return (
     <div
       className="grid shrink-0 place-items-center rounded-[12px]"
       style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}
     >
-      <img src={src} alt="" style={{ width: w, height: h }} />
+      <AxIcon light={src} dark={dark} width={w} height={h} />
     </div>
   );
 }
@@ -264,11 +281,11 @@ function Keyboard() {
   return (
     <div style={{ backgroundColor: C.keyboardBg, paddingBottom: BOTTOM_INSET }} className="px-[5px] pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-        <ToolButton src={studyUrl} w={19} h={19} />
-        <ToolButton src={pasteUrl} w={16} h={20} />
-        <ToolButton src={checkUrl} w={20} h={20} />
+        <ToolButton src={studyUrl} dark={studyDarkUrl} w={19} h={19} />
+        <ToolButton src={pasteUrl} dark={pasteDarkUrl} w={16} h={20} />
+        <ToolButton src={checkUrl} dark={checkDarkUrl} w={20} h={20} />
         <div className="flex-1" />
-        <div className="flex items-stretch overflow-hidden rounded-[12px]" style={{ height: 50, backgroundColor: C.accent }}>
+        <div className="flex items-stretch overflow-hidden rounded-[12px]" style={{ height: 50, backgroundColor: C.item }}>
           <span
             className="flex items-center justify-center px-[14px] text-[16px] font-medium text-white"
             style={{ minWidth: 70, fontFamily: NOTO }}
@@ -294,13 +311,13 @@ function Keyboard() {
       </div>
       <div className="mb-[8px] flex gap-[5px]">
         <Key bg={C.actionKey} grow={1.5}>
-          <img src={shiftUrl} alt="" style={{ width: 19, height: 17 }} />
+          <AxIcon light={shiftUrl} dark={shiftDarkUrl} width={19} height={17} />
         </Key>
         {row3.map((l) => (
           <Key key={l} label={l} />
         ))}
         <Key bg={C.actionKey} grow={1.5}>
-          <img src={backspaceUrl} alt="" style={{ width: 23, height: 17 }} />
+          <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
         </Key>
       </div>
       <div className="flex gap-[5px]">
@@ -308,15 +325,15 @@ function Keyboard() {
           123
         </Key>
         <Key bg={C.actionKey} grow={1.2}>
-          <img src={localesUrl} alt="" style={{ width: 14, height: 17 }} />
+          <AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />
         </Key>
         <Key grow={5} fontSize={15}>
-          <span className="text-black/85">space</span>
+          <span style={{ opacity: 0.85 }}>space</span>
         </Key>
         <Key bg={C.actionKey} grow={1.6}>
           <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M11 9l-4 4 4 4" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Key>
       </div>
@@ -490,7 +507,7 @@ function RewordLanguageCard() {
             <span
               key={name}
               className="flex shrink-0 items-center rounded-[12px] px-3 text-[16px]"
-              style={{ height: 46, background: C.cardBg, color: C.label, boxShadow: `inset 0 0 0 1px ${C.cardStroke}` }}
+              style={{ height: 46, background: C.chipBg, color: C.label, boxShadow: `inset 0 0 0 1px ${C.cardStroke}` }}
             >
               {name}
             </span>
@@ -529,7 +546,7 @@ function OptionsPage({ scroll, scriptMenuOpen }: { scroll: number; scriptMenuOpe
           className="absolute right-1 grid h-[38px] w-[38px] place-items-center rounded-[16px]"
           style={{ background: C.xBtnBg }}
         >
-          <X className="h-[18px] w-[18px]" style={{ color: '#000' }} strokeWidth={2.6} />
+          <X className="h-[18px] w-[18px]" style={{ color: C.xMark }} strokeWidth={2.6} />
         </span>
       </div>
 
@@ -548,7 +565,7 @@ function OptionsPage({ scroll, scriptMenuOpen }: { scroll: number; scriptMenuOpe
             <GridCard
               title="Autocorrect Languages"
               value="2 Keyboards"
-              icon={<img src={localesUrl} alt="" style={{ width: 14, height: 17 }} />}
+              icon={<AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />}
             />
             <div className="flex gap-4">
               <div className="flex-1">
@@ -586,12 +603,12 @@ export default function RewordOptionScreen({
           borderRadius: 56,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
-          boxShadow: '0 24px 48px -20px rgba(20,10,40,0.45)',
+          boxShadow: `0 0 0 1px ${AX.bezelRing}, 0 24px 48px -20px rgba(20,10,40,0.45)`,
         }}
       >
         <div
-          className="relative flex flex-col overflow-hidden bg-white"
-          style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: 44, fontFamily: SF }}
+          className="relative flex flex-col overflow-hidden"
+          style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: 44, fontFamily: SF, background: AX.screen }}
         >
           <StatusBar />
           <ChatHeader />

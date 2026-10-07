@@ -40,3 +40,21 @@ any merge.
 iOS app in the `Adalithic-LLC/Arcatext` repo. Take labels, sizes and colors
 from that repo's `main` (the Swift views, `Arcatext/Localizable.xcstrings` and
 the asset catalog's colorsets) rather than from memory.
+
+Every Arcatext surface has a dark appearance that follows the site theme:
+
+- Drawn screens take their colors from the shared palette in
+  `src/lib/arcatextTheme.tsx` (CSS variables defined in `src/index.css`, light
+  under `:root`, dark under `.dark`). Use `AX.*` rather than hex values, and add
+  a variable to both blocks when a new color is needed. Icons with dark artwork
+  (`src/assets/keyboard/*-dark.svg`) go through `AxIcon`.
+- The simulator captures have recolored twins in `public/hero-tiles/dark/`,
+  `public/hero-thumbs/dark/` and `public/project-arcatext-keyboard-dark.webp`.
+  They are the light captures recolored to the app's dark colorset values by
+  `tools/darken_capture.py` (and `tools/darken_product_shot.py` for the Work
+  card), not separate simulator runs. When a light capture is replaced,
+  regenerate its twin with those scripts, or drop in a real dark-mode capture
+  under the same name, then rebuild the dark thumbnails with
+  `python3 tools/hero-thumbs.py --dark`. The admin tool's dark tile
+  (`hero-tiles/dark/arcatext-tuning.webp`) is a render of the tool's own
+  "midnight" theme.
