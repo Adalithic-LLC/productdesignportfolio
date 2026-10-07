@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import type { ElementType, ReactNode } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Editable } from './Editable';
 import { BlockSlot } from './EditableBlocks';
 import { EditableImage } from './EditableImage';
@@ -242,6 +243,131 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
   );
 }
 
+/**
+ * A grid of pictures shown one column at a time, with arrows between columns.
+ *
+ * The grid is addressed by cell -- `img_r2c1` is row 2 of column 1 -- so rows
+ * and columns are just two numbers in the element's data: raise either and the
+ * new empty cells appear as upload frames in admin, ready to fill. That keeps
+ * a flat string map, which is all an element gets, able to describe a grid of
+ * any size.
+ *
+ * A visitor pages only through columns that have something in them, so a
+ * column added but not yet filled is not a blank slide in the sequence; in
+ * admin every column is reachable, since an empty one is how a picture gets
+ * added to it.
+ */
+function PagedGallery({ ctx }: { ctx: ElementCtx }) {
+  const { isAdmin } = useContent();
+  const [col, setCol] = useState(0);
+
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const rows = clamp(Number(ctx.data.rows) || 2, 1, 8);
+  const cols = clamp(Number(ctx.data.cols) || 2, 1, 12);
+  const cell = (r: number, c: number) => `r${r + 1}c${c + 1}`;
+
+  const filled = (c: number) =>
+    Array.from({ length: rows }, (_, r) => ctx.data[`img_${cell(r, c)}`]).some(Boolean);
+  const pages = Array.from({ length: cols }, (_, c) => c).filter((c) => isAdmin || filled(c));
+  if (pages.length === 0) return null;
+
+  /* Clamped rather than stored: lowering the column count while a later one is
+     open would otherwise leave the view on a column that no longer exists. */
+  const at = clamp(col, 0, pages.length - 1);
+  const current = pages[at];
+  const go = (d: 1 | -1) => setCol(clamp(at + d, 0, pages.length - 1));
+
+  return (
+    <figure className="relative">
+      <div className="flex flex-col gap-5">
+        {Array.from({ length: rows }, (_, r) => {
+          const key = cell(r, current);
+          const src = ctx.data[`img_${key}`] ?? '';
+          const caption = ctx.data[`cap_${key}`] ?? '';
+          if (!src && !isAdmin) return null;
+          return (
+            <div key={key}>
+              {/* The frame keeps a height while empty so the shape of the
+                  gallery reads before anything is in it -- in the palette
+                  preview, and in a column just added. */}
+              <div className={`overflow-hidden rounded-xl border border-border/50 bg-muted/40 ${src ? '' : 'min-h-40'}`}>
+                {ctx.path ? (
+                  <EditableImage
+                    path={`${ctx.path}.data.img_${key}`}
+                    altPath={`${ctx.path}.data.alt_${key}`}
+                    className="block h-auto w-full"
+                    wrapperClassName="block w-full min-h-40"
+                  />
+                ) : (
+                  src && <img src={src} alt="" className="block h-auto w-full" />
+                )}
+              </div>
+              {(caption || (ctx.path && isAdmin)) &&
+                (ctx.path ? (
+                  <Editable
+                    as="figcaption"
+                    path={`${ctx.path}.data.cap_${key}`}
+                    multiline
+                    className={`mt-3 text-sm leading-relaxed text-muted-foreground ${
+                      isAdmin ? 'min-h-5' : ''
+                    }`}
+                  />
+                ) : (
+                  <figcaption className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {caption}
+                  </figcaption>
+                ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {pages.length > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <GalleryArrow side="left" onClick={() => go(-1)} disabled={at === 0} />
+          <span className="font-mono text-xs text-muted-foreground">
+            {at + 1} / {pages.length}
+          </span>
+          <GalleryArrow side="right" onClick={() => go(1)} disabled={at === pages.length - 1} />
+        </div>
+      )}
+
+      {ctx.path && isAdmin && (
+        <p className="mt-3 text-xs text-muted-foreground/70">
+          <span className="font-medium">Rows:</span>{' '}
+          <Editable as="span" path={`${ctx.path}.data.rows`} className="inline-block min-w-3" />
+          <span className="ml-3 font-medium">Columns:</span>{' '}
+          <Editable as="span" path={`${ctx.path}.data.cols`} className="inline-block min-w-3" />
+          <span className="ml-2 opacity-60">— raise either to add empty cells to fill</span>
+        </p>
+      )}
+    </figure>
+  );
+}
+
+function GalleryArrow({
+  side,
+  onClick,
+  disabled,
+}: {
+  side: 'left' | 'right';
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  const Icon = side === 'left' ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={side === 'left' ? 'Previous column' : 'Next column'}
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30"
+    >
+      <Icon className="h-5 w-5" />
+    </button>
+  );
+}
+
 export const ELEMENTS: ElementDef[] = [
   {
     id: 'card-logo',
@@ -415,6 +541,16 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Layout',
     defaultData: {},
     body: () => <div className="my-2 border-t border-border/40" aria-hidden="true" />,
+  },
+  {
+    /* A grid of pictures paged a column at a time. Not in "Cards", so a run
+       of them is never gridded; it does its own paging. */
+    id: 'gallery-paged',
+    label: 'Gallery — paged columns',
+    group: 'Layout',
+    media: true,
+    defaultData: { rows: '2', cols: '2' },
+    body: (ctx) => <PagedGallery ctx={ctx} />,
   },
   {
     /* The Arcatext page's modular prompt diagram, insertable into a case
