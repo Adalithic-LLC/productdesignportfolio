@@ -21,11 +21,18 @@ import { Editable } from '@/content/Editable';
 // draws it with `leaf.fill`, the Study tab's icon, because the menu's main
 // destination is the Study Guide. Sized 24pt x the toolbar's 0.8 leaf scale.
 import studyUrl from '@/assets/keyboard/study.svg';
+import studyDarkUrl from '@/assets/keyboard/study-dark.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
+import pasteDarkUrl from '@/assets/keyboard/paste-dark.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
+import checkDarkUrl from '@/assets/keyboard/check-dark.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
+import shiftDarkUrl from '@/assets/keyboard/shift-dark.svg';
 import backspaceUrl from '@/assets/keyboard/backspace.svg';
+import backspaceDarkUrl from '@/assets/keyboard/backspace-dark.svg';
 import localesUrl from '@/assets/keyboard/locales.svg';
+import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
+import { AX, AxIcon } from '@/lib/arcatextTheme';
 
 /**
  * ArcatextKeyboard
@@ -41,30 +48,32 @@ import localesUrl from '@/assets/keyboard/locales.svg';
  * ConfigurationsView / RewordOptionsView .swift).
  */
 
-// ── Colors (light appearance, from the asset catalog) ────────────────────────
+// ── Colors: the shared Arcatext palette (asset-catalog light and dark values,
+// as CSS variables), so the demo follows the portfolio's theme ───────────────
 const C = {
-  toolbarBar: '#D0D3DA',
-  toolButtonBg: '#E6E6EB',
-  toolIcon: '#0040DD',
-  rewordBg: '#0040DD',
-  checkText: '#0040DD',
-  regularKey: '#FFFFFF',
-  actionKey: '#B1C6E0',
-  keyText: '#000000',
-  send: '#0A7AFF',
+  toolbarBar: AX.keyboardBg,
+  toolButtonBg: AX.toolBtn, // ToolbarIconButtonBgColor
+  rewordBg: AX.item, // ToolbarItemColor
+  rewordPressed: AX.itemPressed,
+  checkText: AX.checkText, // CheckButtonTextColor
+  regularKey: AX.key,
+  actionKey: AX.actionKey,
+  keyText: AX.keyText,
+  send: AX.send,
   // view chrome
-  viewBg: '#F2F2F7', // pasteBg
-  cardBg: '#FFFFFF', // CheckCardBgColor / MenuCardBgColor
-  cardStroke: '#E5E5EA', // MenuCardStrokeColor (approx)
-  label: '#000000', // MenuLabelColor
-  placeholder: '#8E8E93', // CheckPlaceholderColor
-  primary: '#0040DD', // CheckPrimaryColor / accent
-  selectedBg: '#D9EBFF', // CheckSelectedBgColor
-  detail: '#8E8E93', // MenuDetailColor
-  experimental: '#FFB200', // experimental badge
-  smsGreen: '#34C759',
-  recvGray: '#E9E9EB',
-  xBtnBg: '#D7D9DE',
+  viewBg: AX.pageBg, // PasteBgColor
+  cardBg: AX.cardBg, // CheckCardBgColor / MenuCardBgColor
+  cardStroke: AX.cardStroke, // MenuCardStrokeColor
+  label: AX.label, // MenuLabelColor
+  placeholder: AX.placeholder, // CheckPlaceholderColor
+  primary: AX.primary, // CheckPrimaryColor
+  selectedBg: AX.selectedBg, // CheckSelectedBgColor
+  detail: AX.detail, // MenuDetailColor
+  experimental: AX.experimental, // experimental badge
+  smsGreen: AX.smsGreen,
+  recvGray: AX.recvBubble,
+  xBtnBg: AX.xBtn, // MenuXButtonColor
+  xMark: AX.xMark, // ToolbarXMarkColor
 };
 
 const EN = 'Hello, how are you my friend? Meet me at the bank.';
@@ -147,13 +156,13 @@ function Key({
         height: 42,
         flexGrow: grow,
         flexBasis: 0,
-        boxShadow: '0 1px 0 rgba(0,0,0,0.3)',
+        boxShadow: `0 1px 0 ${AX.keyShadow}`,
         fontSize,
         fontWeight: 400,
       }}
     >
       {num && (
-        <span className="absolute right-[5px] top-[3px]" style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>
+        <span className="absolute right-[5px] top-[3px]" style={{ fontSize: 9, color: AX.keyHint }}>
           {num}
         </span>
       )}
@@ -550,37 +559,37 @@ export default function ArcatextKeyboard({
                 borderRadius: 56,
                 transform: `scale(${phoneScale})`,
                 transformOrigin: 'top left',
-                boxShadow: '0 30px 60px -20px rgba(20,10,40,0.5)',
+                boxShadow: `0 0 0 1px ${AX.bezelRing}, 0 30px 60px -20px rgba(20,10,40,0.5)`,
               }}
             >
               <div
-                className="relative flex flex-col overflow-hidden bg-white"
-                style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: 44 }}
+                className="relative flex flex-col overflow-hidden"
+                style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: 44, background: AX.screen }}
               >
                 {/* Status bar */}
-                <div className="relative flex h-11 items-center justify-between px-7 pt-1 text-black">
+                <div className="relative flex h-11 items-center justify-between px-7 pt-1" style={{ color: AX.ink }}>
                   <span className="text-[15px] font-semibold">12:11</span>
                   <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
                   <div className="flex items-center gap-1.5">
                     <div className="flex items-end gap-[2px]">
                       {[6, 9, 12, 15].map((h, i) => (
-                        <span key={i} className="w-[3px] rounded-[1px] bg-black" style={{ height: h }} />
+                        <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: AX.ink }} />
                       ))}
                     </div>
                     <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
                       <path
                         d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l-1.3 1.4A7.7 7.7 0 008.5 4.1 7.7 7.7 0 003.3 6.2L2 4.8A9.5 9.5 0 018.5 2.2zm0 3.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4a3.5 3.5 0 00-5 0L4.6 7.4A5.5 5.5 0 018.5 5.8zm0 3.5c.7 0 1.3.3 1.8.8L8.5 12 6.7 10.1c.5-.5 1.1-.8 1.8-.8z"
-                        fill="black"
+                        fill="currentColor"
                       />
                     </svg>
-                    <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border border-black/40 p-[1.5px]">
-                      <div className="h-full w-full rounded-[1px] bg-black" />
+                    <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: AX.batteryRing }}>
+                      <div className="h-full w-full rounded-[1px]" style={{ background: AX.ink }} />
                     </div>
                   </div>
                 </div>
 
                 {/* Header */}
-                <div className="flex flex-col items-center border-b border-black/5 px-4 pb-3 pt-1">
+                <div className="flex flex-col items-center border-b px-4 pb-3 pt-1" style={{ borderColor: AX.hairline }}>
                   <div className="flex w-full items-center justify-between">
                     <ChevronLeft className="h-7 w-7" style={{ color: C.send }} strokeWidth={2.4} />
                     <div className="w-7" />
@@ -593,8 +602,8 @@ export default function ArcatextKeyboard({
                       JA
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-[15px] font-semibold text-black">+1 (888) 555-1212</span>
-                      <ChevronRight className="h-4 w-4 text-black/50" strokeWidth={2.4} />
+                      <span className="text-[15px] font-semibold" style={{ color: AX.ink }}>+1 (888) 555-1212</span>
+                      <ChevronRight className="h-4 w-4" style={{ color: AX.inkMuted }} strokeWidth={2.4} />
                     </div>
                   </div>
                 </div>
@@ -603,22 +612,22 @@ export default function ArcatextKeyboard({
                 <div className="flex flex-1 flex-col justify-end gap-1.5 overflow-hidden px-3 pb-2">
                   {showChat && (
                     <>
-                      <div className="text-center text-[13px] font-medium text-black/40">iMessage</div>
-                      <div className="mb-1 flex items-center justify-center gap-1 text-[12px] text-black/40">
+                      <div className="text-center text-[13px] font-medium" style={{ color: AX.inkMuted }}>iMessage</div>
+                      <div className="mb-1 flex items-center justify-center gap-1 text-[12px]" style={{ color: AX.inkMuted }}>
                         <svg width="9" height="11" viewBox="0 0 9 11" fill="none">
                           <rect x="0.6" y="4.6" width="7.8" height="6" rx="1.6" fill="currentColor" />
                           <path d="M2 4.5V3a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.1" fill="none" />
                         </svg>
                         Encrypted
                       </div>
-                      <div className="mb-1 text-center text-[12px] text-black/45">
+                      <div className="mb-1 text-center text-[12px]" style={{ color: AX.inkMuted }}>
                         Today <span className="font-medium">12:12 AM</span>
                       </div>
                     </>
                   )}
                   {received && (
                     <div className="flex justify-start">
-                      <div className="max-w-[78%] rounded-[20px] px-3.5 py-2 text-[17px] text-black" style={{ background: C.recvGray }}>
+                      <div className="max-w-[78%] rounded-[20px] px-3.5 py-2 text-[17px]" style={{ background: C.recvGray, color: AX.ink }}>
                         {received.text}
                       </div>
                     </div>
@@ -632,7 +641,7 @@ export default function ArcatextKeyboard({
                         {m.text}
                       </div>
                       {i === sent.length - 1 && !received && (
-                        <span className="mr-1 mt-0.5 text-[11px] text-black/45">Delivered</span>
+                        <span className="mr-1 mt-0.5 text-[11px]" style={{ color: AX.inkMuted }}>Delivered</span>
                       )}
                     </div>
                   ))}
@@ -640,20 +649,20 @@ export default function ArcatextKeyboard({
 
                 {/* Input bar */}
                 <div className="flex items-center gap-2 px-3 pb-2 pt-1">
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#e6e8ec]">
-                    <Plus className="h-5 w-5 text-[#6b7280]" strokeWidth={2.6} />
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
+                    <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
                   </div>
-                  <div className="flex h-9 flex-1 items-center rounded-full border border-black/15 pl-4 pr-2">
+                  <div className="flex h-9 flex-1 items-center rounded-full border pl-4 pr-2" style={{ borderColor: AX.fieldBorder }}>
                     {hasText ? (
-                      <span className="text-[15px] text-black">{text}</span>
+                      <span className="text-[15px]" style={{ color: AX.ink }}>{text}</span>
                     ) : (
-                      <span className="text-[15px]" style={{ color: '#9aa0a6' }}>
+                      <span className="text-[15px]" style={{ color: AX.fieldPlaceholder }}>
                         iMessage
                       </span>
                     )}
                     <span className="ml-[1px] inline-block h-4 w-[2px] animate-pulse" style={{ background: C.send }} />
                     <div className="flex-1" />
-                    {!hasText && <Mic className="h-5 w-5 shrink-0" style={{ color: '#9aa0a6' }} strokeWidth={2} />}
+                    {!hasText && <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />}
                   </div>
                   {hasText && (
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ backgroundColor: C.send }}>
@@ -669,23 +678,23 @@ export default function ArcatextKeyboard({
                   <div className="mb-2 flex items-center" style={{ height: 50, gap: 8 }}>
                     <button onClick={() => jump('menu')} className="relative ml-2 mr-[3px]" aria-label="Open study guide and settings">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <img src={studyUrl} alt="" style={{ width: 19, height: 19 }} />
+                        <AxIcon light={studyUrl} dark={studyDarkUrl} width={19} height={19} />
                       </div>
                     </button>
                     <button onClick={() => jump('paste')} className="relative mr-[3px]" aria-label="Open paste">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <img src={pasteUrl} alt="" style={{ width: 16, height: 20 }} />
+                        <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
                       </div>
                     </button>
                     <button onClick={() => jump('check')} className="relative" aria-label="Open check">
                       <div className="grid place-items-center rounded-[12px]" style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}>
-                        <img src={checkUrl} alt="" style={{ width: 20, height: 20 }} />
+                        <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
                       </div>
                     </button>
                     <div className="flex-1" />
                     <div
                       className="relative mr-2 flex items-stretch overflow-hidden rounded-[12px]"
-                      style={{ height: 50, backgroundColor: pressed === 'reword' ? '#002B96' : C.rewordBg }}
+                      style={{ height: 50, backgroundColor: pressed === 'reword' ? C.rewordPressed : C.rewordBg }}
                     >
                       <button onClick={() => jump('reword')} className="relative flex items-center px-3" aria-label="Reword">
                         {rewordLoading ? (
@@ -714,13 +723,13 @@ export default function ArcatextKeyboard({
                   </div>
                   <div className="mb-[8px] flex gap-[5px]">
                     <Key bg={C.actionKey} grow={1.5}>
-                      <img src={shiftUrl} alt="shift" style={{ width: 19, height: 17 }} />
+                      <AxIcon light={shiftUrl} dark={shiftDarkUrl} width={19} height={17} />
                     </Key>
                     {row3.map((l) => (
                       <Key key={l} label={lower ? l : l.toUpperCase()} />
                     ))}
                     <Key bg={C.actionKey} grow={1.5}>
-                      <img src={backspaceUrl} alt="backspace" style={{ width: 23, height: 17 }} />
+                      <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
                     </Key>
                   </div>
                   <div className="mb-2 flex gap-[5px]">
@@ -728,15 +737,15 @@ export default function ArcatextKeyboard({
                       123
                     </Key>
                     <Key bg={C.actionKey} grow={1.2}>
-                      <img src={localesUrl} alt="languages" style={{ width: 14, height: 17 }} />
+                      <AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />
                     </Key>
                     <Key grow={5} fontSize={15}>
-                      <span className="text-black/85">space</span>
+                      <span style={{ opacity: 0.85 }}>space</span>
                     </Key>
                     <Key bg={C.actionKey} grow={1.6}>
                       <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
-                        <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M11 9l-4 4 4 4" stroke="rgba(0,0,0,0.82)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </Key>
                   </div>
@@ -766,7 +775,7 @@ export default function ArcatextKeyboard({
                           className="absolute right-3 grid h-[38px] w-[38px] place-items-center rounded-[12px]"
                           style={{ background: C.xBtnBg }}
                         >
-                          <X className="h-[18px] w-[18px]" style={{ color: '#3a3a3c' }} strokeWidth={2.4} />
+                          <X className="h-[18px] w-[18px]" style={{ color: C.xMark }} strokeWidth={2.4} />
                         </button>
                       </div>
 
@@ -891,18 +900,18 @@ export default function ArcatextKeyboard({
                       {/* PASTE */}
                       {view === 'paste' && (
                         <div className="flex flex-1 flex-col">
-                          <div className="flex gap-1 rounded-[8px] p-1 mx-3" style={{ background: '#E3E3E8' }}>
-                            <div className="flex-1 rounded-[6px] bg-white py-1.5 text-center text-[15px] font-medium" style={{ color: C.label }}>
+                          <div className="flex gap-1 rounded-[8px] p-1 mx-3" style={{ background: AX.pickerBg }}>
+                            <div className="flex-1 rounded-[6px] py-1.5 text-center text-[15px] font-medium" style={{ color: C.label, background: AX.pickerSelected }}>
                               Original
                             </div>
-                            <div className="flex-1 py-1.5 text-center text-[15px] font-medium" style={{ color: '#5a5a5e' }}>
+                            <div className="flex-1 py-1.5 text-center text-[15px] font-medium" style={{ color: AX.pickerLabel }}>
                               Sentences
                             </div>
                           </div>
                           <div className="flex-1 overflow-y-auto px-4 pt-3">
                             {pasteLoading ? (
                               <div className="flex h-24 items-center justify-center">
-                                <span className="block h-6 w-6 animate-spin rounded-full border-2 border-black/20 border-t-black/60" />
+                                <span className="block h-6 w-6 animate-spin rounded-full border-2" style={{ borderColor: AX.spinnerTrack, borderTopColor: AX.spinnerHead }} />
                               </div>
                             ) : pasteResult ? (
                               <div>
@@ -910,7 +919,7 @@ export default function ArcatextKeyboard({
                                   <p className="text-[18px] leading-snug" style={{ color: C.label }}>
                                     {RECV_EN}
                                   </p>
-                                  <ChevronDown className="mt-1 h-5 w-5 rotate-180" style={{ color: '#3a3a3c' }} strokeWidth={2.2} />
+                                  <ChevronDown className="mt-1 h-5 w-5 rotate-180" style={{ color: AX.iconMuted }} strokeWidth={2.2} />
                                 </div>
                                 <div className="mt-3 border-l-[3px] pl-2.5 text-[18px] leading-snug" style={{ borderColor: C.primary, color: C.label }}>
                                   {RECV_JA}
@@ -965,7 +974,7 @@ export default function ArcatextKeyboard({
                               <span className="text-[16px]" style={{ color: C.label }}>
                                 Reword Includes Translation Copy
                               </span>
-                              <div className="h-6 w-10 rounded-full bg-black/15 p-0.5">
+                              <div className="h-6 w-10 rounded-full p-0.5" style={{ background: AX.toggleOff }}>
                                 <div className="h-5 w-5 rounded-full bg-white shadow" />
                               </div>
                             </div>
@@ -1025,7 +1034,7 @@ export default function ArcatextKeyboard({
                                 ~37%
                               </span>
                             </div>
-                            <div className="mt-2 h-2 w-full overflow-hidden rounded-full" style={{ background: '#D9D9D9' }}>
+                            <div className="mt-2 h-2 w-full overflow-hidden rounded-full" style={{ background: AX.tokenBar }}>
                               <div className="h-full rounded-full" style={{ width: '37%', background: C.primary }} />
                             </div>
                             <p className="mt-2 text-[15px] leading-snug" style={{ color: C.placeholder }}>
@@ -1049,7 +1058,7 @@ export default function ArcatextKeyboard({
                             </span>
                           </div>
                           {optMenuOpen && (
-                            <div className="absolute right-3 top-[120px] w-[300px] overflow-hidden rounded-[13px] bg-white shadow-xl" style={{ border: `1px solid ${C.cardStroke}` }}>
+                            <div className="absolute right-3 top-[120px] w-[300px] overflow-hidden rounded-[13px] shadow-xl" style={{ background: C.cardBg, border: `1px solid ${C.cardStroke}` }}>
                               <div className="flex items-center justify-between px-4 py-3">
                                 <span className="text-[17px] font-semibold" style={{ color: C.label }}>
                                   No Kanji
@@ -1077,11 +1086,11 @@ export default function ArcatextKeyboard({
                 {/* Bottom utility strip (stays visible under overlays) */}
                 <div style={{ backgroundColor: C.toolbarBar }} className="flex items-center justify-between px-5 pb-2 pt-1">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="9.2" stroke="rgba(0,0,0,0.82)" strokeWidth="1.5" />
-                    <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke="rgba(0,0,0,0.82)" strokeWidth="1.5" />
-                    <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke="rgba(0,0,0,0.82)" strokeWidth="1.5" />
+                    <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+                    <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+                    <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
                   </svg>
-                  <Mic className="h-6 w-6" style={{ color: 'rgba(0,0,0,0.82)' }} strokeWidth={2} />
+                  <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
                 </div>
               </div>
             </div>

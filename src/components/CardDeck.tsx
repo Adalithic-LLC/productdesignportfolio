@@ -27,13 +27,15 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import { useTheme } from '@/hooks/useTheme';
 
 const BASE = import.meta.env.BASE_URL;
 
 /** How long a card's trip to the back takes; must match the deck-flick keyframe. */
 const FLICK_MS = 750;
 
-export type DeckCard = { src: string; alt: string };
+/** `darkSrc`: the same screen in dark appearance, shown on the dark theme. */
+export type DeckCard = { src: string; alt: string; darkSrc?: string };
 
 export function CardDeck({
   cards,
@@ -53,6 +55,7 @@ export function CardDeck({
   holdMs?: number;
   onSelect: () => void;
 }) {
+  const dark = useTheme().resolvedTheme === 'dark';
   const [front, setFront] = useState(0);
   /** The card mid-flight to the back, if any. */
   const [leaving, setLeaving] = useState<number | null>(null);
@@ -129,7 +132,7 @@ export function CardDeck({
             ].join(' ')}
           >
             <img
-              src={`${BASE}hero-tiles/${card.src}`}
+              src={`${BASE}hero-tiles/${dark && card.darkSrc ? card.darkSrc : card.src}`}
               alt=""
               width={width}
               height={height}
@@ -139,7 +142,7 @@ export function CardDeck({
             {/* The plain grey card the deck shows behind the live screen. */}
             <span
               aria-hidden
-              className={`absolute inset-0 bg-neutral-300 transition-opacity ${lit ? 'opacity-0 duration-0' : 'opacity-100 duration-200'}`}
+              className={`absolute inset-0 bg-neutral-300 dark:bg-neutral-700 transition-opacity ${lit ? 'opacity-0 duration-0' : 'opacity-100 duration-200'}`}
             />
           </button>
         );

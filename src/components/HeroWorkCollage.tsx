@@ -7,20 +7,22 @@
  * prototype, running in an iframe.
  */
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 const BASE = import.meta.env.BASE_URL;
 
 /**
  * The admin tool is the real prototype -- the same self-contained page the
- * Arcatext case study embeds, pinned to the tool's daylight palette whatever
- * the portfolio's theme. The iframe is laid out at the tool's full desktop
+ * Arcatext case study embeds, in the palette matching the portfolio's theme:
+ * daylight on light, the tool's own dark "midnight" on dark (the same pairing
+ * AdminToolShowcase uses). The iframe is laid out at the tool's full desktop
  * width and scaled to whatever the tile is given, with a ResizeObserver keeping
  * the two in step, since that factor is a ratio CSS cannot work out on its own;
  * at the tile's own width the tool's responsive layout would collapse to a
  * single narrow column.
  */
 const TOOL = {
-  src: `${BASE}arcatext-admin-tool.html?theme=daylight`,
+  src: `${BASE}arcatext-admin-tool.html`,
   alt: 'Arcatext typing-performance admin tool',
   w: 1400,
   h: 897,
@@ -28,6 +30,7 @@ const TOOL = {
 
 export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const toolTheme = useTheme().resolvedTheme === 'dark' ? 'midnight' : 'daylight';
   const [scale, setScale] = useState(0);
 
   useEffect(() => {
@@ -42,10 +45,10 @@ export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
     <div
       ref={frameRef}
       style={{ rotate: '0.6deg', aspectRatio: `${TOOL.w} / ${TOOL.h}` }}
-      className="relative w-full overflow-hidden rounded-xl bg-white transition-transform duration-300 hover:rotate-0 sm:rounded-2xl"
+      className="relative w-full overflow-hidden rounded-xl bg-white transition-transform dark:bg-neutral-900 duration-300 hover:rotate-0 sm:rounded-2xl"
     >
       <iframe
-        src={TOOL.src}
+        src={`${TOOL.src}?theme=${toolTheme}`}
         title={TOOL.alt}
         tabIndex={-1}
         aria-hidden

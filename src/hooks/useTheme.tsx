@@ -18,7 +18,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return 'system';
   });
   
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
+  // Resolved on the first render rather than defaulting to dark, so components
+  // that pick an image by theme never request the wrong one before the effect.
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>(() => {
+    if (theme !== 'system') return theme;
+    if (typeof window === 'undefined') return 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

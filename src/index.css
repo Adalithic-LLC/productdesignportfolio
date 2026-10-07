@@ -5,6 +5,109 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Arcatext app palette, for every drawn Arcatext screen (the keyboard demo and
+   the Reword stills). Values are the app's own: the keyboard's asset-catalog
+   colorsets (light -> dark), and iOS system colors for the Messages chrome
+   around it. The site's `dark` class swaps the whole set, so the screens follow
+   the portfolio's theme. Names: see src/lib/arcatextTheme.tsx. */
+:root {
+  /* Keyboard (asset catalog) */
+  --ax-page-bg: #F2F2F7;        /* PasteBgColor */
+  --ax-card-bg: #FFFFFF;        /* MenuCardBgColor / CheckCardBgColor */
+  --ax-card-stroke: #E6E6EB;    /* MenuCardStrokeColor */
+  --ax-label: #000000;          /* MenuLabelColor */
+  --ax-detail: #808080;         /* MenuDetailColor */
+  --ax-placeholder: #8E8E93;    /* CheckPlaceholderColor */
+  --ax-accent: #0040DD;         /* AccentColor / ToolbarIconColor */
+  --ax-item: #0040DD;           /* ToolbarItemColor (Reword pill) */
+  --ax-item-pressed: #002B96;   /* PrimaryDarkColor */
+  --ax-primary: #0040DD;        /* CheckPrimaryColor */
+  --ax-check-text: #0040DD;     /* CheckButtonTextColor */
+  --ax-selected-bg: #D9EBFF;    /* CheckSelectedBgColor */
+  --ax-chip-bg: #FFFFFF;        /* language chip, unselected */
+  --ax-separator: #D1D3D9;      /* PasteSeperatorColor */
+  --ax-x-btn: #E6E6EB;          /* MenuXButtonColor */
+  --ax-x-mark: #000000;         /* ToolbarXMarkColor */
+  --ax-icon-muted: #3A3A3C;
+  --ax-picker-bg: #E3E3E8;      /* Paste segmented control */
+  --ax-picker-selected: #FFFFFF;/* PastePickerSelectedColor */
+  --ax-picker-label: #5A5A5E;
+  --ax-token-bar: #D9D9D9;      /* TokenBarBgColor */
+  --ax-tool-btn: #FFFFFF;       /* ToolbarIconButtonBgColor */
+  --ax-keyboard-bg: #D0D3DA;    /* system keyboard backdrop (ToolbarColor at 0 opacity) */
+  --ax-key: #FFFFFF;            /* RegularKeyColor */
+  --ax-action-key: #B1C6E0;     /* ActionKeyColor */
+  --ax-key-text: #000000;
+  --ax-key-hint: rgba(0, 0, 0, 0.4);
+  --ax-key-shadow: rgba(0, 0, 0, 0.3);
+  --ax-glyph: rgba(0, 0, 0, 0.82);
+  --ax-spinner-track: rgba(0, 0, 0, 0.2);
+  --ax-spinner-head: rgba(0, 0, 0, 0.6);
+  /* iOS system (Messages) */
+  --ax-screen: #FFFFFF;
+  --ax-ink: #000000;
+  --ax-ink-muted: rgba(0, 0, 0, 0.45);
+  --ax-hairline: rgba(0, 0, 0, 0.05);
+  --ax-field-border: rgba(0, 0, 0, 0.15);
+  --ax-field-placeholder: #9AA0A6;
+  --ax-plus-bg: #E6E8EC;
+  --ax-plus-icon: #6B7280;
+  --ax-send: #0A7AFF;           /* systemBlue */
+  --ax-sms-green: #34C759;      /* systemGreen */
+  --ax-recv-bubble: #E9E9EB;
+  --ax-toggle-off: #E9E9EB;
+  --ax-battery-ring: rgba(0, 0, 0, 0.4);
+  --ax-bezel-ring: transparent;
+}
+
+.dark {
+  --ax-page-bg: #2B2B2B;
+  --ax-card-bg: #3B3B3B;
+  --ax-card-stroke: #4A4A4A;
+  --ax-label: #FFFFFF;
+  --ax-detail: #ABABAB;
+  --ax-placeholder: #ABABAB;
+  --ax-accent: #7BA2FF;
+  --ax-item: #3370FF;
+  --ax-item-pressed: #2D63E6;
+  --ax-primary: #3370FF;
+  --ax-check-text: #7BA2FF;
+  --ax-selected-bg: #3B3B3B;
+  --ax-chip-bg: #2C2C2E;
+  --ax-separator: #545458;
+  --ax-x-btn: #3B3B3B;
+  --ax-x-mark: #ABABAB;
+  --ax-icon-muted: #ABABAB;
+  --ax-picker-bg: #3B3B3B;
+  --ax-picker-selected: #636366;
+  --ax-picker-label: #ABABAB;
+  --ax-token-bar: rgba(255, 255, 255, 0.2);
+  --ax-tool-btn: #3B3B3B;
+  --ax-keyboard-bg: #161617;    /* ToolbarColor, fully opaque in dark */
+  --ax-key: #3B3B3B;            /* letter keys take ActionKeyColor in dark */
+  --ax-action-key: #3B3B3B;
+  --ax-key-text: #FFFFFF;
+  --ax-key-hint: rgba(255, 255, 255, 0.45);
+  --ax-key-shadow: rgba(0, 0, 0, 0.6);
+  --ax-glyph: rgba(255, 255, 255, 0.9);
+  --ax-spinner-track: rgba(255, 255, 255, 0.2);
+  --ax-spinner-head: rgba(255, 255, 255, 0.7);
+  --ax-screen: #000000;
+  --ax-ink: #FFFFFF;
+  --ax-ink-muted: rgba(235, 235, 245, 0.6);
+  --ax-hairline: rgba(84, 84, 88, 0.65);
+  --ax-field-border: #3A3A3C;
+  --ax-field-placeholder: #8D8D93;
+  --ax-plus-bg: #2C2C2E;
+  --ax-plus-icon: #A1A1A6;
+  --ax-send: #0A84FF;
+  --ax-sms-green: #30D158;
+  --ax-recv-bubble: #262628;
+  --ax-toggle-off: #39393D;
+  --ax-battery-ring: rgba(255, 255, 255, 0.45);
+  --ax-bezel-ring: rgba(255, 255, 255, 0.14);
+}
+
 @layer base {
   /* Palette aligned to the "How Arcatext works" diagram:
      accent (blue) #5b8cff, accent-2 (teal) #38c4b4, neutral blue-greys. */
