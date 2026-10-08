@@ -518,8 +518,8 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "25 learners, 6 educators interviewed",
-                    "label": "Across 3 proficiency levels and 3 target languages"
+                    "value": "31 interviews",
+                    "label": "25 learners, 6 educators • 3 proficiency levels • 3 target languages"
                   }
                 }
               ],
@@ -538,8 +538,8 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "7 concepts prioritized for MVP",
-                    "label": "Chosen from 12 candidate concepts"
+                    "value": "7 MVP concepts",
+                    "label": "Prioritized from 12 candidates"
                   }
                 }
               ],
@@ -548,8 +548,8 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "3 architectural decisions made",
-                    "label": "How Reword and related features are accessed"
+                    "value": "2 architectural decisions",
+                    "label": "Keyboard integration, split button"
                   }
                 }
               ]
@@ -576,7 +576,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "01",
-                    "title": "Learners don't always feel comfortable messaging native speakers because they're afraid of making mistakes.",
+                    "title": "Learners avoid messaging native speakers for fear of making mistakes.",
                     "desc": "Offer a way to access translations during the conversation."
                   }
                 }
@@ -587,7 +587,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "02",
-                    "title": "The mistakes they fear most are social (wrong formality, wrong gender, sounding rude).",
+                    "title": "The mistakes they fear most are social: wrong formality, wrong gender, sounding rude.",
                     "desc": "Allow users to adjust translations depending on unique needs and context."
                   }
                 }
@@ -598,7 +598,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "03",
-                    "title": "Learning a new script is the biggest hurdle and demotivation.",
+                    "title": "A new script is the biggest hurdle, and a major demotivator.",
                     "desc": "Support simpler scripts like Romanization for languages that don't use ABC."
                   }
                 }
@@ -609,7 +609,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "04",
-                    "title": "Writing and translating the same language isn't always possible, but attempting to write in the target language is critical to progression.",
+                    "title": "Writing in the target language drives progress, but tools don't always provide same-language corrections.",
                     "desc": "Enable code-switching so users can write in their native language, target language, or a mix of both."
                   }
                 }
@@ -620,7 +620,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "05",
-                    "title": "Older messages have to be re-translated and this slows down conversations or leads to repeated questions.",
+                    "title": "Context gets lost, so learners re-translate messages they've already sent.",
                     "desc": "Make it easy for users to quickly understand what they previously sent."
                   }
                 }
@@ -631,7 +631,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "06",
-                    "title": "Getting a translation is cumbersome and creates long pauses in conversations, which doesn't feel natural.",
+                    "title": "Getting a translation takes long enough to break the flow of a chat.",
                     "desc": "Make translation as fast as possible to access and process."
                   }
                 }
@@ -642,8 +642,8 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "07",
-                    "title": "Learners appreciate free apps, especially translation tools because this is perceived as a basic utility.",
-                    "desc": "Explore free or affordable options and offer significantly more value than free tools, like Google Translate."
+                    "title": "Learners expect translation to be free; it feels like a basic utility.",
+                    "desc": "Enable affordable translation and offer significantly more value than free tools, like Google Translate."
                   }
                 }
               ],
@@ -653,7 +653,7 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "08",
-                    "title": "Translation tools change message style, content, and even meaning and often sound awkward and unnatural.",
+                    "title": "Translation tools flatten tone , sound awkward, and sometimes change the meaning.",
                     "desc": "Ensure translations stay true to the user's original intent, content, and tone."
                   }
                 }
