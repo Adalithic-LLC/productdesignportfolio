@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, ExternalLink, Clock } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ExternalLink, Clock, Layers } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { EditableImage } from '@/content/EditableImage';
@@ -14,6 +14,11 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Projects() {
   const { content, isAdmin } = useContent();
   const projects = content.projects.items;
+  /* The Arcatext case studies, as their own tile in the Work grid. Hidden ones
+     are left out here exactly as they are on the project page. */
+  const caseStudies = content.arcatext.features
+    .map((f, i) => ({ slug: f.slug, index: i, hidden: f.hidden }))
+    .filter((f) => !f.hidden);
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -222,7 +227,13 @@ export default function Projects() {
             <div
               key={project.id}
               className="project-card group relative"
-              style={{ transform: `rotate(${index % 2 === 0 ? '-1' : '1'}deg)` }}
+              /* The case-studies tile sits at order 1, so the first project
+                 keeps the opening slot and every later one moves down by one
+                 rather than the tile being appended at the end. */
+              style={{
+                transform: `rotate(${index % 2 === 0 ? '-1' : '1'}deg)`,
+                order: index === 0 ? 0 : index + 1,
+              }}
             >
               <a
                 href={hasPage ? project.link : undefined}
@@ -306,6 +317,50 @@ export default function Projects() {
             </div>
             );
           })}
+
+          {/* The Arcatext case studies take the slot after the first project,
+              pushing everything below down one. Deliberately not a
+              `.project-card`: that class indexes one-to-one with `projects`
+              for the float animation and the hero-tile highlight, and an extra
+              member would point both at the wrong card. */}
+          <div className="relative" style={{ order: 1 }}>
+            <div className="relative h-full rounded-2xl lg:rounded-3xl border border-border/50 bg-card p-4 pt-16 lg:p-5 lg:pt-16">
+              {/* Same floating pill as the timeframe badge on the cards. */}
+              <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground/90 backdrop-blur-sm">
+                <Layers className="h-3.5 w-3.5 text-primary" />
+                Arcatext case studies
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                {caseStudies.map(({ slug, index }, n) => (
+                  <a
+                    key={slug}
+                    href={`#/arcatext/${slug}`}
+                    onClick={(e) => handleProjectClick(e, `#/arcatext/${slug}`)}
+                    className="group/mini flex flex-col rounded-xl bg-muted/40 p-3.5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-mono text-[11px] text-primary/70">
+                        Case {String(n + 1).padStart(2, '0')}
+                      </span>
+                      <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    </div>
+                    <Editable
+                      as="h3"
+                      path={`arcatext.features.${index}.title`}
+                      className="mb-1.5 mt-1.5 text-sm font-semibold leading-snug text-foreground lg:text-base"
+                    />
+                    <Editable
+                      as="p"
+                      path={`arcatext.features.${index}.body`}
+                      multiline
+                      className="text-xs italic leading-relaxed text-muted-foreground lg:text-[13px]"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
