@@ -507,41 +507,52 @@
           },
           {
             "type": "element",
-            "variant": "stat-tile",
+            "variant": "grid",
             "data": {
-              "value": "14 learners, 6 educators",
-              "label": "Across 3 proficiency levels"
-            }
-          },
-          {
-            "type": "element",
-            "variant": "stat-tile",
-            "data": {
-              "value": "12 insights synthesized",
-              "label": "From ~80 observations across 6 themes that fed Reword & other features"
-            }
-          },
-          {
-            "type": "element",
-            "variant": "spacer",
-            "data": {
-              "height": "32"
-            }
-          },
-          {
-            "type": "element",
-            "variant": "stat-tile",
-            "data": {
-              "value": "7 features in Reword MVP",
-              "label": "Chosen from 12 candidate concepts"
-            }
-          },
-          {
-            "type": "element",
-            "variant": "stat-tile",
-            "data": {
-              "value": "3 architectural decisions",
-              "label": "How Reword and related features are accessed"
+              "cols": "2",
+              "rows": "2"
+            },
+            "cells": {
+              "r1c1": [
+                {
+                  "type": "element",
+                  "variant": "stat-tile",
+                  "data": {
+                    "value": "14 learners, 6 educators",
+                    "label": "Across 3 proficiency levels"
+                  }
+                }
+              ],
+              "r1c2": [
+                {
+                  "type": "element",
+                  "variant": "stat-tile",
+                  "data": {
+                    "value": "12 insights synthesized",
+                    "label": "From ~80 observations across 6 themes that fed Reword & other features"
+                  }
+                }
+              ],
+              "r2c1": [
+                {
+                  "type": "element",
+                  "variant": "stat-tile",
+                  "data": {
+                    "value": "7 concepts prioritized",
+                    "label": "Chosen from 12 candidate concepts"
+                  }
+                }
+              ],
+              "r2c2": [
+                {
+                  "type": "element",
+                  "variant": "stat-tile",
+                  "data": {
+                    "value": "3 architectural decisions",
+                    "label": "How Reword and related features are accessed"
+                  }
+                }
+              ]
             }
           },
           {
