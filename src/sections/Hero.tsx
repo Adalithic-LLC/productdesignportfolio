@@ -68,7 +68,9 @@ export default function Hero() {
         <HeroShowcase>
           <h1
             ref={titleRef}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
+            /* The brand blue, through the same class the rest of the site
+               marks its name with. */
+            className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
           >
             <HeroBody path="hero.title" />
           </h1>
