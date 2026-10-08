@@ -21,7 +21,7 @@
   },
   "hero": {
     "title": "Hey, I'm Andrew",
-    "subtitle": "I'm a digital product designer using AI to create highly considered, fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Product development lives or dies in the trade-off decisions: which features earn their place, what order to build them in, and which technical limits to design around versus push back on.",
+    "subtitle": "...a digital product designer using AI to create highly considered, fully functional products & tools. I love starting in ambiguity, bringing clarity to complex systems, and pushing my limits. Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on.",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
     "intro": [
@@ -115,6 +115,68 @@
         ],
         "link": "",
         "timeframe": ""
+      }
+    ],
+    "caseStudiesBlocks": [
+      {
+        "type": "element",
+        "variant": "grid",
+        "data": {
+          "cols": "2",
+          "rows": "2"
+        },
+        "cells": {
+          "r1c1": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Reword",
+                "desc": "The core translation & correction experience with options for specifying context and changing script."
+              }
+            }
+          ],
+          "r1c2": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Check",
+                "desc": "A pre-send review layer that helps users verify what an AI-generated translation actually means."
+              }
+            }
+          ],
+          "r1c3": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Card title",
+                "desc": "Supporting detail for this card."
+              }
+            }
+          ],
+          "r2c1": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Study Guide",
+                "desc": "A personalized vocabulary list derived from user translations."
+              }
+            }
+          ],
+          "r2c2": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Arcatext Tuning",
+                "desc": "An admin app for understanding and improving typing performance."
+              }
+            }
+          ]
+        }
       }
     ]
   },
@@ -1030,7 +1092,8 @@
               }
             ]
           }
-        }
+        },
+        "offHome": "hidden"
       },
       {
         "slug": "check",
@@ -1184,7 +1247,8 @@
               }
             ]
           }
-        }
+        },
+        "offHome": "hidden"
       },
       {
         "slug": "translate-received",
@@ -1452,7 +1516,8 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
-        }
+        },
+        "offHome": "hidden"
       },
       {
         "slug": "glide-calibration",
@@ -1721,7 +1786,8 @@
           "tradeoffTitle": "Tradeoffs & risks",
           "validationTitle": "Validation / outcome",
           "impactTitle": "Impact on the larger product"
-        }
+        },
+        "offHome": "hidden"
       }
     ],
     "overview": {
