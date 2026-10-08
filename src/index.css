@@ -496,3 +496,40 @@ html[data-preview] .sticky.top-0 {
 .ob-arrow-bounce {
   animation: ob-arrow-bounce 0.84s ease-in-out 1.35s both;
 }
+
+/* The home page's case study mini cards bob like the project cards beside
+   them (the same sine loop: down, up, back), at a smaller amplitude, each on
+   its own period and phase so they never move in step. `.grid > *` reaches
+   both the built-in tiles and cards inserted into the card, gridded or not. */
+@keyframes cs-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(6px);
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+}
+.cs-float .grid > * {
+  animation: cs-float 4.4s ease-in-out infinite;
+}
+.cs-float .grid > *:nth-child(4n + 2) {
+  animation-duration: 5.1s;
+  animation-delay: -1.3s;
+}
+.cs-float .grid > *:nth-child(4n + 3) {
+  animation-duration: 4.8s;
+  animation-delay: -2.6s;
+}
+.cs-float .grid > *:nth-child(4n + 4) {
+  animation-duration: 5.5s;
+  animation-delay: -3.7s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-float .grid > * {
+    animation: none;
+  }
+}

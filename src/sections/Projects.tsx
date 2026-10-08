@@ -327,7 +327,13 @@ export default function Projects() {
               for the float animation and the hero-tile highlight, and an extra
               member would point both at the wrong card. */}
           <div className="relative" style={{ order: 1 }}>
-            <div className="relative h-full rounded-2xl lg:rounded-3xl border border-border/50 bg-card p-4 pt-16 lg:p-5 lg:pt-16">
+            {/* No fill of its own, so the mini cards read as floating over the
+                page; centred top to bottom in the height the row gives it. */}
+            <div
+              className={`relative flex h-full flex-col justify-center rounded-2xl lg:rounded-3xl border border-border/50 p-4 pt-16 lg:p-5 lg:pt-16 ${
+                insertTool || moveMode ? '' : 'cs-float'
+              }`}
+            >
               {/* Same floating pill as the timeframe badge on the cards. */}
               <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground/90 backdrop-blur-sm">
                 <Layers className="h-3.5 w-3.5 text-primary" />
