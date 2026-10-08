@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/hooks/useTheme';
 import { ContentProvider } from '@/content/ContentContext';
 import { PreviewBar } from '@/content/PreviewBar';
 import { AdminBar } from '@/content/AdminBar';
+import { UpdateNotice } from '@/content/UpdateNotice';
 import Navigation from '@/sections/Navigation';
 import Hero from '@/sections/Hero';
 import Projects from '@/sections/Projects';
@@ -144,6 +145,7 @@ function App() {
 
           <PreviewBar />
           <AdminBar />
+          {isAdmin && <UpdateNotice />}
         </div>
       </ContentProvider>
     </ThemeProvider>
