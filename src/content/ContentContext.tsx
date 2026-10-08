@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { SiteContent } from './types';
-import type { InsertTool, ProseBlock } from './proseBlocks';
+import { canMoveBlocks, type InsertTool, type ProseBlock } from './proseBlocks';
 import defaultContent from './site-content.json';
 
 /**
@@ -22,6 +22,8 @@ const REPO_NAME = 'productdesignportfolio';
 const DEFAULT_BRANCH = 'main';
 
 const DRAFT_KEY = 'pdp.content.draft';
+/* What this browser last saved, kept until the live build carries it. */
+const SAVED_KEY = 'pdp.content.saved';
 const TOKEN_KEY = 'pdp.admin.token';
 const BRANCH_KEY = 'pdp.admin.branch';
 
@@ -284,6 +286,44 @@ function migrateDraft(draft: unknown): unknown {
   };
 }
 
+/**
+ * A save this browser made that the loaded bundle may not have caught up with.
+ *
+ * A save clears the draft, but the new build takes a minute to deploy and
+ * GitHub Pages can serve the old page for up to ten minutes after that. A page
+ * loaded in that window, with no draft, showed the content from before the
+ * save, which reads as the save having thrown the work away. So the saved
+ * content is kept here and stands in for the bundled content while the bundle
+ * is one of the versions it replaced.
+ *
+ * `from` is the content the first save was made over; `chain` is the content
+ * each save produced, in order (several saves from one page). The copy applies
+ * while the bundle is `from` or an earlier link of the chain; once the bundle
+ * is the last link it has caught up, and anything else means someone has
+ * saved since -- either way the copy is dropped.
+ */
+interface SavedCopy {
+  from: string;
+  chain: string[];
+  content: SiteContent;
+}
+
+function readSaved(): SavedCopy | null {
+  try {
+    const raw = localStorage.getItem(SAVED_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as SavedCopy;
+    const behind = [saved.from, ...saved.chain.slice(0, -1)];
+    if (saved.chain.length > 0 && behind.includes(__CONTENT_SHA__)) {
+      return { ...saved, content: migrateDraft(saved.content) as SiteContent };
+    }
+    localStorage.removeItem(SAVED_KEY);
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 function readDraft(): SiteContent | null {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
@@ -307,10 +347,16 @@ export function ContentProvider({
   const [previewing, setPreviewing] = useState(false);
   const isAdmin = unlocked && !previewing;
 
-  const base = defaultContent as SiteContent;
+  /* The content on GitHub as far as this browser knows: the bundled file, or
+     a save of its own the bundle has not caught up with yet. `baseSha` is that
+     content's blob SHA, which a save checks the branch against. */
+  const [savedCopy] = useState(readSaved);
+  const baseRef = useRef<SiteContent>(savedCopy?.content ?? (defaultContent as SiteContent));
+  const baseShaRef = useRef<string>(savedCopy ? savedCopy.chain[savedCopy.chain.length - 1] : __CONTENT_SHA__);
+  const savedRef = useRef<SavedCopy | null>(savedCopy);
   const [content, setContent] = useState<SiteContent>(() => {
     const draft = readDraft();
-    return draft ? deepMerge(base, draft) : base;
+    return draft ? deepMerge(baseRef.current, draft) : baseRef.current;
   });
   const [dirty, setDirty] = useState<boolean>(() => readDraft() != null);
   const [token, setTokenState] = useState<string>(() => localStorage.getItem(TOKEN_KEY) ?? '');
@@ -533,19 +579,42 @@ export function ContentProvider({
 
   const moveBlocksTo = useCallback(
     (targetPath: string, targetGap: number) => {
-      if (selection?.domain !== 'block' || selection.path !== targetPath) return;
-      const indices = selection.indices;
+      if (selection?.domain !== 'block') return;
+      const { path: sourcePath, indices } = selection;
+      if (!canMoveBlocks(sourcePath, indices, targetPath)) return;
       requestScrollRestore();
       setContent((prev) => {
-        const arr = getByPath(prev, targetPath);
+        const arr = getByPath(prev, sourcePath);
         if (!Array.isArray(arr)) return prev;
         const sorted = [...indices].sort((a, b) => a - b);
         const moving = sorted.map((i) => arr[i]); // preserve top-to-bottom order
         const remaining = arr.filter((_, i) => !sorted.includes(i));
-        const removedBefore = sorted.filter((i) => i < targetGap).length;
-        const at = Math.max(0, Math.min(targetGap - removedBefore, remaining.length));
-        const nextArr = [...remaining.slice(0, at), ...moving, ...remaining.slice(at)];
-        const next = setByPath(prev, targetPath, nextArr);
+
+        if (sourcePath === targetPath) {
+          const removedBefore = sorted.filter((i) => i < targetGap).length;
+          const at = Math.max(0, Math.min(targetGap - removedBefore, remaining.length));
+          const nextArr = [...remaining.slice(0, at), ...moving, ...remaining.slice(at)];
+          const next = setByPath(prev, targetPath, nextArr);
+          persistDraft(next);
+          return next;
+        }
+
+        /* Across lists (into or out of a grid cell): take the blocks out, then
+           put them in. A target nested inside the source list -- a cell of a
+           grid further down it -- is renamed by the blocks taken out above it,
+           so its index is shifted to match before it is written. */
+        let next = setByPath(prev, sourcePath, remaining);
+        let target = targetPath;
+        if (targetPath.startsWith(`${sourcePath}.`)) {
+          const rest = targetPath.slice(sourcePath.length + 1).split('.');
+          const k = Number(rest[0]);
+          rest[0] = String(k - sorted.filter((i) => i < k).length);
+          target = `${sourcePath}.${rest.join('.')}`;
+        }
+        const dst = getByPath(next, target);
+        const list = Array.isArray(dst) ? [...dst] : [];
+        list.splice(Math.max(0, Math.min(targetGap, list.length)), 0, ...moving);
+        next = setByPath(next, target, list);
         persistDraft(next);
         return next;
       });
@@ -580,13 +649,13 @@ export function ContentProvider({
     } catch {
       /* ignore */
     }
-    setContent(base);
+    setContent(baseRef.current);
     setDirty(false);
     setSaveState({ status: 'idle' });
     setInsertTool(null);
     setMoveMode(false);
     setSelection(null);
-  }, [base, setInsertTool]);
+  }, [setInsertTool]);
 
   const save = useCallback(async () => {
     if (!token) {
@@ -640,7 +709,7 @@ export function ContentProvider({
       // retry past -- retrying is precisely what overwrites the newer work --
       // so the save stops and asks for a reload.
       const currentSha = await fetchSha();
-      if (currentSha && currentSha !== __CONTENT_SHA__) {
+      if (currentSha && currentSha !== baseShaRef.current) {
         throw new Error(
           'This page was loaded before the content changed on GitHub, so saving ' +
             'would revert those changes. Reload the page, then redo this edit. ' +
@@ -669,6 +738,30 @@ export function ContentProvider({
         throw new Error(detail);
       }
 
+      /* This page now holds what is on the branch, so a further save from it
+         is not stale; and the content is kept until the live build has it. */
+      let newSha: string | undefined;
+      try {
+        newSha = ((await putRes.json()) as { content?: { sha?: string } }).content?.sha;
+      } catch {
+        /* ignore */
+      }
+      baseRef.current = content;
+      if (newSha) {
+        const prev = savedRef.current;
+        const saved: SavedCopy = {
+          from: prev?.from ?? __CONTENT_SHA__,
+          chain: [...(prev?.chain ?? []), newSha],
+          content,
+        };
+        savedRef.current = saved;
+        baseShaRef.current = newSha;
+        try {
+          localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
+        } catch {
+          /* ignore quota errors */
+        }
+      }
       try {
         localStorage.removeItem(DRAFT_KEY);
       } catch {

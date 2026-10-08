@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { ElementType, ReactNode } from 'react';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
 import { ArrowRight, Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Editable } from './Editable';
 import { BlockSlot } from './EditableBlocks';
@@ -194,6 +194,96 @@ function Spacer({ ctx }: { ctx: ElementCtx }) {
       </span>
     </div>
   );
+}
+
+/**
+ * A grid of free cells, each taking any blocks -- a stat tile, a card, a
+ * paragraph, a picture -- so a row of cards can break where the author wants
+ * rather than where a spacer forces it.
+ *
+ * Rows and columns are two numbers in the element's data; each cell is a block
+ * list at `cells.r<row>c<col>`, created on first insert. Lowering either number
+ * hides the cells past it without deleting them, so raising it again brings
+ * their content back. The columns are the desktop layout: below lg the grid
+ * runs two across at most, and one on a phone.
+ *
+ * A visitor sees only the filled cells' content in their places; in admin an
+ * empty cell draws as a dashed frame, since that frame is where a block goes.
+ */
+function GridElement({ ctx }: { ctx: ElementCtx }) {
+  const { content, isAdmin, insertTool, moveMode } = useContent();
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const rows = clamp(Number(ctx.data.rows) || 1, 1, 12);
+  const cols = clamp(Number(ctx.data.cols) || 3, 1, 6);
+  const armed = isAdmin && (!!insertTool || moveMode);
+
+  const block = ctx.path ? (lookup(content, ctx.path) as ProseBlock | undefined) : undefined;
+  const cells = block?.cells ?? {};
+
+  return (
+    <div data-wide>
+      {/* In admin the grid gets a label strip of its own: its delete button
+          sits top right, which is otherwise exactly where the last cell's card
+          keeps its own. */}
+      {ctx.path && isAdmin && (
+        <div className="mb-2 flex h-6 items-center text-[10px] uppercase tracking-wide text-muted-foreground/70">
+          Grid · {rows} × {cols}
+        </div>
+      )}
+      <div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(var(--grid-sm),minmax(0,1fr))] lg:grid-cols-[repeat(var(--grid-lg),minmax(0,1fr))]"
+        style={{ '--grid-sm': Math.min(cols, 2), '--grid-lg': cols } as CSSProperties}
+      >
+        {Array.from({ length: rows * cols }, (_, n) => {
+          const key = `r${Math.floor(n / cols) + 1}c${(n % cols) + 1}`;
+          const filled = (cells[key] ?? []).length > 0;
+          if (!ctx.path || (isAdmin && !filled && !armed)) {
+            return (
+              <div
+                key={key}
+                className="flex min-h-24 items-center justify-center rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-center text-[10px] uppercase tracking-wide text-muted-foreground/70"
+              >
+                {ctx.path ? `Cell ${key} — pick an element, then click + here` : `Cell ${key}`}
+              </div>
+            );
+          }
+          /* The last block in a cell grows to the cell's height, so cards side
+             by side end level whatever their text; in admin that card sits
+             inside a wrapper (`data-block`), which passes the height on. */
+          return (
+            <div key={key} className={`flex flex-col ${armed ? 'rounded-xl border border-dashed border-primary/30 p-2' : ''}`}>
+              <BlockSlot
+                path={`${ctx.path}.cells.${key}`}
+                className="my-0 flex flex-1 flex-col [&>*:last-child]:flex-1 [&>[data-block]]:flex [&>[data-block]]:flex-col [&>[data-block]>*:first-child]:flex-1"
+              />
+            </div>
+          );
+        })}
+      </div>
+      {ctx.path && isAdmin && (
+        /* A div, not a p: the case study sets every paragraph in it at
+           reading size, which would blow this hint up to body text. */
+        <div className="mt-3 text-xs text-muted-foreground/70">
+          <span className="font-medium">Rows:</span>{' '}
+          <Editable as="span" path={`${ctx.path}.data.rows`} className="inline-block min-w-3" />
+          <span className="ml-3 font-medium">Columns:</span>{' '}
+          <Editable as="span" path={`${ctx.path}.data.cols`} className="inline-block min-w-3" />
+          <span className="ml-2 opacity-60">
+            — up to 12 rows and 6 columns; to fill a cell, pick an element and click + inside it, or
+            select blocks in Move mode and move them in
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Resolve a nested value out of the content store using a dot path. */
+function lookup(obj: unknown, path: string): unknown {
+  return path.split('.').reduce<unknown>((acc, key) => {
+    if (acc == null || typeof acc !== 'object') return undefined;
+    return (acc as Record<string, unknown>)[key];
+  }, obj);
 }
 
 /**
@@ -654,6 +744,15 @@ export const ELEMENTS: ElementDef[] = [
         <PromptArchitecture />
       </div>
     ),
+  },
+  {
+    /* Not in "Cards": a grid lays out its own cells, and a run of grids
+       should stack, not be gridded again. */
+    id: 'grid',
+    label: 'Grid — rows & columns',
+    group: 'Layout',
+    defaultData: { cols: '3', rows: '1' },
+    body: (ctx) => <GridElement ctx={ctx} />,
   },
   {
     id: 'spacer',

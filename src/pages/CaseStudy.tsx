@@ -219,7 +219,7 @@ function Prose({
        widths, however many there are -- stacked below lg, where a row of four
        would be unreadable. */
     <div
-      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&>*]:max-w-3xl [&_p]:text-lg [&_p]:leading-relaxed [&>[data-card-row]]:max-w-none [&>[data-wide]]:max-w-none ${cardRun} ${
+      className={`space-y-5 text-lg leading-relaxed text-foreground/90 [&>*]:max-w-3xl [&_p]:text-lg [&_p]:leading-relaxed [&>[data-card-row]]:max-w-none [&>[data-wide]]:max-w-none [&>*:has(>[data-wide])]:max-w-none ${cardRun} ${
         className ?? ''
       }`}
     >

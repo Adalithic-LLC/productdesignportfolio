@@ -6,6 +6,7 @@ import { useContent } from './ContentContext';
 import { Editable } from './Editable';
 import {
   blockForTool,
+  canMoveBlocks,
   headerConfig,
   isProseBlock,
   type InsertTool,
@@ -102,7 +103,10 @@ export function EditableBlocks({
   // card elements out in a responsive grid.
   const interactive = inMove || (isAdmin && !!insertTool);
   const moveActiveHere =
-    inMove && selection?.domain === 'block' && selection.path === path && selection.indices.length > 0;
+    inMove &&
+    selection?.domain === 'block' &&
+    selection.indices.length > 0 &&
+    canMoveBlocks(selection.path, selection.indices, path);
 
   const moveLine = (gap: number) =>
     moveActiveHere ? (
@@ -124,9 +128,12 @@ export function EditableBlocks({
     // Group consecutive card elements into a responsive 2–3 column grid; render
     // everything else (headings, paragraphs, callouts, …) full width.
     const out: React.ReactNode[] = [];
+    /* A grid cell is already a column of the author's choosing, so cards in
+       one stack rather than forming a row of their own inside it. */
+    const inCell = path.includes('.cells.');
     let i = start;
     while (i < end) {
-      if (isCardElement(items[i])) {
+      if (!inCell && isCardElement(items[i])) {
         const runStart = i;
         const run: number[] = [];
         while (i < end && isCardElement(items[i])) {
@@ -384,7 +391,9 @@ function Block({
   const delPos = isElement ? 'right-2 top-2' : '-left-8 top-0.5';
 
   return (
-    <div className="relative">
+    /* Marked so a grid cell can stretch the card inside to the cell's height
+       through this wrapper, which only admin adds. */
+    <div className="relative" data-block>
       {el}
       {/* Always rendered (not hover-gated) so it never vanishes mid-click. */}
       <button

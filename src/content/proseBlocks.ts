@@ -24,6 +24,9 @@ export interface ProseBlock {
      so an element that never uses them carries neither key. */
   above?: ProseItem[];
   below?: ProseItem[];
+  /* A grid element's cells, keyed by position (`r1c2` is row 1, column 2).
+     Each is a block list like any other; created on first insert. */
+  cells?: Record<string, ProseItem[]>;
 }
 
 /** A single entry in a prose array: a legacy string (= paragraph) or a block. */
@@ -104,6 +107,23 @@ export function isProseBlock(item: ProseItem): item is ProseBlock {
 /** The display text for any prose entry. */
 export function proseText(item: ProseItem): string {
   return typeof item === 'string' ? item : item.text ?? '';
+}
+
+/**
+ * Whether the selected blocks (indices into the list at `source`) may move to
+ * the list at `target`.
+ *
+ * Within one list, always. Across lists, only into a grid cell or back out of
+ * one to a list that contains its grid: that is what a grid is for, and
+ * opening every slot on the page as a target would put a move line in every
+ * gap of it. Never into a block that is itself moving -- a grid into its own
+ * cell.
+ */
+export function canMoveBlocks(source: string, indices: number[], target: string): boolean {
+  if (target === source) return true;
+  if (indices.some((i) => target.startsWith(`${source}.${i}.`))) return false;
+  const isCell = (p: string) => p.includes('.cells.');
+  return isCell(target) || (isCell(source) && source.startsWith(`${target}.`));
 }
 
 /** Look up a header config by style, falling back to the subsection style. */
