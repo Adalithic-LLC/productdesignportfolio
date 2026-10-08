@@ -21,6 +21,8 @@ import localesUrl from '@/assets/keyboard/locales.svg';
 import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
 import { AX, AxIcon } from '@/lib/arcatextTheme';
 import { Editable } from '@/content/Editable';
+// The pointer from the app's onboarding (Assets.xcassets/OB_Arrow).
+import obArrowUrl from '@/assets/arcatext/ob-arrow.png';
 import ArcatextOptionsPage, { type OptionsConfig } from '@/components/ArcatextOptionsPage';
 import {
   CheckPanel,
@@ -254,14 +256,22 @@ function ToolButton({
   );
 }
 
-/** The tour's yellow (Experimental amber, brightened for an overlay). */
-const TOUR_YELLOW = '#FFC21A';
+/** OB_Arrow's own yellow, for the Next button. */
+const TOUR_YELLOW = '#FFC600';
 
 /**
- * A tour stop's callout: a yellow arrow drawn over the phone, pointing at the
- * element tagged `data-tour={tag}` (it may run past the phone's edge), and a
- * caption box with Next. The box sits beside the phone when the page has room
- * to its left, otherwise under it.
+ * A tour stop's callout: the Arcatext onboarding pointer (OB_Arrow, the app's
+ * own asset) on the phone, pointing left at the element tagged
+ * `data-tour={tag}` — free to run past the phone's edge — and a caption box
+ * with Next. The box sits beside the phone when the page has room to its
+ * left, otherwise under it. Its text is content (arcatext.checkTour), so it
+ * edits in place in admin mode.
+ *
+ * The pointer moves as PointerArrow does in the app's onboarding: it springs
+ * in from 60pt to the right, gives a soft double bounce toward its target
+ * (6pt, then 3pt) and settles. Like the app it is drawn at 44pt (scaled with
+ * the phone), with its tip — the image's left corner, two-thirds down —
+ * landing just inside the target's right edge.
  */
 function TourCallout({
   phoneRef,
@@ -302,26 +312,15 @@ function TourCallout({
 
   if (!geo) return null;
 
-  // Point at the element's left edge, at the middle of its first line or so.
-  // Elements on the right half are reached from below-left at an angle, so the
-  // arrow passes under whatever shares their row instead of through it.
-  const tipX = geo.x - 2;
+  // OnboardingPage3AnimationView.tipPoint: just inside the right edge, at the
+  // middle (of the first line, for tall targets).
+  const k = geo.pw / OUTER_W;
+  const size = 44 * k;
+  const tipX = geo.x + geo.w - Math.min(geo.w * 0.25, 22);
   const tipY = geo.y + Math.min(geo.h / 2, 22);
-  const tailX = geo.side ? -30 : -22;
-  const rightHalf = geo.x > geo.pw * 0.45;
-  const tailY = rightHalf ? tipY + 56 : tipY;
-  const dx = tipX - tailX;
-  const dy = tipY - tailY;
-  const len = Math.hypot(dx, dy);
-  const ux = dx / len;
-  const uy = dy / len;
-  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
   const box = (
-    <div
-      className="w-[260px] rounded-2xl border border-border bg-card p-4 text-left shadow-xl animate-in fade-in-0 zoom-in-95 duration-200"
-      style={{ borderLeft: `4px solid ${TOUR_YELLOW}` }}
-    >
+    <div className="w-[260px] rounded-2xl border border-border bg-card p-4 text-left shadow-xl animate-in fade-in-0 zoom-in-95 duration-200">
       <div className="mb-1 font-mono text-[11px] text-muted-foreground">
         {index + 1} / {total}
       </div>
@@ -346,41 +345,18 @@ function TourCallout({
 
   return (
     <>
-      {/* The arrow, over the phone; free to run past its edge. Drawn in the
-          wrapper's own coordinates from a zero-size, overflow-visible SVG. */}
-      <svg aria-hidden className="pointer-events-none absolute left-0 top-0 z-20 overflow-visible" width={1} height={1}>
-        <g
-          className="ax-arrow-nudge"
-          style={{
-            filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.45))',
-            ['--nx' as string]: `${ux * 5}px`,
-            ['--ny' as string]: `${uy * 5}px`,
-          }}
-        >
-          <line
-            x1={tailX}
-            y1={tailY}
-            x2={tipX - ux * 12}
-            y2={tipY - uy * 12}
-            stroke={TOUR_YELLOW}
-            strokeWidth={5}
-            strokeLinecap="round"
-            className="ax-arrow-draw"
-            style={{ strokeDasharray: len, strokeDashoffset: len }}
-          />
-          <path
-            d="M -16 -10 L 0 0 L -16 10 Z"
-            fill={TOUR_YELLOW}
-            transform={`translate(${tipX} ${tipY}) rotate(${angle})`}
-          />
-        </g>
-      </svg>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-20"
+        style={{ left: tipX, top: tipY - size * 0.667, width: size, height: size, ['--ob-in' as string]: `${60 * k}px`, ['--ob-k' as string]: k }}
+      >
+        <div className="ob-arrow-in h-full w-full">
+          <img src={obArrowUrl} alt="" className="ob-arrow-bounce block h-full w-full" />
+        </div>
+      </div>
 
       {geo.side ? (
-        <div
-          className="absolute z-30"
-          style={{ right: `calc(100% + ${-tailX + 8}px)`, top: Math.max(0, tipY - 44) }}
-        >
+        <div className="absolute z-30" style={{ right: 'calc(100% + 24px)', top: Math.max(0, tipY - 44) }}>
           {box}
         </div>
       ) : (

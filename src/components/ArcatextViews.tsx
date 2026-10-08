@@ -341,7 +341,7 @@ export function CheckPanel({
                   </div>
                 )}
                 {state.homographs === 'done' && (
-                  <div className="flex flex-col gap-3" data-tour="homographs">
+                  <div className="flex flex-col gap-3">
                     {/* Word tabs: the original's words, 2pt bar under the selected one. */}
                     <div className="flex h-10 px-3">
                       <span className="flex flex-col justify-center px-3 pt-1.5 text-[16px] font-medium" style={{ color: AX.accent }}>
@@ -356,6 +356,7 @@ export function CheckPanel({
                         return (
                           <div
                             key={m.title}
+                            data-tour={on ? 'homographs' : undefined}
                             className="flex w-[168px] shrink-0 flex-col gap-1 rounded-[10px] p-3"
                             style={{
                               background: on ? AX.selectedBg : AX.cardBg,
@@ -385,12 +386,13 @@ export function CheckPanel({
                   </div>
                 )}
                 {gender === 'done' && data.gender && (
-                  <div className="flex flex-col gap-3" data-tour="gender">
+                  <div className="flex flex-col gap-3">
                     <WordTab word={data.gender.word} />
                     <div className="flex gap-2 px-3">
                       {data.gender.options.map((o, i) => (
                         <div
                           key={o.label}
+                          data-tour={i === 0 ? 'gender' : undefined}
                           className="flex flex-1 flex-col items-center gap-1 rounded-[10px] p-3 text-center"
                           style={optionCardStyle(i === 0)}
                         >
