@@ -37,7 +37,7 @@
       {
         "id": 1,
         "title": "Arcatext",
-        "description": "A translation keyboard.",
+        "description": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
         "image": "/project-arcatext-keyboard.webp",
         "imageDark": "/project-arcatext-keyboard-dark.webp",
         "tags": [
@@ -529,7 +529,7 @@
                   "variant": "stat-tile",
                   "data": {
                     "value": "12 insights synthesized",
-                    "label": "From ~80 observations across 6 themes that fed Reword & other features"
+                    "label": "From ~80 observations across 7 themes that fed Reword & other features"
                   }
                 }
               ],
@@ -556,6 +556,84 @@
             }
           },
           {
+            "type": "heading",
+            "style": "h4",
+            "text": "Relevant Insights",
+            "variant": "divider",
+            "data": {}
+          },
+          {
+            "type": "element",
+            "style": "h2",
+            "text": "Goals",
+            "variant": "grid",
+            "data": {
+              "cols": "3",
+              "rows": "2"
+            },
+            "cells": {
+              "r1c1": [
+                {
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "01",
+                    "title": "Learners put off messaging native speakers, or avoid it, because they're afraid of making mistakes in front of someone.",
+                    "desc": "Supporting detail for this card."
+                  }
+                },
+                {
+                  "type": "heading",
+                  "style": "h4",
+                  "text": ""
+                }
+              ],
+              "r1c2": [
+                {
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "01",
+                    "title": "The mistakes they fear most are social ones (wrong formality, wrong gender, sounding rude), not spelling.",
+                    "desc": "Supporting detail for this card."
+                  }
+                }
+              ],
+              "r1c3": [
+                {
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "03",
+                    "title": "Learning a new script is the biggest hurdle and demotivation.",
+                    "desc": "Supporting detail for this card."
+                  }
+                }
+              ],
+              "r2c1": [
+                {
+                  "type": "heading",
+                  "style": "h3",
+                  "text": "Translating to the same language isn't always possible, but attempting to write in the language is critical to progression."
+                }
+              ],
+              "r2c2": [
+                {
+                  "type": "heading",
+                  "style": "h3",
+                  "text": "Older messages have to be re-translated"
+                }
+              ],
+              "r2c3": [
+                {
+                  "type": "heading",
+                  "style": "h3",
+                  "text": "fdsafdaf"
+                }
+              ]
+            }
+          },
+          {
             "type": "element",
             "style": "sectionLabel",
             "text": "GOALS",
@@ -564,6 +642,12 @@
           },
           {
             "type": "heading",
+            "variant": "card-numbered",
+            "data": {
+              "num": "01",
+              "title": "App Integration",
+              "desc": "To allow translation to happen inside the messaging app"
+            },
             "style": "h2",
             "text": "Goals"
           },
