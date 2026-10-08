@@ -98,9 +98,7 @@ export function EditableBlocks({
   const items = all;
 
   const inMove = isAdmin && moveMode;
-  // While actively inserting or moving, show the per-gap insert/move lines as a
-  // single stacked column. Otherwise (visitors, and admin at rest) lay runs of
-  // card elements out in a responsive grid.
+  // While inserting or moving, every gap gets an insert/move line.
   const interactive = inMove || (isAdmin && !!insertTool);
   const moveActiveHere =
     inMove &&
@@ -124,70 +122,78 @@ export function EditableBlocks({
       </button>
     ) : null;
 
-  if (!interactive) {
-    // Group consecutive card elements into a responsive 2–3 column grid; render
-    // everything else (headings, paragraphs, callouts, …) full width.
-    const out: React.ReactNode[] = [];
-    /* A grid cell is already a column of the author's choosing, so cards in
-       one stack rather than forming a row of their own inside it. */
-    const inCell = path.includes('.cells.');
-    let i = start;
-    while (i < end) {
-      if (!inCell && isCardElement(items[i])) {
-        const runStart = i;
-        const run: number[] = [];
-        while (i < end && isCardElement(items[i])) {
-          run.push(i);
-          i += 1;
-        }
-        out.push(
-          run.length > 1 ? (
-            <div
-              key={`grid-${runStart}`}
-              /* Marked so a page can restyle a run of cards -- the case
-                 study pages put theirs on one row -- without this default
-                 having to know about them. */
-              data-card-row
-              /* A run whose cards are all pictures is marked, so a page can
-                 lay it out by the room a picture needs rather than by the
-                 column count that suits text cards. */
-              data-media-row={run.every((idx) => isMediaBlock(items[idx])) || undefined}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
-              {run.map((idx) => (
-                <Block key={idx} path={path} index={idx} item={items[idx]} editable={isAdmin} />
-              ))}
-            </div>
-          ) : (
-            <Block key={runStart} path={path} index={runStart} item={items[runStart]} editable={isAdmin} />
-          )
-        );
-      } else {
-        out.push(<Block key={i} path={path} index={i} item={items[i]} editable={isAdmin} />);
+  /* One walk for every mode. Runs of card elements are laid out as a grid
+     (2-3 across by default; a page can restyle `data-card-row`), everything
+     else full width. While inserting or moving, each block also gets its
+     insertion or move line above it -- inside its grid cell, so arming a tool
+     does not restack a row of cards into one column and throw the page around
+     under the reader. A run of pictures is the exception: its cells lay the
+     picture and its caption side by side, which a line in the cell would
+     break, so while a tool is armed it stacks with the lines between. */
+  const slot = (gap: number) =>
+    !interactive ? null : inMove ? moveLine(gap) : <InsertZone key={`zone-${gap}`} path={path} index={gap} />;
+  const block = (i: number) =>
+    inMove ? (
+      <MoveBlock key={i} path={path} index={i} item={items[i]} />
+    ) : (
+      <Block key={i} path={path} index={i} item={items[i]} editable={isAdmin} />
+    );
+  const single = (i: number) => (
+    <Fragment key={i}>
+      {slot(i)}
+      {block(i)}
+    </Fragment>
+  );
+
+  /* A grid cell is already a column of the author's choosing, so cards in
+     one stack rather than forming a row of their own inside it. */
+  const inCell = path.includes('.cells.');
+  const out: React.ReactNode[] = [];
+  let i = start;
+  while (i < end) {
+    if (!inCell && isCardElement(items[i])) {
+      const runStart = i;
+      const run: number[] = [];
+      while (i < end && isCardElement(items[i])) {
+        run.push(i);
         i += 1;
       }
-    }
-    return <>{out}</>;
-  }
-
-  return (
-    <>
-      {items.slice(start, end).map((item, n) => {
-        const i = start + n;
-        return (
-          <Fragment key={i}>
-            {inMove ? moveLine(i) : <InsertZone path={path} index={i} />}
-            {inMove ? (
-              <MoveBlock path={path} index={i} item={item} />
-            ) : (
-              <Block path={path} index={i} item={item} editable={isAdmin} />
+      const media = run.every((idx) => isMediaBlock(items[idx]));
+      if (run.length > 1 && !(interactive && media)) {
+        out.push(
+          <div
+            key={`grid-${runStart}`}
+            /* Marked so a page can restyle a run of cards -- the case
+               study pages put theirs on one row -- without this default
+               having to know about them. */
+            data-card-row
+            /* A run whose cards are all pictures is marked, so a page can
+               lay it out by the room a picture needs rather than by the
+               column count that suits text cards. */
+            data-media-row={media || undefined}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {run.map((idx) =>
+              interactive ? (
+                <div key={idx} className="flex flex-col">
+                  {single(idx)}
+                </div>
+              ) : (
+                block(idx)
+              )
             )}
-          </Fragment>
+          </div>
         );
-      })}
-      {inMove ? moveLine(end) : <InsertZone path={path} index={end} />}
-    </>
-  );
+      } else {
+        run.forEach((idx) => out.push(single(idx)));
+      }
+    } else {
+      out.push(single(i));
+      i += 1;
+    }
+  }
+  if (interactive) out.push(<Fragment key="end">{slot(end)}</Fragment>);
+  return <>{out}</>;
 }
 
 /**

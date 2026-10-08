@@ -106,6 +106,49 @@ function setByPath<T>(obj: T, path: string, value: unknown): T {
   return clone as T;
 }
 
+/** The first field rendered for the block at `path` (a list entry), if any. */
+function findField(path: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(
+    `[data-editable-path="${path}"], [data-editable-path^="${path}."]`
+  );
+}
+
+/**
+ * The editable field to hold the view by: the visible one nearest a third of
+ * the way down the window, where the eye usually is. Fields under the sticky
+ * header, hidden ones, and `exclude`d paths are passed over.
+ */
+function pickAnchor(exclude?: (path: string) => boolean): HTMLElement | null {
+  const line = window.innerHeight / 3;
+  let best: HTMLElement | null = null;
+  let bestDist = Infinity;
+  document.querySelectorAll<HTMLElement>('[data-editable-path]').forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.height === 0 || r.bottom <= 72 || r.top >= window.innerHeight) return;
+    if (exclude?.(el.getAttribute('data-editable-path') ?? '')) return;
+    const d = Math.abs(r.top - line);
+    if (d < bestDist) {
+      bestDist = d;
+      best = el;
+    }
+  });
+  return best;
+}
+
+/**
+ * Rename a content path for entries of the list at `list` moving by `delta`:
+ * entry indices from `from` on shift, so `list.4.text` becomes `list.5.text`
+ * after an insertion at 2. Paths outside the list are returned unchanged.
+ */
+function shiftIndex(path: string, list: string, from: number, delta: number): string {
+  if (!path.startsWith(`${list}.`)) return path;
+  const rest = path.slice(list.length + 1).split('.');
+  const k = Number(rest[0]);
+  if (!Number.isInteger(k) || k < from) return path;
+  rest[0] = String(k + delta);
+  return `${list}.${rest.join('.')}`;
+}
+
 /**
  * If every item in a list is an object with a purely-numeric `n` field, reassign
  * those `n`s sequentially (1-based) so card numbering stays correct after a
@@ -368,32 +411,78 @@ export function ContentProvider({
   const [moveMode, setMoveMode] = useState(false);
   const [selection, setSelection] = useState<MoveSelection | null>(null);
 
-  // When a move reorders content, the reflow (and tearing down the move-mode
-  // overlays/insertion lines) would otherwise make the page jump. We record the
-  // scroll offset before the mutation and restore it synchronously after the
-  // commit, in a layout effect (pre-paint) so the viewport never visibly moves.
-  const scrollRestoreRef = useRef<number | null>(null);
-  const requestScrollRestore = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    scrollRestoreRef.current = window.scrollY;
-    // Disable scroll anchoring BEFORE the reorder commits, so the browser won't
-    // follow a moved node (which is what makes the page jump). Re-enabled once
-    // the restore settles.
-    document.documentElement.style.overflowAnchor = 'none';
-  }, []);
+  /* Admin actions change the layout around the reader: arming a tool opens an
+     insertion line in every gap and stacks card rows into one column, and
+     inserting, deleting or moving a block reflows what follows. Holding the
+     scroll offset still lets everything on screen slide by whatever changed
+     above it, so instead one element on screen is held where it is: before the
+     change, `holdScroll` notes an editable field in view and its distance from
+     the top of the window; after the commit, in a layout effect (pre-paint),
+     the page is scrolled by however far that field moved. Browser scroll
+     anchoring is off meanwhile so it does not make its own correction on top.
+
+     `prefer` names the field to hold (the block above an insertion); otherwise
+     the one nearest a third of the way down the window is used, skipping any
+     `exclude`d paths (the blocks being removed or moved). `remap` renames the
+     held path for the change -- an insertion above it shifts its index -- so it
+     can be found again afterwards. The first hold of a batch wins: an insert
+     and the tool disarming after it are one change, held by the insert. */
+  const holdRef = useRef<{ path: string | null; top: number; y: number } | null>(null);
+  const holdScroll = useCallback(
+    (
+      opts: {
+        prefer?: string;
+        exclude?: (path: string) => boolean;
+        remap?: (path: string) => string;
+      } = {}
+    ) => {
+      if (typeof window === 'undefined' || holdRef.current) return;
+      const el = (opts.prefer && findField(opts.prefer)) || pickAnchor(opts.exclude);
+      const path = el?.getAttribute('data-editable-path') ?? null;
+      const hold = {
+        path: path && opts.remap ? opts.remap(path) : path,
+        top: el ? el.getBoundingClientRect().top : 0,
+        y: window.scrollY,
+      };
+      holdRef.current = hold;
+      const html = document.documentElement;
+      html.style.overflowAnchor = 'none';
+      /* A call that changes nothing never re-renders, so the hold would sit
+         waiting and land on some later, unrelated render. */
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (holdRef.current !== hold) return;
+          holdRef.current = null;
+          html.style.overflowAnchor = '';
+        })
+      );
+    },
+    []
+  );
   useLayoutEffect(() => {
-    const y = scrollRestoreRef.current;
-    if (y == null) return;
-    scrollRestoreRef.current = null;
+    const hold = holdRef.current;
+    if (!hold) return;
+    holdRef.current = null;
     const html = document.documentElement;
     const prevBehavior = html.style.scrollBehavior;
     html.style.scrollBehavior = 'auto'; // restore instantly, not smoothly
-    window.scrollTo(0, y);
-    // Keep it pinned for a few frames against late reflows, then re-enable
-    // scroll anchoring and restore smooth scrolling.
+    const settle = () => {
+      const el = hold.path
+        ? document.querySelector<HTMLElement>(`[data-editable-path="${hold.path}"]`)
+        : null;
+      if (el) {
+        const moved = el.getBoundingClientRect().top - hold.top;
+        if (Math.abs(moved) >= 1) window.scrollBy(0, moved);
+      } else if (window.scrollY !== hold.y) {
+        window.scrollTo(0, hold.y);
+      }
+    };
+    settle();
+    // Kept in place for a few frames against late reflows (a grid measuring,
+    // an image settling), then scroll anchoring and smooth scrolling return.
     let frame = 0;
     const tick = () => {
-      if (window.scrollY !== y) window.scrollTo(0, y);
+      settle();
       if (++frame < 8) {
         requestAnimationFrame(tick);
       } else {
@@ -403,26 +492,35 @@ export function ContentProvider({
     };
     requestAnimationFrame(tick);
   });
+  /** Hold the view across a change to the lists at `paths`, anchoring outside them. */
+  const requestScrollRestore = useCallback(
+    (...paths: string[]) =>
+      holdScroll({ exclude: (p) => paths.some((l) => p === l || p.startsWith(`${l}.`)) }),
+    [holdScroll]
+  );
 
   // Insert and Move are mutually exclusive modes; arming one exits the other.
   const setInsertTool = useCallback((tool: InsertTool | null) => {
+    holdScroll();
     if (tool) {
       setMoveMode(false);
       setSelection(null);
     }
     setInsertToolState(tool);
-  }, []);
+  }, [holdScroll]);
 
   const startMove = useCallback(() => {
+    holdScroll();
     setInsertToolState(null);
     setSelection(null);
     setMoveMode(true);
-  }, []);
+  }, [holdScroll]);
 
   const cancelMove = useCallback(() => {
+    holdScroll();
     setMoveMode(false);
     setSelection(null);
-  }, []);
+  }, [holdScroll]);
 
   const toggleSectionSelection = useCallback((id: string) => {
     setSelection((prev) => {
@@ -475,6 +573,13 @@ export function ContentProvider({
 
   const insertBlock = useCallback(
     (path: string, index: number, block: ProseBlock) => {
+      /* The block above the new one stays put, so the new block opens where
+         the line that was clicked sat; anything held further down is renamed
+         by the insertion. */
+      holdScroll({
+        prefer: index > 0 ? `${path}.${index - 1}` : undefined,
+        remap: (p) => shiftIndex(p, path, index, 1),
+      });
       setContent((prev) => {
         const arr = getByPath(prev, path);
         const list = Array.isArray(arr) ? [...arr] : [];
@@ -485,11 +590,15 @@ export function ContentProvider({
         return next;
       });
     },
-    [persistDraft]
+    [persistDraft, holdScroll]
   );
 
   const removeBlock = useCallback(
     (path: string, index: number) => {
+      holdScroll({
+        exclude: (p) => p === `${path}.${index}` || p.startsWith(`${path}.${index}.`),
+        remap: (p) => shiftIndex(p, path, index + 1, -1),
+      });
       setContent((prev) => {
         const arr = getByPath(prev, path);
         if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
@@ -500,11 +609,12 @@ export function ContentProvider({
         return next;
       });
     },
-    [persistDraft]
+    [persistDraft, holdScroll]
   );
 
   const duplicateItem = useCallback(
     (path: string, index: number) => {
+      requestScrollRestore(path);
       setContent((prev) => {
         const arr = getByPath(prev, path);
         if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
@@ -514,12 +624,12 @@ export function ContentProvider({
         return next;
       });
     },
-    [persistDraft]
+    [persistDraft, requestScrollRestore]
   );
 
   const moveItem = useCallback(
     (path: string, index: number, delta: number) => {
-      requestScrollRestore();
+      requestScrollRestore(path);
       setContent((prev) => {
         const arr = getByPath(prev, path);
         if (!Array.isArray(arr)) return prev;
@@ -537,6 +647,7 @@ export function ContentProvider({
 
   const removeItem = useCallback(
     (path: string, index: number) => {
+      requestScrollRestore(path);
       setContent((prev) => {
         const arr = getByPath(prev, path);
         if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
@@ -547,7 +658,7 @@ export function ContentProvider({
         return next;
       });
     },
-    [persistDraft]
+    [persistDraft, requestScrollRestore]
   );
 
   const moveSectionsTo = useCallback(
@@ -582,7 +693,7 @@ export function ContentProvider({
       if (selection?.domain !== 'block') return;
       const { path: sourcePath, indices } = selection;
       if (!canMoveBlocks(sourcePath, indices, targetPath)) return;
-      requestScrollRestore();
+      requestScrollRestore(sourcePath, targetPath);
       setContent((prev) => {
         const arr = getByPath(prev, sourcePath);
         if (!Array.isArray(arr)) return prev;
