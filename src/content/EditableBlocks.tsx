@@ -424,7 +424,7 @@ function Block({
  * the block that will be created.
  */
 function InsertZone({ path, index }: { path: string; index: number }) {
-  const { isAdmin, insertTool, insertBlock, setInsertTool } = useContent();
+  const { isAdmin, insertTool, insertBlock } = useContent();
   const [hover, setHover] = useState(false);
 
   if (!isAdmin || !insertTool) return null;
@@ -438,7 +438,11 @@ function InsertZone({ path, index }: { path: string; index: number }) {
     e.stopPropagation();
     const block = isElement ? makeElementBlock(insertTool.variant) : blockForTool(insertTool);
     insertBlock(path, index, block);
-    setInsertTool(null);
+    /* The tool stays armed: adding one of something is rarely the whole job,
+       and re-arming between every insert was the slow part. It is dropped by
+       picking a different one, or by Escape -- neither of which touches what
+       has already been added, since an insert writes into the content the
+       moment it happens. */
     // Focus the new block's first editable field once it has rendered.
     const firstField = isElement ? Object.keys(block.data ?? {})[0] : null;
     const focusPath = isElement
