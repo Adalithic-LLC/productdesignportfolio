@@ -450,9 +450,9 @@
           },
           {
             "type": "paragraph",
-            "text": "In my research, I found many gaps in existing tools and methods across the language learning spectrum. Learners were asking for things that didn't exist or were poorly executed. The Reword feature was the result of a strategic choice to focus on \"reading & writing\" as a learning method as opposed to speaking or listening. Having seen the most opportunity for differentiation in this area, I narrowed my focus and learned about gaps specifically in writing tools that revealed unmet user needs."
+            "text": "During market research, I found gaps in many types of existing language learning tools and methods. Learners were asking for things that didn't exist or were poorly executed, one of which was a shift towards realistic & practical language practice. The Reword concept was the result of a strategic choice to focus on \"reading & writing\" as a learning method. Having seen the most opportunity for differentiation and answering unmet user needs in this area, I narrowed my focus and learned about gaps specifically in writing tools and sought to make writing a more powerful learning method."
           },
-          "What I learned is that translation & writing could be leveraged as a much more powerful learning method, with a few adjustments and new ideas.\n\n\nCurrent translation options suffer from suboptimal workflows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\n\n\nReword became one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.",
+          "Current translation options suffer from suboptimal workflows, poor translation quality, no contextual accuracy, limited accepted inputs, and additional UX baggage of the container app.\n\nReword became one of Arcatext's biggest competitive advantages, as it solves multiple issues present in the competitive landscape.",
           {
             "type": "element",
             "variant": "card-logo",
@@ -494,6 +494,54 @@
               "body": "Other \"translator keyboard apps\" offer similar utility to Reword, but they typically come bundled with a host of issues. They only do basic translation, nothing else, so they ignore most of the language learning experience. The keyboards aren't optimized for accurate typing. Subscription prices are too high to justify. Poor UX & technical performance are blockers to fluid use.",
               "title": "Other Custom Keyboards",
               "markText": ""
+            }
+          },
+          {
+            "type": "heading",
+            "style": "h3",
+            "text": "User Interviews"
+          },
+          {
+            "type": "paragraph",
+            "text": "I interviewed language learners and educators to map where messaging in a new language breaks down. What I found set the MVP roadmap."
+          },
+          {
+            "type": "element",
+            "variant": "stat-tile",
+            "data": {
+              "value": "14 learners, 6 educators",
+              "label": "Across 3 proficiency levels"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "stat-tile",
+            "data": {
+              "value": "12 insights synthesized",
+              "label": "From ~80 observations across 6 themes that fed Reword & other features"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "spacer",
+            "data": {
+              "height": "32"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "stat-tile",
+            "data": {
+              "value": "7 features in Reword MVP",
+              "label": "Chosen from 12 candidate concepts"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "stat-tile",
+            "data": {
+              "value": "3 architectural decisions",
+              "label": "How Reword and related features are accessed"
             }
           },
           {
