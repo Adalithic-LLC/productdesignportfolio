@@ -13,7 +13,7 @@ import { HIGHLIGHT_MS, onProjectHighlight } from '@/lib/highlightProject';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Projects() {
-  const { content, isAdmin, setText } = useContent();
+  const { content, isAdmin, setText, insertTool, moveMode } = useContent();
   const projects = content.projects.items;
   /* The Arcatext case studies, as their own tile in the Work grid. Hidden ones
      are left out here exactly as they are on the project page, and so are any
@@ -387,6 +387,21 @@ export default function Projects() {
                 path="projects.caseStudiesBlocks"
                 className={caseStudies.length > 0 ? 'mb-0 mt-4' : 'my-0'}
               />
+              {/* The slot draws nothing until a tool is armed, so in admin an
+                  empty one says where it is and how to fill it. */}
+              {isAdmin &&
+                !insertTool &&
+                !moveMode &&
+                !(content.projects.caseStudiesBlocks ?? []).length && (
+                  <div
+                    className={`flex min-h-24 items-center justify-center rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-center text-[11px] leading-relaxed text-muted-foreground ${
+                      caseStudies.length > 0 ? 'mt-4' : ''
+                    }`}
+                  >
+                    Add to this card: open Settings, pick an element (a grid, a card, text) from
+                    Element, then click the line that appears here.
+                  </div>
+                )}
             </div>
           </div>
         </div>
