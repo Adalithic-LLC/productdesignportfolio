@@ -518,8 +518,8 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "14 learners, 6 educators",
-                    "label": "Across 3 proficiency levels"
+                    "value": "25 learners, 6 educators interviewed",
+                    "label": "Across 3 proficiency levels and 3 target languages"
                   }
                 }
               ],
@@ -528,7 +528,7 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "12 insights synthesized",
+                    "value": "8 insights synthesized to create Reword",
                     "label": "From ~80 observations across 7 themes that fed Reword & other features"
                   }
                 }
@@ -538,7 +538,7 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "7 concepts prioritized",
+                    "value": "7 concepts prioritized for MVP",
                     "label": "Chosen from 12 candidate concepts"
                   }
                 }
@@ -548,7 +548,7 @@
                   "type": "element",
                   "variant": "stat-tile",
                   "data": {
-                    "value": "3 architectural decisions",
+                    "value": "3 architectural decisions made",
                     "label": "How Reword and related features are accessed"
                   }
                 }
@@ -567,7 +567,7 @@
             "variant": "grid",
             "data": {
               "cols": "3",
-              "rows": "2"
+              "rows": "3"
             },
             "cells": {
               "r1c1": [
@@ -576,14 +576,9 @@
                   "variant": "card-numbered",
                   "data": {
                     "num": "01",
-                    "title": "Learners put off messaging native speakers, or avoid it, because they're afraid of making mistakes in front of someone.",
-                    "desc": "Supporting detail for this card."
+                    "title": "Learners don't always feel comfortable messaging native speakers because they're afraid of making mistakes.",
+                    "desc": "Offer a way to access translations during the conversation."
                   }
-                },
-                {
-                  "type": "heading",
-                  "style": "h4",
-                  "text": ""
                 }
               ],
               "r1c2": [
@@ -591,9 +586,9 @@
                   "type": "element",
                   "variant": "card-numbered",
                   "data": {
-                    "num": "01",
-                    "title": "The mistakes they fear most are social ones (wrong formality, wrong gender, sounding rude), not spelling.",
-                    "desc": "Supporting detail for this card."
+                    "num": "02",
+                    "title": "The mistakes they fear most are social (wrong formality, wrong gender, sounding rude).",
+                    "desc": "Allow users to adjust translations depending on unique needs and context."
                   }
                 }
               ],
@@ -604,31 +599,66 @@
                   "data": {
                     "num": "03",
                     "title": "Learning a new script is the biggest hurdle and demotivation.",
-                    "desc": "Supporting detail for this card."
+                    "desc": "Support simpler scripts like Romanization for languages that don't use ABC."
                   }
                 }
               ],
               "r2c1": [
                 {
-                  "type": "heading",
-                  "style": "h3",
-                  "text": "Translating to the same language isn't always possible, but attempting to write in the language is critical to progression."
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "04",
+                    "title": "Writing and translating the same language isn't always possible, but attempting to write in the target language is critical to progression.",
+                    "desc": "Enable code-switching so users can write in their native language, target language, or a mix of both."
+                  }
                 }
               ],
               "r2c2": [
                 {
-                  "type": "heading",
-                  "style": "h3",
-                  "text": "Older messages have to be re-translated"
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "05",
+                    "title": "Older messages have to be re-translated and this slows down conversations or leads to repeated questions.",
+                    "desc": "Make it easy for users to quickly understand what they previously sent."
+                  }
                 }
               ],
               "r2c3": [
                 {
-                  "type": "heading",
-                  "style": "h3",
-                  "text": "fdsafdaf"
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "06",
+                    "title": "Getting a translation is cumbersome and creates long pauses in conversations, which doesn't feel natural.",
+                    "desc": "Make translation as fast as possible to access and process."
+                  }
                 }
-              ]
+              ],
+              "r3c1": [
+                {
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "07",
+                    "title": "Learners appreciate free apps, especially translation tools because this is perceived as a basic utility.",
+                    "desc": "Explore free or affordable options and offer significantly more value than free tools, like Google Translate."
+                  }
+                }
+              ],
+              "r3c2": [
+                {
+                  "type": "element",
+                  "variant": "card-numbered",
+                  "data": {
+                    "num": "08",
+                    "title": "Translation tools change message style, content, and even meaning and often sound awkward and unnatural.",
+                    "desc": "Ensure translations stay true to the user's original intent, content, and tone."
+                  }
+                }
+              ],
+              "r3c3": []
             }
           },
           {
@@ -692,7 +722,7 @@
           "Providing options for these contextual settings increased user control over their translations but it also introduced UX complexity, so IA position and selective user prompting for gathering key data inputs were crucial decisions to avoid choice overload and creating a dense settings panel.",
           {
             "type": "paragraph",
-            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 75 languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language.\n\n\n\n\n\n\n!!!!--------------!!!!\nhere???\nI needed to create a faster translation workflow with contextual accuracy and flexibility in inputs and outputs, that could also serve as a foundation for learning features."
+            "text": "Regarding LLM prompts, It's currently impossible to use one prompt and get a high quality output with togglable options for 75 languages. The prompt system had to allow the app to send or withold certain instructions, depending on user selections, and scale to the unique linguistic needs and edge cases of each language.\n\n\n\n\n!!!!--------------!!!!\nhere???\nI needed to create a faster translation workflow with contextual accuracy and flexibility in inputs and outputs, that could also serve as a foundation for learning features."
           }
         ],
         "constraints": [
@@ -826,7 +856,7 @@
               "screen": "gender",
               "caption": "Recipient gender. Arabic inflects verbs and adjectives for the person being addressed, so the same English sentence has two correct translations. Setting it here resolves the ambiguity once instead of asking at every reword."
             },
-            "text": "Most tools produce a generic translation, but Arcatext needed to create a real learning moment at each translation or correction. That meant Reword needed to first understand the user's context to achieve the highest level of accuracy, then it needed to enable deeper learning features like \"Script\", \"Synonyms\", \"Reword Analysis\", and \"Study\"."
+            "text": "Most tools produce a generic translation, but Arcatext needed to differentiate from free tools by offering objectively better translations. That meant understanding user context and goals and offering an easy way to make changes to these settings."
           },
           {
             "type": "element",
