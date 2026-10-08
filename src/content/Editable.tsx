@@ -66,9 +66,15 @@ export function Editable({ path, as = 'span', className, multiline = false, ...r
         }
       }}
       onClick={(e: React.MouseEvent) => {
-        // Editing a clicked element shouldn't trigger parent button/link handlers.
+        // Editing a clicked element shouldn't trigger parent button/link
+        // handlers, and must not follow a link it happens to sit inside.
+        // `stopPropagation` alone does neither of the latter: a link navigates
+        // on the browser's default action, which only `preventDefault` cancels
+        // -- so a title inside a card would edit and navigate at once.
+        // Click fires after mousedown, where the caret is placed, so cancelling
+        // it costs nothing.
         e.stopPropagation();
-        if (as === 'a') e.preventDefault();
+        e.preventDefault();
       }}
       {...rest}
     />
