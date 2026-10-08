@@ -71,6 +71,9 @@ export interface SiteContent {
     heading: string;
     viewProject: string;
     items: ProjectItem[];
+    /* Free blocks inside the home page's case studies card, under its tiles:
+       a grid, a card, a paragraph. Created on first insert. */
+    caseStudiesBlocks?: unknown[];
   };
   caseStudies: {
     headingLead: string;
@@ -197,6 +200,9 @@ export interface ArcatextFeature {
      of its writing: admin's Hidden content panel lists it and puts it back.
      A string rather than a boolean so the ordinary text setter can write it. */
   hidden?: string;
+  /* Takes the case study off the home page's case studies card only; its own
+     page and the strip are untouched. Same string convention as `hidden`. */
+  offHome?: string;
   /* Every section below is a list of prose blocks rather than one run of text,
      so admin can add, reorder and delete a paragraph, heading or element
      inside it. A plain string in the list still renders as a paragraph. */

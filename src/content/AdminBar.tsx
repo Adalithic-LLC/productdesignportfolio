@@ -50,7 +50,7 @@ export function AdminBar() {
 
   if (!isAdmin) return null;
 
-  const hiddenCount = content.arcatext.features.filter((f) => f.hidden).length;
+  const hiddenCount = content.arcatext.features.filter((f) => f.hidden || f.offHome).length;
   const paragraphArmed = insertTool?.kind === 'paragraph';
   const headerArmed = insertTool?.kind === 'heading';
   const elementArmed = insertTool?.kind === 'element';
@@ -416,7 +416,8 @@ export function AdminBar() {
                 <div className="border-t border-border/60 px-3 py-2">
                   <p className="mb-2 text-[11px] leading-snug text-muted-foreground">
                     A hidden case study keeps every word and picture; it is only off the strip, so
-                    nothing is lost by putting it away.
+                    nothing is lost by putting it away. One removed from the home page's case
+                    studies card is off that card alone.
                   </p>
                   <ul className="flex flex-col gap-1">
                     {content.arcatext.features.map((f, i) => {
@@ -426,23 +427,35 @@ export function AdminBar() {
                           <span className={`text-xs ${off ? 'text-muted-foreground' : ''}`}>
                             {f.title}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setText(`arcatext.features.${i}.hidden`, off ? '' : 'hidden')
-                            }
-                            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-0.5 text-[11px] transition-colors hover:bg-muted"
-                          >
-                            {off ? (
-                              <>
-                                <Eye className="h-3 w-3" /> Show
-                              </>
-                            ) : (
-                              <>
-                                <EyeOff className="h-3 w-3" /> Hide
-                              </>
+                          <span className="flex items-center gap-1.5">
+                            {f.offHome && (
+                              <button
+                                type="button"
+                                onClick={() => setText(`arcatext.features.${i}.offHome`, '')}
+                                title="Put it back on the home page's case studies card"
+                                className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-0.5 text-[11px] transition-colors hover:bg-muted"
+                              >
+                                <Eye className="h-3 w-3" /> Show on home
+                              </button>
                             )}
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setText(`arcatext.features.${i}.hidden`, off ? '' : 'hidden')
+                              }
+                              className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-0.5 text-[11px] transition-colors hover:bg-muted"
+                            >
+                              {off ? (
+                                <>
+                                  <Eye className="h-3 w-3" /> Show
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="h-3 w-3" /> Hide
+                                </>
+                              )}
+                            </button>
+                          </span>
                         </li>
                       );
                     })}

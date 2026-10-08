@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, ArrowUpRight, ExternalLink, Clock, Layers } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ExternalLink, Clock, Layers, X } from 'lucide-react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
+import { BlockSlot } from '@/content/EditableBlocks';
 import { EditableImage } from '@/content/EditableImage';
 import { PasswordModal } from '@/components/PasswordModal';
 import { isProjectUnlocked } from '@/lib/projectAuth';
@@ -12,13 +13,15 @@ import { HIGHLIGHT_MS, onProjectHighlight } from '@/lib/highlightProject';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Projects() {
-  const { content, isAdmin } = useContent();
+  const { content, isAdmin, setText } = useContent();
   const projects = content.projects.items;
   /* The Arcatext case studies, as their own tile in the Work grid. Hidden ones
-     are left out here exactly as they are on the project page. */
+     are left out here exactly as they are on the project page, and so are any
+     taken off this card alone (`offHome`) -- admin's Hidden content panel
+     puts either back. */
   const caseStudies = content.arcatext.features
-    .map((f, i) => ({ slug: f.slug, index: i, hidden: f.hidden }))
-    .filter((f) => !f.hidden);
+    .map((f, i) => ({ slug: f.slug, index: i, hidden: f.hidden, offHome: f.offHome }))
+    .filter((f) => !f.hidden && !f.offHome);
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -331,34 +334,59 @@ export default function Projects() {
                 Arcatext case studies
               </div>
 
-              <div className="grid grid-cols-2 gap-3 lg:gap-4">
-                {caseStudies.map(({ slug, index }, n) => (
-                  <a
-                    key={slug}
-                    href={`#/arcatext/${slug}`}
-                    onClick={(e) => handleProjectClick(e, `#/arcatext/${slug}`)}
-                    className="group/mini flex flex-col rounded-xl bg-muted/40 p-3.5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:p-4"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-mono text-[11px] text-primary/70">
-                        Case {String(n + 1).padStart(2, '0')}
-                      </span>
-                      <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              {caseStudies.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                  {caseStudies.map(({ slug, index }, n) => (
+                    <div key={slug} className="relative flex">
+                      <a
+                        href={`#/arcatext/${slug}`}
+                        onClick={(e) => handleProjectClick(e, `#/arcatext/${slug}`)}
+                        className="group/mini flex flex-1 flex-col rounded-xl bg-muted/40 p-3.5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:p-4"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-mono text-[11px] text-primary/70">
+                            Case {String(n + 1).padStart(2, '0')}
+                          </span>
+                          {!isAdmin && (
+                            <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          )}
+                        </div>
+                        <Editable
+                          as="h3"
+                          path={`arcatext.features.${index}.title`}
+                          className="mb-1.5 mt-1.5 text-sm font-semibold leading-snug text-foreground lg:text-base"
+                        />
+                        <Editable
+                          as="p"
+                          path={`arcatext.features.${index}.body`}
+                          multiline
+                          className="text-xs italic leading-relaxed text-muted-foreground lg:text-[13px]"
+                        />
+                      </a>
+                      {/* Outside the link, so a click removes the tile rather
+                          than opening the case study. Only off this card: the
+                          case study and its page stay as they are. */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => setText(`arcatext.features.${index}.offHome`, 'hidden')}
+                          title="Remove from this card (the case study itself stays; Hidden content puts it back)"
+                          aria-label="Remove from this card"
+                          className="absolute right-2 top-2 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-border/60 bg-background/90 text-muted-foreground opacity-70 shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive hover:opacity-100"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
-                    <Editable
-                      as="h3"
-                      path={`arcatext.features.${index}.title`}
-                      className="mb-1.5 mt-1.5 text-sm font-semibold leading-snug text-foreground lg:text-base"
-                    />
-                    <Editable
-                      as="p"
-                      path={`arcatext.features.${index}.body`}
-                      multiline
-                      className="text-xs italic leading-relaxed text-muted-foreground lg:text-[13px]"
-                    />
-                  </a>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
+              {/* Anything else the card should carry -- a grid, a card, a
+                  line of text -- inserted from admin's Element menu. */}
+              <BlockSlot
+                path="projects.caseStudiesBlocks"
+                className={caseStudies.length > 0 ? 'mb-0 mt-4' : 'my-0'}
+              />
             </div>
           </div>
         </div>
