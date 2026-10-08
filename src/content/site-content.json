@@ -557,10 +557,8 @@
           },
           {
             "type": "heading",
-            "style": "h4",
-            "text": "Relevant Insights & Recommendations",
-            "variant": "divider",
-            "data": {}
+            "style": "h3",
+            "text": "Relevant Insights & Recommendations"
           },
           {
             "type": "element",
