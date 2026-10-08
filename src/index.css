@@ -472,17 +472,27 @@ html[data-preview] .sticky.top-0 {
   top: 36px;
 }
 
-/* The Check tour's arrow: drawn in, then a gentle nudge toward its target. */
-@keyframes ax-arrow-draw {
-  to { stroke-dashoffset: 0; }
+/* The Check tour's pointer, moving as the app's onboarding PointerArrow does:
+   after 0.3s it springs in from the right (response 0.5, damping 0.6, so it
+   overshoots a little), then after another 0.5s gives a soft double bounce
+   toward its target, 6pt then 3pt, and settles. --ob-in and --ob-k carry the
+   phone's scale. */
+@keyframes ob-arrow-in {
+  0% { opacity: 0; transform: translateX(var(--ob-in, 60px)); }
+  55% { opacity: 1; transform: translateX(calc(-5px * var(--ob-k, 1))); }
+  78% { transform: translateX(calc(1.5px * var(--ob-k, 1))); }
+  100% { opacity: 1; transform: translateX(0); }
 }
-.ax-arrow-draw {
-  animation: ax-arrow-draw 0.35s ease-out forwards;
+.ob-arrow-in {
+  animation: ob-arrow-in 0.55s ease-out 0.3s both;
 }
-@keyframes ax-arrow-nudge {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(var(--nx, 5px), var(--ny, 0px)); }
+@keyframes ob-arrow-bounce {
+  0% { transform: translateX(0); }
+  24% { transform: translateX(calc(-6px * var(--ob-k, 1))); }
+  50% { transform: translateX(0); }
+  74% { transform: translateX(calc(-3px * var(--ob-k, 1))); }
+  100% { transform: translateX(0); }
 }
-.ax-arrow-nudge {
-  animation: ax-arrow-nudge 1.1s ease-in-out 0.35s infinite;
+.ob-arrow-bounce {
+  animation: ob-arrow-bounce 0.84s ease-in-out 1.35s both;
 }
