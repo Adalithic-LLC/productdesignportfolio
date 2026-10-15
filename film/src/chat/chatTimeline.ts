@@ -103,15 +103,8 @@ export const SCRIPT: Line[] = [
     clearAbove: true,
     after: 1.0,
   },
-  {
-    who: 'them',
-    kind: 'type',
-    text: "But... one app can't replace everything, so let's not pretend.",
-    pauses: [{ after: 'But...', secs: 1.0 }],
-  },
-  { who: 'them', kind: 'block', text: "It's another part of your toolkit.", after: 1.5 },
   // ── Back up in the chat once the reply is sent, then down again ──
-  // Each of the next two stands alone on screen.
+  // "Yes!..." and "Learn the practical..." each arrive alone on screen.
   {
     who: 'them',
     kind: 'block',
@@ -122,6 +115,21 @@ export const SCRIPT: Line[] = [
     slotTypeDelay: 1.0,
     clearAbove: true,
     after: 1.0,
+    afterSend: true,
+  },
+  {
+    who: 'them',
+    kind: 'type',
+    text: 'But... it takes a lot of effort to learn a language.',
+    pauses: [{ after: 'But...', secs: 1.0 }],
+    afterSend: true,
+  },
+  {
+    who: 'them',
+    kind: 'type',
+    text: 'One app cannot do it all, this one helps you practice reading & writing in real conversations.',
+    pauses: [{ after: 'One app cannot do it all,', secs: 1.0 }],
+    after: 1.5,
     afterSend: true,
   },
   {
