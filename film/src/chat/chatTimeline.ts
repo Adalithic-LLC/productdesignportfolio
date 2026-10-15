@@ -47,7 +47,7 @@ export const FPS = 60;
 export const BPM = 120;
 
 const CHAR = 0.042; // in-place typing: ~24 characters a second
-const SLOT_SPIN = 0.5; // the reel's first spin, blank to the first word
+const SLOT_SPIN = 0.2; // the first word fading in on its line
 const SLOT_DWELL = 0.72; // each word holds this long before the next roll
 const SLOT_ROLL = 0.32;
 

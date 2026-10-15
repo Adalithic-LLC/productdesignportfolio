@@ -147,17 +147,13 @@ function Tail({ who, color }: { who: Who; color: string }) {
   );
 }
 
-/** The slot machine: a reel of words spun, then rolled word to word. */
+/** The slot machine: the first word appears, then the reel rolls word to word. */
 function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
   const words = m.slot!;
   const n = words.length;
   const widths = met.slotW[m.index];
   const reelPos = (tt: number) => {
-    // Spin through two full turns of the reel, landing on the first word.
-    if (tt < m.slotLands[0]) {
-      const k = clamp01((tt - m.slotAt) / (m.slotLands[0] - m.slotAt));
-      return 2 * n * easeOutBack(k) - 0.0001;
-    }
+    // The first word simply appears on its line; the reel rolls from there.
     let p = 2 * n;
     for (let i = 1; i < n; i++) {
       const rollStart = m.slotLands[i] - 0.32;
@@ -182,7 +178,7 @@ function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
     );
   }
   return (
-    <div style={{ height: LINE, opacity: clamp01((t - m.slotAt) / 0.12) }}>
+    <div style={{ height: LINE, opacity: easeOutCubic(clamp01((t - m.slotAt) / 0.3)) }}>
       <div className="relative inline-block overflow-hidden align-top" style={{ width: Math.max(w, 1), height: LINE, filter: `blur(${Math.min(2.5, v * 0.12)}px)` }}>
         {items}
       </div>
