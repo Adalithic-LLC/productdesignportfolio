@@ -1,32 +1,36 @@
 /**
- * Timing for the hero's word-by-word reveal.
+ * Timing for the hero's typing reveal.
  *
  * These live apart from the component that runs them because the hero chains
  * two of those components -- the title, then the paragraph -- and the second
- * needs to know the first's pace to start where it leaves off.
+ * needs to know when the first finishes typing to start where it leaves off.
  */
 
-/** How long after mount the first block's reveal begins. */
+/** How long after mount the first block starts typing. */
 export const REVEAL_START = 0.6;
 
-/**
- * The reveal's pace. The stagger sets how fast the leading edge travels and
- * the duration how long a word takes to darken once it is reached, so both
- * have to move together to change the speed without changing the character of
- * it -- halving the speed means doubling each.
- */
-export const REVEAL_STAGGER = 0.09;
-export const REVEAL_DURATION = 1;
+/** Characters a second, when the content does not say otherwise. */
+export const DEFAULT_TYPE_SPEED = 42;
 
-/** How much of the resting colour is left in a word that has not been read yet. */
-export const FADED_ALPHA = 0.22;
+/** The beat between one block finishing and the next starting. */
+export const TYPE_GAP = 0.3;
+
+const SPEED_RANGE = { min: 10, max: 160 } as const;
+
+/** Read a stored speed, which is content and so arrives as a string. */
+export function typeSpeed(value: string | number | undefined): number {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_TYPE_SPEED;
+  return Math.min(SPEED_RANGE.max, Math.max(SPEED_RANGE.min, Math.round(n)));
+}
+
+export const SPEED_LIMITS = SPEED_RANGE;
 
 /**
- * When the leading edge clears a block of `words`, which is when the next
- * block should pick it up. Chaining on the edge rather than on the last word
- * finishing keeps the sweep continuous: waiting for every word to finish
- * darkening would leave a visible gap between the title and the paragraph.
+ * When a block of `chars` has finished typing and the next should pick it up.
+ * The gap is a beat rather than nothing, so the two blocks read as one hand
+ * typing twice instead of one continuous run-on.
  */
-export function afterLeadingEdge(words: number, delay = REVEAL_START): number {
-  return delay + words * REVEAL_STAGGER;
+export function afterTyping(chars: number, speed: number, delay = REVEAL_START): number {
+  return delay + chars / typeSpeed(speed) + TYPE_GAP;
 }

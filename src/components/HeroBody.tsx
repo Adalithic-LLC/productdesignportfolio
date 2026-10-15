@@ -1,53 +1,37 @@
 /**
- * Hero copy, read into view a word at a time. Used for both the title and the
- * paragraph beneath it, which is why it takes its start time as a prop: the
- * two are chained so the reveal reads as one sweep down the column rather than
- * two that overlap.
+ * Hero copy, typed into view a character at a time. Used for both the title
+ * and the paragraph beneath it, which is why it takes its start time as a
+ * prop: the two are chained so the typing reads as one hand working down the
+ * column rather than two that overlap.
  *
- * Each word starts as a faded version of the body colour and darkens to it in
- * sequence, so the sentence arrives at about the pace it is read rather than
- * appearing all at once.
- *
- * It is a colour tween rather than an opacity one on purpose: the hero has a
- * mesh gradient behind it, and fading the glyphs' alpha lets that gradient
- * show through the letterforms. Tweening the colour keeps the type solid the
- * whole way. The faded end is the body colour's own hue at low alpha, so it
- * reads as light grey on the light theme and dark grey on the dark one
- * without either being hardcoded.
+ * The copy is there from the first frame -- every character is in the DOM,
+ * holding its own space, and only `visibility` is flipped as the cursor
+ * reaches it. So the paragraph is its final size before a word of it can be
+ * read, and nothing below it moves while it types. A reveal that built the
+ * text up instead would reflow the page on every character and shift the
+ * previews under it line by line.
  *
  * The copy is admin-editable and lives in the content store, so nothing here
- * hardcodes the sentence -- it is tokenised at render time. Admin mode renders
- * the plain `Editable`, because splitting a contentEditable into per-word
- * spans fights the caret.
+ * hardcodes the sentence -- it is split at render time. Admin mode renders the
+ * plain `Editable`, because splitting a contentEditable into per-character
+ * spans fights the caret; the speed is set there instead and watched in
+ * Preview.
  *
- * Inline marks in the copy are drawn on the same clock as the words they sit
- * under, rather than waiting to be scrolled into view like a mark further down
- * the page: the hero is already on screen when the reveal plays, so a scroll
- * trigger there would either fire at once or never.
+ * Inline marks in the copy are drawn as the words they sit on are typed: a
+ * mark covering several words is cut into a span per word, each starting on
+ * that word's first character and drawing for exactly as long as the word
+ * takes to type. The pieces carry their position in the run (see `MarkPiece`)
+ * so they still read as one mark.
  *
- * A mark covering several words is cut into a span per word, each starting as
- * that word's own colour change does, so the mark arrives across the phrase at
- * the pace the phrase is read instead of sweeping it in one go. The pieces
- * carry their position in the run (see `MarkPiece`) so they still read as one
- * mark: only the outer edges are padded, rounded and closed.
- *
- * The tween is a `from`, never a `to`: the resting DOM is the finished state,
- * so with motion turned off the paragraph is simply there. A reveal that opens
- * invisible and relies on a tween to arrive is how this page went blank for
- * reduced-motion visitors once already.
+ * Nothing here opens invisible to a visitor who has asked for less motion:
+ * then the copy is simply there, which is how this page went blank for those
+ * visitors once already.
  */
-import { Fragment, useEffect, useMemo, useRef } from 'react';
-import { gsap } from 'gsap';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Editable } from '@/content/Editable';
 import { useContent } from '@/content/ContentContext';
 import { AnimatedMark, markProps, parseMarks } from '@/content/inlineMarks';
-import {
-  FADED_ALPHA,
-  REVEAL_DURATION,
-  REVEAL_STAGGER,
-  REVEAL_START,
-} from '@/lib/heroReveal';
-
+import { REVEAL_START, SPEED_LIMITS, typeSpeed } from '@/lib/heroReveal';
 
 type Token = { kind: 'gap' | 'word'; text: string };
 
@@ -87,145 +71,165 @@ function toPieces(tokens: Token[]): Piece[] {
   return pieces;
 }
 
-/** How long one word's worth of a mark takes to draw. */
-const PIECE_DURATION = REVEAL_STAGGER * 2.4;
-
-/**
- * The resting body colour, restated at `FADED_ALPHA`.
- *
- * The colour is read back from the element rather than rebuilt from the theme
- * token, so it follows whatever the paragraph is actually set to. Returns null
- * if the browser hands back something unparseable, in which case the reveal is
- * skipped rather than guessed at.
- */
-function faded(color: string): string | null {
-  const parts = color.match(/[\d.]+/g);
-  if (!parts || parts.length < 3) return null;
-  const [r, g, b] = parts;
-  return `rgba(${r}, ${g}, ${b}, ${FADED_ALPHA})`;
-}
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function HeroBody({
   path,
   className,
   delay = REVEAL_START,
+  speed,
 }: {
   path: string;
   className?: string;
-  /** When the reveal starts, in seconds after mount. */
+  /** When the typing starts, in seconds after mount. */
   delay?: number;
+  /** Characters a second. */
+  speed: number;
 }) {
   const { content, isAdmin } = useContent();
   const value = String(resolve(content, path) ?? '');
   const root = useRef<HTMLSpanElement>(null);
 
-  /* Marked runs first, words inside them: a highlight that covers three words
-     has to be one box with the spaces inside it, not three. */
+  /* Decided once, at mount, and used by both the render and the effect: they
+     have to agree, or the copy is laid out hidden with nothing to reveal it. */
+  const [typing] = useState(() => !prefersReducedMotion());
+  const animate = typing && !isAdmin;
+
+  /* Marked runs first, words inside them, characters inside those: a highlight
+     that covers three words has to be one box with the spaces inside it, and
+     each word has to know which character of the whole block it starts at. */
   const segments = useMemo(() => parseMarks(value), [value]);
 
   const body = useMemo(() => {
-    let wordsBefore = 0;
-    return segments.map((seg, si) => {
-      const tokens = tokenize(seg.text);
-      const startWord = wordsBefore;
-      wordsBefore += tokens.filter((t) => t.kind === 'word').length;
-      const inner = tokens.map((token, i) =>
+    let charsBefore = 0;
+
+    /** Characters as spans, so each can be shown on its own. */
+    const chars = (text: string, key: string) =>
+      Array.from(text).map((ch, i) => (
+        <span key={`${key}-${i}`} className="hero-char" style={animate ? HIDDEN : undefined}>
+          {ch}
+        </span>
+      ));
+
+    const run = (tokens: Token[], key: string) =>
+      tokens.map((token, i) =>
         token.kind === 'gap' ? (
-          <Fragment key={i}>{token.text}</Fragment>
+          <Fragment key={`${key}-g${i}`}>{chars(token.text, `${key}-g${i}`)}</Fragment>
         ) : (
-          <span key={i} className="hero-word">
-            {token.text}
+          <span key={`${key}-w${i}`} className="hero-word">
+            {chars(token.text, `${key}-w${i}`)}
           </span>
         )
       );
-      if (!seg.mark) return <Fragment key={si}>{inner}</Fragment>;
-      if (!seg.mark.animate) {
+
+    return segments.map((seg, si) => {
+      const tokens = tokenize(seg.text);
+      const startChar = charsBefore;
+      charsBefore += seg.text.length;
+
+      if (!seg.mark) return <Fragment key={si}>{run(tokens, `s${si}`)}</Fragment>;
+      if (!seg.mark.animate || !animate) {
         return (
           <span key={si} {...markProps(seg.mark)}>
-            {inner}
+            {run(tokens, `s${si}`)}
           </span>
         );
       }
-      /* One piece per word, each starting as that word's colour change does, so
-         the two read as the same event. A segment with no words in it at all
-         (whitespace between two marks) has nothing to time, so it stays whole. */
+
+      /* One piece per word, each drawing over exactly the time that word takes
+         to type, so the mark arrives under the cursor rather than ahead of or
+         behind it. A segment with no words in it (whitespace between two
+         marks) has nothing to time, so it stays whole. */
       const pieces = toPieces(tokens);
       if (pieces.length === 0) {
         return (
-          <AnimatedMark key={si} spec={seg.mark} delay={delay + startWord * REVEAL_STAGGER}>
-            {inner}
+          <AnimatedMark key={si} spec={seg.mark} delay={delay + startChar / speed}>
+            {run(tokens, `s${si}`)}
           </AnimatedMark>
         );
       }
       const mark = seg.mark;
+      let at = startChar;
       return (
         <Fragment key={si}>
-          {pieces.map((piece, pi) => (
-            <AnimatedMark
-              key={pi}
-              spec={mark}
-              delay={delay + (startWord + pi) * REVEAL_STAGGER}
-              duration={PIECE_DURATION}
-              piece={
-                pieces.length === 1
-                  ? 'only'
-                  : pi === 0
-                    ? 'first'
-                    : pi === pieces.length - 1
-                      ? 'last'
-                      : 'middle'
-              }
-            >
-              {piece.lead}
-              <span className="hero-word">{piece.word}</span>
-              {piece.trail}
-            </AnimatedMark>
-          ))}
+          {pieces.map((piece, pi) => {
+            const text = piece.lead + piece.word + piece.trail;
+            const from = at;
+            at += text.length;
+            return (
+              <AnimatedMark
+                key={pi}
+                spec={mark}
+                delay={delay + from / speed}
+                duration={text.length / speed}
+                piece={
+                  pieces.length === 1
+                    ? 'only'
+                    : pi === 0
+                      ? 'first'
+                      : pi === pieces.length - 1
+                        ? 'last'
+                        : 'middle'
+                }
+              >
+                {run(tokenize(text), `s${si}-p${pi}`)}
+              </AnimatedMark>
+            );
+          })}
         </Fragment>
       );
     });
-  }, [segments, delay]);
+  }, [segments, animate, delay, speed]);
 
   useEffect(() => {
-    if (isAdmin) return;
+    if (!animate) return;
     const el = root.current;
     if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const letters = Array.from(el.querySelectorAll<HTMLElement>('.hero-char'));
+    if (letters.length === 0) return;
 
-    // Wait a frame before reading the colour. ThemeProvider adds the `dark`
-    // class from an effect of its own, and it is an ancestor, so React runs it
-    // *after* this one -- measuring straight away had the dark theme fading up
-    // from the light theme's near-black, a hue shift across the reveal instead
-    // of the body colour arriving. One frame is enough: both effects land in
-    // the same post-paint pass.
-    let ctx: gsap.Context | undefined;
-    const frame = requestAnimationFrame(() => {
-      ctx = gsap.context(() => {
-        const words = gsap.utils.toArray<HTMLElement>('.hero-word', el);
-        gsap.from(words, {
-          color: faded(window.getComputedStyle(el).color) ?? 'inherit',
-          duration: REVEAL_DURATION,
-          ease: 'power1.out',
-          stagger: REVEAL_STAGGER,
-          delay,
-          // A finished tween leaves its end colour inline on every word, which
-          // would pin the paragraph to whichever theme was live when it
-          // played. Handing the colour back to the stylesheet lets the theme
-          // toggle keep working afterwards.
-          onComplete: () => {
-            gsap.set(words, { clearProps: 'color' });
-          },
-        });
-      }, el);
-    });
+    /* Hidden here as well as at render: the cleanup below hands every
+       character back its visibility, and React will not re-apply a style it
+       believes is already set, so a second run of this effect -- a speed
+       change, or StrictMode in development -- would otherwise find the whole
+       block already showing and have nothing left to type. */
+    letters.forEach((letter) => (letter.style.visibility = 'hidden'));
 
+    let shown = 0;
+    let cursor: HTMLElement | null = null;
+    const startAt = performance.now() + delay * 1000;
+
+    const step = (now: number) => {
+      const want = Math.min(
+        letters.length,
+        Math.max(0, Math.floor(((now - startAt) / 1000) * speed))
+      );
+      if (want !== shown) {
+        for (let i = shown; i < want; i++) letters[i].style.visibility = 'visible';
+        shown = want;
+        // The cursor rides the last character typed, drawn outside the flow so
+        // it cannot nudge the line it sits on.
+        cursor?.classList.remove('is-cursor');
+        cursor = shown > 0 ? letters[shown - 1] : null;
+        cursor?.classList.add('is-cursor');
+      }
+      if (shown < letters.length) frame = requestAnimationFrame(step);
+      else cursor?.classList.remove('is-cursor');
+    };
+
+    let frame = requestAnimationFrame(step);
     return () => {
       cancelAnimationFrame(frame);
-      ctx?.revert();
+      cursor?.classList.remove('is-cursor');
+      // Whatever interrupted this -- an edit, a theme change, a speed change --
+      // must not leave the copy half written.
+      letters.forEach((letter) => (letter.style.visibility = ''));
     };
-  }, [delay, isAdmin, segments]);
+  }, [animate, delay, speed, body]);
 
-  // Admin edits plain text; the caret has no interest in per-word spans.
+  // Admin edits plain text; the caret has no interest in per-character spans.
   if (isAdmin) {
     return <Editable as="span" path={path} className={className} multiline />;
   }
@@ -234,6 +238,41 @@ export function HeroBody({
     <span ref={root} className={className}>
       {body}
     </span>
+  );
+}
+
+const HIDDEN = { visibility: 'hidden' } as const;
+
+/**
+ * The typing speed, set in admin and stored with the copy.
+ *
+ * It sits under the hero rather than in the admin bar because it belongs to
+ * this copy, and it is only shown in admin: a visitor has no speed to choose.
+ * Admin itself renders the copy as plain editable text, so the way to watch a
+ * speed is Preview, which is what the line says.
+ */
+export function HeroTypingSpeed() {
+  const { content, isAdmin, setText } = useContent();
+  if (!isAdmin) return null;
+  const speed = typeSpeed(content.hero.typeSpeed);
+  const set = (n: number) =>
+    setText('hero.typeSpeed', String(Math.min(SPEED_LIMITS.max, Math.max(SPEED_LIMITS.min, n))));
+  const btn =
+    'inline-flex h-6 w-6 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:border-foreground/40 hover:text-foreground disabled:opacity-40';
+  return (
+    <div contentEditable={false} className="mt-6 flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+        Typing speed
+      </span>
+      <button type="button" className={btn} disabled={speed <= SPEED_LIMITS.min} onClick={() => set(speed - 5)}>
+        −
+      </button>
+      <span className="w-16 text-center tabular-nums">{speed} ch/s</span>
+      <button type="button" className={btn} disabled={speed >= SPEED_LIMITS.max} onClick={() => set(speed + 5)}>
+        +
+      </button>
+      <span className="ml-1 opacity-60">— Preview to watch it play</span>
+    </div>
   );
 }
 

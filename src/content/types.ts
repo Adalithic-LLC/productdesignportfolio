@@ -71,6 +71,8 @@ export interface SiteContent {
      * (see CLUSTERS in HeroShowcase). Empty means no caption at all.
      */
     showcaseCaptions: Record<string, string>;
+    /** Characters a second for the hero's typing reveal. */
+    typeSpeed: string;
   };
   projects: {
     heading: string;

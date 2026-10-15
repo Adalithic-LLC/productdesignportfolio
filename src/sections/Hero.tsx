@@ -4,8 +4,8 @@ import { Editable } from '@/content/Editable';
 import { Seams } from '@/content/EditableBlocks';
 import { plainText } from '@/content/inlineMarks';
 import { HeroShowcase } from '@/components/HeroShowcase';
-import { HeroBody } from '@/components/HeroBody';
-import { afterLeadingEdge } from '@/lib/heroReveal';
+import { HeroBody, HeroTypingSpeed } from '@/components/HeroBody';
+import { afterTyping, typeSpeed } from '@/lib/heroReveal';
 
 export default function Hero() {
   const { content } = useContent();
@@ -14,10 +14,10 @@ export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
-  // The title and the paragraph both read themselves in a word at a time --
-  // see HeroBody, which owns that timeline for each of them. The title used to
-  // flip its characters in from 90 degrees; that fought the paragraph's reveal
-  // for attention and needed a 3D context the hero no longer sets up.
+  // The title and the paragraph both type themselves in -- see HeroBody, which
+  // owns that timeline for each of them. The title used to flip its characters
+  // in from 90 degrees; that fought the paragraph's reveal for attention and
+  // needed a 3D context the hero no longer sets up.
 
   // Parallax effect on scroll
   useEffect(() => {
@@ -41,9 +41,10 @@ export default function Hero() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  /** The paragraph starts where the title's leading edge ends, so the two
-      reveals read as one sweep instead of two that overlap. */
-  const titleWords = plainText(hero.title).trim().split(/\s+/).filter(Boolean).length;
+  /** The paragraph starts when the title has finished typing, so the two read
+      as one hand working down the column instead of two that overlap. */
+  const speed = typeSpeed(hero.typeSpeed);
+  const titleChars = plainText(hero.title).length;
 
   return (
     <section
@@ -78,7 +79,7 @@ export default function Hero() {
                  marks its name with. */
               className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
             >
-              <HeroBody path="hero.title" />
+              <HeroBody path="hero.title" speed={speed} />
             </h1>
 
             <p
@@ -86,7 +87,11 @@ export default function Hero() {
               /* pre-line so the blank line typed into the copy reads as a paragraph break. */
               className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
             >
-              <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
+              <HeroBody
+                path="hero.subtitle"
+                delay={afterTyping(titleChars, speed)}
+                speed={speed}
+              />
             </p>
 
             {/* Same shape as the case-study callouts: label over value. */}
@@ -98,6 +103,10 @@ export default function Hero() {
               />
               <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
             </dl>
+
+            {/* Admin only: the copy above is plain text while it is being
+                edited, so the speed is set here and watched in Preview. */}
+            <HeroTypingSpeed />
           </Seams>
         </HeroShowcase>
       </div>
