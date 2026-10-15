@@ -329,8 +329,26 @@ export const STUDY_ROWS_DATA = [
   { entry: '楽しみ', translations: 'looking forward to', sentence: '来週会えるのが楽しみ！', tag: 'Noun', misses: 1 },
 ]
 
+/** Scene boundaries for the review tool: each runs until the next starts.
+    Ids stay stable across versions so timing notes carry over. */
+export function scenes() {
+  const short = (m: Timed) => m.text.replace(/\n/g, ' ') + (m.slot ? ` [${m.slot.join(' / ')}]` : '');
+  const list = [
+    ...TIMED.map((m, i) => ({ id: `b${i + 1}`, name: `${i + 1}. ${short(m)}`, start: i === 0 ? 0 : m.at })),
+    { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
+    { id: 'field1', name: 'Type: So, I just type…', start: CAMERA[0][0] },
+    { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
+    { id: 'field2', name: 'Type: And it adds the words…', start: CAMERA[2][0] },
+    { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },
+    { id: 'field3', name: 'Type: Ok this is cool…', start: CAMERA[4][0] },
+    { id: 'end', name: 'End card', start: ENDING - END_FADE },
+  ];
+  return list.map((s, i) => ({ ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
+}
+
 export function cues() {
   return {
+    scenes: scenes(),
     duration: DURATION,
     bpm: BPM,
     keys: [
