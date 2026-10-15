@@ -405,6 +405,14 @@
   transition: outline-color 0.2s ease, background-color 0.2s ease;
 }
 
+/* An empty field is a sliver with nothing to aim at, so one carrying a
+   `data-placeholder` shows that hint until it holds text. */
+.admin-editable:empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+
 .admin-editable:hover {
   outline-color: hsl(var(--primary) / 0.7);
   background-color: hsl(var(--primary) / 0.06);

@@ -15,6 +15,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ArcatextCardStack, ArcatextKeyboardStill } from '@/components/ArcatextCardStack';
 import { AdminToolTile } from '@/components/HeroWorkCollage';
 import { requestProjectHighlight } from '@/lib/highlightProject';
+import { useContent } from '@/content/ContentContext';
+import { Editable } from '@/content/Editable';
 import { useTheme } from '@/hooks/useTheme';
 
 const BASE = import.meta.env.BASE_URL;
@@ -193,6 +195,26 @@ const CLUSTERS: Cluster[] = [
 ];
 
 /**
+ * A line of copy under the display zone, for whatever the screens on show need
+ * said about them. Empty by default and left out entirely when empty, so it
+ * costs a visitor nothing until it is written -- in admin it is always there,
+ * because an invisible field cannot be clicked into and filled.
+ */
+function ZoneCaption() {
+  const { content, isAdmin } = useContent();
+  if (!isAdmin && !content.hero.showcaseCaption) return null;
+  return (
+    <Editable
+      as="p"
+      multiline
+      path="hero.showcaseCaption"
+      data-placeholder="Add a caption for these screens…"
+      className="mt-5 whitespace-pre-line text-center text-sm leading-relaxed text-muted-foreground"
+    />
+  );
+}
+
+/**
  * Takes the hero's copy as children, because the previews belong directly
  * under it in the left column while the zone they drive is the right one.
  * Owning both columns is what lets a single piece of state serve the two.
@@ -284,30 +306,35 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
 
       </div>
 
-      <div ref={zone} className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
-        {CLUSTERS.map((cluster, i) => {
-          const height = rowHeight(cluster.screens);
-          return (
-            <div
-              key={cluster.id}
-              aria-hidden={i !== shown}
-              className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
-                i === shown ? 'opacity-100' : 'pointer-events-none opacity-0'
-              }`}
-              style={{ gap: `${GAP * 100}%` }}
-            >
-              {cluster.screens.map((screen, s) => (
-                <div
-                  key={s}
-                  className="relative flex-none"
-                  style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
-                >
-                  {screen.render(open(screen.project))}
-                </div>
-              ))}
-            </div>
-          );
-        })}
+      {/* The zone keeps its own fixed aspect, so the caption hangs below the
+          box rather than eating into it. */}
+      <div className="w-full">
+        <div ref={zone} className="relative w-full" style={{ aspectRatio: `${ZONE_ASPECT}` }}>
+          {CLUSTERS.map((cluster, i) => {
+            const height = rowHeight(cluster.screens);
+            return (
+              <div
+                key={cluster.id}
+                aria-hidden={i !== shown}
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${
+                  i === shown ? 'opacity-100' : 'pointer-events-none opacity-0'
+                }`}
+                style={{ gap: `${GAP * 100}%` }}
+              >
+                {cluster.screens.map((screen, s) => (
+                  <div
+                    key={s}
+                    className="relative flex-none"
+                    style={{ height: `${height * 100}%`, aspectRatio: `${screen.aspect}` }}
+                  >
+                    {screen.render(open(screen.project))}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+        <ZoneCaption />
       </div>
     </div>
   );

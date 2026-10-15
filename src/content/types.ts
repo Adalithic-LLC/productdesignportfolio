@@ -66,6 +66,8 @@ export interface SiteContent {
     subtitle: string;
     roleLabel: string;
     roleValue: string;
+    /** Sits under the hero's display zone. Empty means no caption at all. */
+    showcaseCaption: string;
   };
   projects: {
     heading: string;
