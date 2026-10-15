@@ -195,19 +195,29 @@ const CLUSTERS: Cluster[] = [
 ];
 
 /**
- * A line of copy under the display zone, for whatever the screens on show need
- * said about them. Empty by default and left out entirely when empty, so it
- * costs a visitor nothing until it is written -- in admin it is always there,
- * because an invisible field cannot be clicked into and filled.
+ * A line of copy under the display zone, belonging to the cluster on show.
+ *
+ * One caption per cluster rather than one for the zone: the screens change as
+ * the previews are hovered, and a caption that stayed put while they did would
+ * be describing the wrong thing more often than the right one. Empty by
+ * default and left out entirely when empty, so it costs a visitor nothing
+ * until it is written -- in admin it is always there, because an invisible
+ * field cannot be clicked into and filled.
+ *
+ * Admin reads the *selected* cluster, not the hovered one: a field whose path
+ * changed as the pointer crossed a preview would move out from under the
+ * caret mid-edit. Click a preview to pick the cluster, then write its caption.
  */
-function ZoneCaption() {
+function ZoneCaption({ cluster }: { cluster: string }) {
   const { content, isAdmin } = useContent();
-  if (!isAdmin && !content.hero.showcaseCaption) return null;
+  if (!isAdmin && !content.hero.showcaseCaptions?.[cluster]) return null;
   return (
     <Editable
       as="p"
       multiline
-      path="hero.showcaseCaption"
+      /* Keyed by cluster id, so reordering the previews keeps every caption
+         with its own screens. */
+      path={`hero.showcaseCaptions.${cluster}`}
       data-placeholder="Add a caption for these screens…"
       className="mt-5 whitespace-pre-line text-center text-sm leading-relaxed text-muted-foreground"
     />
@@ -220,6 +230,7 @@ function ZoneCaption() {
  * Owning both columns is what lets a single piece of state serve the two.
  */
 export function HeroShowcase({ children }: { children: ReactNode }) {
+  const { isAdmin } = useContent();
   const isDark = useTheme().resolvedTheme === 'dark';
   const [selected, setSelected] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -334,7 +345,7 @@ export function HeroShowcase({ children }: { children: ReactNode }) {
             );
           })}
         </div>
-        <ZoneCaption />
+        <ZoneCaption cluster={CLUSTERS[isAdmin ? selected : shown]?.id ?? CLUSTERS[0].id} />
       </div>
     </div>
   );

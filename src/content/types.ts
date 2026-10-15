@@ -66,8 +66,11 @@ export interface SiteContent {
     subtitle: string;
     roleLabel: string;
     roleValue: string;
-    /** Sits under the hero's display zone. Empty means no caption at all. */
-    showcaseCaption: string;
+    /**
+     * A caption per cluster of the hero's display zone, keyed by cluster id
+     * (see CLUSTERS in HeroShowcase). Empty means no caption at all.
+     */
+    showcaseCaptions: Record<string, string>;
   };
   projects: {
     heading: string;
