@@ -30,6 +30,7 @@ import {
   STUDY_SKELETON,
   STUDY_TAP,
   TIMED,
+  flickEase,
   cues,
   type FieldMsg,
   type Timed,
@@ -68,6 +69,8 @@ type Metrics = {
   /** slotTypeW[i][k]: the width of the first k letters of bubble i's first
       slot word, as it types on. */
   slotTypeW: number[][];
+  /** The same for the last slot word, where it types on (slotTypeLast). */
+  slotLastTypeW: number[][];
   /** The height of an inline-slot bubble with its widest word in place. */
   inlineH: number[];
   /** lineW[i][k]: the widest line of bubble i's text with k characters typed,
@@ -181,6 +184,13 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
       return word.offsetWidth;
     });
   });
+  const slotLastTypeW = TIMED.map((m) => {
+    const wl = m.slotTypeLast ? m.slot![m.slot!.length - 1] : '';
+    return [...wl].map((_, k) => {
+      word.textContent = wl.slice(0, k + 1);
+      return word.offsetWidth;
+    });
+  });
   const slotW = TIMED.map((m) =>
     (m.slot ?? []).map((w) => {
       word.textContent = w;
@@ -205,7 +215,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   });
   probe.remove();
   word.remove();
-  return { heights, slotW, slotTypeW, inlineH, lineW, lastW, otherW, spaceW, phrase };
+  return { heights, slotW, slotTypeW, slotLastTypeW, inlineH, lineW, lastW, otherW, spaceW, phrase };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -267,8 +277,11 @@ function reelPos(m: Timed, tt: number) {
   const n = m.slot!.length;
   // The first word simply appears on its line; the reel rolls from there.
   const L = m.slotLands;
+  const f = m.flick;
+  // A flick spins as one continuous motion, not word by word.
+  if (f && tt >= f.from) return 2 * n + f.startIdx + (n - 1 - f.startIdx) * flickEase((tt - f.from) / (f.to - f.from));
   let p = 2 * n;
-  for (let i = 1; i < n; i++) {
+  for (let i = 1; i < (f ? f.startIdx + 1 : n); i++) {
     if (tt >= L[i]) {
       p = 2 * n + i;
       continue;
@@ -290,11 +303,15 @@ function reelPos(m: Timed, tt: number) {
 
 /** The reel's width at time t, eased between the words it rolls through. */
 const slotTyped = (m: Timed, t: number) => m.slotChars.filter((c) => c <= t).length;
+const slotLastTyped = (m: Timed, t: number) => m.slotLastChars.filter((c) => c <= t).length;
+/** Whether the last word is typing on (or typed) in place of the reel. */
+const typingLast = (m: Timed, t: number) => m.slotLastChars.length > 0 && t >= m.slotLastChars[0];
 
 function slotWidthAt(m: Timed, met: Metrics, t: number) {
   const n = m.slot!.length;
   const widths = met.slotW[m.index];
   if (t < m.slotLands[0]) return met.slotTypeW[m.index][slotTyped(m, t) - 1] ?? 0;
+  if (typingLast(m, t)) return met.slotLastTypeW[m.index][slotLastTyped(m, t) - 1] ?? 0;
   const width = (j: number) => widths[((j % n) + n) % n];
   const p = reelPos(m, t);
   const base = Math.floor(p);
@@ -313,9 +330,10 @@ function slotWidthAt(m: Timed, met: Metrics, t: number) {
 }
 
 function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
-  if (t < m.slotLands[0]) {
-    // The first word types on, like the text before it.
-    const typed = m.slot![0].slice(0, slotTyped(m, t));
+  if (t < m.slotLands[0] || typingLast(m, t)) {
+    // The first word types on, like the text before it (and the last, with slotTypeLast).
+    const last = typingLast(m, t);
+    const typed = last ? m.slot![m.slot!.length - 1].slice(0, slotLastTyped(m, t)) : m.slot![0].slice(0, slotTyped(m, t));
     const span = <span className="whitespace-nowrap font-semibold" style={{ color: SLOT_COLOR }}>{typed}</span>;
     return m.slotInline ? <> {span}</> : <div style={{ height: LINE }}>{span}</div>;
   }
@@ -505,6 +523,7 @@ const SENT: Timed[] = FIELD_MSGS.filter((f) => Number.isFinite(f.sendAt)).map((f
   chars: [],
   slotAt: Infinity,
   slotChars: [],
+  slotLastChars: [],
   slotLands: [],
   done: f.sendAt + 0.3,
 }));
@@ -598,6 +617,8 @@ const FOCUS_ZOOM = 1.7;
 /** The second push-in, onto a bubble's `focusPhrase`, once the first settles. */
 const PHRASE_ZOOM = 3.0;
 const PHRASE_DELAY = 1.1;
+/** The push-in onto a `focusSlot` bubble's reel. */
+const SLOT_ZOOM = 2.6;
 
 /** A close-up on a `focus` bubble: the camera eases in on it as it starts
     typing and opens back out as the next bubble arrives. Returns the CSS
@@ -619,7 +640,15 @@ function focusTransform(met: Metrics, t: number) {
     let py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
     let zoom = FOCUS_ZOOM;
     const ph = met.phrase[m.index];
-    if (ph) {
+    if (m.focusSlot && m.slotInline) {
+      // Onto the reel at the end of the last line, centred on its widest word.
+      const k2 = easeInOutCubic(clamp01((t - m.slotAt) / 0.6));
+      const sx = 12 + met.lastW[m.index] + met.spaceW + slotMax / 2;
+      const sy = bh - 7 - LINE / 2;
+      px = lerp(px, left + (bx + sx) * CHAT_SCALE, k2);
+      py = lerp(py, CHAT_BOTTOM - (bh - sy) * CHAT_SCALE, k2);
+      zoom = lerp(FOCUS_ZOOM, SLOT_ZOOM, k2);
+    } else if (ph) {
       const k2 = easeInOutCubic(clamp01((t - (m.at + PHRASE_DELAY)) / 0.6));
       px = lerp(px, left + (bx + ph.x) * CHAT_SCALE, k2);
       py = lerp(py, CHAT_BOTTOM - (bh - ph.y) * CHAT_SCALE, k2);

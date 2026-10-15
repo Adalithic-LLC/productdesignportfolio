@@ -29,6 +29,14 @@ BAR = BEAT * 4
 N = int(DUR * SR)
 rng = np.random.default_rng(7)
 sfx_only = '--sfx-only' in sys.argv
+# --style picks the bed: 'pop' (the original 120 BPM C-G-Am-F), 'mellow'
+# (90 BPM, soft keys over Fmaj7-Em7-Dm7-Cmaj7) or 'bright' (124 BPM,
+# Am-F-C-G with a bigger pulse). The UI sounds are the same in all three.
+STYLE = sys.argv[sys.argv.index('--style') + 1] if '--style' in sys.argv else 'pop'
+if STYLE != 'pop':
+    SUFFIX += f'-{STYLE}'
+BEAT = 60 / {'pop': cues['bpm'], 'mellow': 90, 'bright': 124}[STYLE]
+BAR = BEAT * 4
 
 
 def mtof(m):
@@ -43,6 +51,8 @@ def place(buf, sig, at, gain=1.0):
     i = int(round(at * SR))
     if i >= len(buf):
         return
+    if i < 0:  # starts before the film: keep the part that's inside it
+        sig, i = sig[-i:], 0
     j = min(len(buf), i + len(sig))
     buf[i:j] += sig[: j - i] * gain
 
@@ -104,7 +114,7 @@ def hat(open_=False):
     return fft_filter(rng.standard_normal(n), lo=7000) * env(n, 0, 0.09 if open_ else 0.018) * 0.6
 
 
-def saw_note(freq, dur, bright=12, a=0.005, d=None):
+def saw_note(freq, dur, bright=12, a=0.005, d=None, rel=0.01):
     n = int(dur * SR)
     tt = t_(n)
     y = np.zeros(n)
@@ -115,8 +125,8 @@ def saw_note(freq, dur, bright=12, a=0.005, d=None):
     e = np.clip(tt / a, 0, 1) if a else np.ones(n)
     if d:
         e *= np.exp(-tt / d)
-    rel = int(0.01 * SR)
-    e[-rel:] *= np.linspace(1, 0, rel)
+    r = int(rel * SR)
+    e[-r:] *= np.linspace(1, 0, r) ** 0.7
     return y * e
 
 
@@ -179,16 +189,20 @@ def tap():
 
 # ── Arrangement ─────────────────────────────────────────────────────────────
 
-CHORDS = [  # (bass, chord tones)
-    (48, [60, 64, 67, 72]),  # C
-    (43, [59, 62, 67, 71]),  # G
-    (45, [57, 60, 64, 69]),  # Am
-    (41, [57, 60, 65, 69]),  # F
-]
+CHORDS = {  # (bass, chord tones), a bar each
+    'pop': [(48, [60, 64, 67, 72]), (43, [59, 62, 67, 71]), (45, [57, 60, 64, 69]), (41, [57, 60, 65, 69])],  # C G Am F
+    'mellow': [(41, [57, 60, 64, 65]), (40, [55, 59, 62, 64]), (38, [53, 57, 60, 62]), (36, [55, 59, 60, 64])],  # Fmaj7 Em7 Dm7 Cmaj7
+    'bright': [(45, [57, 60, 64, 69]), (41, [57, 60, 65, 69]), (48, [60, 64, 67, 72]), (43, [59, 62, 67, 71])],  # Am F C G
+}[STYLE]
 titles = [tuple(x) for x in cues['titles']]
 phones = cues['phones']
 closing = cues['closing']
 open_end = cues['opening'][1]
+
+
+def on_beat(at):
+    """The next beat at or after `at`, so builds and risers land on the grid."""
+    return np.ceil(at / BEAT - 1e-6) * BEAT
 
 
 def section(t):
@@ -217,44 +231,77 @@ for b in range(nbeats):
     sec = section(t)
     if sec in ('open', 'close'):  # the logo cards: pad, arp and their hits only
         continue
-    if sec == 'phone':  # four on the floor under the product shots
-        place(drums, K, t, 0.75)
-        i = int(t * SR)
-        dn = int(0.22 * SR)
-        duck[i:i + dn] = np.minimum(duck[i:i + dn], 0.35 + 0.65 * (np.arange(min(dn, N - i)) / dn) ** 0.6)
-        if beat_in_bar in (1, 3):
-            place(drums, CL, t, 0.5)
-        place(drums, hat(), t + BEAT / 4, 0.22)
-        place(drums, hat(), t + 3 * BEAT / 4, 0.22)
+    if sec == 'phone':
+        if STYLE == 'mellow':  # a soft kick on 1 and 3, a rim click on 2 and 4
+            if beat_in_bar in (0, 2):
+                place(drums, K, t, 0.45)
+            else:
+                c = clap()
+                h = hat()
+                place(drums, c * 0.25, t, 0.5)
+                place(drums, h * 0.5, t, 0.5)
+        else:  # four on the floor
+            place(drums, K, t, 0.75 if STYLE == 'pop' else 0.85)
+            i = int(t * SR)
+            dn = int(0.22 * SR)
+            depth = 0.35 if STYLE == 'pop' else 0.25
+            duck[i:i + dn] = np.minimum(duck[i:i + dn], depth + (1 - depth) * (np.arange(min(dn, N - i)) / dn) ** 0.6)
+            if beat_in_bar in (1, 3):
+                place(drums, CL, t, 0.5 if STYLE == 'pop' else 0.6)
+            place(drums, hat(), t + BEAT / 4, 0.22)
+            place(drums, hat(), t + 3 * BEAT / 4, 0.22)
     # Offbeat hats keep the pulse through the headline cards too.
-    place(drums, hat(open_=(beat_in_bar == 3)), t + BEAT / 2, 0.8)
+    place(drums, hat(open_=(beat_in_bar == 3 and STYLE != 'mellow')), t + BEAT / 2, 0.8 if STYLE != 'mellow' else 0.35)
 
-# A snare build on the last beat into each product shot, and a riser under it.
+# A snare build into each camera move and a riser under it, both landing on
+# the beat (an off-grid build is what made the bed sound like a bad loop).
 for at in phones:
-    for k in range(8):
-        place(drums, CL, at - BEAT + k * BEAT / 8, 0.12 + 0.05 * k)
+    q = on_beat(at)
+    if STYLE != 'mellow':
+        for k in range(8):
+            place(drums, CL, q - BEAT + k * BEAT / 8, 0.1 + 0.04 * k)
 for at in phones + [closing]:
-    place(fx, riser(1.6), at - 1.6, 0.45)
+    q = on_beat(at)
+    place(fx, riser(1.6), q - 1.6, 0.35 if STYLE == 'mellow' else 0.45)
 
 nbars = int(np.ceil(cues['duration'] / BAR))
 for bar in range(nbars):
     t0 = bar * BAR
     root, tones = CHORDS[bar % 4]
     sec = section(t0)
+    phrase_b = (bar // 4) % 2 == 1  # every other 4-bar phrase answers the first
     if sec == 'close':  # the closing card holds the tonic
-        root, tones = CHORDS[0]
-    for m in tones:
+        root, tones = CHORDS[0] if STYLE != 'mellow' else CHORDS[3]
+    # Pad: legato. Each chord overlaps the next by a long crossfade, so there
+    # is no dip at the bar line (the old pad re-attacked from silence every bar).
+    voicing = [m + (12 if phrase_b and k == len(tones) - 1 and STYLE != 'mellow' else 0) for k, m in enumerate(tones)]
+    last = t0 + BAR >= cues['duration']
+    for m in voicing:
         for det in (-0.08, 0.08):
-            place(pad, saw_note(mtof(m + det), BAR + (2.5 if t0 + BAR >= cues['duration'] else 0.05), bright=3, a=0.25), t0, 0.05)
+            place(pad, saw_note(mtof(m + det), BAR + (2.5 if last else 0.7), bright=1.6 if STYLE == 'mellow' else 3, a=0.35, rel=0.8), t0 - 0.1, 0.05)
     if sec in ('phone', 'title'):
-        for k in range(8):  # driving 8th-note bass
-            place(bass, saw_note(mtof(root), BEAT / 2 * 0.9, bright=6, a=0.003, d=0.12), t0 + k * BEAT / 2, 0.26 if sec == 'phone' else 0.18)
-    # Arp: 16ths up and down the chord, an octave up; it thins out on the closing card.
-    pattern = [0, 1, 2, 3, 2, 1, 2, 3] * 2
+        if STYLE == 'mellow':  # a round bass on 1 and the "and" of 2
+            for off, g in ((0, 0.3), (1.5 * BEAT, 0.2), (3 * BEAT, 0.18)):
+                place(bass, saw_note(mtof(root), BEAT * 0.9, bright=1.2, a=0.01, d=0.5), t0 + off, g)
+        else:  # driving 8th-note bass
+            for k in range(8):
+                note = root + (12 if STYLE == 'bright' and k % 2 else 0)
+                place(bass, saw_note(mtof(note), BEAT / 2 * 0.9, bright=6, a=0.003, d=0.12), t0 + k * BEAT / 2, 0.26 if sec == 'phone' else 0.18)
     if t0 < closing + BAR:
-        for k, idx in enumerate(pattern):
-            g = {'open': 0.16, 'title': 0.2, 'phone': 0.26, 'close': 0.12}[sec]
-            place(arp, pluck(mtof(tones[idx] + 12)), t0 + k * BEAT / 4, g)
+        g = {'open': 0.16, 'title': 0.2, 'phone': 0.26, 'close': 0.12}[sec]
+        if STYLE == 'mellow':
+            # Soft keys: the chord on 1, then two of its notes on the off-beats.
+            for k, (off, idxs) in enumerate([(0, [0, 1, 2, 3]), (1.5 * BEAT, [2, 3]), (2.5 * BEAT, [1, 2]), (3.5 * BEAT, [3])]):
+                for idx in idxs:
+                    place(arp, bell(mtof(tones[idx] + 12), 1.4), t0 + off, g * 0.55 * 0.6)
+                    place(arp, pluck(mtof(tones[idx])), t0 + off, g * 0.55 * 0.4)
+        else:
+            # Arp: 16ths over the chord, an octave up; the answering phrase
+            # turns the pattern around so 8 bars don't read as one loop.
+            pattern = ([0, 1, 2, 3, 2, 1, 2, 3] if not phrase_b else [3, 2, 1, 2, 0, 1, 2, 1]) * 2
+            lift = 24 if STYLE == 'bright' and phrase_b else 12
+            for k, idx in enumerate(pattern):
+                place(arp, pluck(mtof(tones[idx] + lift)), t0 + k * BEAT / 4, g)
 
 # The logo landing, on the opening and the closing card.
 for at in ([cues['opening'][0] + 0.5] if cues['opening'][1] > 0 else []) + [closing + 0.5]:
@@ -269,8 +316,17 @@ place(fx, kick(), closing, 1.0)
 for at in [c for c in (cues['reword'], cues.get('reveal')) if c is not None]:
     for k, m in enumerate([84, 88, 91, 96]):
         place(fx, bell(mtof(m)), at + k * 0.045, 0.09)
-for at, m in zip(cues['words'], [76, 79, 81, 84] * 4):
-    place(fx, bell(mtof(m)), at, 0.1)
+# A bell per readable reel word; a spin's words just tick.
+last_bell = -9.0
+notes = [76, 79, 81, 84]
+k = 0
+for at in sorted(cues['words']):
+    if at - last_bell >= 0.3:
+        place(fx, bell(mtof(notes[k % 4])), at, 0.1)
+        last_bell = at
+        k += 1
+    else:
+        place(ui, key_click(), at, 0.05)
 
 # UI sounds.
 for k in cues['keys']:

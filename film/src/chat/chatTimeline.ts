@@ -30,6 +30,13 @@ export type Line = {
   /** A long reel: the first `holds` words each hold `hold` seconds, then the
       rest spin past in `flick` seconds, fast off the mark and slowing to land. */
   slotFlick?: { holds: number; hold: number; flick: number };
+  /** With `focus`: push in again onto the reel as its first word types. */
+  focusSlot?: boolean;
+  /** The reel's last word types on in place of the reel rather than rolling in. */
+  slotTypeLast?: boolean;
+  /** Extra seconds before the reel's first word types on (after a block
+      lands, or after a typed bubble's text). */
+  slotTypeDelay?: number;
   /** Seconds the reel's first word holds before it rolls (default SLOT_DELAY). */
   slotHold?: number;
   /** The camera closes on this bubble while it types, and opens back out as
@@ -78,11 +85,11 @@ export const SCRIPT: Line[] = [
     // to land on "a new language?".
     slot: [...TAGLINE_WORDS.slice(0, -1), 'a new language'].map((w) => w + '?'),
     slotInline: true,
-    slotFlick: { holds: 3, hold: 0.8, flick: 1.8 },
+    slotFlick: { holds: 3, hold: 0.8, flick: 2.0 },
   },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 2.0 },
   // Held long enough for the close-up and the second push-in on the phrase.
-  { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
+  { who: 'me', kind: 'block', text: 'Will I stop trying after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
   { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 2.5 },
   {
     who: 'them',
@@ -90,6 +97,7 @@ export const SCRIPT: Line[] = [
     text: 'Learn while you text',
     slot: ['friends!', 'penpals!', 'classmates!', 'AI!'],
     slotInline: true,
+    slotTypeDelay: 1.0,
     clearAbove: true,
     after: 1.0,
   },
@@ -100,8 +108,9 @@ export const SCRIPT: Line[] = [
     kind: 'block',
     text: "Yes! It's a keyboard with features for",
     maxW: 340,
+    // The reel has its own line, so a word typing on never re-wraps the text.
     slot: ['translation.', 'correction.', 'analysis.', 'study.'],
-    slotInline: true,
+    slotTypeDelay: 1.0,
     clearAbove: true,
     after: 1.0,
     afterSend: true,
@@ -113,7 +122,10 @@ export const SCRIPT: Line[] = [
     // so even "actual conversations." fits after it on the second line.
     text: 'Learn the practical language\nbased on your',
     maxW: 340,
-    underline: ['practical language'],
+    slotTypeDelay: 1.0,
+    // After the close-up on the bubble, a second push-in onto the reel as its
+    // first word starts typing.
+    focusSlot: true,
     slot: ['life.', 'interests.', 'actual conversations.'],
     slotInline: true,
     slotHold: 2.0,
@@ -126,18 +138,19 @@ export const SCRIPT: Line[] = [
     who: 'them',
     kind: 'block',
     text: 'Right where your chats already happen!',
-    slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
+    slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'Really...any app.'],
     slotInline: true,
+    slotTypeLast: true,
     after: 1.0,
     afterSend: true,
   },
 ]
 
 // A '|' marks a half-second pause in the typing; it isn't typed.
-const FIELD_RAW = 'So I just type| and tap a button to translate?';
+const FIELD_RAW = 'So...| I just type a message| then tap a button to translate?';
 export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
-export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳できるの？';
-const FIELD2_RAW = 'And it adds the words I missed| to a study guide?';
+export const FIELD_JA = 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
+const FIELD2_RAW = 'One more thing...it actually adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
 export const FIELD3_TEXT = FIELD3_RAW.replaceAll('|', '');
@@ -166,10 +179,30 @@ export type Timed = Line & {
       word types out letter by letter (`slotChars`); it "lands" when typed. */
   slotAt: number;
   slotChars: number[];
+  /** With slotTypeLast: when each letter of the last word lands. */
+  slotLastChars: number[];
   slotLands: number[];
   /** When the bubble is complete. */
   done: number;
+  /** A slotFlick's spin: from the last held word (`startIdx`) to the end,
+      one continuous motion from `from` to `to` along flickEase. */
+  flick?: { from: number; to: number; startIdx: number };
 };
+
+/** A flick's progress (0..1): a short ramp up to speed, then a long glide to
+    rest, like a momentum scroll. cubic-bezier(0.3, 0, 0.15, 1). */
+export function flickEase(x: number) {
+  const k = Math.min(1, Math.max(0, x));
+  const [x1, y1, x2, y2] = [0.3, 0, 0.15, 1];
+  let t = k;
+  for (let i = 0; i < 10; i++) {
+    const bx = 3 * (1 - t) ** 2 * t * x1 + 3 * (1 - t) * t * t * x2 + t ** 3;
+    const dx = 3 * (1 - t) ** 2 * x1 + 6 * (1 - t) * t * (x2 - x1) + 3 * t * t * (1 - x2);
+    if (Math.abs(dx) < 1e-6) break;
+    t = Math.min(1, Math.max(0, t - (bx - k) / dx));
+  }
+  return 3 * (1 - t) ** 2 * t * y1 + 3 * (1 - t) * t * t * y2 + t ** 3;
+}
 
 /** Times a run of script lines (with their indexes in SCRIPT) from `start`. */
 function timeLines(lines: [Line, number][], start: number): Timed[] {
@@ -183,6 +216,8 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
     let slotAt = Infinity;
     const slotLands: number[] = [];
     let slotChars: number[] = [];
+    let slotLastChars: number[] = [];
+    let flick: Timed['flick'];
     /** Types the reel's first word from `from`; returns when it's complete. */
     const typeFirst = (from: number) => {
       let c = from;
@@ -205,7 +240,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
       done = c;
       if (line.slot) {
         // The first word types on after the text, holds, then the reel rolls.
-        slotAt = done + 0.15;
+        slotAt = done + 0.15 + (line.slotTypeDelay ?? 0);
         let land = typeFirst(slotAt);
         slotLands.push(land);
         const fl = line.slotFlick;
@@ -213,7 +248,18 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
           for (let i = 1; i < fl.holds; i++) slotLands.push(slotLands[i - 1] + fl.hold + SLOT_ROLL);
           const from = slotLands[fl.holds - 1] + fl.hold;
           const rest = line.slot.length - fl.holds;
-          for (let j = 1; j <= rest; j++) slotLands.push(from + fl.flick * (1 - Math.cbrt(1 - j / rest)));
+          flick = { from, to: from + fl.flick, startIdx: fl.holds - 1 };
+          // Each word "lands" (for the ticks) when the spin passes it.
+          for (let j = 1; j <= rest; j++) {
+            let lo = 0;
+            let hi = 1;
+            for (let k = 0; k < 30; k++) {
+              const mid = (lo + hi) / 2;
+              if (flickEase(mid) * rest < j - 1e-9) lo = mid;
+              else hi = mid;
+            }
+            slotLands.push(from + fl.flick * hi);
+          }
         } else {
           land += (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
           for (let i = 1; i < line.slot.length; i++) {
@@ -227,13 +273,24 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
     } else if (line.slot) {
       // A block arrives whole; once it settles (0.3s) the reel's first word
       // types on, holds, then the reel rolls.
-      slotAt = at + 0.3;
+      slotAt = at + 0.3 + (line.slotTypeDelay ?? 0);
       const first = typeFirst(slotAt);
       slotLands.push(first);
       let land = first + (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
       for (let i = 1; i < line.slot.length; i++) {
         slotLands.push(land);
         land += SLOT_DWELL + SLOT_ROLL;
+      }
+      if (line.slotTypeLast) {
+        // The last word types on where the reel stood, a dwell after the one before.
+        let c = slotLands[slotLands.length - 2] + SLOT_DWELL;
+        const last = line.slot[line.slot.length - 1];
+        slotLastChars = [...last].map((ch, i) => {
+          const at2 = c;
+          c += CHAR + jitter(i, index + 57) * 0.016 + (',.?!'.includes(ch) ? 0.06 : 0);
+          return at2;
+        });
+        slotLands[slotLands.length - 1] = c;
       }
       done = slotLands[slotLands.length - 1];
       t = done + 0.95;
@@ -242,7 +299,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
       t = done + 0.4 + line.text.length * 0.025;
     }
     if (line.after !== undefined) t = done + line.after;
-    out.push({ ...line, index, at, chars, slotAt, slotChars, slotLands, done });
+    out.push({ ...line, index, at, chars, slotAt, slotChars, slotLastChars, slotLands, done, flick });
     prev = line.who;
   });
   return out;
@@ -428,9 +485,9 @@ export function scenes() {
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
     { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
-    { id: 'field1', name: 'Type: So I just type…', start: CAMERA[0][0] },
+    { id: 'field1', name: 'Type: So... I just type a message…', start: CAMERA[0][0] },
     { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
-    { id: 'field2', name: 'Back to keyboard, type: And it adds…', start: PAN2[0] },
+    { id: 'field2', name: 'Back to keyboard, type: One more thing…', start: PAN2[0] },
     { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },
     { id: 'field3', name: 'Type: Ok this is cool…', start: CAMERA[4][0] },
     { id: 'end', name: 'End card', start: ENDING - END_FADE },
