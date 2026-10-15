@@ -4,7 +4,8 @@ import { ArrowUp, Plus } from 'lucide-react';
 import { AX } from '@/lib/arcatextTheme';
 import { StudyPanel } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
-import { BrandLockup, Glow, syncAnimations } from '../Film';
+import { Glow, syncAnimations } from '../Film';
+import SplashLogo, { SPLASH_DONE } from '../SplashLogo';
 import { clamp01, easeInOutCubic, easeOutBack, easeOutCubic, lerp, span } from '../ease';
 import {
   DURATION,
@@ -449,19 +450,30 @@ function World({ met, t }: { met: Metrics; t: number }) {
   );
 }
 
+/** The end card: the app's own splash animation, then the tagline under it. */
 function Ending({ t }: { t: number }) {
-  const sub = span(t, ENDING + 1.2, ENDING + 1.9, (x) => 1 - (1 - x) ** 3);
+  const local = t - ENDING;
+  const sub = span(t, ENDING + SPLASH_DONE - 0.6, ENDING + SPLASH_DONE + 0.1, (x) => 1 - (1 - x) ** 3);
   const fade = span(t, DURATION - 0.6, DURATION, (x) => x);
   return (
     <div className="absolute inset-0 grid place-items-center bg-black">
       <Glow />
-      <div style={{ transform: `scale(${1 + (t - ENDING) * 0.008})` }}>
-        <BrandLockup t={t} t0={ENDING}>
-          <div className="mt-7" style={{ fontSize: 60, fontWeight: 600, letterSpacing: '-0.02em', color: 'rgba(255,255,255,0.62)', opacity: sub, transform: `translateY(${(1 - sub) * 26}px)` }}>
-            Text and learn a language
-          </div>
-        </BrandLockup>
-      </div>
+      <SplashLogo s={local} scale={3.2}>
+        <div
+          className="mt-4 whitespace-nowrap text-center"
+          style={{
+            fontFamily: "'Inter Display', Inter, sans-serif",
+            fontSize: 19,
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: 'rgba(255,255,255,0.62)',
+            opacity: sub,
+            transform: `translateY(${(1 - sub) * 8}px)`,
+          }}
+        >
+          Text and learn a language
+        </div>
+      </SplashLogo>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
     </div>
   );
@@ -496,6 +508,7 @@ export default function ChatFilm() {
       document.fonts.load('600 17px Inter', 'interests'),
       document.fonts.load("17px 'Noto Sans JP'", FIELD_JA + FIELD2_JA + STUDY_ROWS_DATA.map((r) => r.entry + r.sentence).join('')),
       document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
+      document.fonts.load("700 32px 'Noto Sans'", 'Arcatext'),
     ]))
       .then(() => document.fonts.ready)
       .then(() => {

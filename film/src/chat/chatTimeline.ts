@@ -8,6 +8,8 @@
  * left). Typed bubbles grow in place as they type; blocks arrive whole.
  */
 
+import { SPLASH_LETTERS } from '../SplashLogo';
+
 export type Who = 'me' | 'them';
 export type Line = {
   who: Who;
@@ -192,7 +194,8 @@ export const SEND_AT = FIELD_MSGS[0].sendAt;
 /** The end card; the scene fades out over the second before it. */
 export const ENDING = FIELD3_END + 1.6;
 export const END_FADE = 0.9;
-export const DURATION = Math.ceil((ENDING + 4.4) * 2) / 2;
+// The end card runs the app's splash (3s), then holds on the tagline.
+export const DURATION = Math.ceil((ENDING + 5.2) * 2) / 2;
 
 /** The Study Guide's entries: the words from the two Japanese replies. */
 export const STUDY_ROWS_DATA = [
@@ -208,7 +211,10 @@ export function cues() {
   return {
     duration: DURATION,
     bpm: BPM,
-    keys: FIELD_MSGS.flatMap((m) => m.times.map((t, i) => ({ t, space: m.en[i] === ' ' }))),
+    keys: [
+      ...FIELD_MSGS.flatMap((m) => m.times.map((t, i) => ({ t, space: m.en[i] === ' ' }))),
+      ...SPLASH_LETTERS.map((t) => ({ t: ENDING + t, space: true })),
+    ],
     taps: [...FIELD_MSGS.flatMap((m) => [m.rewordTap, m.sendTap].filter(Number.isFinite)), STUDY_TAP],
     // A shimmer as each reword lands.
     reword: FIELD_MSGS[0].rewordDone,
