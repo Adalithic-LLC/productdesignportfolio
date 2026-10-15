@@ -21,10 +21,10 @@
   },
   "hero": {
     "title": "Hey, I'm Andrew",
-    "subtitle": "...a digital product designer [mark:outline:green:3:6:1]using AI[/mark] to create [mark:highlight:blue:2:4:1]fully functional products.[/mark] Shaped it into intuitive & cohesive systems, so the interface enables users to[mark:underline:blue:3:6:1] [/mark]experience the value and they [mark:underline:yellow:2:4:1]keep coming back.[/mark]",
+    "subtitle": "...a digital product designer [mark:outline:green:3:6:1]using AI[/mark] to create [mark:highlight:blue:2:4:1]fully functional products.[/mark] I make intuitive & cohesive systems, so the interface enables the product's value and users [mark:underline:yellow:2:4:1]keep coming back.[/mark]",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
-    "typeSpeed": "42",
+    "typeSpeed": "12",
     "showcaseCaptions": {
       "arcatext": "",
       "arcatext-analysis": "",
@@ -36,7 +36,8 @@
       "",
       ""
     ],
-    "scrollText": "Scroll to explore"
+    "scrollText": "Scroll to explore",
+    "showcaseCaption": "Test"
   },
   "projects": {
     "heading": "Work",
@@ -3864,7 +3865,8 @@
                 "type": "element",
                 "variant": "card-text",
                 "data": {
-                  "body": "Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on."
+                  "body": "Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on.",
+                  "size": "lg"
                 }
               }
             ],
@@ -3873,7 +3875,8 @@
                 "type": "element",
                 "variant": "card-text",
                 "data": {
-                  "body": " I love starting in ambiguity, bringing clarity to complex systems, and expanding my skillset."
+                  "body": " I love starting in ambiguity, bringing clarity to complex systems, and expanding my skillset.",
+                  "size": "lg"
                 }
               }
             ],
@@ -3882,7 +3885,8 @@
                 "type": "element",
                 "variant": "card-text",
                 "data": {
-                  "body": "A short note that stands on its own, with no heading above it."
+                  "body": "A short note that stands on its own, with no heading above it.",
+                  "size": "lg"
                 }
               }
             ]
