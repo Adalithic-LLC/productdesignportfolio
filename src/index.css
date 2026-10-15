@@ -741,3 +741,16 @@ html[data-preview] .sticky.top-0 {
   background: hsl(var(--primary));
   pointer-events: none;
 }
+
+/* Hero card sequence -----------------------------------------------------
+   The cards an admin drops into the hero's seams are raised one at a time
+   once the copy has finished typing (see HeroRise). They keep no space until
+   their turn -- nor does the slot that holds them, margins included -- so the
+   role line sits directly under the paragraph when the page opens and is
+   pushed down as each card arrives. The sequencer sets the display back
+   inline, which beats this rule; when it is finished it marks the region
+   `done` and this stops applying at all. */
+[data-rise-root='pending'] [data-rise],
+[data-rise-root='pending'] [data-rise-group] {
+  display: none;
+}

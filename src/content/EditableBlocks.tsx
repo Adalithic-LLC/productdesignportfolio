@@ -204,14 +204,25 @@ export function EditableBlocks({
  * first insert, so it costs nothing until used: when empty and no insert/move
  * tool is armed it renders nothing at all.
  */
-export function BlockSlot({ path, className }: { path: string; className?: string }) {
+export function BlockSlot({
+  path,
+  className,
+  rise,
+}: {
+  path: string;
+  className?: string;
+  /* Marks the slot as part of a sequenced region, so whatever raises the
+     blocks inside it can keep the slot itself -- margins and all -- out of the
+     page until the first one arrives. */
+  rise?: boolean;
+}) {
   const { content, isAdmin, insertTool, moveMode } = useContent();
   const raw = getByPath(content, path);
   const items: ProseItem[] = Array.isArray(raw) ? (raw as ProseItem[]) : [];
   const armed = isAdmin && (!!insertTool || moveMode);
   if (items.length === 0 && !armed) return null;
   return (
-    <div className={cn('my-6 space-y-5', className)}>
+    <div className={cn('my-6 space-y-5', className)} data-rise-group={rise ? '' : undefined}>
       <EditableBlocks path={path} />
     </div>
   );
@@ -307,17 +318,26 @@ export function ItemGroup({
  * diagram, etc.), not only inside the predefined prose arrays. Each slot's
  * backing array lives at `seams.<id>.<gapIndex>` and is created on first insert.
  */
-export function Seams({ id, children }: { id: string; children: ReactNode }) {
+export function Seams({
+  id,
+  children,
+  rise,
+}: {
+  id: string;
+  children: ReactNode;
+  /** Passed to every slot — see {@link BlockSlot}. */
+  rise?: boolean;
+}) {
   const kids = Children.toArray(children);
   return (
     <>
       {kids.map((child, i) => (
         <Fragment key={i}>
-          <BlockSlot path={`seams.${id}.${i}`} />
+          <BlockSlot path={`seams.${id}.${i}`} rise={rise} />
           {child}
         </Fragment>
       ))}
-      <BlockSlot path={`seams.${id}.${kids.length}`} />
+      <BlockSlot path={`seams.${id}.${kids.length}`} rise={rise} />
     </>
   );
 }

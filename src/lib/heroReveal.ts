@@ -26,6 +26,17 @@ export function typeSpeed(value: string | number | undefined): number {
 
 export const SPEED_LIMITS = SPEED_RANGE;
 
+/** How long a card under the hero takes to grow into place, in seconds. */
+export const RISE_DURATION = 0.55;
+
+/** The beat between one card arriving and the next starting. */
+export const RISE_STAGGER = 0.3;
+
+/** When a block of `chars` has finished typing, in seconds after mount. */
+export function typingEnd(chars: number, speed: number, delay = REVEAL_START): number {
+  return delay + chars / typeSpeed(speed);
+}
+
 /**
  * When a block of `chars` has finished typing and the next should pick it up.
  * The gap is a beat rather than nothing, so the two blocks read as one hand

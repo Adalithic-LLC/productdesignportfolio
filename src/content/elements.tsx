@@ -326,7 +326,15 @@ function GridElement({ ctx }: { ctx: ElementCtx }) {
              by side end level whatever their text; in admin that card sits
              inside a wrapper (`data-block`), which passes the height on. */
           return (
-            <div key={key} className={`flex flex-col ${armed ? 'rounded-xl border border-dashed border-primary/30 p-2' : ''}`}>
+            <div
+              key={key}
+              /* Marked so a sequenced region can raise each cell on its own --
+                 the hero does, once its copy has finished typing. The value is
+                 the display the cell goes back to, since raising it means
+                 taking it out of the page and putting it back. */
+              data-rise="flex"
+              className={`flex flex-col ${armed ? 'rounded-xl border border-dashed border-primary/30 p-2' : ''}`}
+            >
               <BlockSlot
                 path={`${ctx.path}.cells.${key}`}
                 className="my-0 flex flex-1 flex-col [&>*:last-child]:flex-1 [&>[data-block]]:flex [&>[data-block]]:flex-col [&>[data-block]>*:first-child]:flex-1"

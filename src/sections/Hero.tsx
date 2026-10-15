@@ -5,7 +5,8 @@ import { Seams } from '@/content/EditableBlocks';
 import { plainText } from '@/content/inlineMarks';
 import { HeroShowcase } from '@/components/HeroShowcase';
 import { HeroBody, HeroTypingSpeed } from '@/components/HeroBody';
-import { afterTyping, typeSpeed } from '@/lib/heroReveal';
+import { HeroRise } from '@/components/HeroRise';
+import { afterTyping, typeSpeed, typingEnd } from '@/lib/heroReveal';
 
 export default function Hero() {
   const { content } = useContent();
@@ -45,6 +46,11 @@ export default function Hero() {
       as one hand working down the column instead of two that overlap. */
   const speed = typeSpeed(hero.typeSpeed);
   const titleChars = plainText(hero.title).length;
+  const subtitleStart = afterTyping(titleChars, speed);
+
+  /** The cards in the hero's seams start arriving a beat after the last
+      character is typed, so the copy is finished before the column grows. */
+  const cardsStart = typingEnd(plainText(hero.subtitle).length, speed, subtitleStart) + 0.25;
 
   return (
     <section
@@ -72,7 +78,8 @@ export default function Hero() {
           {/* Every gap in the hero copy is an insertion point in admin, the same
               as a case study's section body: above the headline, between the
               headline and the paragraph, and under the role line. */}
-          <Seams id="hero">
+          <HeroRise startAt={cardsStart}>
+          <Seams id="hero" rise>
             <h1
               ref={titleRef}
               /* The brand blue, through the same class the rest of the site
@@ -89,7 +96,7 @@ export default function Hero() {
             >
               <HeroBody
                 path="hero.subtitle"
-                delay={afterTyping(titleChars, speed)}
+                delay={subtitleStart}
                 speed={speed}
               />
             </p>
@@ -108,6 +115,7 @@ export default function Hero() {
                 edited, so the speed is set here and watched in Preview. */}
             <HeroTypingSpeed />
           </Seams>
+          </HeroRise>
         </HeroShowcase>
       </div>
 
