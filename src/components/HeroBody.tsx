@@ -20,15 +20,22 @@
  * the plain `Editable`, because splitting a contentEditable into per-word
  * spans fights the caret.
  *
+ * Inline marks in the copy are drawn on the same clock as the words they sit
+ * under: each one is handed the moment its first word is read in, rather than
+ * waiting to be scrolled into view like a mark further down the page. The hero
+ * is already on screen when the reveal plays, so a scroll trigger there would
+ * either fire at once or never.
+ *
  * The tween is a `from`, never a `to`: the resting DOM is the finished state,
  * so with motion turned off the paragraph is simply there. A reveal that opens
  * invisible and relies on a tween to arrive is how this page went blank for
  * reduced-motion visitors once already.
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Editable } from '@/content/Editable';
 import { useContent } from '@/content/ContentContext';
+import { AnimatedMark, markProps, parseMarks } from '@/content/inlineMarks';
 import {
   FADED_ALPHA,
   REVEAL_DURATION,
@@ -80,7 +87,47 @@ export function HeroBody({
   const value = String(resolve(content, path) ?? '');
   const root = useRef<HTMLSpanElement>(null);
 
-  const tokens = useMemo(() => tokenize(value), [value]);
+  /* Marked runs first, words inside them: a highlight that covers three words
+     has to be one box with the spaces inside it, not three. */
+  const segments = useMemo(() => parseMarks(value), [value]);
+
+  const body = useMemo(() => {
+    let wordsBefore = 0;
+    return segments.map((seg, si) => {
+      const tokens = tokenize(seg.text);
+      const startWord = wordsBefore;
+      wordsBefore += tokens.filter((t) => t.kind === 'word').length;
+      const inner = tokens.map((token, i) =>
+        token.kind === 'gap' ? (
+          <Fragment key={i}>{token.text}</Fragment>
+        ) : (
+          <span key={i} className="hero-word">
+            {token.text}
+          </span>
+        )
+      );
+      if (!seg.mark) return <Fragment key={si}>{inner}</Fragment>;
+      if (!seg.mark.animate) {
+        return (
+          <span key={si} {...markProps(seg.mark)}>
+            {inner}
+          </span>
+        );
+      }
+      /* Half a word-reveal behind the word itself, so the mark lands under copy
+         that has already arrived rather than racing it. */
+      return (
+        <AnimatedMark
+          key={si}
+          spec={seg.mark}
+          order={0}
+          delay={delay + startWord * REVEAL_STAGGER + REVEAL_DURATION * 0.5}
+        >
+          {inner}
+        </AnimatedMark>
+      );
+    });
+  }, [segments, delay]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -119,7 +166,7 @@ export function HeroBody({
       cancelAnimationFrame(frame);
       ctx?.revert();
     };
-  }, [delay, isAdmin, tokens]);
+  }, [delay, isAdmin, segments]);
 
   // Admin edits plain text; the caret has no interest in per-word spans.
   if (isAdmin) {
@@ -128,15 +175,7 @@ export function HeroBody({
 
   return (
     <span ref={root} className={className}>
-      {tokens.map((token, i) =>
-        token.kind === 'gap' ? (
-          token.text
-        ) : (
-          <span key={`${i}-${token.text}`} className="hero-word">
-            {token.text}
-          </span>
-        )
-      )}
+      {body}
     </span>
   );
 }

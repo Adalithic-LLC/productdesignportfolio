@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { ElementType } from 'react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
+import { domToValue, renderMarks, toHtml } from './inlineMarks';
 
 type EditableTag = 'span' | 'p' | 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'a' | 'dt' | 'dd' | 'figcaption';
 
@@ -19,30 +20,36 @@ interface EditableProps {
 /**
  * Renders a piece of editable copy from the content store.
  *
- * In normal mode it renders plain text. In admin mode the element becomes
- * `contentEditable`; the text is managed imperatively through a ref so React
- * never re-reconciles the text node while the user is typing (which would
- * otherwise drop characters). Changes are committed to the store on blur.
+ * In normal mode it renders the text, with any inline marks it carries as
+ * spans. In admin mode the element becomes `contentEditable`; its contents are
+ * managed imperatively through a ref so React never re-reconciles them while
+ * the user is typing (which would otherwise drop characters). Changes are
+ * committed to the store on blur, read back out of the DOM so marks survive
+ * being typed around -- see inlineMarks.tsx.
  */
 export function Editable({ path, as = 'span', className, multiline = false, ...rest }: EditableProps) {
   const { content, isAdmin, setText } = useContent();
   const value = String(resolveValue(content, path) ?? '');
   const ref = useRef<HTMLElement>(null);
   const Tag = as as ElementType;
+  const html = useMemo(() => toHtml(value), [value]);
 
-  // Keep the DOM text in sync with the store, but never while focused/typing.
+  // Keep the DOM in sync with the store, but never while focused/typing. The
+  // comparison is on what the DOM *means* rather than on its markup, because
+  // the browser rewrites the markup it is given (attribute order, quoting) and
+  // a string comparison would then rewrite the field on every render.
   useEffect(() => {
     const el = ref.current;
     if (!isAdmin || !el) return;
-    if (document.activeElement !== el && el.innerText !== value) {
-      el.innerText = value;
+    if (document.activeElement !== el && domToValue(el) !== value) {
+      el.innerHTML = html;
     }
-  }, [isAdmin, value]);
+  }, [isAdmin, html, value]);
 
   if (!isAdmin) {
     return (
       <Tag className={className} {...rest}>
-        {value}
+        {renderMarks(value)}
       </Tag>
     );
   }
@@ -56,9 +63,7 @@ export function Editable({ path, as = 'span', className, multiline = false, ...r
       spellCheck={false}
       data-editable-path={path}
       title={`Editing: ${path}`}
-      onBlur={(e: React.FocusEvent<HTMLElement>) =>
-        setText(path, e.currentTarget.innerText.replace(/\u00a0/g, ' ').trimEnd())
-      }
+      onBlur={(e: React.FocusEvent<HTMLElement>) => setText(path, domToValue(e.currentTarget))}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (!multiline && e.key === 'Enter') {
           e.preventDefault();

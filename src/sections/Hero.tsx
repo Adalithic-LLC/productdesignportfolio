@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { Seams } from '@/content/EditableBlocks';
+import { plainText } from '@/content/inlineMarks';
 import { HeroShowcase } from '@/components/HeroShowcase';
 import { HeroBody } from '@/components/HeroBody';
 import { afterLeadingEdge } from '@/lib/heroReveal';
@@ -42,7 +43,7 @@ export default function Hero() {
 
   /** The paragraph starts where the title's leading edge ends, so the two
       reveals read as one sweep instead of two that overlap. */
-  const titleWords = hero.title.trim().split(/\s+/).filter(Boolean).length;
+  const titleWords = plainText(hero.title).trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <section

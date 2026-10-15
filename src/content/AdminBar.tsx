@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ADMIN_TARGET, useContent } from './ContentContext';
 import { ContentEditorPanel } from './ContentEditorPanel';
+import { MarkToolbar } from './MarkToolbar';
 import { HEADER_STYLES, headerConfig } from './proseBlocks';
 import { ELEMENTS, ElementPreview, getElement } from './elements';
 import { lockAdmin } from '@/lib/adminAuth';
@@ -85,6 +86,9 @@ export function AdminBar() {
   return (
     <>
     <ContentEditorPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
+    {/* Follows the text selection rather than living in this bar — see
+        MarkToolbar for why. */}
+    <MarkToolbar />
     {/* Element-palette hover preview — a card on the right side of the screen. */}
     {paletteOpen && hoverVariant &&
       createPortal(
@@ -466,7 +470,8 @@ export function AdminBar() {
 
             <p className="text-[11px] leading-snug text-muted-foreground">
               Click any text on the page to edit it (Enter confirms, click away to finish), or
-              click an image to change it. Use <span className="font-medium">Edit all content</span>{' '}
+              click an image to change it. Select characters to underline, highlight or outline
+              them. Use <span className="font-medium">Edit all content</span>{' '}
               for every field, including links and form options.
             </p>
           </div>

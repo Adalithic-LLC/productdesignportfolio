@@ -158,6 +158,19 @@
     --ring: 222 100% 68%;
     --radius: 0.875rem;
 
+    /* Inline mark colours (underline / highlight / outline).
+       Blue is the brand primary and green the accent, so two of the four are
+       the site's own; yellow and red are tuned to sit with them -- the yellow
+       is the Arcatext warning amber brought to the page palette, the red is
+       the destructive token. */
+    --mark-blue: 222 100% 68%;    /* --primary */
+    --mark-green: 173 56% 49%;    /* --accent */
+    --mark-yellow: 43 96% 56%;
+    --mark-red: 0 84% 60%;        /* --destructive */
+    /* Highlight fill opacity: enough colour to read as a highlighter, little
+       enough that the type stays the darkest thing in the line. */
+    --mark-fill: 0.38;
+
     /* Custom Colors */
     --purple: 222 100% 68%;
     --blue: 173 56% 49%;
@@ -193,6 +206,14 @@
     --border: 215 18% 20%;
     --input: 215 18% 20%;
     --ring: 222 100% 68%;
+
+    /* Lifted and desaturated a little for the dark page: the same four hues,
+       at the brightness they need against a near-black background. */
+    --mark-blue: 222 100% 72%;
+    --mark-green: 173 56% 56%;
+    --mark-yellow: 43 96% 62%;
+    --mark-red: 0 84% 66%;
+    --mark-fill: 0.3;
   }
 }
 
@@ -539,5 +560,116 @@ html[data-preview] .sticky.top-0 {
 @media (prefers-reduced-motion: reduce) {
   .cs-float .grid > * {
     animation: none;
+  }
+}
+
+/* Inline marks -----------------------------------------------------------
+   An underline, a highlight or an outline on a run of characters inside any
+   editable string -- see src/content/inlineMarks.tsx for the stored form.
+
+   Both the underline and the highlight are painted as a background image
+   rather than with `text-decoration` or a flat `background-color`, because a
+   background's *size* can be animated: that is what lets a mark draw itself on
+   from the left the way a pen would. The outline cannot be drawn that way, so
+   it is a bordered pseudo-element wiped in with `clip-path`.
+
+   Colour, thickness and radius come in as custom properties set per mark, so
+   one rule serves every combination, and the hues are theme tokens -- a mark
+   follows the site between light and dark without being restated. */
+.pdp-mark {
+  --c: var(--mark-blue);
+  --mark-duration: 0.62s;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.pdp-mark[data-color='yellow'] { --c: var(--mark-yellow); }
+.pdp-mark[data-color='green']  { --c: var(--mark-green); }
+.pdp-mark[data-color='blue']   { --c: var(--mark-blue); }
+.pdp-mark[data-color='red']    { --c: var(--mark-red); }
+
+.pdp-mark[data-mark='underline'] {
+  background-image: linear-gradient(hsl(var(--c)), hsl(var(--c)));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% calc(var(--mark-thickness, 2) * 1px);
+  padding-bottom: 0.14em;
+}
+
+.pdp-mark[data-mark='highlight'] {
+  background-image: linear-gradient(
+    hsl(var(--c) / var(--mark-fill)),
+    hsl(var(--c) / var(--mark-fill))
+  );
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 100% 100%;
+  border-radius: calc(var(--mark-radius, 4) * 1px);
+  padding: 0.04em 0.22em;
+  margin: 0 -0.06em;
+}
+
+.pdp-mark[data-mark='outline'] {
+  position: relative;
+  padding: 0.04em 0.28em;
+  margin: 0 -0.06em;
+}
+
+.pdp-mark[data-mark='outline']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: calc(var(--mark-thickness, 2) * 1px) solid hsl(var(--c));
+  border-radius: calc(var(--mark-radius, 6) * 1px);
+  pointer-events: none;
+}
+
+/* Undrawn: the animated ones hold at nothing until their turn comes. The delay
+   is their position in the block (or, in the hero, the moment the words they
+   sit on are read in), and `both` keeps them at zero through it. */
+.pdp-mark[data-animate='1'][data-mark='underline'] {
+  background-size: 0 calc(var(--mark-thickness, 2) * 1px);
+}
+
+.pdp-mark[data-animate='1'][data-mark='highlight'] {
+  background-size: 0 100%;
+}
+
+.pdp-mark[data-animate='1'][data-mark='outline']::before {
+  clip-path: inset(0 100% 0 0);
+}
+
+.pdp-mark[data-animate='1'].is-drawn[data-mark='underline'] {
+  animation: mark-draw-rule var(--mark-duration) var(--ease-expo-out) var(--mark-delay, 0s) both;
+}
+
+.pdp-mark[data-animate='1'].is-drawn[data-mark='highlight'] {
+  animation: mark-draw-fill var(--mark-duration) var(--ease-expo-out) var(--mark-delay, 0s) both;
+}
+
+.pdp-mark[data-animate='1'].is-drawn[data-mark='outline']::before {
+  animation: mark-draw-box var(--mark-duration) var(--ease-expo-out) var(--mark-delay, 0s) both;
+}
+
+@keyframes mark-draw-rule {
+  from { background-size: 0 calc(var(--mark-thickness, 2) * 1px); }
+  to   { background-size: 100% calc(var(--mark-thickness, 2) * 1px); }
+}
+
+@keyframes mark-draw-fill {
+  from { background-size: 0 100%; }
+  to   { background-size: 100% 100%; }
+}
+
+@keyframes mark-draw-box {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+/* Motion off: the marks are simply there, like the unanimated ones. */
+@media (prefers-reduced-motion: reduce) {
+  .pdp-mark[data-animate='1'] {
+    --mark-duration: 0s;
+    --mark-delay: 0s;
   }
 }
