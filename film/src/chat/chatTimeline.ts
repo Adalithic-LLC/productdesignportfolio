@@ -21,8 +21,10 @@ export type Line = {
   slotInline?: boolean;
   /** Fades out every bubble above it as it arrives, so it stands alone. */
   clearAbove?: boolean;
-  /** Keeps the text on one line, however wide the bubble gets. */
+  /** Keeps the text on one line, however wide the bubble gets… */
   noWrap?: boolean;
+  /** …or widens this bubble past the usual maximum (pt). */
+  maxW?: number;
   /** Seconds from this bubble being complete (its reel landed) to the next
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
@@ -32,12 +34,16 @@ export const SCRIPT: Line[] = [
   { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 1.0 },
   { who: 'me', kind: 'block', text: 'Please, not another app that I stop using after 5 minutes...' },
-  { who: 'them', kind: 'block', text: 'Nope, you control this one.', after: 1.0 },
+  { who: 'them', kind: 'block', text: "I think you'll like this.", after: 1.0 },
   {
     who: 'them',
     kind: 'block',
-    text: "It's practical learning based on your",
-    slot: ['life', 'interests', 'actual conversations.'],
+    // Broken after the comma, and a little wider than other bubbles, so even
+    // "actual conversations." fits after "your".
+    text: 'You learn the practical language,\nbased on your',
+    maxW: 340,
+    slot: ['life.', 'interests.', 'actual conversations.'],
+    slotInline: true,
   },
   { who: 'me', kind: 'block', text: "Ok, I'm listening..." },
   {

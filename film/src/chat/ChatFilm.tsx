@@ -122,7 +122,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   texts.forEach((text, i) => {
     const noWrap = !!TIMED[i]?.noWrap;
     probe.style.whiteSpace = noWrap ? 'pre' : 'pre-wrap';
-    probe.style.maxWidth = noWrap ? 'none' : `${MAX_W}px`;
+    probe.style.maxWidth = noWrap ? 'none' : `${TIMED[i]?.maxW ?? MAX_W}px`;
     const hs = [0];
     const ws = [0];
     const from = i < TIMED.length ? 1 : text.length;
@@ -139,6 +139,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   const lastW: number[] = [];
   const otherW: number[] = [];
   TIMED.forEach((m) => {
+    probe.style.maxWidth = `${m.maxW ?? MAX_W}px`;
     probe.textContent = m.text;
     const ls = lineWidths();
     lastW.push(ls[ls.length - 1]);
@@ -160,6 +161,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   // whichever word needs the most room, so the reel never re-wraps it.
   const inlineH = TIMED.map((m) => {
     if (!m.slot || !m.slotInline) return 0;
+    probe.style.maxWidth = `${m.maxW ?? MAX_W}px`;
     return Math.max(
       ...m.slot.map((w) => {
         probe.textContent = m.text + ' ';
@@ -304,7 +306,7 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
     >
       <div
         className="overflow-hidden text-white"
-        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: m.noWrap ? 'pre' : 'pre-wrap', maxWidth: m.noWrap ? 'none' : MAX_W, overflowWrap: 'break-word' }}
+        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: m.noWrap ? 'pre' : 'pre-wrap', maxWidth: m.noWrap ? 'none' : m.maxW ?? MAX_W, overflowWrap: 'break-word' }}
       >
         {typed}
         {m.slot && t >= m.slotAt && <Slot m={m} met={met} t={t} />}
