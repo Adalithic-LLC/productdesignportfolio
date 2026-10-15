@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { ArrowUp, Plus } from 'lucide-react';
 import { AX } from '@/lib/arcatextTheme';
-import { StudyPanel } from '@/components/ArcatextViews';
+import { StudyPanel, VIEW_H } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo, { SPLASH_DONE } from '../SplashLogo';
@@ -11,10 +11,13 @@ import {
   DURATION,
   ENDING,
   FIELD_JA,
-  FIELD2_JA,
-  FIELD_ZOOM,
   END_FADE,
   PAN,
+  CAMERA,
+  KEYS_VIEW,
+  STUDY_GROW,
+  TAGLINE_LANDS,
+  TAGLINE_WORDS,
   FIELD_MSGS,
   STUDY_OPEN,
   STUDY_ROWS,
@@ -382,7 +385,8 @@ function keyboardState(t: number) {
   return {
     t,
     text: f.sent ? '' : f.en,
-    keyDown: f.keyDown,
+    // No key popups in this film: the keys stay flat while the field types.
+    keyDown: null,
     pressed,
     rewordLoading: !!rewording,
   };
@@ -450,37 +454,45 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
 
 /** The field row (one line) plus the gap and the keyboard under it, in pt. */
 const BELOW_CHAT = 36 + 8 + 339;
+/** The keys' height, and the Study view's, which replaces them. */
+const KEYS_H = 270;
+
+/** The camera after the pan: hold a framing, ease between them on each move. */
+function framingAt(t: number) {
+  let v = KEYS_VIEW;
+  for (const [a, b, to] of CAMERA) {
+    if (t >= b) v = to;
+    else if (t > a) {
+      const k = easeInOutCubic((t - a) / (b - a));
+      return { scale: lerp(v.scale, to.scale, k), kb: lerp(v.kb, to.kb, k) };
+    }
+  }
+  return v;
+}
 
 function World({ met, t }: { met: Metrics; t: number }) {
-  // The camera: close on the conversation, then a pan down (and back) to
-  // frame the field and the keyboard under it.
+  // Close on the conversation, then a pan down to the field and the keyboard;
+  // the field waits out of shot, then settles under the last bubble.
   const k = easeInOutCubic(clamp01((t - PAN[0]) / (PAN[1] - PAN[0])));
-  // The Study view is taller than the keys: pull back to keep it all in frame.
-  const k2 = easeInOutCubic(clamp01((t - STUDY_OPEN) / 0.7));
-  // Once its entries load, push in on the Study view so they can be read.
-  const k3 = easeInOutCubic(clamp01((t - STUDY_ROWS - 0.15) / 0.9));
-  const scale = lerp(lerp(lerp(2.35, 1.6, k), 1.22, k2), 1.7, k3);
-  // Where the conversation's bottom edge sits on screen while the field has
-  // one line; the field waits out of shot, then settles under the last bubble.
-  const bottomY = lerp(760, 335, k);
   const gap = lerp(90, 14, k);
+  const chatScale = 2.35;
   // The world hangs from the keyboard's bottom edge, as on iOS: when the
-  // field gains a line it grows upward and lifts the conversation with it.
-  // (Pushed in, the view's middle — 294pt above the keyboard's bottom edge — sits mid-frame.)
-  let keyboardBottom = lerp(lerp(bottomY + (gap + BELOW_CHAT) * scale, 1000, k2), 540 + 294 * 1.7, k3);
-  // Last, a close-up on the field (its middle ~550pt above the keyboard's
-  // bottom edge, over the open Study view) for the final line.
-  const k4 = easeInOutCubic(clamp01((t - FIELD_ZOOM[0]) / (FIELD_ZOOM[1] - FIELD_ZOOM[0])));
-  const zoomScale = lerp(scale, 2.9, k4);
-  keyboardBottom = lerp(keyboardBottom, 540 + 552 * 2.9, k4);
+  // field gains a line, or Study opens taller than the keys, everything above
+  // rises with it.
+  const chatKb = 760 + (90 + BELOW_CHAT) * chatScale;
+  const after = framingAt(t);
+  const scale = lerp(chatScale, after.scale, k);
+  const keyboardBottom = lerp(chatKb, after.kb, k);
   const fade = span(t, ENDING - END_FADE, ENDING, (x) => x);
+  // Study opening: the keys' area grows to the view's height as they cross-fade.
+  const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
   return (
     <div
       className="dark absolute left-0 top-0"
       style={{
         width: COL,
         transformOrigin: '0 0',
-        transform: `translate(${W / 2 - (COL / 2) * zoomScale}px, ${keyboardBottom}px) scale(${zoomScale})`,
+        transform: `translate(${W / 2 - (COL / 2) * scale}px, ${keyboardBottom}px) scale(${scale})`,
         opacity: 1 - fade,
       }}
     >
@@ -495,17 +507,74 @@ function World({ met, t }: { met: Metrics; t: number }) {
           <Field t={t} />
           <div className="mt-2 overflow-hidden rounded-[26px] ring-1 ring-white/10">
             {/* Study replaces the toolbar and keys, as every Arcatext view does. */}
-            {t >= STUDY_OPEN ? (
-              <div data-pin={t >= STUDY_ROWS ? STUDY_ROWS : undefined}>
-                <StudyPanel stage={t >= STUDY_ROWS ? 'rows' : t >= STUDY_SKELETON ? 'skeleton' : 'spinner'} rows={STUDY_ROWS_DATA} total={24} />
-              </div>
-            ) : (
-              <Keyboard s={keyboardState(t)} />
-            )}
-            <GlobeRow tall={t >= STUDY_OPEN} />
+            <div className="relative overflow-hidden" style={{ height: lerp(KEYS_H, VIEW_H, grow) }}>
+              {grow < 1 && (
+                <div className="absolute inset-x-0 top-0" style={{ opacity: 1 - grow }}>
+                  <Keyboard s={keyboardState(t)} />
+                </div>
+              )}
+              {t >= STUDY_OPEN && (
+                <div className="absolute inset-x-0 top-0" style={{ opacity: grow }} data-pin={t >= STUDY_ROWS ? STUDY_ROWS : undefined}>
+                  <StudyPanel stage={t >= STUDY_ROWS ? 'rows' : t >= STUDY_SKELETON ? 'skeleton' : 'spinner'} rows={STUDY_ROWS_DATA} total={24} />
+                </div>
+              )}
+            </div>
+            <GlobeRow padTop={lerp(17, 22, grow)} />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Where the end card's reel is, in words (fractional while rolling). */
+function taglinePos(s: number) {
+  const L = TAGLINE_LANDS;
+  let p = 0;
+  for (let i = 1; i < L.length; i++) {
+    const last = i === L.length - 1;
+    const roll = last ? 0.5 : Math.min(0.3, 0.9 * (L[i] - L[i - 1]));
+    if (s >= L[i]) p = i;
+    else if (s >= L[i] - roll) {
+      const k = (s - (L[i] - roll)) / roll;
+      // Readable rolls ease; the fast run is linear so it reads as a spin; the
+      // last one settles.
+      p = i - 1 + (last ? easeOutCubic(k) : roll >= 0.2 ? easeInOutCubic(k) : k);
+    }
+  }
+  return p;
+}
+
+const TAG_SIZE = 19;
+const TAG_LINE = TAG_SIZE * 1.3;
+
+/** "Text and learn …": the reel is left-anchored, sized for "a language", so
+    the line stays put while the words roll past at any speed. */
+function Tagline({ s }: { s: number }) {
+  const p = taglinePos(s);
+  const v = Math.abs(p - taglinePos(s - 1 / 60)) * 60;
+  const base = Math.floor(p);
+  const items = [];
+  for (let j = Math.max(0, base - 1); j <= Math.min(TAGLINE_WORDS.length - 1, base + 2); j++) {
+    items.push(
+      <span key={j} className="absolute left-0 whitespace-nowrap" style={{ top: (j - p) * TAG_LINE, color: SLOT_COLOR }}>
+        {TAGLINE_WORDS[j]}
+      </span>,
+    );
+  }
+  return (
+    <div className="whitespace-nowrap text-center" style={{ fontSize: TAG_SIZE, lineHeight: `${TAG_LINE}px` }}>
+      Text and learn{' '}
+      <span className="relative inline-block align-top" style={{ height: TAG_LINE }}>
+        <span style={{ visibility: 'hidden' }}>a language</span>
+        {/* Clips the reel to its one line, wide enough for any language. */}
+        <span
+          className="absolute left-0 top-0 overflow-hidden"
+          style={{ width: '30em', height: TAG_LINE, filter: `blur(${Math.min(1.4, v * 0.05)}px)` }}
+        >
+          {items}
+        </span>
+      </span>
     </div>
   );
 }
@@ -520,10 +589,9 @@ function Ending({ t }: { t: number }) {
       <Glow />
       <SplashLogo s={local} scale={3.2}>
         <div
-          className="mt-4 whitespace-nowrap text-center"
+          className="mt-4"
           style={{
             fontFamily: "'Inter Display', Inter, sans-serif",
-            fontSize: 19,
             fontWeight: 600,
             letterSpacing: '-0.02em',
             color: 'rgba(255,255,255,0.62)',
@@ -531,7 +599,7 @@ function Ending({ t }: { t: number }) {
             transform: `translateY(${(1 - sub) * 8}px)`,
           }}
         >
-          Text and learn a language
+          <Tagline s={local} />
         </div>
       </SplashLogo>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
@@ -566,7 +634,7 @@ export default function ChatFilm() {
     interRegistered.then(() => Promise.all([
       document.fonts.load('17px Inter', 'Want a new way'),
       document.fonts.load('600 17px Inter', 'interests'),
-      document.fonts.load("17px 'Noto Sans JP'", FIELD_JA + FIELD2_JA + STUDY_ROWS_DATA.map((r) => r.entry + r.sentence).join('')),
+      document.fonts.load("17px 'Noto Sans JP'", FIELD_JA + STUDY_ROWS_DATA.map((r) => r.entry + r.sentence).join('')),
       document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
       document.fonts.load("700 32px 'Noto Sans'", 'Arcatext'),
     ]))

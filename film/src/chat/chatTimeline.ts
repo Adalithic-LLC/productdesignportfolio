@@ -54,7 +54,6 @@ export const SCRIPT: Line[] = [
 export const FIELD_TEXT = 'So, I just type, tap a button, and it translates?';
 export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳してくれるの？';
 export const FIELD2_TEXT = 'And it actually adds the words I missed to a study guide?';
-export const FIELD2_JA = 'しかも、知らなかった単語を学習ガイドに入れてくれるの？';
 export const FIELD3_TEXT = 'Ok this is cool. I kind of want to practice now.';
 
 export const FPS = 60;
@@ -155,57 +154,115 @@ export type FieldMsg = {
   sendAt: number;
 };
 
-export const FIELD_MSGS: FieldMsg[] = (() => {
-  const msgs: FieldMsg[] = [];
-  // 1. Typed, reworded and sent.
-  {
-    const times = typeTimes(FIELD_TEXT, PAN[1] + 0.35, 99);
-    const rewordTap = times[times.length - 1] + 0.55;
-    const rewordDone = rewordTap + 1.0;
-    const sendTap = rewordDone + 1.5;
-    msgs.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17 });
-  }
-  // 2. Typed and reworded; the Study Guide opens over the keys, then it's sent.
-  {
-    const times = typeTimes(FIELD2_TEXT, msgs[0].sendAt + 0.9, 7);
-    const rewordTap = times[times.length - 1] + 0.55;
-    msgs.push({ en: FIELD2_TEXT, ja: FIELD2_JA, times, rewordTap, rewordDone: rewordTap + 1.0, sendTap: Infinity, sendAt: Infinity });
-  }
-  return msgs;
-})();
+/**
+ * The camera after the pan, as a list of framings: `scale`, and where the
+ * keyboard's bottom edge sits on screen (the world hangs from it).
+ *   KEYS        the field and the full keyboard (or the Study view, same zoom)
+ *   FIELD       close on the field over the keys
+ *   FIELD_STUDY close on the field over the open Study view
+ */
+export type View = { scale: number; kb: number };
+const KEYS: View = { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
+// The field's middle sits 365pt above the keyboard's bottom edge over the
+// keys, and 551pt over the (taller) Study view.
+const FIELD: View = { scale: 2.9, kb: 540 + 365 * 2.9 };
+const FIELD_STUDY: View = { scale: 2.9, kb: 540 + 551 * 2.9 };
+const ZOOM = 0.75;
 
-/** The Study tap, the view opening, and its loading stages. */
-export const STUDY_TAP = FIELD_MSGS[1].rewordDone + 1.4;
+/** Camera moves after the pan: [start, end, to]. */
+export const CAMERA: [number, number, View][] = [];
+const move = (at: number, to: View) => {
+  CAMERA.push([at, at + ZOOM, to]);
+  return at + ZOOM;
+};
+export const KEYS_VIEW = KEYS;
+
+export const FIELD_MSGS: FieldMsg[] = [];
+let c = PAN[1] + 0.5;
+// 1. Close on the field while it's typed; back out to the keys to Reword it, and send.
+c = move(c, FIELD);
+{
+  const times = typeTimes(FIELD_TEXT, c + 0.2, 99);
+  c = move(times[times.length - 1] + 0.4, KEYS);
+  const rewordTap = c + 0.35;
+  const rewordDone = rewordTap + 1.0;
+  const sendTap = rewordDone + 1.3;
+  FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17 });
+  c = sendTap + 0.17;
+}
+// 2. Close on the field again; this one stays in English. Back out, and open Study.
+c = move(c + 0.4, FIELD);
+{
+  const times = typeTimes(FIELD2_TEXT, c + 0.2, 7);
+  c = move(times[times.length - 1] + 0.4, KEYS);
+  FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity });
+}
+
+/** The Study tap, the view opening (its height easing from the keys' to its
+    own), and its loading stages. The camera holds its zoom throughout. */
+export const STUDY_TAP = c + 0.4;
 export const STUDY_OPEN = STUDY_TAP + 0.18;
+export const STUDY_GROW = 0.4;
 export const STUDY_SKELETON = STUDY_OPEN + 0.35;
 export const STUDY_ROWS = STUDY_OPEN + 1.0;
-FIELD_MSGS[1].sendTap = STUDY_ROWS + 2.6;
+// The English question is sent once the entries have been seen.
+FIELD_MSGS[1].sendTap = STUDY_ROWS + 2.4;
 FIELD_MSGS[1].sendAt = FIELD_MSGS[1].sendTap + 0.17;
 
-/** Then a close-up on the field, and a last line typed there (not sent). */
-export const FIELD_ZOOM = [FIELD_MSGS[1].sendAt + 0.15, FIELD_MSGS[1].sendAt + 1.15] as const;
+// 3. Close on the field over Study for the last line, which stays unsent.
+c = move(FIELD_MSGS[1].sendAt + 0.3, FIELD_STUDY);
 {
-  const times = typeTimes(FIELD3_TEXT, FIELD_ZOOM[1] + 0.25, 23);
+  const times = typeTimes(FIELD3_TEXT, c + 0.2, 23);
   FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity });
+  c = times[times.length - 1];
 }
-const FIELD3_END = FIELD_MSGS[2].times[FIELD_MSGS[2].times.length - 1];
 
 export const SEND_AT = FIELD_MSGS[0].sendAt;
 /** The end card; the scene fades out over the second before it. */
-export const ENDING = FIELD3_END + 1.6;
+export const ENDING = c + 1.6;
 export const END_FADE = 0.9;
-// The end card runs the app's splash (3s), then holds on the tagline.
-export const DURATION = Math.ceil((ENDING + 5.2) * 2) / 2;
 
-/** The Study Guide's entries: the words from the two Japanese replies. */
+/** Reword's languages (Arcatext/Data/LanguageData.swift on main), names
+    shortened to how they read in a sentence. */
+const REWORD_LANGUAGES = [
+  'Afrikaans', 'Albanian', 'Arabic', 'Armenian', 'Azerbaijani', 'Basque', 'Bengali', 'Bosnian', 'Bulgarian',
+  'Cantonese', 'Catalan', 'Croatian', 'Czech', 'Danish', 'Dari', 'Dutch', 'Egyptian Arabic', 'English',
+  'Esperanto', 'Estonian', 'Filipino', 'Finnish', 'Flemish', 'French', 'Galician', 'German', 'Greek', 'Gujarati',
+  'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Irish', 'Italian',
+  'Japanese', 'Kannada', 'Kazakh', 'Khmer', 'Korean', 'Kurdish', 'Latin', 'Malay', 'Mandarin', 'Norwegian',
+  'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak',
+  'Slovenian', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian',
+  'Urdu', 'Uzbek', 'Valencian', 'Vietnamese', 'Welsh',
+];
+const LEAD = ['English', 'Spanish', 'Mandarin'];
+
+/** The end card's "Text and learn …" reel: "a language", three languages at
+    reading pace, the rest of the list faster and faster, and back to "a
+    language". Times are from the start of the end card. */
+export const TAGLINE_WORDS = ['a language', ...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
+export const TAGLINE_LANDS: number[] = (() => {
+  const out = [2.4, 3.55, 4.15, 4.7];
+  let dt = 0.26;
+  for (let i = 4; i < TAGLINE_WORDS.length - 1; i++) {
+    out.push(out[out.length - 1] + dt);
+    dt = Math.max(0.035, dt * 0.88);
+  }
+  // A slower last roll settles back on "a language".
+  out.push(out[out.length - 1] + 0.55);
+  return out;
+})();
+// The end card runs the app's splash (3s), the reel, then holds.
+export const DURATION = Math.ceil((ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1] + 1.8) * 2) / 2;
+
+/** The Study Guide's entries: words from the conversation's Japanese. */
 export const STUDY_ROWS_DATA = [
   { entry: '翻訳', translations: 'translation', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 2 },
-  { entry: '単語', translations: 'word', sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Noun', misses: 3 },
-  { entry: '入力', translations: 'input, typing', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Noun', misses: 1 },
+  { entry: '入力', translations: 'input, typing', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Noun', misses: 3 },
   { entry: '押す', translations: 'to press, to push', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Verb', misses: 2 },
-  { entry: '知らなかった', translations: "didn't know", sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Verb', misses: 1 },
-  { entry: '学習ガイド', translations: 'study guide', sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Phrase', misses: 1 },
-];
+  { entry: 'ボタン', translations: 'button', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 1 },
+  { entry: '〜だけで', translations: 'just by …', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Phrase', misses: 1 },
+  { entry: 'じゃあ', translations: 'so, well then', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Phrase', misses: 1 },
+]
 
 export function cues() {
   return {
@@ -218,12 +275,14 @@ export function cues() {
     taps: [...FIELD_MSGS.flatMap((m) => [m.rewordTap, m.sendTap].filter(Number.isFinite)), STUDY_TAP],
     // A shimmer as each reword lands.
     reword: FIELD_MSGS[0].rewordDone,
-    reveal: FIELD_MSGS[1].rewordDone,
+    reveal: null,
     send: SEND_AT,
     sends: FIELD_MSGS.map((m) => m.sendAt).filter(Number.isFinite),
     swipes: [],
     // A tick each time a reel lands, and a pop as each bubble arrives.
     words: TIMED.flatMap((m) => m.slotLands),
+    // The end card's reel, as quiet ticks.
+    ticks: TAGLINE_LANDS.map((x) => ENDING + x),
     pops: TIMED.map((m) => ({ t: m.at, who: m.who })),
     titles: [],
     phones: [PAN[0]],

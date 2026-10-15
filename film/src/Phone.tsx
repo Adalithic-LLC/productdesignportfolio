@@ -216,12 +216,10 @@ export function Keyboard({ s, idle }: { s: Pick<ScreenState, 't' | 'text' | 'key
         </div>
         <div className="flex-1" />
         <div className="relative">
-          {pressed === 'reword' && <Touch inset={-6} />}
-          <div
-            className="relative flex items-stretch overflow-hidden rounded-[12px]"
-            style={{ height: 50, backgroundColor: pressed === 'reword' ? AX.itemPressed : AX.item }}
-          >
-            <div className="relative flex items-center px-[14px]">
+          <div className="relative flex items-stretch overflow-hidden rounded-[12px]" style={{ height: 50, backgroundColor: AX.item }}>
+            {/* Pressed, as StandardToolbar's split pill: the label half darkens
+                (black at 20%), and nothing else changes. */}
+            <div className="relative flex items-center px-[14px]" style={{ background: pressed === 'reword' ? 'rgba(0,0,0,0.2)' : undefined }}>
               <span className={`text-[16px] font-medium text-white ${loading ? 'invisible' : ''}`}>Reword</span>
               {loading && (
                 <span className="absolute inset-0 grid place-items-center">
@@ -279,9 +277,9 @@ export function Keyboard({ s, idle }: { s: Pick<ScreenState, 't' | 'text' | 'key
   );
 }
 
-export function GlobeRow({ tall }: { tall?: boolean }) {
+export function GlobeRow({ tall, padTop }: { tall?: boolean; padTop?: number }) {
   return (
-    <div style={{ backgroundColor: AX.keyboardBg, paddingTop: tall ? 22 : 17 }} className="flex shrink-0 items-center justify-between px-5 pb-[28px]">
+    <div style={{ backgroundColor: AX.keyboardBg, paddingTop: padTop ?? (tall ? 22 : 17) }} className="flex shrink-0 items-center justify-between px-5 pb-[28px]">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
         <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />

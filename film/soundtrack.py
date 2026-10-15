@@ -285,6 +285,8 @@ for p in cues.get('pops', []):
     tt = t_(n)
     f = 880 if p['who'] == 'me' else 660
     place(ui, np.sin(2 * np.pi * (f * tt + 900 * tt**2)) * env(n, 0.002, 0.03), p['t'], 0.22)
+for at in cues.get('ticks', []):
+    place(ui, key_click(), at, 0.07)
 for at in cues['swipes']:
     place(ui, whoosh(), at + 0.05, 0.3)
 
