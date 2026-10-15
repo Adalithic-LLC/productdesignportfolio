@@ -104,7 +104,7 @@ export const SCRIPT: Line[] = [
     after: 1.0,
   },
   // ── Back up in the chat once the reply is sent, then down again ──
-  // "Yes!..." and "Learn the practical..." each arrive alone on screen.
+  // "Yes!..." arrives alone on screen.
   {
     who: 'them',
     kind: 'block',
@@ -120,34 +120,25 @@ export const SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'type',
-    text: 'But... it takes a lot of effort to learn a language.',
-    pauses: [{ after: 'But...', secs: 1.0 }],
-    afterSend: true,
-  },
-  {
-    who: 'them',
-    kind: 'type',
-    text: 'One app cannot do it all, this one helps you practice reading & writing in real conversations.',
-    pauses: [{ after: 'One app cannot do it all,', secs: 1.0 }],
+    text: "This won't replace all your tools, let's be honest.",
     after: 1.5,
     afterSend: true,
   },
   {
     who: 'them',
     kind: 'type',
-    // Broken before "based on your", and a little wider than other bubbles,
-    // so even "actual conversations." fits after it on the second line.
-    text: 'Learn the practical language\nbased on your',
+    // Answers the bubble above, so both stay on screen. The reel has its own
+    // last line, so the longest word never re-wraps the sentence.
+    text: 'But, it will help you learn the practical language based on your',
+    pauses: [{ after: 'But,', secs: 1.0 }],
     maxW: 340,
+    slot: ['life.', 'interests.', 'actual conversations.'],
+    slotHold: 2.0,
     slotTypeDelay: 1.0,
+    focus: true,
     // After the close-up on the bubble, a second push-in onto the reel as its
     // first word starts typing.
     focusSlot: true,
-    slot: ['life.', 'interests.', 'actual conversations.'],
-    slotInline: true,
-    slotHold: 2.0,
-    focus: true,
-    clearAbove: true,
     afterSend: true,
   },
   { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },

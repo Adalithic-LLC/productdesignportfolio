@@ -640,10 +640,11 @@ function focusTransform(met: Metrics, t: number) {
     let py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
     let zoom = FOCUS_ZOOM;
     const ph = met.phrase[m.index];
-    if (m.focusSlot && m.slotInline) {
-      // Onto the reel at the end of the last line, centred on its widest word.
+    if (m.focusSlot && m.slot) {
+      // Onto the reel (after the text on its last line, or on a line of its
+      // own), centred on its widest word.
       const k2 = easeInOutCubic(clamp01((t - m.slotAt) / 0.6));
-      const sx = 12 + met.lastW[m.index] + met.spaceW + slotMax / 2;
+      const sx = 12 + (m.slotInline ? met.lastW[m.index] + met.spaceW : 0) + slotMax / 2;
       const sy = bh - 7 - LINE / 2;
       px = lerp(px, left + (bx + sx) * CHAT_SCALE, k2);
       py = lerp(py, CHAT_BOTTOM - (bh - sy) * CHAT_SCALE, k2);
