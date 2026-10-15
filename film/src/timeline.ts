@@ -12,7 +12,7 @@ import { clamp01, easeInOutCubic, lerp } from './ease';
  *   4  "Start with a message in your language."         → typing
  *  10  "Tap Reword to translate it."                     → Reword
  *  16  "Make sure the translation is what you intended…" → Check, close, send
- *  27  "Use the keyboard in any messaging app."          → app switching
+ *  27  Works in Messages, WhatsApp, Telegram, and any other messaging app
  *  35  Closing: icon, Arcatext, "Learn languages by texting {…}"
  */
 
@@ -46,9 +46,11 @@ export const SEND_TAP = 25.0;
 const SEND_AT = SEND_TAP + 0.17;
 /** App switches: a swipe along the home indicator, [start, end]. */
 export const SWITCHES: [number, number][] = [
+  [28.55, 29.25],
   [30.55, 31.25],
-  [32.55, 33.25],
 ];
+/** When the app list ends on "and any other messaging app!". */
+export const ANY_APP_AT = 32.5;
 export const CLOSING = 35;
 /** The closing line's rotating word, and when each one lands. */
 export const WORDS = ['friends', 'penpals', 'classmates', 'AI'];
@@ -199,27 +201,26 @@ export const SHOTS: Shot[] = [
     end: 6,
     lines: [{ text: 'Start with a message' }, { text: 'in your language.', accent: ['your', 'language.'] }],
   },
+  // Every phone shot is straight on, framed once, with only a slow push-in.
   {
-    // Typing: low and angled over the keys, drifting up toward the field.
+    // Typing: the field and the keys together.
     kind: 'phone',
     start: 6,
     end: 10,
     keys: [
-      [6, { fx: 200, fy: 690, z: 2.05, rx: 26, ry: 24, rz: -7, ox: 60, oy: 40 }],
-      [10, { fx: 215, fy: 610, z: 2.35, rx: 18, ry: 16, rz: -4, ox: 0, oy: 20 }],
+      [6, { fx: 213, fy: 630, z: 2.0 }],
+      [10, { fx: 213, fy: 625, z: 2.1 }],
     ],
   },
   { kind: 'title', start: 10, end: 12, lines: [{ text: 'Tap Reword', accent: ['Reword'] }, { text: 'to translate it.' }] },
   {
-    // Reword: straight on, tight on the pill; pull up to the field as it changes.
+    // Reword: the field and the toolbar in one frame.
     kind: 'phone',
     start: 12,
     end: 16,
     keys: [
-      [12, { fx: 345, fy: 588, z: 3.4, oy: 40 }],
-      [13.15, { fx: 330, fy: 570, z: 3.2 }],
-      [14.2, { fx: 230, fy: 520, z: 2.4, rx: 4, ry: -5, oy: 0 }],
-      [16, { fx: 228, fy: 512, z: 2.5, rx: 3, ry: -7 }],
+      [12, { fx: 213, fy: 560, z: 2.3 }],
+      [16, { fx: 213, fy: 555, z: 2.4 }],
     ],
   },
   {
@@ -233,37 +234,25 @@ export const SHOTS: Shot[] = [
     ],
   },
   {
-    // Check: medium on the toolbar, a push into the reverse translation, back
-    // out to close the view and send, then up to the bubble.
+    // Check: from the conversation down to the bottom of the view, so the
+    // tap, the reverse translation, the close and the send all stay in frame.
     kind: 'phone',
     start: 19,
     end: 27,
     keys: [
-      [19, { fx: 200, fy: 560, z: 1.55, rx: 8, ry: 14, rz: -2, oy: 30 }],
-      [19.9, { fx: 205, fy: 590, z: 1.7, rx: 6, ry: 10, rz: -1 }],
-      [21.6, { fx: 213, fy: 520, z: 2.75, rx: 0, ry: 0, rz: 0, oy: 0 }],
-      [23.0, { fx: 213, fy: 515, z: 2.85 }],
-      [23.8, { fx: 250, fy: 470, z: 1.75, rx: 4, ry: -8, rz: 1 }],
-      [25.3, { fx: 260, fy: 480, z: 1.8, rx: 4, ry: -10 }],
-      [26.3, { fx: 290, fy: 420, z: 2.3, rx: 6, ry: -16, rz: 2 }],
-      [27, { fx: 292, fy: 415, z: 2.35, rx: 6, ry: -17, rz: 2 }],
+      [19, { fx: 213, fy: 545, z: 1.68 }],
+      [27, { fx: 213, fy: 540, z: 1.78 }],
     ],
-  },
-  {
-    kind: 'title',
-    start: 27,
-    end: 29,
-    lines: [{ text: 'Use the keyboard in' }, { text: 'any messaging app.', accent: ['any'] }],
   },
   {
     // App switching: the whole phone, right of centre, the app's name beside it.
     kind: 'phone',
-    start: 29,
+    start: 27,
     end: CLOSING,
     label: true,
     keys: [
-      [29, { fx: 213, fy: 449, z: 1.02, rx: 4, ry: -16, rz: 0, ox: 330, oy: 0 }],
-      [CLOSING, { fx: 213, fy: 449, z: 1.06, rx: 2, ry: -6, ox: 330 }],
+      [27, { fx: 213, fy: 449, z: 1.02, ox: 330 }],
+      [CLOSING, { fx: 213, fy: 449, z: 1.06, ox: 330 }],
     ],
   },
   { kind: 'close', start: CLOSING, end: DURATION },

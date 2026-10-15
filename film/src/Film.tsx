@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import Phone, { OUTER_W, OUTER_H } from './Phone';
-import { SHOTS, DURATION, REVERSE_AT, SWITCHES, WORDS, WORD_TIMES, camAt, cues, screenAt, type Cam, type Shot } from './timeline';
+import { SHOTS, DURATION, REVERSE_AT, SWITCHES, ANY_APP_AT, WORDS, WORD_TIMES, camAt, cues, screenAt, type Cam, type Shot } from './timeline';
 import { clamp01, easeOutCubic, easeOutExpo, span } from './ease';
 
 /**
@@ -253,39 +253,52 @@ function Glow() {
   );
 }
 
-/** The app's name beside the phone during the switching scene. */
-const APP_NAMES = ['Messages', 'WhatsApp', 'Telegram'];
+/** "Works in" and the app's name beside the phone during the switching
+    scene, ending on "and any other messaging app!". */
+const APP_NAMES = ['Messages', 'WhatsApp', 'Telegram', 'and any other messaging app!'];
 function AppLabel({ t, start }: { t: number; start: number }) {
   const first = span(t, start + 0.2, start + 0.8, easeOutExpo);
+  // Each name turns over at the middle of the swipe that reaches its app; the
+  // last one has no swipe of its own.
+  const turns = [start + 0.3, ...SWITCHES.map(([a, b]) => (a + b) / 2), ANY_APP_AT];
   return (
-    <div className="absolute left-[150px] top-1/2 h-[140px] w-[700px] -translate-y-1/2" style={{ fontFamily: DISPLAY }}>
+    <div className="absolute left-[150px] top-1/2 h-[260px] w-[760px] -translate-y-[60%]" style={{ fontFamily: DISPLAY }}>
       <div className="mb-2 text-[40px] font-semibold tracking-[-0.02em]" style={{ color: 'rgba(255,255,255,0.55)', opacity: first }}>
         Works in
       </div>
       {APP_NAMES.map((name, i) => {
-        // Each name turns over at the middle of the swipe that reaches its app.
         // The outgoing name clears before the incoming one rises.
-        const at = i === 0 ? start + 0.3 : (SWITCHES[i - 1][0] + SWITCHES[i - 1][1]) / 2 + 0.1;
-        const inK = span(t, at, at + 0.45, easeOutExpo);
-        const next = i + 1 < APP_NAMES.length ? (SWITCHES[i][0] + SWITCHES[i][1]) / 2 - 0.15 : Infinity;
+        const inK = span(t, turns[i] + (i ? 0.1 : 0), turns[i] + (i ? 0.1 : 0) + 0.45, easeOutExpo);
+        const next = i + 1 < APP_NAMES.length ? turns[i + 1] - 0.15 : Infinity;
         const outK = span(t, next, next + 0.25, (k) => k * k);
         if (inK <= 0 || outK >= 1) return null;
+        const last = i === APP_NAMES.length - 1;
         return (
           <div
             key={name}
             className="absolute left-0 text-white"
             style={{
               top: 56,
-              fontSize: 104,
+              fontSize: last ? 84 : 104,
               fontWeight: 700,
               letterSpacing: '-0.035em',
-              lineHeight: 1,
+              lineHeight: 1.05,
               opacity: inK * (1 - outK),
               transform: `translateY(${(1 - inK) * 40 - outK * 40}px)`,
               filter: `blur(${(1 - inK) * 8 + outK * 8}px)`,
             }}
           >
-            {name}
+            {last ? (
+              <>
+                and any other
+                <br />
+                <span style={{ backgroundImage: `linear-gradient(100deg, ${BLUE_A}, ${BLUE_B} 60%, #B8CCFF)`, WebkitBackgroundClip: 'text', color: 'transparent' }}>
+                  messaging app!
+                </span>
+              </>
+            ) : (
+              name
+            )}
           </div>
         );
       })}
