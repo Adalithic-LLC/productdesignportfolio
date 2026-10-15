@@ -27,6 +27,9 @@ export type Line = {
   maxW?: number;
   /** Phrases underlined as they type out. */
   underline?: string[];
+  /** A long reel: the first `holds` words each hold `hold` seconds, then the
+      rest spin past in `flick` seconds, fast off the mark and slowing to land. */
+  slotFlick?: { holds: number; hold: number; flick: number };
   /** Seconds the reel's first word holds before it rolls (default SLOT_DELAY). */
   slotHold?: number;
   /** The camera closes on this bubble while it types, and opens back out as
@@ -45,13 +48,42 @@ export type Line = {
   after?: number;
 };
 
+/** Reword's languages (Arcatext/Data/LanguageData.swift on main), names
+    shortened to how they read in a sentence. */
+const REWORD_LANGUAGES = [
+  'Afrikaans', 'Albanian', 'Arabic', 'Armenian', 'Azerbaijani', 'Basque', 'Bengali', 'Bosnian', 'Bulgarian',
+  'Cantonese', 'Catalan', 'Croatian', 'Czech', 'Danish', 'Dari', 'Dutch', 'Egyptian Arabic', 'English',
+  'Esperanto', 'Estonian', 'Filipino', 'Finnish', 'Flemish', 'French', 'Galician', 'German', 'Greek', 'Gujarati',
+  'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Irish', 'Italian',
+  'Japanese', 'Kannada', 'Kazakh', 'Khmer', 'Korean', 'Kurdish', 'Latin', 'Malay', 'Mandarin', 'Norwegian',
+  'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak',
+  'Slovenian', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian',
+  'Urdu', 'Uzbek', 'Valencian', 'Vietnamese', 'Welsh',
+];
+const LEAD = ['English', 'Spanish', 'Mandarin'];
+
+/** The end card's "Text and learn …" reel: English, Spanish and Mandarin,
+    then the rest of the list faster and faster, settling on "a language".
+    Times are from the start of the end card. */
+export const TAGLINE_WORDS = [...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
+
 export const SCRIPT: Line[] = [
   // ── The opening conversation ──
-  { who: 'them', kind: 'type', text: 'Want to learn a new language?', noWrap: true, underline: ['new language'] },
+  {
+    who: 'them',
+    kind: 'type',
+    text: 'Want to learn',
+    noWrap: true,
+    // The closing card's languages: three readable, then a flick that slows
+    // to land on "a new language?".
+    slot: [...TAGLINE_WORDS.slice(0, -1), 'a new language'].map((w) => w + '?'),
+    slotInline: true,
+    slotFlick: { holds: 3, hold: 0.8, flick: 1.8 },
+  },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 2.0 },
   // Held long enough for the close-up and the second push-in on the phrase.
   { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
-  { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 1.0 },
+  { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 2.5 },
   {
     who: 'them',
     kind: 'block',
@@ -61,17 +93,19 @@ export const SCRIPT: Line[] = [
     clearAbove: true,
     after: 1.0,
   },
-  // ── Down at the keyboard: this arrives above the field, then the reply is typed ──
+  // ── Back up in the chat once the reply is sent, then down again ──
+  // Each of the next two stands alone on screen.
   {
     who: 'them',
     kind: 'block',
-    text: "It's a keyboard with features for",
+    text: "Yes! It's a keyboard with features for",
+    maxW: 340,
     slot: ['translation.', 'correction.', 'analysis.', 'study.'],
     slotInline: true,
+    clearAbove: true,
     after: 1.0,
-    atKeys: true,
+    afterSend: true,
   },
-  // ── Back up in the chat once the reply is sent, then down again ──
   {
     who: 'them',
     kind: 'type',
@@ -84,6 +118,7 @@ export const SCRIPT: Line[] = [
     slotInline: true,
     slotHold: 2.0,
     focus: true,
+    clearAbove: true,
     afterSend: true,
   },
   { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
@@ -111,7 +146,6 @@ export const FPS = 60;
 export const BPM = 120;
 
 const CHAR = 0.042; // in-place typing: ~24 characters a second
-const SLOT_SPIN = 0.2; // the first word fading in on its line
 const SLOT_DELAY = 1.0; // a block's reel waits this long after it lands
 const SLOT_DWELL = 0.72; // each word holds this long before the next roll
 const SLOT_ROLL = 0.32;
@@ -128,8 +162,10 @@ export type Timed = Line & {
   at: number;
   /** When each character lands (typed bubbles). */
   chars: number[];
-  /** When the slot line appears, and when each slot word lands. */
+  /** When the slot line appears, and when each slot word lands. The first
+      word types out letter by letter (`slotChars`); it "lands" when typed. */
   slotAt: number;
+  slotChars: number[];
   slotLands: number[];
   /** When the bubble is complete. */
   done: number;
@@ -146,6 +182,17 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
     const chars: number[] = [];
     let slotAt = Infinity;
     const slotLands: number[] = [];
+    let slotChars: number[] = [];
+    /** Types the reel's first word from `from`; returns when it's complete. */
+    const typeFirst = (from: number) => {
+      let c = from;
+      slotChars = [...line.slot![0]].map((ch, i) => {
+        const at = c;
+        c += CHAR + jitter(i, index + 31) * 0.016 + (',.?!'.includes(ch) ? 0.06 : 0);
+        return at;
+      });
+      return c;
+    };
     let done: number;
     if (line.kind === 'type') {
       let c = at;
@@ -157,24 +204,33 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
       }
       done = c;
       if (line.slot) {
-        // The first word fades in after the text, holds, then the reel rolls.
+        // The first word types on after the text, holds, then the reel rolls.
         slotAt = done + 0.15;
-        let land = slotAt + SLOT_SPIN;
+        let land = typeFirst(slotAt);
         slotLands.push(land);
-        land += (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
-        for (let i = 1; i < line.slot.length; i++) {
-          slotLands.push(land);
-          land += SLOT_DWELL + SLOT_ROLL;
+        const fl = line.slotFlick;
+        if (fl) {
+          for (let i = 1; i < fl.holds; i++) slotLands.push(slotLands[i - 1] + fl.hold + SLOT_ROLL);
+          const from = slotLands[fl.holds - 1] + fl.hold;
+          const rest = line.slot.length - fl.holds;
+          for (let j = 1; j <= rest; j++) slotLands.push(from + fl.flick * (1 - Math.cbrt(1 - j / rest)));
+        } else {
+          land += (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
+          for (let i = 1; i < line.slot.length; i++) {
+            slotLands.push(land);
+            land += SLOT_DWELL + SLOT_ROLL;
+          }
         }
         done = slotLands[slotLands.length - 1] + 0.25;
       }
       t = done + 0.45 + line.text.length * 0.008 + (line.slot ? 0.4 : 0);
     } else if (line.slot) {
-      // A block arrives whole with its reel on the first word; a second after
-      // it lands (0.3s), the reel starts to roll.
-      slotAt = at;
-      slotLands.push(at);
-      let land = at + 0.3 + (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
+      // A block arrives whole; once it settles (0.3s) the reel's first word
+      // types on, holds, then the reel rolls.
+      slotAt = at + 0.3;
+      const first = typeFirst(slotAt);
+      slotLands.push(first);
+      let land = first + (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
       for (let i = 1; i < line.slot.length; i++) {
         slotLands.push(land);
         land += SLOT_DWELL + SLOT_ROLL;
@@ -186,7 +242,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
       t = done + 0.4 + line.text.length * 0.025;
     }
     if (line.after !== undefined) t = done + line.after;
-    out.push({ ...line, index, at, chars, slotAt, slotLands, done });
+    out.push({ ...line, index, at, chars, slotAt, slotChars, slotLands, done });
     prev = line.who;
   });
   return out;
@@ -262,9 +318,10 @@ export const KEYS_VIEW = KEYS;
 
 export const FIELD_MSGS: FieldMsg[] = [];
 // Down at the keyboard, the friend's next bubble arrives above the field first.
-TIMED.push(...timeLines(indexed.filter(([l]) => l.atKeys), PAN[1] + 0.3));
-const KEYS_LAST = TIMED[TIMED.length - 1];
-let c = KEYS_LAST.done + (KEYS_LAST.after ?? 0.8);
+const keysLines = timeLines(indexed.filter(([l]) => l.atKeys), PAN[1] + 0.3);
+TIMED.push(...keysLines);
+const KEYS_LAST = keysLines[keysLines.length - 1];
+let c = KEYS_LAST ? KEYS_LAST.done + (KEYS_LAST.after ?? 0.8) : PAN[1] + 0.5;
 // 1. Close on the field while it's typed; back out to the keys to Reword it, and send.
 c = move(c, FIELD);
 {
@@ -301,7 +358,7 @@ export const STUDY_GROW = 0.4;
 export const STUDY_SKELETON = STUDY_OPEN + 0.35;
 export const STUDY_ROWS = STUDY_OPEN + 1.0;
 /** A finger-flick down the entries once they've loaded. */
-export const STUDY_FLICK = STUDY_ROWS + 0.7;
+export const STUDY_FLICK = STUDY_ROWS + 0.7 + 1.5;
 /** Once it settles, the sent reply fades so the field is the only focus. */
 export const HIDE_SENT = STUDY_FLICK + 1.3;
 // The English question isn't sent: once the entries have been seen, the field
@@ -322,24 +379,6 @@ export const SEND_AT = FIELD_MSGS[0].sendAt;
 export const END_FADE = 0.9;
 export const ENDING = c + 1.0 + END_FADE;
 
-/** Reword's languages (Arcatext/Data/LanguageData.swift on main), names
-    shortened to how they read in a sentence. */
-const REWORD_LANGUAGES = [
-  'Afrikaans', 'Albanian', 'Arabic', 'Armenian', 'Azerbaijani', 'Basque', 'Bengali', 'Bosnian', 'Bulgarian',
-  'Cantonese', 'Catalan', 'Croatian', 'Czech', 'Danish', 'Dari', 'Dutch', 'Egyptian Arabic', 'English',
-  'Esperanto', 'Estonian', 'Filipino', 'Finnish', 'Flemish', 'French', 'Galician', 'German', 'Greek', 'Gujarati',
-  'Haitian Creole', 'Hausa', 'Hebrew', 'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Irish', 'Italian',
-  'Japanese', 'Kannada', 'Kazakh', 'Khmer', 'Korean', 'Kurdish', 'Latin', 'Malay', 'Mandarin', 'Norwegian',
-  'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak',
-  'Slovenian', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish', 'Ukrainian',
-  'Urdu', 'Uzbek', 'Valencian', 'Vietnamese', 'Welsh',
-];
-const LEAD = ['English', 'Spanish', 'Mandarin'];
-
-/** The end card's "Text and learn …" reel: English, Spanish and Mandarin,
-    then the rest of the list faster and faster, settling on "a language".
-    Times are from the start of the end card. */
-export const TAGLINE_WORDS = [...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
 /** When the closing reel's flick begins (Mandarin's hold over), from the card's start. */
 export const TAGLINE_FLICK_START = 2.4 + 2 * 1.3 + 1.0;
 export const TAGLINE_LANDS: number[] = (() => {

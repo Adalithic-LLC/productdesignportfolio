@@ -65,6 +65,9 @@ type Metrics = {
   heights: number[][];
   /** slotW[i][j]: the width of bubble i's j-th slot word. */
   slotW: number[][];
+  /** slotTypeW[i][k]: the width of the first k letters of bubble i's first
+      slot word, as it types on. */
+  slotTypeW: number[][];
   /** The height of an inline-slot bubble with its widest word in place. */
   inlineH: number[];
   /** lineW[i][k]: the widest line of bubble i's text with k characters typed,
@@ -171,6 +174,13 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   word.textContent = 'ab';
   const spaceW = ab - word.offsetWidth;
   word.style.fontWeight = '600';
+  const slotTypeW = TIMED.map((m) => {
+    const w0 = m.slot?.[0] ?? '';
+    return [...w0].map((_, k) => {
+      word.textContent = w0.slice(0, k + 1);
+      return word.offsetWidth;
+    });
+  });
   const slotW = TIMED.map((m) =>
     (m.slot ?? []).map((w) => {
       word.textContent = w;
@@ -195,7 +205,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   });
   probe.remove();
   word.remove();
-  return { heights, slotW, inlineH, lineW, lastW, otherW, spaceW, phrase };
+  return { heights, slotW, slotTypeW, inlineH, lineW, lastW, otherW, spaceW, phrase };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -256,26 +266,59 @@ function Tail({ who, color }: { who: Who; color: string }) {
 function reelPos(m: Timed, tt: number) {
   const n = m.slot!.length;
   // The first word simply appears on its line; the reel rolls from there.
+  const L = m.slotLands;
   let p = 2 * n;
   for (let i = 1; i < n; i++) {
-    const rollStart = m.slotLands[i] - 0.32;
-    if (tt >= m.slotLands[i]) p = 2 * n + i;
-    else if (tt >= rollStart) p = 2 * n + (i - 1) + easeOutBack((tt - rollStart) / 0.32);
+    if (tt >= L[i]) {
+      p = 2 * n + i;
+      continue;
+    }
+    // A roll takes 0.32s, or less when the words come faster (a flick); a
+    // fast roll is linear so the run reads as a spin, a readable one springs.
+    // (Bounded by the next gap too, so a flick's first word spins straight
+    // off the hold before it rather than easing out of it.)
+    const next = i + 1 < n ? L[i + 1] - L[i] : Infinity;
+    const roll = Math.min(0.32, 0.9 * (L[i] - L[i - 1]), 0.9 * next);
+    if (tt >= L[i] - roll) {
+      const k = (tt - (L[i] - roll)) / roll;
+      p = 2 * n + (i - 1) + (roll >= 0.2 ? easeOutBack(k) : k);
+    }
+    break;
   }
   return p;
 }
 
 /** The reel's width at time t, eased between the words it rolls through. */
+const slotTyped = (m: Timed, t: number) => m.slotChars.filter((c) => c <= t).length;
+
 function slotWidthAt(m: Timed, met: Metrics, t: number) {
   const n = m.slot!.length;
   const widths = met.slotW[m.index];
+  if (t < m.slotLands[0]) return met.slotTypeW[m.index][slotTyped(m, t) - 1] ?? 0;
   const width = (j: number) => widths[((j % n) + n) % n];
   const p = reelPos(m, t);
   const base = Math.floor(p);
+  const fl = m.slotFlick;
+  if (fl) {
+    // Through a flick the reel holds the width of its widest word, so the
+    // bubble doesn't flutter as dozens of words spin past.
+    const a = 2 * n + fl.holds - 1;
+    const b = 2 * n + n - 2;
+    const wide = Math.max(...widths.slice(fl.holds, n - 1));
+    if (p > a && p < a + 1) return lerp(width(a), wide, p - a);
+    if (p >= a + 1 && p <= b) return wide;
+    if (p > b) return lerp(wide, width(n - 1), p - b);
+  }
   return lerp(width(base), width(base + 1), p - base);
 }
 
 function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
+  if (t < m.slotLands[0]) {
+    // The first word types on, like the text before it.
+    const typed = m.slot![0].slice(0, slotTyped(m, t));
+    const span = <span className="whitespace-nowrap font-semibold" style={{ color: SLOT_COLOR }}>{typed}</span>;
+    return m.slotInline ? <> {span}</> : <div style={{ height: LINE }}>{span}</div>;
+  }
   const words = m.slot!;
   const n = words.length;
   const p = reelPos(m, t);
@@ -294,7 +337,7 @@ function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
   const reel = (
     <span
       className="relative inline-block overflow-hidden align-top"
-      style={{ width: Math.max(w, 1), height: LINE, filter: `blur(${Math.min(2.5, v * 0.12)}px)`, opacity: easeOutCubic(clamp01((t - m.slotAt) / 0.3)) }}
+      style={{ width: Math.max(w, 1), height: LINE, filter: `blur(${Math.min(2.5, v * 0.12)}px)` }}
     >
       {items}
     </span>
@@ -461,6 +504,7 @@ const SENT: Timed[] = FIELD_MSGS.filter((f) => Number.isFinite(f.sendAt)).map((f
   at: f.sendAt,
   chars: [],
   slotAt: Infinity,
+  slotChars: [],
   slotLands: [],
   done: f.sendAt + 0.3,
 }));
