@@ -21,10 +21,15 @@
  * spans fights the caret.
  *
  * Inline marks in the copy are drawn on the same clock as the words they sit
- * under: each one is handed the moment its first word is read in, rather than
- * waiting to be scrolled into view like a mark further down the page. The hero
- * is already on screen when the reveal plays, so a scroll trigger there would
- * either fire at once or never.
+ * under, rather than waiting to be scrolled into view like a mark further down
+ * the page: the hero is already on screen when the reveal plays, so a scroll
+ * trigger there would either fire at once or never.
+ *
+ * A mark covering several words is cut into a span per word, each starting as
+ * that word's own colour change does, so the mark arrives across the phrase at
+ * the pace the phrase is read instead of sweeping it in one go. The pieces
+ * carry their position in the run (see `MarkPiece`) so they still read as one
+ * mark: only the outer edges are padded, rounded and closed.
  *
  * The tween is a `from`, never a `to`: the resting DOM is the finished state,
  * so with motion turned off the paragraph is simply there. A reveal that opens
@@ -57,6 +62,33 @@ function tokenize(text: string): Token[] {
     .filter(Boolean)
     .map((piece) => ({ kind: /^\s+$/.test(piece) ? 'gap' : 'word', text: piece }) as Token);
 }
+
+/**
+ * A word with the whitespace that leads up to it (and, for the last one, what
+ * trails it), so a mark cut into per-word pieces still covers the spaces
+ * between those words -- a highlight with gaps at every space is not a
+ * highlight.
+ */
+type Piece = { lead: string; word: string; trail: string };
+
+function toPieces(tokens: Token[]): Piece[] {
+  const pieces: Piece[] = [];
+  let lead = '';
+  for (const token of tokens) {
+    if (token.kind === 'gap') {
+      if (pieces.length && !pieces[pieces.length - 1].word) pieces[pieces.length - 1].trail += token.text;
+      else lead += token.text;
+      continue;
+    }
+    pieces.push({ lead, word: token.text, trail: '' });
+    lead = '';
+  }
+  if (lead && pieces.length) pieces[pieces.length - 1].trail += lead;
+  return pieces;
+}
+
+/** How long one word's worth of a mark takes to draw. */
+const PIECE_DURATION = REVEAL_STAGGER * 2.4;
 
 /**
  * The resting body colour, restated at `FADED_ALPHA`.
@@ -114,17 +146,42 @@ export function HeroBody({
           </span>
         );
       }
-      /* Half a word-reveal behind the word itself, so the mark lands under copy
-         that has already arrived rather than racing it. */
+      /* One piece per word, each starting as that word's colour change does, so
+         the two read as the same event. A segment with no words in it at all
+         (whitespace between two marks) has nothing to time, so it stays whole. */
+      const pieces = toPieces(tokens);
+      if (pieces.length === 0) {
+        return (
+          <AnimatedMark key={si} spec={seg.mark} delay={delay + startWord * REVEAL_STAGGER}>
+            {inner}
+          </AnimatedMark>
+        );
+      }
+      const mark = seg.mark;
       return (
-        <AnimatedMark
-          key={si}
-          spec={seg.mark}
-          order={0}
-          delay={delay + startWord * REVEAL_STAGGER + REVEAL_DURATION * 0.5}
-        >
-          {inner}
-        </AnimatedMark>
+        <Fragment key={si}>
+          {pieces.map((piece, pi) => (
+            <AnimatedMark
+              key={pi}
+              spec={mark}
+              delay={delay + (startWord + pi) * REVEAL_STAGGER}
+              duration={PIECE_DURATION}
+              piece={
+                pieces.length === 1
+                  ? 'only'
+                  : pi === 0
+                    ? 'first'
+                    : pi === pieces.length - 1
+                      ? 'last'
+                      : 'middle'
+              }
+            >
+              {piece.lead}
+              <span className="hero-word">{piece.word}</span>
+              {piece.trail}
+            </AnimatedMark>
+          ))}
+        </Fragment>
       );
     });
   }, [segments, delay]);

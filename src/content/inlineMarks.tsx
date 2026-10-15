@@ -194,15 +194,36 @@ export function markAt(value: string, start: number, end: number): MarkSpec | nu
 }
 
 /**
+ * One span of a mark that has been split so its parts can be timed apart.
+ *
+ * The hero cuts a mark into a span per word, because each word's draw has to
+ * land on that word's own colour change. Splitting it is only safe if the
+ * parts still read as one mark, which is what this says: where a part sits in
+ * the run, so only the outer edges get the padding, the rounding and -- for an
+ * outline -- the closing border.
+ */
+export type MarkPiece = 'first' | 'middle' | 'last' | 'only';
+
+export interface MarkRenderOptions {
+  /** Position among the animated marks of its own block, for the stagger. */
+  order?: number;
+  /** An absolute start time in seconds, which overrides the stagger. */
+  delay?: number;
+  /** How long this part takes to draw, in seconds. */
+  duration?: number;
+  piece?: MarkPiece;
+}
+
+/**
  * The attributes a mark span carries, shared by every render path.
  *
- * `order` is the mark's position among the animated marks of its own block,
- * which is what staggers them: the first one drawn is the first one written.
- * `delay` overrides that with an absolute time, for the hero, where the marks
- * run off the paragraph's own word-by-word reveal rather than off a stagger of
- * their own.
+ * By default a mark's turn comes from `order`, its position among the animated
+ * marks of its block: the first one written is the first one drawn. The hero
+ * passes an absolute `delay` instead, because there the marks run off the
+ * paragraph's own word-by-word reveal rather than off a stagger of their own.
  */
-export function markProps(spec: MarkSpec, order = 0, delay?: number) {
+export function markProps(spec: MarkSpec, opts: MarkRenderOptions = {}) {
+  const { order = 0, delay, duration, piece } = opts;
   const style: Record<string, string> = {
     '--mark-thickness': String(spec.thickness),
     '--mark-radius': String(spec.radius),
@@ -210,12 +231,14 @@ export function markProps(spec: MarkSpec, order = 0, delay?: number) {
   if (spec.animate) {
     style['--mark-delay'] =
       delay != null ? `${Math.max(0, delay).toFixed(2)}s` : `${(order * MARK_STAGGER).toFixed(2)}s`;
+    if (duration != null) style['--mark-duration'] = `${Math.max(0, duration).toFixed(2)}s`;
   }
   return {
     className: 'pdp-mark',
     'data-mark': spec.kind,
     'data-color': spec.color,
     ...(spec.animate ? { 'data-animate': '1' } : null),
+    ...(piece ? { 'data-piece': piece } : null),
     style: style as CSSProperties,
   };
 }
@@ -235,17 +258,14 @@ const reduceMotion = () =>
  */
 export function AnimatedMark({
   spec,
-  order,
-  delay,
   children,
-}: {
+  ...opts
+}: MarkRenderOptions & {
   spec: MarkSpec;
-  order: number;
-  delay?: number;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [drawn, setDrawn] = useState(() => reduceMotion() || delay != null);
+  const [drawn, setDrawn] = useState(() => reduceMotion() || opts.delay != null);
 
   useEffect(() => {
     if (drawn) return;
@@ -269,7 +289,7 @@ export function AnimatedMark({
     return () => io.disconnect();
   }, [drawn]);
 
-  const props = markProps(spec, order, delay);
+  const props = markProps(spec, opts);
   return (
     <span {...props} ref={ref} className={cn(props.className, drawn && 'is-drawn')}>
       {children}

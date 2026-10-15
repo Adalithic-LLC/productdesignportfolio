@@ -673,3 +673,48 @@ html[data-preview] .sticky.top-0 {
     --mark-delay: 0s;
   }
 }
+
+/* One mark, cut into per-word pieces (the hero, where each word's mark draws
+   with that word's own colour change). The pieces have to read as one mark, so
+   the horizontal padding, the negative margin and the rounding belong to the
+   outer edges only -- and an outline closes at its ends rather than boxing
+   every word. */
+.pdp-mark[data-piece='first'] {
+  padding-right: 0;
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.pdp-mark[data-piece='middle'] {
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 0;
+}
+
+.pdp-mark[data-piece='last'] {
+  padding-left: 0;
+  margin-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.pdp-mark[data-piece='first'][data-mark='outline']::before {
+  border-right-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.pdp-mark[data-piece='middle'][data-mark='outline']::before {
+  border-left-width: 0;
+  border-right-width: 0;
+  border-radius: 0;
+}
+
+.pdp-mark[data-piece='last'][data-mark='outline']::before {
+  border-left-width: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
