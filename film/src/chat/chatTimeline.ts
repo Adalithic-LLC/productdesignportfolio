@@ -48,8 +48,10 @@ export const SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'type',
-    // Broken before "based on" so even "actual conversations." fits after it.
-    text: 'Learn the practical language\nbased on',
+    // Broken before "based on your", and a little wider than other bubbles,
+    // so even "actual conversations." fits after it on the second line.
+    text: 'Learn the practical language\nbased on your',
+    maxW: 340,
     underline: ['practical language'],
     slot: ['life.', 'interests.', 'actual conversations.'],
     slotInline: true,
