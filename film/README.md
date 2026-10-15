@@ -18,4 +18,10 @@ ffmpeg -i film/out/frames.mp4 -i film/out/soundtrack.wav -c:v copy -c:a aac -b:a
 `render.mjs` imports `playwright`; link the global install if it is missing:
 `ln -s /opt/node22/lib/node_modules/playwright film/node_modules/playwright`.
 
+The chat film (floating message bubbles, then the keyboard) is a second
+composition in the same app: add `--film chat` to `render.mjs` and
+`soundtrack.py`, or open `?film=chat`. Its script and timing are in
+`src/chat/chatTimeline.ts`; outputs are `out/frames-chat.mp4` and
+`out/soundtrack-chat.wav`.
+
 Not part of the site build: `npm run build` only bundles the root index.html.

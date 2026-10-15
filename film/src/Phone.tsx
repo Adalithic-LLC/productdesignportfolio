@@ -6,7 +6,13 @@ import checkUrl from '@/assets/keyboard/check.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
 import backspaceUrl from '@/assets/keyboard/backspace.svg';
 import localesUrl from '@/assets/keyboard/locales.svg';
-import { AX } from '@/lib/arcatextTheme';
+import studyDarkUrl from '@/assets/keyboard/study-dark.svg';
+import pasteDarkUrl from '@/assets/keyboard/paste-dark.svg';
+import checkDarkUrl from '@/assets/keyboard/check-dark.svg';
+import shiftDarkUrl from '@/assets/keyboard/shift-dark.svg';
+import backspaceDarkUrl from '@/assets/keyboard/backspace-dark.svg';
+import localesDarkUrl from '@/assets/keyboard/locales-dark.svg';
+import { AX, AxIcon } from '@/lib/arcatextTheme';
 import { CheckPanel, type CheckData, type CheckState } from '@/components/ArcatextViews';
 import { clamp01, easeOutCubic, easeOutBack } from './ease';
 
@@ -130,7 +136,7 @@ function ToolButton({ pressed, children }: { pressed: boolean; children: ReactNo
   );
 }
 
-function Spinner({ t, size = 20 }: { t: number; size?: number }) {
+export function Spinner({ t, size = 20 }: { t: number; size?: number }) {
   return (
     <span
       className="block rounded-full border-2"
@@ -147,8 +153,8 @@ function Spinner({ t, size = 20 }: { t: number; size?: number }) {
 }
 
 /** A touch: a soft halo where the finger lands. */
-function Touch({ inset = -8 }: { inset?: number }) {
-  return <span aria-hidden className="pointer-events-none absolute rounded-full bg-black/15" style={{ inset }} />;
+export function Touch({ inset = -8 }: { inset?: number }) {
+  return <span aria-hidden className="pointer-events-none absolute rounded-full bg-black/15 dark:bg-white/25" style={{ inset }} />;
 }
 
 const JP_FONT = "Inter, 'Noto Sans JP', sans-serif";
@@ -179,7 +185,7 @@ function StatusBar() {
 }
 
 /** The Arcatext keyboard: toolbar, keys, and the globe/dictation row. */
-function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
+export function Keyboard({ s, idle }: { s: Pick<ScreenState, 't' | 'text' | 'keyDown' | 'pressed' | 'rewordLoading'>; idle?: boolean }) {
   const keyDown = idle ? null : s.keyDown;
   const pressed = idle ? null : s.pressed;
   const loading = idle ? false : s.rewordLoading;
@@ -194,15 +200,15 @@ function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
     <div style={{ backgroundColor: AX.keyboardBg }} className="shrink-0 px-[5px] pb-1 pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
         <ToolButton pressed={pressed === 'study'}>
-          <img src={studyUrl} width={20} height={17} alt="" />
+          <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
         </ToolButton>
         <ToolButton pressed={pressed === 'paste'}>
-          <img src={pasteUrl} width={16} height={20} alt="" />
+          <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
         </ToolButton>
         <div className="relative">
           {pressed === 'check' && <Touch inset={-6} />}
           <ToolButton pressed={pressed === 'check'}>
-            <img src={checkUrl} width={20} height={20} alt="" />
+            <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
           </ToolButton>
         </div>
         <div className="flex-1" />
@@ -240,13 +246,13 @@ function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
       </div>
       <div className="mb-[8px] flex gap-[5px]">
         <Key bg={AX.actionKey} grow={1.5}>
-          <img src={shiftUrl} width={19} height={17} alt="" />
+          <AxIcon light={shiftUrl} dark={shiftDarkUrl} width={19} height={17} />
         </Key>
         {row3.map((l) => (
           <Key key={l} label={cap(l)} down={keyDown === l} />
         ))}
         <Key bg={AX.actionKey} grow={1.5}>
-          <img src={backspaceUrl} width={23} height={17} alt="" />
+          <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
         </Key>
       </div>
       <div className="mb-2 flex gap-[5px]">
@@ -254,7 +260,7 @@ function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
           123
         </Key>
         <Key bg={AX.actionKey} grow={1.2}>
-          <img src={localesUrl} width={14} height={17} alt="" />
+          <AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />
         </Key>
         <Key grow={5} fontSize={15} down={keyDown === 'space'}>
           <span style={{ opacity: 0.85 }}>space</span>
@@ -270,7 +276,7 @@ function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
   );
 }
 
-function GlobeRow({ tall }: { tall?: boolean }) {
+export function GlobeRow({ tall }: { tall?: boolean }) {
   return (
     <div style={{ backgroundColor: AX.keyboardBg, paddingTop: tall ? 22 : 17 }} className="flex shrink-0 items-center justify-between px-5 pb-[28px]">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">

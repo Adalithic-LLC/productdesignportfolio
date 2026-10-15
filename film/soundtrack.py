@@ -20,7 +20,9 @@ import numpy as np
 
 SR = 48000
 HERE = Path(__file__).parent
-cues = json.loads((HERE / 'out' / 'cues.json').read_text())
+FILM = sys.argv[sys.argv.index('--film') + 1] if '--film' in sys.argv else 'main'
+SUFFIX = '' if FILM == 'main' else f'-{FILM}'
+cues = json.loads((HERE / 'out' / f'cues{SUFFIX}.json').read_text())
 DUR = cues['duration'] + 1.5
 BEAT = 60 / cues['bpm']
 BAR = BEAT * 4
@@ -255,7 +257,7 @@ for bar in range(nbars):
             place(arp, pluck(mtof(tones[idx] + 12)), t0 + k * BEAT / 4, g)
 
 # The logo landing, on the opening and the closing card.
-for at in (cues['opening'][0] + 0.5, closing + 0.5):
+for at in ([cues['opening'][0] + 0.5] if cues['opening'][1] > 0 else []) + [closing + 0.5]:
     for k, m in enumerate([72, 79, 84, 88]):
         place(fx, bell(mtof(m)), at + k * 0.05, 0.08)
 for m in (36, 48, 60, 64, 67, 72, 76):
@@ -264,10 +266,10 @@ place(fx, kick(), closing, 1.0)
 
 # Shimmers when the reword and the reverse translation land; a note per
 # closing word.
-for at in (cues['reword'], cues['reveal']):
+for at in [c for c in (cues['reword'], cues.get('reveal')) if c is not None]:
     for k, m in enumerate([84, 88, 91, 96]):
         place(fx, bell(mtof(m)), at + k * 0.045, 0.09)
-for at, m in zip(cues['words'], [76, 79, 81, 84]):
+for at, m in zip(cues['words'], [76, 79, 81, 84] * 4):
     place(fx, bell(mtof(m)), at, 0.1)
 
 # UI sounds.
@@ -276,6 +278,12 @@ for k in cues['keys']:
 for at in cues['taps']:
     place(ui, tap(), at, 0.35)
 place(ui, whoosh(), cues['send'] - 0.04, 0.55)
+# Message arrivals in the chat film: a soft pop, pitched by who sent it.
+for p in cues.get('pops', []):
+    n = int(0.09 * SR)
+    tt = t_(n)
+    f = 880 if p['who'] == 'me' else 660
+    place(ui, np.sin(2 * np.pi * (f * tt + 900 * tt**2)) * env(n, 0.002, 0.03), p['t'], 0.22)
 for at in cues['swipes']:
     place(ui, whoosh(), at + 0.05, 0.3)
 
@@ -301,7 +309,7 @@ side = (reverb(arp, 1.8, 0.35) * 0.05)[: len(mix)]
 stereo[:, 0] += np.concatenate([side[w:], np.zeros(w)])
 stereo[:, 1] += side
 pcm = (np.clip(stereo, -1, 1) * 32767).astype('<i2')
-out = HERE / 'out' / ('sfx.wav' if sfx_only else 'soundtrack.wav')
+out = HERE / 'out' / (('sfx' if sfx_only else 'soundtrack') + SUFFIX + '.wav')
 with wave.open(str(out), 'wb') as f:
     f.setnchannels(2)
     f.setsampwidth(2)

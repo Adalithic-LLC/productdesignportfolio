@@ -33,7 +33,7 @@ declare global {
 // they belong to, so a remount (a cut) never replays them. Anything else — the
 // reused views' spinners and shimmer — runs from when it mounted.
 const born = new WeakMap<Animation, number>();
-function syncAnimations(ms: number) {
+export function syncAnimations(ms: number) {
   for (const a of document.getAnimations()) {
     const name = (a as CSSAnimation).animationName ?? '';
     if (!born.has(a)) born.set(a, ms);
@@ -162,7 +162,7 @@ function ArcatextMark({ size, grow = 1, beams = 1 }: { size: number; grow?: numb
 }
 
 /** Icon, wordmark and a line under them, each rising in on its own beat. */
-function BrandLockup({ t, t0, children }: { t: number; t0: number; children: ReactNode }) {
+export function BrandLockup({ t, t0, children }: { t: number; t0: number; children: ReactNode }) {
   const grow = span(t, t0 + 0.1, t0 + 0.6, easeOutExpo);
   const beams = span(t, t0 + 0.45, t0 + 0.9, easeOutExpo);
   const word = span(t, t0 + 0.75, t0 + 1.45, easeOutExpo);
@@ -244,7 +244,7 @@ function Closing({ shot, t }: { shot: Extract<Shot, { kind: 'close' }>; t: numbe
   );
 }
 
-function Glow() {
+export function Glow() {
   return (
     <div
       className="absolute inset-0"
@@ -355,4 +355,4 @@ export default function Film() {
   );
 }
 
-window.__ready = document.fonts.ready;
+window.__ready ??= document.fonts.ready;
