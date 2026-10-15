@@ -37,17 +37,41 @@ export type Line = {
   /** Plays after the first field message is sent, back up in the chat,
       rather than before the pan down to the keyboard. Keep these last. */
   afterSend?: boolean;
+  /** Arrives above the field once the camera is down at the keyboard, before
+      the first reply is typed. Keep these between the opening and afterSend. */
+  atKeys?: boolean;
   /** Seconds from this bubble being complete (its reel landed) to the next
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
 };
 
 export const SCRIPT: Line[] = [
-  { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true, underline: ['new way'] },
+  // ── The opening conversation ──
+  { who: 'them', kind: 'type', text: 'Want to learn a new language?', noWrap: true, underline: ['new language'] },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 2.0 },
   // Held long enough for the close-up and the second push-in on the phrase.
   { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
   { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 1.0 },
+  {
+    who: 'them',
+    kind: 'block',
+    text: 'Learn while you text',
+    slot: ['friends!', 'penpals!', 'classmates!', 'AI!'],
+    slotInline: true,
+    clearAbove: true,
+    after: 1.0,
+  },
+  // ── Down at the keyboard: this arrives above the field, then the reply is typed ──
+  {
+    who: 'them',
+    kind: 'block',
+    text: "It's a keyboard with features for",
+    slot: ['translation.', 'correction.', 'analysis.', 'study.'],
+    slotInline: true,
+    after: 1.0,
+    atKeys: true,
+  },
+  // ── Back up in the chat once the reply is sent, then down again ──
   {
     who: 'them',
     kind: 'type',
@@ -60,27 +84,8 @@ export const SCRIPT: Line[] = [
     slotInline: true,
     slotHold: 2.0,
     focus: true,
+    afterSend: true,
   },
-  { who: 'me', kind: 'block', text: "Ok, I'm listening..." },
-  {
-    who: 'them',
-    kind: 'block',
-    text: 'Learn while you text',
-    slot: ['friends!', 'penpals!', 'classmates!', 'AI!'],
-    slotInline: true,
-    clearAbove: true,
-  },
-  {
-    who: 'them',
-    kind: 'block',
-    text: "It's a keyboard and features for",
-    slot: ['translation.', 'correction.', 'analysis.', 'study.'],
-    slotInline: true,
-    clearAbove: true,
-    after: 1.0,
-  },
-  // After the first reply is sent, the camera goes back up to the chat for
-  // these two, then back down to the keyboard.
   { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
   {
     who: 'them',
@@ -94,10 +99,10 @@ export const SCRIPT: Line[] = [
 ]
 
 // A '|' marks a half-second pause in the typing; it isn't typed.
-const FIELD_RAW = 'So,| I just type,| tap a button,| and it translates?';
+const FIELD_RAW = 'So I just type| and tap a button to translate?';
 export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
-export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳してくれるの？';
-const FIELD2_RAW = 'And it adds the words I missed,| to a study guide?';
+export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳できるの？';
+const FIELD2_RAW = 'And it adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
 export const FIELD3_TEXT = FIELD3_RAW.replaceAll('|', '');
@@ -190,7 +195,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
 const indexed = SCRIPT.map((line, i) => [line, i] as [Line, number]);
 /** Every script bubble, in SCRIPT order (= TIMED[i].index). The afterSend
     lines are timed once the first reply's send is known, below. */
-export const TIMED: Timed[] = timeLines(indexed.filter(([l]) => !l.afterSend), 0.8);
+export const TIMED: Timed[] = timeLines(indexed.filter(([l]) => !l.afterSend && !l.atKeys), 0.8);
 
 const LAST = TIMED[TIMED.length - 1];
 
@@ -256,7 +261,10 @@ const move = (at: number, to: View) => {
 export const KEYS_VIEW = KEYS;
 
 export const FIELD_MSGS: FieldMsg[] = [];
-let c = PAN[1] + 0.5;
+// Down at the keyboard, the friend's next bubble arrives above the field first.
+TIMED.push(...timeLines(indexed.filter(([l]) => l.atKeys), PAN[1] + 0.3));
+const KEYS_LAST = TIMED[TIMED.length - 1];
+let c = KEYS_LAST.done + (KEYS_LAST.after ?? 0.8);
 // 1. Close on the field while it's typed; back out to the keys to Reword it, and send.
 c = move(c, FIELD);
 {
@@ -332,16 +340,17 @@ const LEAD = ['English', 'Spanish', 'Mandarin'];
     then the rest of the list faster and faster, settling on "a language".
     Times are from the start of the end card. */
 export const TAGLINE_WORDS = [...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
+/** When the closing reel's flick begins (Mandarin's hold over), from the card's start. */
+export const TAGLINE_FLICK_START = 2.4 + 2 * 1.3 + 1.0;
 export const TAGLINE_LANDS: number[] = (() => {
-  // English holds while the tagline fades in, then the reel rolls.
+  // English, Spanish and Mandarin each hold for a second; then a flick spins
+  // through the rest, fast off the mark and slowing to settle on "a language".
   const out = [2.4];
-  let dt = 0.3 + 0.75;
-  for (let i = 1; i < TAGLINE_WORDS.length - 1; i++) {
-    out.push(out[out.length - 1] + dt);
-    dt = i === 1 ? 0.3 * 0.78 : Math.max(0.017, dt * 0.78);
-  }
-  // A slower last roll settles on "a language".
-  out.push(out[out.length - 1] + 0.4);
+  for (let i = 1; i < 3; i++) out.push(out[i - 1] + 1.0 + 0.3);
+  const rest = TAGLINE_WORDS.length - 3;
+  const FLICK = 2.2;
+  const flickStart = TAGLINE_FLICK_START;
+  for (let j = 1; j <= rest; j++) out.push(flickStart + FLICK * (1 - Math.cbrt(1 - j / rest)));
   return out;
 })();
 // The end card runs the app's splash (3s), the reel, then holds.
@@ -349,21 +358,22 @@ export const DURATION = Math.ceil((ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length -
 
 /** The Study Guide's entries: words from the Japanese reply first, then older ones. */
 export const STUDY_ROWS_DATA = [
-  { entry: '翻訳', translations: 'translation', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 2 },
-  { entry: '入力', translations: 'input, typing', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Noun', misses: 3 },
-  { entry: '押す', translations: 'to press, to push', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Verb', misses: 2 },
-  { entry: 'ボタン', translations: 'button', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 1 },
-  { entry: '〜だけで', translations: 'just by …', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Phrase', misses: 1 },
-  { entry: 'じゃあ', translations: 'so, well then', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Phrase', misses: 1 },
-  // Older entries further down, from earlier conversations.
-  { entry: '週末', translations: 'weekend', sentence: '今週末、ビーチに行こうよ！', tag: 'Noun', misses: 2 },
-  { entry: '練習', translations: 'practice', sentence: '毎日ちょっとずつ練習してるよ。', tag: 'Noun', misses: 2 },
-  { entry: '友達', translations: 'friend', sentence: '友達とメッセージで話すのが好き。', tag: 'Noun', misses: 1 },
-  { entry: '会話', translations: 'conversation', sentence: '会話の中で覚えるのが一番だね。', tag: 'Noun', misses: 3 },
-  { entry: '興味', translations: 'interest', sentence: '日本の映画に興味があるんだ。', tag: 'Noun', misses: 1 },
-  { entry: '毎日', translations: 'every day', sentence: '毎日ちょっとずつ練習してるよ。', tag: 'Adverb', misses: 1 },
-  { entry: '覚える', translations: 'to learn, to remember', sentence: '会話の中で覚えるのが一番だね。', tag: 'Verb', misses: 2 },
-  { entry: '楽しみ', translations: 'looking forward to', sentence: '来週会えるのが楽しみ！', tag: 'Noun', misses: 1 },
+  // Everyday Japanese a learner would have missed in their own chats, across
+  // the app's parts of speech (StudyPartOfSpeech in the Arcatext repo).
+  { entry: 'ありがとう', translations: 'thank you', sentence: 'ありがとう、助かったよ！', tag: 'Interjection', misses: 2 },
+  { entry: '食べる', translations: 'to eat', sentence: '今夜は何を食べる？', tag: 'Verb', misses: 3 },
+  { entry: '美味しい', translations: 'delicious', sentence: 'このラーメン、すごく美味しい！', tag: 'Adjective', misses: 2 },
+  { entry: 'よろしくお願いします', translations: 'nice to meet you', sentence: 'はじめまして、よろしくお願いします。', tag: 'Phrase', misses: 2 },
+  { entry: '天気', translations: 'weather', sentence: '今日はいい天気だね。', tag: 'Noun', misses: 1 },
+  { entry: 'ゆっくり', translations: 'slowly', sentence: 'もう少しゆっくり話してください。', tag: 'Adverb', misses: 1 },
+  { entry: '駅', translations: 'station', sentence: '駅で待ってるね。', tag: 'Noun', misses: 2 },
+  { entry: '行く', translations: 'to go', sentence: '明日、一緒に行く？', tag: 'Verb', misses: 1 },
+  { entry: 'お疲れさま', translations: 'good work, thanks for your effort', sentence: '今日もお疲れさま！', tag: 'Phrase', misses: 3 },
+  { entry: '楽しい', translations: 'fun', sentence: '昨日のパーティー、楽しかったね！', tag: 'Adjective', misses: 1 },
+  { entry: 'いつも', translations: 'always', sentence: 'いつもありがとう。', tag: 'Adverb', misses: 1 },
+  { entry: '約束', translations: 'promise, plans', sentence: '週末の約束、覚えてる？', tag: 'Noun', misses: 2 },
+  { entry: '分かる', translations: 'to understand', sentence: 'その気持ち、よく分かるよ。', tag: 'Verb', misses: 2 },
+  { entry: 'もちろん', translations: 'of course', sentence: 'もちろん、いいよ！', tag: 'Adverb', misses: 1 },
 ]
 
 /** Scene boundaries for the review tool: each runs until the next starts.
@@ -379,7 +389,7 @@ export function scenes() {
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
     { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
-    { id: 'field1', name: 'Type: So, I just type…', start: CAMERA[0][0] },
+    { id: 'field1', name: 'Type: So I just type…', start: CAMERA[0][0] },
     { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
     { id: 'field2', name: 'Back to keyboard, type: And it adds…', start: PAN2[0] },
     { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },

@@ -21,6 +21,7 @@ import {
   STUDY_FLICK,
   HIDE_SENT,
   TAGLINE_LANDS,
+  TAGLINE_FLICK_START,
   TAGLINE_WORDS,
   FIELD_MSGS,
   STUDY_OPEN,
@@ -479,8 +480,10 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     // …and the whole conversation clears as the keyboard comes up, and the
     // sent replies once the Study list has been flicked through.
     // (Script bubbles clear as the camera next pans down to the keyboard.)
-    if (m.index < TIMED.length) fadeAt = Math.min(fadeAt, m.at < PAN[0] ? PAN[0] : PAN2[0]);
-    else fadeAt = Math.min(fadeAt, HIDE_SENT);
+    // Everything clears at the next cut between the chat and the keyboard: the
+    // opening as the camera first pans down, the keyboard-side bubbles and the
+    // sent reply as it goes back up, the second chat as it comes down again.
+    fadeAt = Math.min(fadeAt, [PAN[0], BACK[0], PAN2[0], HIDE_SENT].find((x) => x > m.at) ?? Infinity);
     const out = clamp01((t - fadeAt) / FADE_OUT);
     if (out >= 1) break;
     const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
@@ -620,7 +623,9 @@ function World({ met, t }: { met: Metrics; t: number }) {
             <Conversation met={met} t={t} />
           </div>
         </div>
-        <div style={{ opacity: clamp01((t - PAN[0]) / 0.4) }}>
+        {/* The field and keyboard show only while the camera is down with them,
+            so the chat reads as floating bubbles, as in the opening. */}
+        <div style={{ opacity: clamp01(k * 2.5) }}>
           <Field t={t} />
           <div className="mt-2 overflow-hidden rounded-[26px] ring-1 ring-white/10">
             {/* Study replaces the toolbar and keys, as every Arcatext view does. */}
@@ -659,7 +664,9 @@ function taglinePos(s: number) {
   let p = 0;
   for (let i = 1; i < L.length; i++) {
     const last = i === L.length - 1;
-    const roll = last ? 0.5 : Math.min(0.3, 0.9 * (L[i] - L[i - 1]));
+    // The flick's first word spins straight off Mandarin's hold, not after it.
+    const prev = i === 3 ? TAGLINE_FLICK_START : L[i - 1];
+    const roll = last ? 0.5 : Math.min(0.3, 0.9 * (L[i] - prev));
     if (s >= L[i]) p = i;
     else if (s >= L[i] - roll) {
       const k = (s - (L[i] - roll)) / roll;
