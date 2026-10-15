@@ -32,6 +32,8 @@ export type Line = {
   /** The camera closes on this bubble while it types, and opens back out as
       the next one arrives. */
   focus?: boolean;
+  /** With `focus`: after the close-up settles, push in again on this phrase. */
+  focusPhrase?: string;
   /** Seconds from this bubble being complete (its reel landed) to the next
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
@@ -39,8 +41,9 @@ export type Line = {
 
 export const SCRIPT: Line[] = [
   { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true, underline: ['new way'] },
-  { who: 'me', kind: 'block', text: 'Of course, but how?', after: 1.0 },
-  { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?' },
+  { who: 'me', kind: 'block', text: 'Of course, but how?', after: 2.0 },
+  // Held long enough for the close-up and the second push-in on the phrase.
+  { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
   { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 1.0 },
   {
     who: 'them',

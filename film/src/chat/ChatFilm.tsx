@@ -72,6 +72,9 @@ type Metrics = {
   lastW: number[];
   otherW: number[];
   spaceW: number;
+  /** For a `focusPhrase`: the phrase's centre within its bubble (from the
+      bubble's top-left, padding included). */
+  phrase: ({ x: number; y: number } | null)[];
 };
 
 const bubbleStyle = {
@@ -146,6 +149,19 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
     lastW.push(ls[ls.length - 1]);
     otherW.push(Math.max(0, ...ls.slice(0, -1)));
   });
+  const phrase = TIMED.map((m) => {
+    const at = m.focusPhrase ? m.text.indexOf(m.focusPhrase) : -1;
+    if (at < 0) return null;
+    probe.style.whiteSpace = m.noWrap ? 'pre' : 'pre-wrap';
+    probe.style.maxWidth = m.noWrap ? 'none' : `${m.maxW ?? MAX_W}px`;
+    probe.textContent = m.text;
+    const range = document.createRange();
+    range.setStart(probe.firstChild!, at);
+    range.setEnd(probe.firstChild!, at + m.focusPhrase!.length);
+    const r = range.getBoundingClientRect();
+    const box = probe.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top };
+  });
   word.style.fontWeight = '400';
   word.textContent = 'a b';
   const ab = word.offsetWidth;
@@ -176,7 +192,7 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   });
   probe.remove();
   word.remove();
-  return { heights, slotW, inlineH, lineW, lastW, otherW, spaceW };
+  return { heights, slotW, inlineH, lineW, lastW, otherW, spaceW, phrase };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -529,6 +545,9 @@ function framingAt(t: number) {
 const CHAT_SCALE = 2.35;
 const CHAT_BOTTOM = 760;
 const FOCUS_ZOOM = 1.7;
+/** The second push-in, onto a bubble's `focusPhrase`, once the first settles. */
+const PHRASE_ZOOM = 3.0;
+const PHRASE_DELAY = 1.1;
 
 /** A close-up on a `focus` bubble: the camera eases in on it as it starts
     typing and opens back out as the next bubble arrives. Returns the CSS
@@ -544,9 +563,19 @@ function focusTransform(met: Metrics, t: number) {
     const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : met.lineW[m.index].at(-1)!) + 25;
     const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)!;
     const left = W / 2 - (COL / 2) * CHAT_SCALE;
-    const px = m.who === 'me' ? left + (COL - SIDE - bw / 2) * CHAT_SCALE : left + (SIDE + bw / 2) * CHAT_SCALE;
-    const py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
-    const z = lerp(1, FOCUS_ZOOM, k);
+    // The bubble's left edge in the chat column (it sits at the bottom of the stack).
+    const bx = m.who === 'me' ? COL - SIDE - bw : SIDE;
+    let px = left + (bx + bw / 2) * CHAT_SCALE;
+    let py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
+    let zoom = FOCUS_ZOOM;
+    const ph = met.phrase[m.index];
+    if (ph) {
+      const k2 = easeInOutCubic(clamp01((t - (m.at + PHRASE_DELAY)) / 0.6));
+      px = lerp(px, left + (bx + ph.x) * CHAT_SCALE, k2);
+      py = lerp(py, CHAT_BOTTOM - (bh - ph.y) * CHAT_SCALE, k2);
+      zoom = lerp(FOCUS_ZOOM, PHRASE_ZOOM, k2);
+    }
+    const z = lerp(1, zoom, k);
     return `translate(${lerp(px, W / 2, k)}px, ${lerp(py, H / 2, k)}px) scale(${z}) translate(${-px}px, ${-py}px)`;
   }
   return undefined;
