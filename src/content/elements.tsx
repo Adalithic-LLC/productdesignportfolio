@@ -10,6 +10,7 @@ import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { MARK_KEYS } from '@/lib/brandMarks';
+import { cn } from '@/lib/utils';
 import type { ProseBlock, ProseItem } from './proseBlocks';
 
 /**
@@ -153,6 +154,80 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
             — one or more of {MARK_KEYS.join(', ')}; anything else goes in the text mark beside them
           </span>
         </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A card of nothing but text, at whatever size suits what it is carrying.
+ *
+ * The size is picked in admin from a fixed scale rather than typed, because
+ * the classes have to be literal strings for Tailwind to see them, and because
+ * a scale is the point: one of six steps, not an arbitrary pixel value that
+ * puts the card off the site's type ramp. A visitor gets the text alone.
+ *
+ * Six steps rather than a size field also means the card covers both jobs it
+ * keeps being asked to do -- a small aside, and a line of copy set large
+ * enough to lead a section.
+ */
+const TEXT_CARD_SIZES = {
+  xs: { label: 'XS', className: 'text-xs leading-relaxed' },
+  sm: { label: 'S', className: 'text-sm leading-relaxed' },
+  base: { label: 'M', className: 'text-base leading-relaxed' },
+  lg: { label: 'L', className: 'text-lg leading-relaxed' },
+  xl: { label: 'XL', className: 'text-xl leading-snug' },
+  '2xl': { label: '2XL', className: 'text-2xl leading-snug' },
+} as const;
+
+type TextCardSize = keyof typeof TEXT_CARD_SIZES;
+
+const textCardSize = (value: string | undefined): TextCardSize =>
+  value && value in TEXT_CARD_SIZES ? (value as TextCardSize) : 'sm';
+
+function TextCard({ ctx }: { ctx: ElementCtx }) {
+  const { isAdmin, setText } = useContent();
+  const size = textCardSize(ctx.data.size);
+  const body = cn(
+    'whitespace-pre-line text-muted-foreground',
+    TEXT_CARD_SIZES[size].className
+  );
+
+  return (
+    <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
+      {/* Rendered directly rather than through `makeField`: that builds a
+          component during render, which remounts the field on every keystroke
+          and drops the caret. */}
+      {ctx.path ? (
+        <Editable as="p" path={`${ctx.path}.data.body`} multiline className={body} />
+      ) : (
+        <p className={body}>{ctx.data.body ?? ''}</p>
+      )}
+      {ctx.path && isAdmin && (
+        <div contentEditable={false} className="mt-4 flex items-center gap-1">
+          <span className="mr-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            Size
+          </span>
+          {(Object.keys(TEXT_CARD_SIZES) as TextCardSize[]).map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setText(`${ctx.path}.data.size`, key);
+              }}
+              className={cn(
+                'rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition',
+                key === size
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border/70 text-muted-foreground hover:border-foreground/40 hover:text-foreground'
+              )}
+            >
+              {TEXT_CARD_SIZES[key].label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -590,27 +665,11 @@ export const ELEMENTS: ElementDef[] = [
     id: 'card-text',
     label: 'Card — text only',
     group: 'Cards',
-    defaultData: { body: 'A short note that stands on its own, with no heading above it.' },
-    /* Rendered directly rather than through `makeField`: that builds a
-       component during render, which remounts the field on every keystroke and
-       drops the caret. */
-    body: (ctx) =>
-      ctx.path ? (
-        <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
-          <Editable
-            as="p"
-            path={`${ctx.path}.data.body`}
-            multiline
-            className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
-          />
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-            {ctx.data.body ?? ''}
-          </p>
-        </div>
-      ),
+    defaultData: {
+      body: 'A short note that stands on its own, with no heading above it.',
+      size: 'sm',
+    },
+    body: (ctx) => <TextCard ctx={ctx} />,
   },
   {
     id: 'card-numbered',
