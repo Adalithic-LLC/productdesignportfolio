@@ -3840,6 +3840,38 @@
     },
     "arcatext-07": {
       "3": []
+    },
+    "hero": {
+      "2": [
+        {
+          "type": "element",
+          "variant": "grid",
+          "data": {
+            "cols": "2",
+            "rows": "1"
+          },
+          "cells": {
+            "r1c1": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "I love starting in ambiguity, bringing clarity to complex systems, and expanding my skillset."
+                }
+              }
+            ],
+            "r1c2": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on."
+                }
+              }
+            ]
+          }
+        }
+      ]
     }
   }
 }
