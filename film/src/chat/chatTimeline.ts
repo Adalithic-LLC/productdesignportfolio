@@ -40,11 +40,20 @@ export const SCRIPT: Line[] = [
     slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
     slotInline: true,
   },
-  { who: 'them', kind: 'type', text: 'Look at the keyboard!' },
+  {
+    who: 'them',
+    kind: 'type',
+    text: "There's a keyboard and more features for",
+    slot: ['translation.', 'correction.', 'analysis.', 'study.'],
+    slotInline: true,
+  },
 ];
 
-export const FIELD_TEXT = 'Ok, this is cool.';
-export const FIELD_JA = 'なるほど、これはいいね。';
+export const FIELD_TEXT = 'So, I just type, tap a button, and it translates?';
+export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳してくれるの？';
+export const FIELD2_TEXT = 'And it actually adds the words I missed to a study guide?';
+export const FIELD2_JA = 'しかも、知らなかった単語を学習ガイドに入れてくれるの？';
+export const FIELD3_TEXT = 'Ok this is cool. I kind of want to practice now.';
 
 export const FPS = 60;
 export const BPM = 120;
@@ -115,38 +124,97 @@ export const TIMED: Timed[] = (() => {
 
 const LAST = TIMED[TIMED.length - 1];
 
-/** The pan down to the field and keyboard, then the reply. */
+/** The pan down to the field and keyboard, then two replies typed there. */
 export const PAN = [LAST.done + 0.55, LAST.done + 1.75] as const;
-const FIELD_START = PAN[1] + 0.35;
-export const FIELD_TIMES: number[] = (() => {
+
+/** When each character of a field message lands, from `start`. */
+function typeTimes(text: string, start: number, seed: number) {
   const out: number[] = [];
-  let c = FIELD_START;
-  for (let i = 0; i < FIELD_TEXT.length; i++) {
+  let c = start;
+  for (let i = 0; i < text.length; i++) {
     out.push(c);
-    let dt = 0.072 + jitter(i, 99) * 0.03;
-    if (FIELD_TEXT[i] === ' ') dt += 0.02;
-    if (',.'.includes(FIELD_TEXT[i])) dt += 0.08;
+    let dt = 0.058 + jitter(i, seed) * 0.024;
+    if (text[i] === ' ') dt += 0.02;
+    if (',.'.includes(text[i])) dt += 0.08;
     c += dt;
   }
   return out;
+}
+
+/** A message typed in the field: reworded, then sent or kept. */
+export type FieldMsg = {
+  en: string;
+  ja: string;
+  times: number[];
+  rewordTap: number;
+  rewordDone: number;
+  /** Infinity: it stays in the field. */
+  sendTap: number;
+  sendAt: number;
+};
+
+export const FIELD_MSGS: FieldMsg[] = (() => {
+  const msgs: FieldMsg[] = [];
+  // 1. Typed, reworded and sent.
+  {
+    const times = typeTimes(FIELD_TEXT, PAN[1] + 0.35, 99);
+    const rewordTap = times[times.length - 1] + 0.55;
+    const rewordDone = rewordTap + 1.0;
+    const sendTap = rewordDone + 1.5;
+    msgs.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17 });
+  }
+  // 2. Typed and reworded; the Study Guide opens over the keys, then it's sent.
+  {
+    const times = typeTimes(FIELD2_TEXT, msgs[0].sendAt + 0.9, 7);
+    const rewordTap = times[times.length - 1] + 0.55;
+    msgs.push({ en: FIELD2_TEXT, ja: FIELD2_JA, times, rewordTap, rewordDone: rewordTap + 1.0, sendTap: Infinity, sendAt: Infinity });
+  }
+  return msgs;
 })();
-const FIELD_END = FIELD_TIMES[FIELD_TIMES.length - 1];
-export const REWORD_TAP = FIELD_END + 0.55;
-export const REWORD_DONE = REWORD_TAP + 1.0;
-export const SEND_TAP = REWORD_DONE + 1.5;
-export const SEND_AT = SEND_TAP + 0.17;
-export const ENDING = SEND_AT + 1.6;
+
+/** The Study tap, the view opening, and its loading stages. */
+export const STUDY_TAP = FIELD_MSGS[1].rewordDone + 1.4;
+export const STUDY_OPEN = STUDY_TAP + 0.18;
+export const STUDY_SKELETON = STUDY_OPEN + 0.35;
+export const STUDY_ROWS = STUDY_OPEN + 1.0;
+FIELD_MSGS[1].sendTap = STUDY_ROWS + 2.6;
+FIELD_MSGS[1].sendAt = FIELD_MSGS[1].sendTap + 0.17;
+
+/** Then a close-up on the field, and a last line typed there (not sent). */
+export const FIELD_ZOOM = [FIELD_MSGS[1].sendAt + 0.15, FIELD_MSGS[1].sendAt + 1.15] as const;
+{
+  const times = typeTimes(FIELD3_TEXT, FIELD_ZOOM[1] + 0.25, 23);
+  FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity });
+}
+const FIELD3_END = FIELD_MSGS[2].times[FIELD_MSGS[2].times.length - 1];
+
+export const SEND_AT = FIELD_MSGS[0].sendAt;
+/** The end card; the scene fades out over the second before it. */
+export const ENDING = FIELD3_END + 1.6;
+export const END_FADE = 0.9;
 export const DURATION = Math.ceil((ENDING + 4.4) * 2) / 2;
+
+/** The Study Guide's entries: the words from the two Japanese replies. */
+export const STUDY_ROWS_DATA = [
+  { entry: '翻訳', translations: 'translation', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 2 },
+  { entry: '単語', translations: 'word', sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Noun', misses: 3 },
+  { entry: '入力', translations: 'input, typing', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Noun', misses: 1 },
+  { entry: '押す', translations: 'to press, to push', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Verb', misses: 2 },
+  { entry: '知らなかった', translations: "didn't know", sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Verb', misses: 1 },
+  { entry: '学習ガイド', translations: 'study guide', sentence: '知らなかった単語を学習ガイドに入れてくれるの？', tag: 'Phrase', misses: 1 },
+];
 
 export function cues() {
   return {
     duration: DURATION,
     bpm: BPM,
-    keys: FIELD_TIMES.map((t, i) => ({ t, space: FIELD_TEXT[i] === ' ' })),
-    taps: [REWORD_TAP, SEND_TAP],
-    reword: REWORD_DONE,
+    keys: FIELD_MSGS.flatMap((m) => m.times.map((t, i) => ({ t, space: m.en[i] === ' ' }))),
+    taps: [...FIELD_MSGS.flatMap((m) => [m.rewordTap, m.sendTap].filter(Number.isFinite)), STUDY_TAP],
+    // A shimmer as each reword lands.
+    reword: FIELD_MSGS[0].rewordDone,
+    reveal: FIELD_MSGS[1].rewordDone,
     send: SEND_AT,
-    reveal: null,
+    sends: FIELD_MSGS.map((m) => m.sendAt).filter(Number.isFinite),
     swipes: [],
     // A tick each time a reel lands, and a pop as each bubble arrives.
     words: TIMED.flatMap((m) => m.slotLands),

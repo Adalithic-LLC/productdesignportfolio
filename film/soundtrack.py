@@ -277,7 +277,8 @@ for k in cues['keys']:
     place(ui, key_click(), k['t'], 0.16 if k['space'] else 0.2)
 for at in cues['taps']:
     place(ui, tap(), at, 0.35)
-place(ui, whoosh(), cues['send'] - 0.04, 0.55)
+for at in cues.get('sends', [cues['send']]):
+    place(ui, whoosh(), at - 0.04, 0.55)
 # Message arrivals in the chat film: a soft pop, pitched by who sent it.
 for p in cues.get('pops', []):
     n = int(0.09 * SR)

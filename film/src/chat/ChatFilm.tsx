@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { ArrowUp, Plus } from 'lucide-react';
 import { AX } from '@/lib/arcatextTheme';
+import { StudyPanel } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { BrandLockup, Glow, syncAnimations } from '../Film';
 import { clamp01, easeInOutCubic, easeOutBack, easeOutCubic, lerp, span } from '../ease';
@@ -9,15 +10,19 @@ import {
   DURATION,
   ENDING,
   FIELD_JA,
-  FIELD_TEXT,
-  FIELD_TIMES,
+  FIELD2_JA,
+  FIELD_ZOOM,
+  END_FADE,
   PAN,
-  REWORD_DONE,
-  REWORD_TAP,
-  SEND_AT,
-  SEND_TAP,
+  FIELD_MSGS,
+  STUDY_OPEN,
+  STUDY_ROWS,
+  STUDY_ROWS_DATA,
+  STUDY_SKELETON,
+  STUDY_TAP,
   TIMED,
   cues,
+  type FieldMsg,
   type Timed,
   type Who,
 } from './chatTimeline';
@@ -235,19 +240,39 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
   );
 }
 
+/** What the field holds at time t: the message being typed, reworded or sent. */
+function fieldAt(t: number) {
+  // The latest message whose typing has begun (the first before any).
+  let m: FieldMsg = FIELD_MSGS[0];
+  for (const f of FIELD_MSGS) if (t >= f.times[0]) m = f;
+  let n = 0;
+  while (n < m.times.length && m.times[n] <= t) n++;
+  const last = n > 0 ? m.en[n - 1] : '';
+  const sent = t >= m.sendAt;
+  const typingEnd = m.times[m.times.length - 1];
+  return {
+    m,
+    n,
+    en: m.en.slice(0, n),
+    sent,
+    hasText: !sent && n > 0,
+    swap: t >= m.rewordDone ? clamp01((t - m.rewordDone) / 0.32) : 0,
+    typing: n > 0 && t < typingEnd + 0.4,
+    keyDown:
+      n > 0 && t - m.times[n - 1] < 0.075 && t < typingEnd + 0.075
+        ? last === ' ' ? 'space' : /[a-z]/i.test(last) ? last.toLowerCase() : '123'
+        : null,
+    sendPressed: t >= m.sendTap && t < m.sendAt,
+  };
+}
+
 /** The field above the keyboard, Messages-style, in dark mode. */
 function Field({ t }: { t: number }) {
-  let n = 0;
-  while (n < FIELD_TIMES.length && FIELD_TIMES[n] <= t) n++;
-  const sent = t >= SEND_AT;
-  const swap = t >= REWORD_DONE ? clamp01((t - REWORD_DONE) / 0.32) : 0;
-  const en = FIELD_TEXT.slice(0, n);
-  const hasText = !sent && n > 0;
-  const typing = n > 0 && t < FIELD_TIMES[FIELD_TIMES.length - 1] + 0.4;
+  const f = fieldAt(t);
   const cursor = (
     <span
       className="ml-[1px] inline-block h-[18px] w-[2px] translate-y-[3px] rounded-full"
-      style={{ background: AX.send, opacity: typing || Math.floor(t * 2) % 2 === 0 ? 1 : 0 }}
+      style={{ background: AX.send, opacity: f.typing || Math.floor(t * 2) % 2 === 0 ? 1 : 0 }}
     />
   );
   return (
@@ -256,15 +281,15 @@ function Field({ t }: { t: number }) {
         <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
       </div>
       <div className="relative flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2" style={{ borderColor: AX.fieldBorder }}>
-        {hasText ? (
+        {f.hasText ? (
           <span className="relative min-w-0 flex-1 text-[16px] leading-5" style={{ color: AX.ink }}>
-            <span className="block break-words" style={{ opacity: swap ? swap : 1, filter: swap ? `blur(${(1 - swap) * 6}px)` : undefined }}>
-              {swap ? FIELD_JA : en}
+            <span className="block break-words" style={{ opacity: f.swap ? f.swap : 1, filter: f.swap ? `blur(${(1 - f.swap) * 6}px)` : undefined }}>
+              {f.swap ? f.m.ja : f.en}
               {cursor}
             </span>
-            {swap > 0 && swap < 1 && (
-              <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: 1 - swap, filter: `blur(${swap * 6}px)` }}>
-                {en}
+            {f.swap > 0 && f.swap < 1 && (
+              <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: 1 - f.swap, filter: `blur(${f.swap * 6}px)` }}>
+                {f.en}
               </span>
             )}
           </span>
@@ -274,11 +299,11 @@ function Field({ t }: { t: number }) {
           </span>
         )}
       </div>
-      <div className="relative h-9 w-9 shrink-0" style={{ opacity: hasText ? 1 : 0.35 }}>
-        {t >= SEND_TAP && t < SEND_AT && <Touch />}
+      <div className="relative h-9 w-9 shrink-0" style={{ opacity: f.hasText ? 1 : 0.35 }}>
+        {f.sendPressed && <Touch />}
         <div
           className="relative grid h-9 w-9 place-items-center rounded-full"
-          style={{ backgroundColor: AX.send, transform: t >= SEND_TAP && t < SEND_AT ? 'scale(0.86)' : undefined }}
+          style={{ backgroundColor: AX.send, transform: f.sendPressed ? 'scale(0.86)' : undefined }}
         >
           <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />
         </div>
@@ -288,36 +313,38 @@ function Field({ t }: { t: number }) {
 }
 
 function keyboardState(t: number) {
-  let n = 0;
-  while (n < FIELD_TIMES.length && FIELD_TIMES[n] <= t) n++;
-  const last = n > 0 ? FIELD_TEXT[n - 1] : '';
-  const down = n > 0 && t - FIELD_TIMES[n - 1] < 0.075 && t < FIELD_TIMES[FIELD_TIMES.length - 1] + 0.075;
+  const f = fieldAt(t);
+  const rewording = FIELD_MSGS.find((m) => t >= m.rewordTap && t < m.rewordDone);
+  let pressed: string | null = null;
+  if (rewording && t < rewording.rewordTap + 0.22) pressed = 'reword';
+  if (t >= STUDY_TAP && t < STUDY_OPEN) pressed = 'study';
   return {
     t,
-    text: t >= SEND_AT ? '' : FIELD_TEXT.slice(0, n),
-    keyDown: down ? (last === ' ' ? 'space' : /[a-z]/i.test(last) ? last.toLowerCase() : '123') : null,
-    pressed: t >= REWORD_TAP && t < REWORD_TAP + 0.22 ? 'reword' : null,
-    rewordLoading: t >= REWORD_TAP && t < REWORD_DONE,
+    text: f.sent ? '' : f.en,
+    keyDown: f.keyDown,
+    pressed,
+    rewordLoading: !!rewording,
   };
 }
 
 // ── The frame ────────────────────────────────────────────────────────────────
 
 /** The reply, once sent, joins the conversation like any other bubble. */
-const SENT: Timed = {
+/** Replies sent from the field join the conversation like any other bubble. */
+const SENT: Timed[] = FIELD_MSGS.filter((f) => Number.isFinite(f.sendAt)).map((f, j) => ({
   who: 'me',
   kind: 'block',
-  text: FIELD_JA,
-  index: TIMED.length,
-  at: SEND_AT,
+  text: f.ja,
+  index: TIMED.length + j,
+  at: f.sendAt,
   chars: [],
   slotAt: Infinity,
   slotLands: [],
-  done: SEND_AT + 0.3,
-};
+  done: f.sendAt + 0.3,
+}));
 
 function Conversation({ met, t }: { met: Metrics; t: number }) {
-  const all = [...TIMED, SENT].filter((m) => t >= m.at);
+  const all = [...TIMED, ...SENT].filter((m) => t >= m.at);
   const placed: { m: Timed; bottom: number; h: number; tail: boolean; out: number }[] = [];
   let y = 0;
   for (let i = all.length - 1; i >= 0; i--) {
@@ -327,7 +354,7 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     const pusher = all[i + 2];
     const out = pusher ? clamp01((t - pusher.at) / FADE_OUT) : 0;
     if (out >= 1) break;
-    const h = m === SENT ? met.heights[TIMED.length]?.at(-1) ?? 36 : heightAt(m, met, t);
+    const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
     const claim = m.kind === 'block' ? arrival(m.at, t) : arrival(m.at, t, 0.2);
     const next = all[i + 1];
     placed.push({ m, bottom: y, h, tail: !next || next.who !== m.who, out });
@@ -338,7 +365,7 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     <>
       {placed.map(({ m, bottom, h, tail, out }) => {
         // The sent reply rises out of the field below.
-        const rise = m === SENT ? (1 - easeOutCubic(clamp01((t - SEND_AT) / 0.45))) * 70 : 0;
+        const rise = m.index >= TIMED.length ? (1 - easeOutCubic(clamp01((t - m.at) / 0.45))) * 70 : 0;
         const o = easeOutCubic(out);
         return (
           <div
@@ -360,34 +387,62 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
   );
 }
 
+/** The field row (one line) plus the gap and the keyboard under it, in pt. */
+const BELOW_CHAT = 36 + 8 + 339;
+
 function World({ met, t }: { met: Metrics; t: number }) {
   // The camera: close on the conversation, then a pan down (and back) to
   // frame the field and the keyboard under it.
   const k = easeInOutCubic(clamp01((t - PAN[0]) / (PAN[1] - PAN[0])));
-  const scale = lerp(2.35, 1.6, k);
+  // The Study view is taller than the keys: pull back to keep it all in frame.
+  const k2 = easeInOutCubic(clamp01((t - STUDY_OPEN) / 0.7));
+  // Once its entries load, push in on the Study view so they can be read.
+  const k3 = easeInOutCubic(clamp01((t - STUDY_ROWS - 0.15) / 0.9));
+  const scale = lerp(lerp(lerp(2.35, 1.6, k), 1.22, k2), 1.7, k3);
+  // Where the conversation's bottom edge sits on screen while the field has
+  // one line; the field waits out of shot, then settles under the last bubble.
   const bottomY = lerp(760, 335, k);
-  // The field waits out of shot, then settles under the last bubble.
   const gap = lerp(90, 14, k);
-  const fade = span(t, ENDING - 0.35, ENDING, (x) => x);
+  // The world hangs from the keyboard's bottom edge, as on iOS: when the
+  // field gains a line it grows upward and lifts the conversation with it.
+  // (Pushed in, the view's middle — 294pt above the keyboard's bottom edge — sits mid-frame.)
+  let keyboardBottom = lerp(lerp(bottomY + (gap + BELOW_CHAT) * scale, 1000, k2), 540 + 294 * 1.7, k3);
+  // Last, a close-up on the field (its middle ~550pt above the keyboard's
+  // bottom edge, over the open Study view) for the final line.
+  const k4 = easeInOutCubic(clamp01((t - FIELD_ZOOM[0]) / (FIELD_ZOOM[1] - FIELD_ZOOM[0])));
+  const zoomScale = lerp(scale, 2.9, k4);
+  keyboardBottom = lerp(keyboardBottom, 540 + 552 * 2.9, k4);
+  const fade = span(t, ENDING - END_FADE, ENDING, (x) => x);
   return (
     <div
       className="dark absolute left-0 top-0"
       style={{
         width: COL,
         transformOrigin: '0 0',
-        transform: `translate(${W / 2 - (COL / 2) * scale}px, ${bottomY}px) scale(${scale})`,
+        transform: `translate(${W / 2 - (COL / 2) * zoomScale}px, ${keyboardBottom}px) scale(${zoomScale})`,
         opacity: 1 - fade,
       }}
     >
-      {/* The conversation stacks upward from y = 0. */}
-      <div className="absolute bottom-0 left-0" style={{ width: COL, height: 2000 }}>
-        <Conversation met={met} t={t} />
-      </div>
-      <div className="absolute left-0" style={{ top: gap, width: COL, opacity: clamp01((t - PAN[0]) / 0.4) }}>
-        <Field t={t} />
-        <div className="mt-2 overflow-hidden rounded-[26px] ring-1 ring-white/10">
-          <Keyboard s={keyboardState(t)} />
-          <GlobeRow />
+      <div className="absolute bottom-0 left-0 flex flex-col" style={{ width: COL }}>
+        {/* The conversation stacks upward from this edge. */}
+        <div className="relative" style={{ height: 0, marginBottom: gap }}>
+          <div className="absolute bottom-0 left-0" style={{ width: COL, height: 2000 }}>
+            <Conversation met={met} t={t} />
+          </div>
+        </div>
+        <div style={{ opacity: clamp01((t - PAN[0]) / 0.4) }}>
+          <Field t={t} />
+          <div className="mt-2 overflow-hidden rounded-[26px] ring-1 ring-white/10">
+            {/* Study replaces the toolbar and keys, as every Arcatext view does. */}
+            {t >= STUDY_OPEN ? (
+              <div data-pin={t >= STUDY_ROWS ? STUDY_ROWS : undefined}>
+                <StudyPanel stage={t >= STUDY_ROWS ? 'rows' : t >= STUDY_SKELETON ? 'skeleton' : 'spinner'} rows={STUDY_ROWS_DATA} total={24} />
+              </div>
+            ) : (
+              <Keyboard s={keyboardState(t)} />
+            )}
+            <GlobeRow tall={t >= STUDY_OPEN} />
+          </div>
         </div>
       </div>
     </div>
@@ -439,18 +494,21 @@ export default function ChatFilm() {
     interRegistered.then(() => Promise.all([
       document.fonts.load('17px Inter', 'Want a new way'),
       document.fonts.load('600 17px Inter', 'interests'),
-      document.fonts.load("17px 'Noto Sans JP'", 'なるほど'),
+      document.fonts.load("17px 'Noto Sans JP'", FIELD_JA + FIELD2_JA + STUDY_ROWS_DATA.map((r) => r.entry + r.sentence).join('')),
+      document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
     ]))
       .then(() => document.fonts.ready)
       .then(() => {
       if (!live || !rootRef.current) return;
       const m = measure(rootRef.current);
-      // The sent reply's height, measured as one more bubble.
+      // Each sent reply's height, measured as one more bubble.
       const probe = document.createElement('div');
       Object.assign(probe.style, { position: 'absolute', left: '-10000px', visibility: 'hidden', width: 'fit-content', maxWidth: `${MAX_W}px`, padding: '7px 12px', fontFamily: FONT, fontSize: '17px', lineHeight: `${LINE}px` });
-      probe.textContent = FIELD_JA;
       rootRef.current.appendChild(probe);
-      m.heights.push([probe.offsetHeight]);
+      for (const sent of SENT) {
+        probe.textContent = sent.text;
+        m.heights.push([probe.offsetHeight]);
+      }
       probe.remove();
       flushSync(() => setMet(m));
       resolveReady();
@@ -465,6 +523,13 @@ export default function ChatFilm() {
     window.__seek = (ms: number) => {
       flushSync(() => setT(ms / 1000));
       syncAnimations(ms);
+      // Animations inside a [data-pin] element run from that time instead of
+      // from whenever they mounted (a render can start mid-film).
+      for (const a of document.getAnimations()) {
+        const target = (a.effect as KeyframeEffect | null)?.target as Element | null;
+        const pin = target?.closest('[data-pin]')?.getAttribute('data-pin');
+        if (pin) a.currentTime = ms - Number(pin) * 1000;
+      }
     };
     if (params.has('play')) {
       const t0 = performance.now();

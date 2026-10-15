@@ -199,9 +199,12 @@ export function Keyboard({ s, idle }: { s: Pick<ScreenState, 't' | 'text' | 'key
   return (
     <div style={{ backgroundColor: AX.keyboardBg }} className="shrink-0 px-[5px] pb-1 pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-        <ToolButton pressed={pressed === 'study'}>
-          <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
-        </ToolButton>
+        <div className="relative">
+          {pressed === 'study' && <Touch inset={-6} />}
+          <ToolButton pressed={pressed === 'study'}>
+            <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
+          </ToolButton>
+        </div>
         <ToolButton pressed={pressed === 'paste'}>
           <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
         </ToolButton>
