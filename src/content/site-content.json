@@ -21,7 +21,7 @@
   },
   "hero": {
     "title": "Hey, I'm Andrew",
-    "subtitle": "...a digital product designer [mark:outline:blue:3:6:1]using AI[/mark] to create [mark:highlight:blue:2:4:0]fully functional products.[/mark] Now, anyone can generate UI, but what matters is shaping it into a [mark:underline:blue:3:6:1]logical and intuitive system.[/mark] Not blocker, but an enabler for users, so they experience the value and keep coming back.",
+    "subtitle": "...a digital product designer [mark:outline:green:3:6:1]using AI[/mark] to create [mark:highlight:blue:2:4:1]fully functional products.[/mark] Shaped it into intuitive & cohesive systems, so the interface enables users to[mark:underline:blue:3:6:1] [/mark]experience the value and they [mark:underline:yellow:2:4:0]keep coming back.[/mark]",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
     "showcaseCaption": "",
@@ -3848,8 +3848,8 @@
           "type": "element",
           "variant": "grid",
           "data": {
-            "cols": "2",
-            "rows": "1"
+            "cols": "1",
+            "rows": "3"
           },
           "cells": {
             "r1c1": [
@@ -3857,16 +3857,25 @@
                 "type": "element",
                 "variant": "card-text",
                 "data": {
-                  "body": "I love starting in ambiguity, bringing clarity to complex systems, and expanding my skillset."
+                  "body": "Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on."
                 }
               }
             ],
-            "r1c2": [
+            "r2c1": [
               {
                 "type": "element",
                 "variant": "card-text",
                 "data": {
-                  "body": "Product development is a constant negotiation: which features earn their place, what order to build them in, and which technical limits to design around versus push back on."
+                  "body": " I love starting in ambiguity, bringing clarity to complex systems, and expanding my skillset."
+                }
+              }
+            ],
+            "r3c1": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "A short note that stands on its own, with no heading above it."
                 }
               }
             ]
