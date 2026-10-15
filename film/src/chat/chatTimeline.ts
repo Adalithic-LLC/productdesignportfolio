@@ -38,7 +38,7 @@ export const SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'type',
-    text: 'Right here! In your messaging app...wherever your chats already happen.',
+    text: 'Right where your chats already happen!',
     slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
     slotInline: true,
   },
