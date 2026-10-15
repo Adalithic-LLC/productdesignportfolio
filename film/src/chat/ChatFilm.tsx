@@ -51,6 +51,8 @@ type Metrics = {
   heights: number[][];
   /** slotW[i][j]: the width of bubble i's j-th slot word. */
   slotW: number[][];
+  /** The height of an inline-slot bubble with its widest word in place. */
+  inlineH: number[];
 };
 
 const bubbleStyle = {
@@ -96,9 +98,24 @@ function measure(root: HTMLElement): Metrics {
       return word.offsetWidth;
     }),
   );
+  // An inline slot sits after the text on its last line; size the bubble for
+  // whichever word needs the most room, so the reel never re-wraps it.
+  const inlineH = TIMED.map((m) => {
+    if (!m.slot || !m.slotInline) return 0;
+    return Math.max(
+      ...m.slot.map((w) => {
+        probe.textContent = m.text + ' ';
+        const s = document.createElement('span');
+        Object.assign(s.style, { display: 'inline-block', fontWeight: '600', whiteSpace: 'nowrap' });
+        s.textContent = w;
+        probe.appendChild(s);
+        return probe.offsetHeight;
+      }),
+    );
+  });
   probe.remove();
   word.remove();
-  return { heights, slotW };
+  return { heights, slotW, inlineH };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -123,7 +140,10 @@ function heightAt(m: Timed, met: Metrics, t: number): number {
       break;
     }
   }
-  if (m.slot && t >= m.slotAt) h += LINE * easeOutCubic(clamp01((t - m.slotAt) / 0.25));
+  if (m.slot && t >= m.slotAt) {
+    const grow = easeOutCubic(clamp01((t - m.slotAt) / 0.25));
+    h = m.slotInline ? lerp(h, met.inlineH[m.index], grow) : h + LINE * grow;
+  }
   return h;
 }
 
@@ -177,13 +197,15 @@ function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
       </div>,
     );
   }
-  return (
-    <div style={{ height: LINE, opacity: easeOutCubic(clamp01((t - m.slotAt) / 0.3)) }}>
-      <div className="relative inline-block overflow-hidden align-top" style={{ width: Math.max(w, 1), height: LINE, filter: `blur(${Math.min(2.5, v * 0.12)}px)` }}>
-        {items}
-      </div>
-    </div>
+  const reel = (
+    <span
+      className="relative inline-block overflow-hidden align-top"
+      style={{ width: Math.max(w, 1), height: LINE, filter: `blur(${Math.min(2.5, v * 0.12)}px)`, opacity: easeOutCubic(clamp01((t - m.slotAt) / 0.3)) }}
+    >
+      {items}
+    </span>
   );
+  return m.slotInline ? <> {reel}</> : <div style={{ height: LINE }}>{reel}</div>;
 }
 
 function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: number; tail: boolean }) {

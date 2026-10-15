@@ -13,8 +13,10 @@ export type Line = {
   who: Who;
   kind: 'type' | 'block';
   text: string;
-  /** Words a slot-machine reel turns through on its own last line. */
+  /** Words a slot-machine reel turns through, on its own last line… */
   slot?: string[];
+  /** …or at the end of the text's last line. */
+  slotInline?: boolean;
 };
 
 export const SCRIPT: Line[] = [
@@ -34,8 +36,9 @@ export const SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'type',
-    text: 'Right here! In your messaging app...wherever your chats already happen',
+    text: 'Right here! In your messaging app...wherever your chats already happen.',
     slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
+    slotInline: true,
   },
   { who: 'them', kind: 'type', text: 'Look at the keyboard!' },
 ];
