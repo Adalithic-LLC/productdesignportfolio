@@ -33,7 +33,7 @@ export type Line = {
 export const SCRIPT: Line[] = [
   { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 1.0 },
-  { who: 'me', kind: 'block', text: 'Please, not another app that I stop using after 5 minutes...' },
+  { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?' },
   { who: 'them', kind: 'block', text: "I think you'll like this.", after: 1.0 },
   {
     who: 'them',
@@ -88,7 +88,7 @@ export const BPM = 120;
 
 const CHAR = 0.042; // in-place typing: ~24 characters a second
 const SLOT_SPIN = 0.2; // the first word fading in on its line
-const SLOT_DELAY = 0.5; // a block's reel waits this long after it lands
+const SLOT_DELAY = 1.0; // a block's reel waits this long after it lands
 const SLOT_DWELL = 0.72; // each word holds this long before the next roll
 const SLOT_ROLL = 0.32;
 
@@ -142,8 +142,8 @@ export const TIMED: Timed[] = (() => {
       }
       t = done + 0.45 + line.text.length * 0.008 + (line.slot ? 0.4 : 0);
     } else if (line.slot) {
-      // A block arrives whole with its reel on the first word; half a second
-      // after it lands (0.3s), the reel starts to roll.
+      // A block arrives whole with its reel on the first word; a second after
+      // it lands (0.3s), the reel starts to roll.
       slotAt = at;
       slotLands.push(at);
       let land = at + 0.3 + SLOT_DELAY + SLOT_ROLL;
@@ -272,9 +272,10 @@ c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
 }
 
 export const SEND_AT = FIELD_MSGS[0].sendAt;
-/** The end card; the scene fades out over the second before it. */
-export const ENDING = c + 1.6;
+/** The end card: a second after the last line is typed, the scene fades out
+    over END_FADE, then the card. */
 export const END_FADE = 0.9;
+export const ENDING = c + 1.0 + END_FADE;
 
 /** Reword's languages (Arcatext/Data/LanguageData.swift on main), names
     shortened to how they read in a sentence. */
