@@ -15,7 +15,8 @@ import { clamp01, lerp } from './ease';
  *
  * Every step is SwiftUI's .easeInOut. `children` (a tagline) sits under the
  * stack without changing how the stack centres, so the logo moves exactly as
- * it does in the app.
+ * it does in the app. One deliberate difference: the name types into a box
+ * the width of the whole word, so it doesn't drift sideways letter by letter.
  */
 
 // SwiftUI's .easeInOut is cubic-bezier(0.42, 0, 0.58, 1).
@@ -69,19 +70,24 @@ export default function SplashLogo({ s, scale = 1, children }: { s: number; scal
   return (
     <div className="relative" style={{ transform: `scale(${scale})` }}>
       <div className="flex flex-col items-center" style={{ gap: 2 }}>
-        {/* The name, typed in place above the mark. */}
+        {/* The name, typed in place above the mark. The box is sized for the
+            whole word and the letters fill it from the left, so the name
+            doesn't re-centre (and slide) as each letter lands. */}
         <div
+          className="relative"
           style={{
             fontFamily: "'Noto Sans', sans-serif",
             fontWeight: 700,
             fontSize: 32,
             lineHeight: 1.362,
             color: `rgb(${BLUE.join(',')})`,
-            opacity: letters > 0 ? 1 : 0,
             whiteSpace: 'pre',
           }}
         >
-          {letters > 0 ? NAME.slice(0, letters) : ' '}
+          <span style={{ visibility: 'hidden' }}>{NAME}</span>
+          <span className="absolute left-0 top-0" style={{ opacity: letters > 0 ? 1 : 0 }}>
+            {NAME.slice(0, letters)}
+          </span>
         </div>
         {/* The i-beam: drawn at full size, scaled, in a frame of its scaled size. */}
         <div style={{ width: w * logoScale, height: TOTAL_H * logoScale }}>

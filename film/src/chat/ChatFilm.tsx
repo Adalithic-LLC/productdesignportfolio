@@ -181,7 +181,11 @@ const typedCount = (m: Timed, t: number) => {
 /** The height a bubble occupies at time t, eased as it gains lines. */
 function heightAt(m: Timed, met: Metrics, t: number): number {
   const hs = met.heights[m.index];
-  if (m.kind === 'block') return hs[hs.length - 1];
+  if (m.kind === 'block') {
+    const full = hs[hs.length - 1];
+    if (!m.slot) return full;
+    return m.slotInline ? met.inlineH[m.index] : full + LINE;
+  }
   const n = typedCount(m, t);
   if (n === 0) return 0;
   let h = hs[n];
@@ -294,7 +298,7 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
     >
       <div
         className="overflow-hidden text-white"
-        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
       >
         {typed}
         {m.slot && t >= m.slotAt && <Slot m={m} met={met} t={t} />}
@@ -312,7 +316,7 @@ function fieldAt(t: number) {
   let n = 0;
   while (n < m.times.length && m.times[n] <= t) n++;
   const last = n > 0 ? m.en[n - 1] : '';
-  const sent = t >= m.sendAt;
+  const sent = t >= m.clearAt;
   const typingEnd = m.times[m.times.length - 1];
   return {
     m,
@@ -415,9 +419,14 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
   for (let i = all.length - 1; i >= 0; i--) {
     const m = all[i];
     // Only the latest two stay: a bubble fades out as the one two after it
-    // arrives, and is gone once faded.
-    const pusher = all[i + 2];
-    const out = pusher ? clamp01((t - pusher.at) / FADE_OUT) : 0;
+    // arrives, and is gone once faded…
+    let fadeAt = all[i + 2]?.at ?? Infinity;
+    // …or as a later line that stands alone arrives…
+    const clearer = all.slice(i + 1).find((x) => x.clearAbove);
+    if (clearer) fadeAt = Math.min(fadeAt, clearer.at);
+    // …and the whole conversation clears as the keyboard comes up.
+    if (m.index < TIMED.length) fadeAt = Math.min(fadeAt, PAN[0]);
+    const out = clamp01((t - fadeAt) / FADE_OUT);
     if (out >= 1) break;
     const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
     const claim = m.kind === 'block' ? arrival(m.at, t) : arrival(m.at, t, 0.2);

@@ -19,37 +19,47 @@ export type Line = {
   slot?: string[];
   /** …or at the end of the text's last line. */
   slotInline?: boolean;
+  /** Fades out every bubble above it as it arrives, so it stands alone. */
+  clearAbove?: boolean;
 };
 
 export const SCRIPT: Line[] = [
   { who: 'them', kind: 'type', text: 'Want a new way to learn a language?' },
   { who: 'me', kind: 'block', text: 'Of course, but how?' },
-  { who: 'me', kind: 'type', text: 'Please, not another app that I stop using after 5 minutes...' },
-  { who: 'them', kind: 'type', text: 'Nope, you control this one.' },
+  { who: 'me', kind: 'block', text: 'Please, not another app that I stop using after 5 minutes...' },
+  { who: 'them', kind: 'block', text: 'Nope, you control this one.' },
   {
     who: 'them',
-    kind: 'type',
+    kind: 'block',
     text: "It's practical learning based on your",
     slot: ['life', 'interests', 'actual conversations.'],
   },
   { who: 'me', kind: 'block', text: "Ok, I'm listening..." },
-  { who: 'them', kind: 'type', text: 'Learn while you text your friends!' },
+  {
+    who: 'them',
+    kind: 'block',
+    text: 'Learn while you text',
+    slot: ['friends!', 'penpals!', 'classmates!', 'AI!'],
+    slotInline: true,
+    clearAbove: true,
+  },
   { who: 'me', kind: 'block', text: 'Where?' },
   {
     who: 'them',
-    kind: 'type',
+    kind: 'block',
     text: 'Right where your chats already happen!',
     slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
     slotInline: true,
   },
   {
     who: 'them',
-    kind: 'type',
-    text: "There's a keyboard and more features for",
+    kind: 'block',
+    text: "It's a keyboard and features for",
     slot: ['translation.', 'correction.', 'analysis.', 'study.'],
     slotInline: true,
+    clearAbove: true,
   },
-];
+]
 
 export const FIELD_TEXT = 'So, I just type, tap a button, and it translates?';
 export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳してくれるの？';
@@ -113,6 +123,16 @@ export const TIMED: Timed[] = (() => {
         done = slotLands[slotLands.length - 1] + 0.25;
       }
       t = done + 0.45 + line.text.length * 0.008 + (line.slot ? 0.4 : 0);
+    } else if (line.slot) {
+      // A block arrives whole with its reel on the first word, then rolls.
+      slotAt = at;
+      let land = at;
+      for (let i = 0; i < line.slot.length; i++) {
+        slotLands.push(land);
+        land += (i === 0 ? SLOT_DWELL + 0.35 : SLOT_DWELL) + SLOT_ROLL;
+      }
+      done = slotLands[slotLands.length - 1] + 0.25;
+      t = done + 0.7;
     } else {
       done = at + 0.3;
       t = done + 0.4 + line.text.length * 0.025;
@@ -149,9 +169,11 @@ export type FieldMsg = {
   times: number[];
   rewordTap: number;
   rewordDone: number;
-  /** Infinity: it stays in the field. */
+  /** Infinity: it isn't sent. */
   sendTap: number;
   sendAt: number;
+  /** When the field empties: on send, or cleared for the next line. */
+  clearAt: number;
 };
 
 /**
@@ -187,7 +209,7 @@ c = move(c, FIELD);
   const rewordTap = c + 0.35;
   const rewordDone = rewordTap + 1.0;
   const sendTap = rewordDone + 1.3;
-  FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17 });
+  FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17, clearAt: sendTap + 0.17 });
   c = sendTap + 0.17;
 }
 // 2. Close on the field again; this one stays in English. Back out, and open Study.
@@ -195,7 +217,7 @@ c = move(c + 0.4, FIELD);
 {
   const times = typeTimes(FIELD2_TEXT, c + 0.2, 7);
   c = move(times[times.length - 1] + 0.4, KEYS);
-  FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity });
+  FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
 }
 
 /** The Study tap, the view opening (its height easing from the keys' to its
@@ -205,15 +227,15 @@ export const STUDY_OPEN = STUDY_TAP + 0.18;
 export const STUDY_GROW = 0.4;
 export const STUDY_SKELETON = STUDY_OPEN + 0.35;
 export const STUDY_ROWS = STUDY_OPEN + 1.0;
-// The English question is sent once the entries have been seen.
-FIELD_MSGS[1].sendTap = STUDY_ROWS + 2.4;
-FIELD_MSGS[1].sendAt = FIELD_MSGS[1].sendTap + 0.17;
+// The English question isn't sent: once the entries have been seen, the field
+// is cleared for the last line.
+FIELD_MSGS[1].clearAt = STUDY_ROWS + 2.4;
 
 // 3. Close on the field over Study for the last line, which stays unsent.
-c = move(FIELD_MSGS[1].sendAt + 0.3, FIELD_STUDY);
+c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
 {
   const times = typeTimes(FIELD3_TEXT, c + 0.2, 23);
-  FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity });
+  FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   c = times[times.length - 1];
 }
 
@@ -236,19 +258,20 @@ const REWORD_LANGUAGES = [
 ];
 const LEAD = ['English', 'Spanish', 'Mandarin'];
 
-/** The end card's "Text and learn …" reel: "a language", three languages at
-    reading pace, the rest of the list faster and faster, and back to "a
-    language". Times are from the start of the end card. */
-export const TAGLINE_WORDS = ['a language', ...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
+/** The end card's "Text and learn …" reel: English, Spanish and Mandarin,
+    then the rest of the list faster and faster, settling on "a language".
+    Times are from the start of the end card. */
+export const TAGLINE_WORDS = [...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
 export const TAGLINE_LANDS: number[] = (() => {
-  const out = [2.4, 3.55, 4.15, 4.7];
-  let dt = 0.26;
-  for (let i = 4; i < TAGLINE_WORDS.length - 1; i++) {
+  // English holds while the tagline fades in, then the reel rolls.
+  const out = [2.4];
+  let dt = 0.3 + 0.75;
+  for (let i = 1; i < TAGLINE_WORDS.length - 1; i++) {
     out.push(out[out.length - 1] + dt);
-    dt = Math.max(0.035, dt * 0.88);
+    dt = i === 1 ? 0.3 * 0.78 : Math.max(0.017, dt * 0.78);
   }
-  // A slower last roll settles back on "a language".
-  out.push(out[out.length - 1] + 0.55);
+  // A slower last roll settles on "a language".
+  out.push(out[out.length - 1] + 0.4);
   return out;
 })();
 // The end card runs the app's splash (3s), the reel, then holds.
