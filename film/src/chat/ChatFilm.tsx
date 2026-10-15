@@ -28,7 +28,8 @@ import {
  * scales it up; nothing is drawn around it, so the bubbles float.
  *
  * Bubbles are absolutely stacked up from the conversation's bottom edge, like
- * Messages. Every bubble's height at every typed length is measured once at
+ * Messages, and only the latest two stay: older ones fade out as new ones
+ * arrive. Every bubble's height at every typed length is measured once at
  * load, so a typed bubble can grow a line smoothly and push the ones above it
  * up without any state carried between frames.
  */
@@ -42,6 +43,8 @@ const MAX_W = 312;
 const SIDE = 14;
 const RECV = '#2C2C2E';
 const SLOT_COLOR = '#A9C2FF';
+/** How long an older bubble takes to fade out once two newer ones are up. */
+const FADE_OUT = 0.4;
 
 type Metrics = {
   /** heights[i][k]: bubble i's height with k characters typed. */
@@ -297,27 +300,39 @@ const SENT: Timed = {
 
 function Conversation({ met, t }: { met: Metrics; t: number }) {
   const all = [...TIMED, SENT].filter((m) => t >= m.at);
-  const placed: { m: Timed; bottom: number; h: number; tail: boolean }[] = [];
+  const placed: { m: Timed; bottom: number; h: number; tail: boolean; out: number }[] = [];
   let y = 0;
   for (let i = all.length - 1; i >= 0; i--) {
     const m = all[i];
+    // Only the latest two stay: a bubble fades out as the one two after it
+    // arrives, and is gone once faded.
+    const pusher = all[i + 2];
+    const out = pusher ? clamp01((t - pusher.at) / FADE_OUT) : 0;
+    if (out >= 1) break;
     const h = m === SENT ? met.heights[TIMED.length]?.at(-1) ?? 36 : heightAt(m, met, t);
     const claim = m.kind === 'block' ? arrival(m.at, t) : arrival(m.at, t, 0.2);
     const next = all[i + 1];
-    placed.push({ m, bottom: y, h, tail: !next || next.who !== m.who });
+    placed.push({ m, bottom: y, h, tail: !next || next.who !== m.who, out });
     const above = all[i - 1];
     y += h * claim + (above ? (above.who === m.who ? 3 : 12) : 0) * claim;
   }
   return (
     <>
-      {placed.map(({ m, bottom, h, tail }) => {
+      {placed.map(({ m, bottom, h, tail, out }) => {
         // The sent reply rises out of the field below.
         const rise = m === SENT ? (1 - easeOutCubic(clamp01((t - SEND_AT) / 0.45))) * 70 : 0;
+        const o = easeOutCubic(out);
         return (
           <div
             key={m.index}
             className="absolute"
-            style={{ bottom, transform: `translateY(${rise}px)`, ...(m.who === 'me' ? { right: SIDE } : { left: SIDE }) }}
+            style={{
+              bottom,
+              transform: `translateY(${rise - o * 10}px)`,
+              opacity: 1 - o,
+              filter: o > 0 ? `blur(${o * 4}px)` : undefined,
+              ...(m.who === 'me' ? { right: SIDE } : { left: SIDE }),
+            }}
           >
             <Bubble m={m} met={met} t={t} h={h} tail={tail} />
           </div>
@@ -331,8 +346,8 @@ function World({ met, t }: { met: Metrics; t: number }) {
   // The camera: close on the conversation, then a pan down (and back) to
   // frame the field and the keyboard under it.
   const k = easeInOutCubic(clamp01((t - PAN[0]) / (PAN[1] - PAN[0])));
-  const scale = lerp(2.35, 1.42, k);
-  const bottomY = lerp(905, 468, k);
+  const scale = lerp(2.35, 1.6, k);
+  const bottomY = lerp(760, 335, k);
   // The field waits out of shot, then settles under the last bubble.
   const gap = lerp(90, 14, k);
   const fade = span(t, ENDING - 0.35, ENDING, (x) => x);
@@ -451,10 +466,7 @@ export default function ChatFilm() {
       {met && t < ENDING && (
         <>
           <div className="absolute inset-0" style={{ background: 'radial-gradient(55% 60% at 50% 70%, rgba(51,112,255,0.16), rgba(51,112,255,0.04) 50%, rgba(0,0,0,0) 75%)' }} />
-          {/* Older bubbles drift out through a soft fade at the top. */}
-          <div className="absolute inset-0" style={{ WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 22%)', maskImage: 'linear-gradient(to bottom, transparent 0, #000 22%)' }}>
-            <World met={met} t={t} />
-          </div>
+          <World met={met} t={t} />
         </>
       )}
       {t >= ENDING && <Ending t={t} />}
