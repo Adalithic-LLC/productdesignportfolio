@@ -30,6 +30,8 @@ export type Line = {
   /** A long reel: the first `holds` words each hold `hold` seconds, then the
       rest spin past in `flick` seconds, fast off the mark and slowing to land. */
   slotFlick?: { holds: number; hold: number; flick: number };
+  /** Typed bubbles: hold for `secs` once the text up to `after` is typed. */
+  pauses?: { after: string; secs: number }[];
   /** With `focus`: push in again onto the reel as its first word types. */
   focusSlot?: boolean;
   /** The reel's last word types on in place of the reel rather than rolling in. */
@@ -89,7 +91,7 @@ export const SCRIPT: Line[] = [
   },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 2.0 },
   // Held long enough for the close-up and the second push-in on the phrase.
-  { who: 'me', kind: 'block', text: 'Will I stop trying after 5 minutes?', focus: true, focusPhrase: 'after 5 minutes', after: 2.3 },
+  { who: 'me', kind: 'block', text: "I've tried so many apps.", focus: true, focusPhrase: 'so many apps', after: 2.3 },
   { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 2.5 },
   {
     who: 'them',
@@ -101,6 +103,13 @@ export const SCRIPT: Line[] = [
     clearAbove: true,
     after: 1.0,
   },
+  {
+    who: 'them',
+    kind: 'type',
+    text: "But... one app can't replace everything, so let's not pretend.",
+    pauses: [{ after: 'But...', secs: 1.0 }],
+  },
+  { who: 'them', kind: 'block', text: "It's another part of your toolkit.", after: 1.5 },
   // ── Back up in the chat once the reply is sent, then down again ──
   // Each of the next two stands alone on screen.
   {
@@ -231,11 +240,12 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
     let done: number;
     if (line.kind === 'type') {
       let c = at;
+      const holds = new Map((line.pauses ?? []).map((p) => [line.text.indexOf(p.after) + p.after.length - 1, p.secs]));
       for (let i = 0; i < line.text.length; i++) {
         chars.push(c);
         let dt = CHAR + jitter(i, index) * 0.016;
         if (',.?!'.includes(line.text[i])) dt += 0.06;
-        c += dt;
+        c += dt + (holds.get(i) ?? 0);
       }
       done = c;
       if (line.slot) {
@@ -437,12 +447,13 @@ export const END_FADE = 0.9;
 export const ENDING = c + 1.0 + END_FADE;
 
 /** When the closing reel's flick begins (Mandarin's hold over), from the card's start. */
-export const TAGLINE_FLICK_START = 2.4 + 2 * 1.3 + 1.0;
+const TAGLINE_HOLD = 0.5;
+export const TAGLINE_FLICK_START = 2.4 + 2 * (TAGLINE_HOLD + 0.3) + TAGLINE_HOLD;
 export const TAGLINE_LANDS: number[] = (() => {
-  // English, Spanish and Mandarin each hold for a second; then a flick spins
+  // English, Spanish and Mandarin each hold for TAGLINE_HOLD; then a flick spins
   // through the rest, fast off the mark and slowing to settle on "a language".
   const out = [2.4];
-  for (let i = 1; i < 3; i++) out.push(out[i - 1] + 1.0 + 0.3);
+  for (let i = 1; i < 3; i++) out.push(out[i - 1] + TAGLINE_HOLD + 0.3);
   const rest = TAGLINE_WORDS.length - 3;
   const FLICK = 2.2;
   const flickStart = TAGLINE_FLICK_START;
