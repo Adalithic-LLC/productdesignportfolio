@@ -13,6 +13,8 @@ import {
   FIELD_JA,
   END_FADE,
   PAN,
+  BACK,
+  PAN2,
   CAMERA,
   KEYS_VIEW,
   STUDY_GROW,
@@ -463,7 +465,7 @@ const SENT: Timed[] = FIELD_MSGS.filter((f) => Number.isFinite(f.sendAt)).map((f
 }));
 
 function Conversation({ met, t }: { met: Metrics; t: number }) {
-  const all = [...TIMED, ...SENT].filter((m) => t >= m.at);
+  const all = [...TIMED, ...SENT].filter((m) => t >= m.at).sort((a, b) => a.at - b.at);
   const placed: { m: Timed; bottom: number; h: number; tail: boolean; out: number }[] = [];
   let y = 0;
   for (let i = all.length - 1; i >= 0; i--) {
@@ -476,7 +478,8 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     if (clearer) fadeAt = Math.min(fadeAt, clearer.at);
     // …and the whole conversation clears as the keyboard comes up, and the
     // sent replies once the Study list has been flicked through.
-    if (m.index < TIMED.length) fadeAt = Math.min(fadeAt, PAN[0]);
+    // (Script bubbles clear as the camera next pans down to the keyboard.)
+    if (m.index < TIMED.length) fadeAt = Math.min(fadeAt, m.at < PAN[0] ? PAN[0] : PAN2[0]);
     else fadeAt = Math.min(fadeAt, HIDE_SENT);
     const out = clamp01((t - fadeAt) / FADE_OUT);
     if (out >= 1) break;
@@ -584,7 +587,10 @@ function focusTransform(met: Metrics, t: number) {
 function World({ met, t }: { met: Metrics; t: number }) {
   // Close on the conversation, then a pan down to the field and the keyboard;
   // the field waits out of shot, then settles under the last bubble.
-  const k = easeInOutCubic(clamp01((t - PAN[0]) / (PAN[1] - PAN[0])));
+  // 0 on the chat, 1 on the keyboard: down, back up to the chat after the
+  // first send, and down again.
+  const seg = (s: readonly [number, number]) => easeInOutCubic(clamp01((t - s[0]) / (s[1] - s[0])));
+  const k = seg(PAN) - seg(BACK) + seg(PAN2);
   const gap = lerp(90, 14, k);
   const chatScale = CHAT_SCALE;
   // The world hangs from the keyboard's bottom edge, as on iOS: when the

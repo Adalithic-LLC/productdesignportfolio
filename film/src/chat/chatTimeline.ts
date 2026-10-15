@@ -34,6 +34,9 @@ export type Line = {
   focus?: boolean;
   /** With `focus`: after the close-up settles, push in again on this phrase. */
   focusPhrase?: string;
+  /** Plays after the first field message is sent, back up in the chat,
+      rather than before the pan down to the keyboard. Keep these last. */
+  afterSend?: boolean;
   /** Seconds from this bubble being complete (its reel landed) to the next
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
@@ -67,15 +70,6 @@ export const SCRIPT: Line[] = [
     slotInline: true,
     clearAbove: true,
   },
-  { who: 'me', kind: 'block', text: 'Where?' },
-  {
-    who: 'them',
-    kind: 'block',
-    text: 'Right where your chats already happen!',
-    slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
-    slotInline: true,
-    after: 1.0,
-  },
   {
     who: 'them',
     kind: 'block',
@@ -84,6 +78,18 @@ export const SCRIPT: Line[] = [
     slotInline: true,
     clearAbove: true,
     after: 1.0,
+  },
+  // After the first reply is sent, the camera goes back up to the chat for
+  // these two, then back down to the keyboard.
+  { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
+  {
+    who: 'them',
+    kind: 'block',
+    text: 'Right where your chats already happen!',
+    slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
+    slotInline: true,
+    after: 1.0,
+    afterSend: true,
   },
 ]
 
@@ -124,11 +130,12 @@ export type Timed = Line & {
   done: number;
 };
 
-export const TIMED: Timed[] = (() => {
+/** Times a run of script lines (with their indexes in SCRIPT) from `start`. */
+function timeLines(lines: [Line, number][], start: number): Timed[] {
   const out: Timed[] = [];
-  let t = 0.8;
+  let t = start;
   let prev: Who | null = null;
-  SCRIPT.forEach((line, index) => {
+  lines.forEach(([line, index]) => {
     if (prev && prev !== line.who && !out[out.length - 1]?.after) t += 0.15;
     const at = t;
     const chars: number[] = [];
@@ -178,7 +185,12 @@ export const TIMED: Timed[] = (() => {
     prev = line.who;
   });
   return out;
-})();
+}
+
+const indexed = SCRIPT.map((line, i) => [line, i] as [Line, number]);
+/** Every script bubble, in SCRIPT order (= TIMED[i].index). The afterSend
+    lines are timed once the first reply's send is known, below. */
+export const TIMED: Timed[] = timeLines(indexed.filter(([l]) => !l.afterSend), 0.8);
 
 const LAST = TIMED[TIMED.length - 1];
 
@@ -256,8 +268,17 @@ c = move(c, FIELD);
   FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17, clearAt: sendTap + 0.17 });
   c = sendTap + 0.17;
 }
+
+/** Once the reply has risen into the chat, the camera goes back up to the
+    conversation for the afterSend bubbles, then pans down to the keyboard again. */
+export const BACK = [c + 0.6, c + 0.6 + 1.2] as const;
+TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + 0.2));
+const LAST2 = TIMED[TIMED.length - 1];
+export const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + 1.2] as const;
+c = PAN2[1] + 0.3;
+
 // 2. Close on the field again; this one stays in English. Back out, and open Study.
-c = move(c + 0.4, FIELD);
+c = move(c, FIELD);
 {
   const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
   c = move(times[times.length - 1] + 1.0, KEYS);
@@ -349,16 +370,22 @@ export const STUDY_ROWS_DATA = [
     Ids stay stable across versions so timing notes carry over. */
 export function scenes() {
   const short = (m: Timed) => m.text.replace(/\n/g, ' ') + (m.slot ? ` [${m.slot.join(' / ')}]` : '');
+  const firstAfterSend = TIMED.find((m) => m.afterSend);
   const list = [
-    ...TIMED.map((m, i) => ({ id: `b${i + 1}`, name: `${i + 1}. ${short(m)}`, start: i === 0 ? 0 : m.at })),
+    ...TIMED.map((m, i) => ({
+      id: `b${i + 1}`,
+      name: `${i + 1}. ${short(m)}`,
+      // The first bubble back in the chat owns the pan up to it.
+      start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
+    })),
     { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
     { id: 'field1', name: 'Type: So, I just type…', start: CAMERA[0][0] },
     { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
-    { id: 'field2', name: 'Type: And it adds the words…', start: CAMERA[2][0] },
+    { id: 'field2', name: 'Back to keyboard, type: And it adds…', start: PAN2[0] },
     { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },
     { id: 'field3', name: 'Type: Ok this is cool…', start: CAMERA[4][0] },
     { id: 'end', name: 'End card', start: ENDING - END_FADE },
-  ];
+  ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
 
@@ -384,7 +411,7 @@ export function cues() {
     ticks: TAGLINE_LANDS.map((x) => ENDING + x),
     pops: TIMED.map((m) => ({ t: m.at, who: m.who })),
     titles: [],
-    phones: [PAN[0]],
+    phones: [PAN[0], BACK[0], PAN2[0]],
     opening: [0, 0],
     closing: ENDING,
     studyFlick: STUDY_FLICK,
