@@ -25,25 +25,33 @@ export type Line = {
   noWrap?: boolean;
   /** …or widens this bubble past the usual maximum (pt). */
   maxW?: number;
+  /** Phrases underlined as they type out. */
+  underline?: string[];
+  /** Seconds the reel's first word holds before it rolls (default SLOT_DELAY). */
+  slotHold?: number;
+  /** The camera closes on this bubble while it types, and opens back out as
+      the next one arrives. */
+  focus?: boolean;
   /** Seconds from this bubble being complete (its reel landed) to the next
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
 };
 
 export const SCRIPT: Line[] = [
-  { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true },
+  { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true, underline: ['new way'] },
   { who: 'me', kind: 'block', text: 'Of course, but how?', after: 1.0 },
   { who: 'me', kind: 'block', text: 'Will I stop using it after 5 minutes?' },
-  { who: 'them', kind: 'block', text: "I think you'll like this.", after: 1.0 },
+  { who: 'them', kind: 'block', text: "I think you'll like this one.", after: 1.0 },
   {
     who: 'them',
-    kind: 'block',
-    // Broken after the comma, and a little wider than other bubbles, so even
-    // "actual conversations." fits after "your".
-    text: 'You learn the practical language,\nbased on your',
-    maxW: 340,
+    kind: 'type',
+    // Broken before "based on" so even "actual conversations." fits after it.
+    text: 'Learn the practical language\nbased on',
+    underline: ['practical language'],
     slot: ['life.', 'interests.', 'actual conversations.'],
     slotInline: true,
+    slotHold: 2.0,
+    focus: true,
   },
   { who: 'me', kind: 'block', text: "Ok, I'm listening..." },
   {
@@ -132,9 +140,12 @@ export const TIMED: Timed[] = (() => {
       }
       done = c;
       if (line.slot) {
+        // The first word fades in after the text, holds, then the reel rolls.
         slotAt = done + 0.15;
         let land = slotAt + SLOT_SPIN;
-        for (let i = 0; i < line.slot.length; i++) {
+        slotLands.push(land);
+        land += (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
+        for (let i = 1; i < line.slot.length; i++) {
           slotLands.push(land);
           land += SLOT_DWELL + SLOT_ROLL;
         }
@@ -146,7 +157,7 @@ export const TIMED: Timed[] = (() => {
       // it lands (0.3s), the reel starts to roll.
       slotAt = at;
       slotLands.push(at);
-      let land = at + 0.3 + SLOT_DELAY + SLOT_ROLL;
+      let land = at + 0.3 + (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
       for (let i = 1; i < line.slot.length; i++) {
         slotLands.push(land);
         land += SLOT_DWELL + SLOT_ROLL;

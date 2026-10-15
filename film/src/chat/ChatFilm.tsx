@@ -283,10 +283,35 @@ function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
   return m.slotInline ? <> {reel}</> : <div style={{ height: LINE }}>{reel}</div>;
 }
 
+/** The typed text, with any underlined phrases drawn as their letters land. */
+function TypedText({ m, n }: { m: Timed; n: number }) {
+  const marks: [number, number][] = (m.underline ?? [])
+    .map((p) => [m.text.indexOf(p), m.text.indexOf(p) + p.length] as [number, number])
+    .filter(([a]) => a >= 0)
+    .sort((a, b) => a[0] - b[0]);
+  if (!marks.length) return <>{m.text.slice(0, n)}</>;
+  const parts = [];
+  let i = 0;
+  for (const [a, b] of marks) {
+    if (n <= a) break;
+    if (a > i) parts.push(m.text.slice(i, a));
+    parts.push(
+      <span
+        key={a}
+        style={{ textDecoration: 'underline', textDecorationColor: SLOT_COLOR, textDecorationThickness: 2, textUnderlineOffset: 4, textDecorationSkipInk: 'none' }}
+      >
+        {m.text.slice(a, Math.min(b, n))}
+      </span>,
+    );
+    i = Math.min(b, n);
+  }
+  if (n > i) parts.push(m.text.slice(i, n));
+  return <>{parts}</>;
+}
+
 function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: number; tail: boolean }) {
   const color = m.who === 'me' ? AX.send : RECV;
   const n = m.kind === 'type' ? typedCount(m, t) : m.text.length;
-  const typed = m.text.slice(0, n);
   // Hug the text: its widest line, or the reel if that's wider.
   let contentW = met.lineW[m.index][n] ?? 0;
   if (m.slot && t >= m.slotAt) {
@@ -309,7 +334,7 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
         className="overflow-hidden text-white"
         style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: m.noWrap ? 'pre' : 'pre-wrap', maxWidth: m.noWrap ? 'none' : m.maxW ?? MAX_W, overflowWrap: 'break-word' }}
       >
-        {typed}
+        <TypedText m={m} n={n} />
         {m.slot && t >= m.slotAt && <Slot m={m} met={met} t={t} />}
       </div>
       {tail && <Tail who={m.who} color={color} />}
@@ -499,16 +524,44 @@ function framingAt(t: number) {
   return v;
 }
 
+/** Before the pan, the chat hangs at this scale with its bottom bubble's
+    lower edge this far down the frame. */
+const CHAT_SCALE = 2.35;
+const CHAT_BOTTOM = 760;
+const FOCUS_ZOOM = 1.7;
+
+/** A close-up on a `focus` bubble: the camera eases in on it as it starts
+    typing and opens back out as the next bubble arrives. Returns the CSS
+    transform for the whole chat, about the bubble's (final) centre. */
+function focusTransform(met: Metrics, t: number) {
+  for (const m of TIMED) {
+    if (!m.focus) continue;
+    const next = TIMED[m.index + 1];
+    const k =
+      easeInOutCubic(clamp01((t - m.at) / 0.7)) * (1 - easeInOutCubic(clamp01((t - ((next?.at ?? Infinity) - 0.05)) / 0.4)));
+    if (k <= 0) continue;
+    const slotMax = Math.max(0, ...(met.slotW[m.index] ?? []));
+    const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : met.lineW[m.index].at(-1)!) + 25;
+    const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)!;
+    const left = W / 2 - (COL / 2) * CHAT_SCALE;
+    const px = m.who === 'me' ? left + (COL - SIDE - bw / 2) * CHAT_SCALE : left + (SIDE + bw / 2) * CHAT_SCALE;
+    const py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
+    const z = lerp(1, FOCUS_ZOOM, k);
+    return `translate(${lerp(px, W / 2, k)}px, ${lerp(py, H / 2, k)}px) scale(${z}) translate(${-px}px, ${-py}px)`;
+  }
+  return undefined;
+}
+
 function World({ met, t }: { met: Metrics; t: number }) {
   // Close on the conversation, then a pan down to the field and the keyboard;
   // the field waits out of shot, then settles under the last bubble.
   const k = easeInOutCubic(clamp01((t - PAN[0]) / (PAN[1] - PAN[0])));
   const gap = lerp(90, 14, k);
-  const chatScale = 2.35;
+  const chatScale = CHAT_SCALE;
   // The world hangs from the keyboard's bottom edge, as on iOS: when the
   // field gains a line, or Study opens taller than the keys, everything above
   // rises with it.
-  const chatKb = 760 + (90 + BELOW_CHAT) * chatScale;
+  const chatKb = CHAT_BOTTOM + (90 + BELOW_CHAT) * chatScale;
   const after = framingAt(t);
   const scale = lerp(chatScale, after.scale, k);
   const keyboardBottom = lerp(chatKb, after.kb, k);
@@ -719,7 +772,9 @@ export default function ChatFilm() {
       {met && t < ENDING && (
         <>
           <div className="absolute inset-0" style={{ background: 'radial-gradient(55% 60% at 50% 70%, rgba(51,112,255,0.16), rgba(51,112,255,0.04) 50%, rgba(0,0,0,0) 75%)' }} />
-          <World met={met} t={t} />
+          <div className="absolute inset-0" style={{ transformOrigin: '0 0', transform: focusTransform(met, t) }}>
+            <World met={met} t={t} />
+          </div>
         </>
       )}
       {t >= ENDING && <Ending t={t} />}
