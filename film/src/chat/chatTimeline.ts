@@ -20,7 +20,7 @@ export type Line = {
 export const SCRIPT: Line[] = [
   { who: 'them', kind: 'type', text: 'Want a new way to learn a language?' },
   { who: 'me', kind: 'block', text: 'Ok, how?' },
-  { who: 'me', kind: 'type', text: 'Please, not another app that thinks it knows best.' },
+  { who: 'me', kind: 'type', text: 'Please, not another app that I stop using after 5 minutes...' },
   { who: 'them', kind: 'type', text: 'Nope, you control this one.' },
   {
     who: 'them',
