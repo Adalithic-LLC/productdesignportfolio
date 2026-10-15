@@ -16,6 +16,7 @@ import {
   CAMERA,
   KEYS_VIEW,
   STUDY_GROW,
+  STUDY_FLICK,
   TAGLINE_LANDS,
   TAGLINE_WORDS,
   FIELD_MSGS,
@@ -119,6 +120,9 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
   const heights: number[][] = [];
   const lineW: number[][] = [];
   texts.forEach((text, i) => {
+    const noWrap = !!TIMED[i]?.noWrap;
+    probe.style.whiteSpace = noWrap ? 'pre' : 'pre-wrap';
+    probe.style.maxWidth = noWrap ? 'none' : `${MAX_W}px`;
     const hs = [0];
     const ws = [0];
     const from = i < TIMED.length ? 1 : text.length;
@@ -130,6 +134,8 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
     heights.push(hs);
     lineW.push(ws);
   });
+  probe.style.whiteSpace = 'pre-wrap';
+  probe.style.maxWidth = `${MAX_W}px`;
   const lastW: number[] = [];
   const otherW: number[] = [];
   TIMED.forEach((m) => {
@@ -298,7 +304,7 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
     >
       <div
         className="overflow-hidden text-white"
-        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' || m.slot ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: m.noWrap ? 'pre' : 'pre-wrap', maxWidth: m.noWrap ? 'none' : MAX_W, overflowWrap: 'break-word' }}
       >
         {typed}
         {m.slot && t >= m.slotAt && <Slot m={m} met={met} t={t} />}
@@ -466,6 +472,15 @@ const BELOW_CHAT = 36 + 8 + 339;
 /** The keys' height, and the Study view's, which replaces them. */
 const KEYS_H = 270;
 
+/** The Study list after a finger-flick: fast off the mark, decelerating to a
+    stop, like a scroll view's momentum. (The view's own CSS transition is
+    switched off so every frame is set here.) */
+const FLICK_DISTANCE = 300;
+function studyScroll(t: number) {
+  if (t < STUDY_FLICK) return 0;
+  return FLICK_DISTANCE * (1 - Math.exp(-(t - STUDY_FLICK) / 0.22));
+}
+
 /** The camera after the pan: hold a framing, ease between them on each move. */
 function framingAt(t: number) {
   let v = KEYS_VIEW;
@@ -523,8 +538,17 @@ function World({ met, t }: { met: Metrics; t: number }) {
                 </div>
               )}
               {t >= STUDY_OPEN && (
-                <div className="absolute inset-x-0 top-0" style={{ opacity: grow }} data-pin={t >= STUDY_ROWS ? STUDY_ROWS : undefined}>
-                  <StudyPanel stage={t >= STUDY_ROWS ? 'rows' : t >= STUDY_SKELETON ? 'skeleton' : 'spinner'} rows={STUDY_ROWS_DATA} total={24} />
+                <div
+                  className="absolute inset-x-0 top-0 [&_*]:!transition-none"
+                  style={{ opacity: grow }}
+                  data-pin={t >= STUDY_ROWS ? STUDY_ROWS : undefined}
+                >
+                  <StudyPanel
+                    stage={t >= STUDY_ROWS ? 'rows' : t >= STUDY_SKELETON ? 'skeleton' : 'spinner'}
+                    rows={STUDY_ROWS_DATA}
+                    total={24}
+                    scroll={studyScroll(t)}
+                  />
                 </div>
               )}
             </div>

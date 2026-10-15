@@ -21,13 +21,18 @@ export type Line = {
   slotInline?: boolean;
   /** Fades out every bubble above it as it arrives, so it stands alone. */
   clearAbove?: boolean;
+  /** Keeps the text on one line, however wide the bubble gets. */
+  noWrap?: boolean;
+  /** Seconds from this bubble being complete (its reel landed) to the next
+      thing happening; otherwise a reading pause scaled to its length. */
+  after?: number;
 };
 
 export const SCRIPT: Line[] = [
-  { who: 'them', kind: 'type', text: 'Want a new way to learn a language?' },
-  { who: 'me', kind: 'block', text: 'Of course, but how?' },
+  { who: 'them', kind: 'type', text: 'Want a new way to learn a language?', noWrap: true },
+  { who: 'me', kind: 'block', text: 'Of course, but how?', after: 1.0 },
   { who: 'me', kind: 'block', text: 'Please, not another app that I stop using after 5 minutes...' },
-  { who: 'them', kind: 'block', text: 'Nope, you control this one.' },
+  { who: 'them', kind: 'block', text: 'Nope, you control this one.', after: 1.0 },
   {
     who: 'them',
     kind: 'block',
@@ -50,6 +55,7 @@ export const SCRIPT: Line[] = [
     text: 'Right where your chats already happen!',
     slot: ['WhatsApp', 'HelloTalk', 'Instagram', 'any app!'],
     slotInline: true,
+    after: 1.0,
   },
   {
     who: 'them',
@@ -58,19 +64,25 @@ export const SCRIPT: Line[] = [
     slot: ['translation.', 'correction.', 'analysis.', 'study.'],
     slotInline: true,
     clearAbove: true,
+    after: 1.0,
   },
 ]
 
-export const FIELD_TEXT = 'So, I just type, tap a button, and it translates?';
+// A '|' marks a half-second pause in the typing; it isn't typed.
+const FIELD_RAW = 'So,| I just type,| tap a button,| and it translates?';
+export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
 export const FIELD_JA = 'じゃあ、入力してボタンを押すだけで翻訳してくれるの？';
-export const FIELD2_TEXT = 'And it actually adds the words I missed to a study guide?';
-export const FIELD3_TEXT = 'Ok this is cool. I kind of want to practice now.';
+const FIELD2_RAW = 'And it adds the words I missed,| to a study guide?';
+export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
+const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
+export const FIELD3_TEXT = FIELD3_RAW.replaceAll('|', '');
 
 export const FPS = 60;
 export const BPM = 120;
 
 const CHAR = 0.042; // in-place typing: ~24 characters a second
 const SLOT_SPIN = 0.2; // the first word fading in on its line
+const SLOT_DELAY = 0.5; // a block's reel waits this long after it lands
 const SLOT_DWELL = 0.72; // each word holds this long before the next roll
 const SLOT_ROLL = 0.32;
 
@@ -98,7 +110,7 @@ export const TIMED: Timed[] = (() => {
   let t = 0.8;
   let prev: Who | null = null;
   SCRIPT.forEach((line, index) => {
-    if (prev && prev !== line.who) t += 0.15;
+    if (prev && prev !== line.who && !out[out.length - 1]?.after) t += 0.15;
     const at = t;
     const chars: number[] = [];
     let slotAt = Infinity;
@@ -124,19 +136,22 @@ export const TIMED: Timed[] = (() => {
       }
       t = done + 0.45 + line.text.length * 0.008 + (line.slot ? 0.4 : 0);
     } else if (line.slot) {
-      // A block arrives whole with its reel on the first word, then rolls.
+      // A block arrives whole with its reel on the first word; half a second
+      // after it lands (0.3s), the reel starts to roll.
       slotAt = at;
-      let land = at;
-      for (let i = 0; i < line.slot.length; i++) {
+      slotLands.push(at);
+      let land = at + 0.3 + SLOT_DELAY + SLOT_ROLL;
+      for (let i = 1; i < line.slot.length; i++) {
         slotLands.push(land);
-        land += (i === 0 ? SLOT_DWELL + 0.35 : SLOT_DWELL) + SLOT_ROLL;
+        land += SLOT_DWELL + SLOT_ROLL;
       }
-      done = slotLands[slotLands.length - 1] + 0.25;
-      t = done + 0.7;
+      done = slotLands[slotLands.length - 1];
+      t = done + 0.95;
     } else {
       done = at + 0.3;
       t = done + 0.4 + line.text.length * 0.025;
     }
+    if (line.after !== undefined) t = done + line.after;
     out.push({ ...line, index, at, chars, slotAt, slotLands, done });
     prev = line.who;
   });
@@ -146,18 +161,25 @@ export const TIMED: Timed[] = (() => {
 const LAST = TIMED[TIMED.length - 1];
 
 /** The pan down to the field and keyboard, then two replies typed there. */
-export const PAN = [LAST.done + 0.55, LAST.done + 1.75] as const;
+export const PAN = [LAST.done + (LAST.after ?? 0.55), LAST.done + (LAST.after ?? 0.55) + 1.2] as const;
 
-/** When each character of a field message lands, from `start`. */
-function typeTimes(text: string, start: number, seed: number) {
+/** When each character of a field message lands, from `start`. `raw` is the
+    message with a '|' wherever the typing pauses for half a second. */
+function typeTimes(raw: string, start: number, seed: number) {
   const out: number[] = [];
   let c = start;
-  for (let i = 0; i < text.length; i++) {
+  let i = 0;
+  for (const ch of raw) {
+    if (ch === '|') {
+      c += 0.5;
+      continue;
+    }
     out.push(c);
     let dt = 0.058 + jitter(i, seed) * 0.024;
-    if (text[i] === ' ') dt += 0.02;
-    if (',.'.includes(text[i])) dt += 0.08;
+    if (ch === ' ') dt += 0.02;
+    if (',.'.includes(ch)) dt += 0.08;
     c += dt;
+    i++;
   }
   return out;
 }
@@ -204,8 +226,8 @@ let c = PAN[1] + 0.5;
 // 1. Close on the field while it's typed; back out to the keys to Reword it, and send.
 c = move(c, FIELD);
 {
-  const times = typeTimes(FIELD_TEXT, c + 0.2, 99);
-  c = move(times[times.length - 1] + 0.4, KEYS);
+  const times = typeTimes(FIELD_RAW, c + 0.2, 99);
+  c = move(times[times.length - 1] + 1.0, KEYS);
   const rewordTap = c + 0.35;
   const rewordDone = rewordTap + 1.0;
   const sendTap = rewordDone + 1.3;
@@ -215,8 +237,8 @@ c = move(c, FIELD);
 // 2. Close on the field again; this one stays in English. Back out, and open Study.
 c = move(c + 0.4, FIELD);
 {
-  const times = typeTimes(FIELD2_TEXT, c + 0.2, 7);
-  c = move(times[times.length - 1] + 0.4, KEYS);
+  const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
+  c = move(times[times.length - 1] + 1.0, KEYS);
   FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
 }
 
@@ -227,14 +249,16 @@ export const STUDY_OPEN = STUDY_TAP + 0.18;
 export const STUDY_GROW = 0.4;
 export const STUDY_SKELETON = STUDY_OPEN + 0.35;
 export const STUDY_ROWS = STUDY_OPEN + 1.0;
+/** A finger-flick down the entries once they've loaded. */
+export const STUDY_FLICK = STUDY_ROWS + 0.7;
 // The English question isn't sent: once the entries have been seen, the field
 // is cleared for the last line.
-FIELD_MSGS[1].clearAt = STUDY_ROWS + 2.4;
+FIELD_MSGS[1].clearAt = STUDY_FLICK + 2.0;
 
 // 3. Close on the field over Study for the last line, which stays unsent.
 c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
 {
-  const times = typeTimes(FIELD3_TEXT, c + 0.2, 23);
+  const times = typeTimes(FIELD3_RAW, c + 0.2, 23);
   FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   c = times[times.length - 1];
 }
@@ -311,5 +335,6 @@ export function cues() {
     phones: [PAN[0]],
     opening: [0, 0],
     closing: ENDING,
+    studyFlick: STUDY_FLICK,
   };
 }
