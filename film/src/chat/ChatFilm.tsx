@@ -59,6 +59,14 @@ type Metrics = {
   slotW: number[][];
   /** The height of an inline-slot bubble with its widest word in place. */
   inlineH: number[];
+  /** lineW[i][k]: the widest line of bubble i's text with k characters typed,
+      so a wrapped bubble hugs its text like Messages instead of filling its
+      max width. */
+  lineW: number[][];
+  /** For inline slots: the full text's last line, and its widest other line. */
+  lastW: number[];
+  otherW: number[];
+  spaceW: number;
 };
 
 const bubbleStyle = {
@@ -72,7 +80,7 @@ const bubbleStyle = {
 } as const;
 
 /** Lays every bubble out off screen at every length and records the sizes. */
-function measure(root: HTMLElement): Metrics {
+function measure(root: HTMLElement, extra: string[]): Metrics {
   const probe = document.createElement('div');
   Object.assign(probe.style, {
     position: 'absolute',
@@ -90,14 +98,49 @@ function measure(root: HTMLElement): Metrics {
   Object.assign(word.style, { position: 'absolute', left: '-10000px', visibility: 'hidden', whiteSpace: 'nowrap', fontFamily: FONT, fontSize: '17px', fontWeight: '600' });
   root.appendChild(word);
 
-  const heights = TIMED.map((m) => {
-    const out = [0];
-    for (let k = 1; k <= m.text.length; k++) {
-      probe.textContent = m.text.slice(0, k);
-      out.push(probe.offsetHeight);
+  /** The width of each laid-out line of the probe's text, top to bottom. */
+  const lineWidths = () => {
+    const range = document.createRange();
+    range.selectNodeContents(probe);
+    const byTop = new Map<number, [number, number]>();
+    for (const r of range.getClientRects()) {
+      const key = Math.round(r.top);
+      const [l, rt] = byTop.get(key) ?? [Infinity, -Infinity];
+      byTop.set(key, [Math.min(l, r.left), Math.max(rt, r.right)]);
     }
-    return out;
+    return [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(([, [l, r]]) => r - l);
+  };
+
+  // Every bubble at every typed length, then the sent replies (whole).
+  const texts = [...TIMED.map((m) => m.text), ...extra];
+  const heights: number[][] = [];
+  const lineW: number[][] = [];
+  texts.forEach((text, i) => {
+    const hs = [0];
+    const ws = [0];
+    const from = i < TIMED.length ? 1 : text.length;
+    for (let k = from; k <= text.length; k++) {
+      probe.textContent = text.slice(0, k);
+      hs[k] = probe.offsetHeight;
+      ws[k] = Math.max(...lineWidths());
+    }
+    heights.push(hs);
+    lineW.push(ws);
   });
+  const lastW: number[] = [];
+  const otherW: number[] = [];
+  TIMED.forEach((m) => {
+    probe.textContent = m.text;
+    const ls = lineWidths();
+    lastW.push(ls[ls.length - 1]);
+    otherW.push(Math.max(0, ...ls.slice(0, -1)));
+  });
+  word.style.fontWeight = '400';
+  word.textContent = 'a b';
+  const ab = word.offsetWidth;
+  word.textContent = 'ab';
+  const spaceW = ab - word.offsetWidth;
+  word.style.fontWeight = '600';
   const slotW = TIMED.map((m) =>
     (m.slot ?? []).map((w) => {
       word.textContent = w;
@@ -121,7 +164,7 @@ function measure(root: HTMLElement): Metrics {
   });
   probe.remove();
   word.remove();
-  return { heights, slotW, inlineH };
+  return { heights, slotW, inlineH, lineW, lastW, otherW, spaceW };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -174,27 +217,37 @@ function Tail({ who, color }: { who: Who; color: string }) {
 }
 
 /** The slot machine: the first word appears, then the reel rolls word to word. */
+/** Where a slot's reel is (in words, fractional while rolling) at time t. */
+function reelPos(m: Timed, tt: number) {
+  const n = m.slot!.length;
+  // The first word simply appears on its line; the reel rolls from there.
+  let p = 2 * n;
+  for (let i = 1; i < n; i++) {
+    const rollStart = m.slotLands[i] - 0.32;
+    if (tt >= m.slotLands[i]) p = 2 * n + i;
+    else if (tt >= rollStart) p = 2 * n + (i - 1) + easeOutBack((tt - rollStart) / 0.32);
+  }
+  return p;
+}
+
+/** The reel's width at time t, eased between the words it rolls through. */
+function slotWidthAt(m: Timed, met: Metrics, t: number) {
+  const n = m.slot!.length;
+  const widths = met.slotW[m.index];
+  const width = (j: number) => widths[((j % n) + n) % n];
+  const p = reelPos(m, t);
+  const base = Math.floor(p);
+  return lerp(width(base), width(base + 1), p - base);
+}
+
 function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
   const words = m.slot!;
   const n = words.length;
-  const widths = met.slotW[m.index];
-  const reelPos = (tt: number) => {
-    // The first word simply appears on its line; the reel rolls from there.
-    let p = 2 * n;
-    for (let i = 1; i < n; i++) {
-      const rollStart = m.slotLands[i] - 0.32;
-      if (tt >= m.slotLands[i]) p = 2 * n + i;
-      else if (tt >= rollStart) p = 2 * n + (i - 1) + easeOutBack((tt - rollStart) / 0.32);
-    }
-    return p;
-  };
-  const p = reelPos(t);
-  const v = Math.abs(p - reelPos(t - 1 / 60)) * 60;
+  const p = reelPos(m, t);
+  const v = Math.abs(p - reelPos(m, t - 1 / 60)) * 60;
   const word = (j: number) => words[((j % n) + n) % n];
-  const width = (j: number) => widths[((j % n) + n) % n];
   const base = Math.floor(p);
-  const frac = p - base;
-  const w = lerp(width(base), width(base + 1), frac);
+  const w = slotWidthAt(m, met, t);
   const items = [];
   for (let j = base - 1; j <= base + 2; j++) {
     items.push(
@@ -216,7 +269,14 @@ function Slot({ m, met, t }: { m: Timed; met: Metrics; t: number }) {
 
 function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: number; tail: boolean }) {
   const color = m.who === 'me' ? AX.send : RECV;
-  const typed = m.kind === 'type' ? m.text.slice(0, typedCount(m, t)) : m.text;
+  const n = m.kind === 'type' ? typedCount(m, t) : m.text.length;
+  const typed = m.text.slice(0, n);
+  // Hug the text: its widest line, or the reel if that's wider.
+  let contentW = met.lineW[m.index][n] ?? 0;
+  if (m.slot && t >= m.slotAt) {
+    const sw = slotWidthAt(m, met, t);
+    contentW = m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + sw) : Math.max(contentW, sw);
+  }
   // Arrivals: a block pops from its tail corner; a typed bubble eases open.
   const k = m.kind === 'block' ? clamp01((t - m.at) / 0.38) : clamp01((t - m.at) / 0.18);
   const scale = m.kind === 'block' ? 0.55 + 0.45 * easeOutBack(k) : 0.85 + 0.15 * easeOutCubic(k);
@@ -231,7 +291,7 @@ function Bubble({ m, met, t, h, tail }: { m: Timed; met: Metrics; t: number; h: 
     >
       <div
         className="overflow-hidden text-white"
-        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' ? h : undefined, width: 'fit-content', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+        style={{ ...bubbleStyle, background: color, height: m.kind === 'type' ? h : undefined, width: Math.ceil(contentW) + 25, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
       >
         {typed}
         {m.slot && t >= m.slotAt && <Slot m={m} met={met} t={t} />}
@@ -513,16 +573,7 @@ export default function ChatFilm() {
       .then(() => document.fonts.ready)
       .then(() => {
       if (!live || !rootRef.current) return;
-      const m = measure(rootRef.current);
-      // Each sent reply's height, measured as one more bubble.
-      const probe = document.createElement('div');
-      Object.assign(probe.style, { position: 'absolute', left: '-10000px', visibility: 'hidden', width: 'fit-content', maxWidth: `${MAX_W}px`, padding: '7px 12px', fontFamily: FONT, fontSize: '17px', lineHeight: `${LINE}px` });
-      rootRef.current.appendChild(probe);
-      for (const sent of SENT) {
-        probe.textContent = sent.text;
-        m.heights.push([probe.offsetHeight]);
-      }
-      probe.remove();
+      const m = measure(rootRef.current, SENT.map((x) => x.text));
       flushSync(() => setMet(m));
       resolveReady();
     });
