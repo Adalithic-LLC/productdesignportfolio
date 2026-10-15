@@ -48,7 +48,14 @@ Every Arcatext surface has a dark appearance that follows the site theme:
   under `:root`, dark under `.dark`). Use `AX.*` rather than hex values, and add
   a variable to both blocks when a new color is needed. Icons with dark artwork
   (`src/assets/keyboard/*-dark.svg`) go through `AxIcon`.
-- The simulator captures have recolored twins in `public/hero-tiles/dark/`,
+- The home page hero's Arcatext phones (`ArcatextCardStack`) are drawn, not
+  captured: each card is `ArcatextScreen`, which holds `ArcatextKeyboard` at
+  one frame through its `still` prop (`bare` drops the bezel and controls).
+  To change a card, change its `Still` there. Its two thumbnail tiles,
+  `hero-tiles/arcatext-keyboard.webp` and `arcatext-reword.webp` (and their
+  `dark/` twins), are 1206x2622 renders of those same stills, used only by
+  `tools/hero-thumbs.py`; re-render them when the stills change.
+- The other simulator captures have recolored twins in `public/hero-tiles/dark/`,
   `public/hero-thumbs/dark/` and `public/project-arcatext-keyboard-dark.webp`.
   They are the light captures recolored to the app's dark colorset values by
   `tools/darken_capture.py` (and `tools/darken_product_shot.py` for the Work

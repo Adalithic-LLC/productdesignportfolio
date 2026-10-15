@@ -676,3 +676,41 @@ export function StudyPanel({
     </div>
   );
 }
+
+// ── Fix Words ────────────────────────────────────────────────────────────────
+
+/**
+ * Check's Fix Words editor (CheckView FixWordsCard, main): the card at the top
+ * of the sheet that opens over Check. Cancel / Fix Words / Apply, the whole
+ * reverse translation in a 96pt field with the caret at its end, and a hint.
+ * Apply stays at 40% until the text has changed.
+ */
+export function FixWordsCard({ text, edited }: { text: string; edited: boolean }) {
+  return (
+    <div className="flex flex-col gap-[14px] px-3" style={{ fontFamily: NOTO }}>
+      <div className="flex items-center">
+        <span className="text-[16px]" style={{ color: AX.accent }}>
+          Cancel
+        </span>
+        <div className="flex-1" />
+        <span className="text-[16px] font-semibold" style={{ color: AX.label }}>
+          Fix Words
+        </span>
+        <div className="flex-1" />
+        <span className="text-[16px] font-semibold" style={{ color: AX.accent, opacity: edited ? 1 : 0.4 }}>
+          Apply
+        </span>
+      </div>
+      <div
+        className="overflow-hidden rounded-[12px] border px-2 py-3 text-[16px] leading-[22px]"
+        style={{ height: 96, background: AX.cardBg, borderColor: AX.cardStroke, color: AX.label }}
+      >
+        {text}
+        <span className="ml-[1px] inline-block h-[18px] w-[2px] translate-y-[3px] animate-pulse" style={{ background: AX.accent }} />
+      </div>
+      <p className="text-[13px]" style={{ color: AX.placeholder }}>
+        Edit your message here, then tap Apply to update it.
+      </p>
+    </div>
+  );
+}

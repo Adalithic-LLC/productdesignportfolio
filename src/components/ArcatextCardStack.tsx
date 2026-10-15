@@ -1,44 +1,91 @@
 /**
- * The Arcatext screens as a deck (see CardDeck for the motion).
+ * The Arcatext screens as a deck (see CardDeck for the motion), and the
+ * keyboard held still beside it.
  *
- * These are simulator captures of the shipped keyboard rather than the web
- * demos that stood in for it, so they carry the device's own status bar and go
- * edge to edge -- the card clips them instead of supplying a page behind them,
- * and takes the phone's 1206x2622.
+ * Every card is drawn by the same renderer as the Arcatext page's playing
+ * phones (ArcatextScreen → ArcatextKeyboard), held at one moment of a scene.
+ * They used to be simulator captures with recolored dark twins, which went
+ * stale as the app changed and showed recoloring seams in the dark theme;
+ * drawn, they follow the app's current views, labels and colorsets, and the
+ * dark theme is the app's own dark appearance.
  *
- * The capture is 402x874pt, an iPhone 16 Pro, whose display corners are 62pt --
- * 15.4% of the width. The simulator writes the screen out square, so that curve
- * only exists if the card supplies it: 36px at the 231px the card draws at.
+ * The cards keep the phone's proportions, 402x874pt (an iPhone 16 Pro), and
+ * its display corners, 62pt -- 15.4% of the width, 36px at the 231px the card
+ * draws at.
+ *
+ * One conversation runs through the set, as it did through the captures: a
+ * Spanish message to a friend, checked before it sends, then their reply.
  */
 import { CardDeck, type DeckCard } from '@/components/CardDeck';
-import { useTheme } from '@/hooks/useTheme';
+import { ArcatextScreen } from '@/components/ArcatextScreen';
+import type { Still } from '@/components/ArcatextKeyboard';
+import type { OptionsConfig } from '@/components/ArcatextOptionsPage';
+import type { StudyRow } from '@/components/ArcatextViews';
 
-/**
- * Each capture has a dark twin in hero-tiles/dark/, shown on the dark theme.
- * Those are the same captures recolored to the app's dark appearance — the
- * asset catalog's dark colorset values (cards #3B3B3B on #2B2B2B, keys #3B3B3B
- * on #161617, accent #7BA2FF / #3370FF) and iOS dark system colors for the
- * Messages chrome — not separate simulator runs.
- */
-const dark = (src: string) => `dark/${src}`;
+const ES = 'Conocí a tus amigos en el banco la semana pasada.';
+const REPLY = '¿Oh, de verdad?';
+const REPLY_EN = 'Oh, really?';
 
-const KEYBOARD: DeckCard = {
-  src: 'arcatext-keyboard.webp',
-  darkSrc: dark('arcatext-keyboard.webp'),
-  alt: 'Arcatext — the keyboard toolbar, with a message ready to reword',
+/** The Study Guide, filled from the same conversation. */
+const STUDY_ROWS: StudyRow[] = [
+  { entry: 'banco', translations: 'bank', sentence: ES, tag: 'Noun', misses: 2 },
+  { entry: '¿Oh, de verdad?', translations: 'Oh, really?', sentence: REPLY, tag: 'Expression', misses: 1 },
+  { entry: 'conocí', translations: 'I met', sentence: ES, tag: 'Verb', misses: 3 },
+  { entry: 'la semana pasada', translations: 'last week', sentence: ES, tag: 'Phrase', misses: 1 },
+  { entry: 'amigos', translations: 'friends', sentence: ES, tag: 'Noun', misses: 1 },
+  { entry: 'orilla', translations: 'bank (of a river)', sentence: 'Nos sentamos en la orilla.', tag: 'Noun', misses: 2 },
+];
+
+/** Spanish on the Options page (LanguageData.swift: speaker and recipient
+    gender and group chat, no script choice), with a translation copy. */
+const SPANISH_OPTIONS: OptionsConfig = {
+  language: 'Spanish',
+  recipientGender: 'Male',
+  groupChat: false,
+  copy: { on: true, language: 'English' },
+  keyboards: 2,
+  speakerGender: 'Male',
 };
+
+/** The toolbar, mid-reply: what every other card is reached from. */
+const KEYBOARD: Still = { sent: [ES], received: REPLY, text: 'I can meet you there.' };
+
+const checking = (more: Still = {}): Still => ({ view: 'check', text: ES, ...more });
+
+const card = (id: string, alt: string, still: Still): DeckCard => ({
+  id,
+  alt,
+  screen: <ArcatextScreen still={still} />,
+});
 
 /** Everything the keyboard can do, minus the toolbar shown beside the deck. */
 const STATES: DeckCard[] = [
-  { src: 'arcatext-reword.webp', darkSrc: dark('arcatext-reword.webp'), alt: 'Arcatext — checking a reword before it sends' },
-  { src: 'arcatext-homographs.webp', darkSrc: dark('arcatext-homographs.webp'), alt: 'Arcatext — disambiguating "bank" and gendering "friends"' },
-  { src: 'arcatext-analysis.webp', darkSrc: dark('arcatext-analysis.webp'), alt: 'Arcatext — the reword analysed word by word' },
-  { src: 'arcatext-synonyms.webp', darkSrc: dark('arcatext-synonyms.webp'), alt: 'Arcatext — synonym alternatives for a reworded phrase' },
-  { src: 'arcatext-fix-words.webp', darkSrc: dark('arcatext-fix-words.webp'), alt: 'Arcatext — picking a word to replace in the reword' },
-  { src: 'arcatext-fix-words-edit.webp', darkSrc: dark('arcatext-fix-words-edit.webp'), alt: 'Arcatext — typing a replacement for a chosen word' },
-  { src: 'arcatext-translate-received.webp', darkSrc: dark('arcatext-translate-received.webp'), alt: 'Arcatext — translating a received message in place' },
-  { src: 'arcatext-menu.webp', darkSrc: dark('arcatext-menu.webp'), alt: 'Arcatext — the keyboard menu and language settings' },
-  { src: 'arcatext-study-guide.webp', darkSrc: dark('arcatext-study-guide.webp'), alt: 'Arcatext — the study guide of saved words, phrases and expressions' },
+  card('reword', 'Arcatext — checking a reword before it sends', checking()),
+  card(
+    'homographs',
+    'Arcatext — disambiguating "bank" and gendering "friends"',
+    checking({ check: { homographs: 'done', gender: 'done' }, checkAt: 'homographs' }),
+  ),
+  card('analysis', 'Arcatext — the reword analysed word by word', checking({ check: { analysis: 'done' }, checkAt: 'analysis' })),
+  card('synonyms', 'Arcatext — synonym alternatives for a reworded phrase', checking({ check: { synonyms: 'done' }, checkAt: 'synonyms' })),
+  card('fix-words', 'Arcatext — correcting what the reword should say', {
+    view: 'fixWords',
+    text: ES,
+    fixWords: { text: 'I met your friends at the bank last night.', edited: true },
+  }),
+  card('translate-received', 'Arcatext — translating a received message in place', {
+    view: 'paste',
+    sent: [ES],
+    received: REPLY,
+    paste: { stage: 'done', original: REPLY, translation: REPLY_EN },
+  }),
+  card('options', 'Arcatext — the Reword options for Spanish', { view: 'options', text: ES, options: SPANISH_OPTIONS }),
+  card('study-guide', 'Arcatext — the study guide of saved words, phrases and expressions', {
+    view: 'study',
+    sent: [ES],
+    received: REPLY,
+    study: { stage: 'rows', rows: STUDY_ROWS },
+  }),
 ];
 
 /** Card styling the deck and the still share, so the pair reads as one set. */
@@ -53,35 +100,29 @@ const SHADOW = 'shadow-[0_14px_34px_-16px_rgba(0,0,0,0.4)]';
  * one you start at.
  */
 export function ArcatextKeyboardStill({ onSelect }: { onSelect: () => void }) {
-  const isDark = useTheme().resolvedTheme === 'dark';
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      aria-label={`${KEYBOARD.alt} — see the projects`}
-      className={`group block h-full w-full overflow-hidden ${CARD} ${SHADOW} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      aria-label="Arcatext — the keyboard toolbar, with a reply being typed — see the projects"
+      className={`group block h-full w-full cursor-pointer overflow-hidden ${CARD} ${SHADOW} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
     >
-      <img
-        src={`${import.meta.env.BASE_URL}hero-tiles/${isDark ? KEYBOARD.darkSrc : KEYBOARD.src}`}
-        alt=""
-        width={1206}
-        height={2622}
-        decoding="async"
-        className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-      />
-    </button>
+      <div className="h-full w-full transition-transform duration-500 group-hover:scale-[1.02]">
+        <ArcatextScreen still={KEYBOARD} />
+      </div>
+    </div>
   );
 }
 
 export function ArcatextCardStack({ onSelect }: { onSelect: () => void }) {
   return (
-    <CardDeck
-      cards={STATES}
-      width={1206}
-      height={2622}
-      cardClass={CARD}
-      shadowClass={SHADOW}
-      onSelect={onSelect}
-    />
+    <CardDeck cards={STATES} width={402} height={874} cardClass={CARD} shadowClass={SHADOW} onSelect={onSelect} />
   );
 }
