@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Plus, ArrowUp, Mic } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, ArrowUp, Mic, Video, Phone as Phone_, Paperclip, SendHorizontal } from 'lucide-react';
 import studyUrl from '@/assets/keyboard/study.svg';
 import pasteUrl from '@/assets/keyboard/paste.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
@@ -12,8 +12,9 @@ import { clamp01, easeOutCubic, easeOutBack } from './ease';
 
 /**
  * The phone the film shoots: an iPhone body with real edge thickness (stacked
- * layers, so angled shots show a side) around the Messages + Arcatext keyboard
- * screen. Everything on screen is a pure function of the props, so a frame can
+ * layers, so angled shots show a side) around a messaging app with the
+ * Arcatext keyboard: Messages for the story, and two generic look-alikes of
+ * other messaging apps (no logos) for the app-switching scene. Everything on screen is a pure function of the props, so a frame can
  * be rendered for any time without running anything in between.
  *
  * Screen metrics and colours follow ArcatextKeyboard.tsx (402x874pt, the
@@ -46,6 +47,21 @@ export type ScreenState = {
   check: CheckState;
   checkData: CheckData;
   checkScroll: number;
+  /** The apps on screen: one normally, two while switching (index 0 is
+      Messages, 1.. are `others`), each slid x px and scaled like an iOS card. */
+  cards: { index: number; app: AppCard['app']; x: number; scale: number }[];
+  others: AppCard[];
+  /** 0..1 through an app-switch swipe, or null. */
+  swipe: number | null;
+};
+
+/** A messaging app other than Messages, with a reply already in the field. */
+export type AppCard = {
+  app: 'imessage' | 'whatsapp' | 'telegram';
+  contact: string;
+  received: string[];
+  sent: string[];
+  text: string;
 };
 
 function Key({
@@ -135,63 +151,157 @@ function Touch({ inset = -8 }: { inset?: number }) {
   return <span aria-hidden className="pointer-events-none absolute rounded-full bg-black/15" style={{ inset }} />;
 }
 
-function Screen({ s }: { s: ScreenState }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = s.checkScroll;
-  });
+const JP_FONT = "Inter, 'Noto Sans JP', sans-serif";
 
-  const hasText = s.text.length > 0 || (s.swap < 1 && s.prevText.length > 0);
-  const lower = !(s.text === '' || /[.?!]\s$/.test(s.text));
+function StatusBar() {
+  return (
+    <div className="relative flex h-11 shrink-0 items-center justify-between px-7 pt-1" style={{ color: '#000' }}>
+      <span className="text-[15px] font-semibold">9:41</span>
+      <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-end gap-[2px]">
+          {[6, 9, 12, 15].map((h, i) => (
+            <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: '#000' }} />
+          ))}
+        </div>
+        <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
+          <path
+            d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l-1.3 1.4A7.7 7.7 0 008.5 4.1 7.7 7.7 0 003.3 6.2L2 4.8A9.5 9.5 0 018.5 2.2zm0 3.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4a3.5 3.5 0 00-5 0L4.6 7.4A5.5 5.5 0 018.5 5.8zm0 3.5c.7 0 1.3.3 1.8.8L8.5 12 6.7 10.1c.5-.5 1.1-.8 1.8-.8z"
+            fill="currentColor"
+          />
+        </svg>
+        <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: 'rgba(0,0,0,0.4)' }}>
+          <div className="h-full w-full rounded-[1px] bg-black" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The Arcatext keyboard: toolbar, keys, and the globe/dictation row. */
+function Keyboard({ s, idle }: { s: ScreenState; idle?: boolean }) {
+  const keyDown = idle ? null : s.keyDown;
+  const pressed = idle ? null : s.pressed;
+  const loading = idle ? false : s.rewordLoading;
+  const text = idle ? 'x' : s.text;
+  const lower = !(text === '' || /[.?!]\s$/.test(text));
   const row1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
   const row2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
   const row3 = ['z', 'x', 'c', 'v', 'b', 'n', 'm'];
   const nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
   const cap = (l: string) => (lower ? l : l.toUpperCase());
-  // The cursor is solid while typing and blinks (iOS: ~0.5s on, 0.5s off) when idle.
-  const cursorOn = s.typing || Math.floor(s.t * 2) % 2 === 0;
-  const cursor = (
-    <span
-      className="ml-[1px] inline-block h-[18px] w-[2px] translate-y-[3px] rounded-full"
-      style={{ background: AX.send, opacity: cursorOn ? 1 : 0 }}
-    />
-  );
-
   return (
-    <div className="relative flex h-full flex-col overflow-hidden" style={{ borderRadius: 44, background: AX.screen }}>
-      {/* Status bar */}
-      <div className="relative flex h-11 shrink-0 items-center justify-between px-7 pt-1" style={{ color: AX.ink }}>
-        <span className="text-[15px] font-semibold">9:41</span>
-        <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-end gap-[2px]">
-            {[6, 9, 12, 15].map((h, i) => (
-              <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: AX.ink }} />
-            ))}
-          </div>
-          <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
-            <path
-              d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l-1.3 1.4A7.7 7.7 0 008.5 4.1 7.7 7.7 0 003.3 6.2L2 4.8A9.5 9.5 0 018.5 2.2zm0 3.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4a3.5 3.5 0 00-5 0L4.6 7.4A5.5 5.5 0 018.5 5.8zm0 3.5c.7 0 1.3.3 1.8.8L8.5 12 6.7 10.1c.5-.5 1.1-.8 1.8-.8z"
-              fill="currentColor"
-            />
-          </svg>
-          <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: AX.batteryRing }}>
-            <div className="h-full w-full rounded-[1px]" style={{ background: AX.ink }} />
+    <div style={{ backgroundColor: AX.keyboardBg }} className="shrink-0 px-[5px] pb-1 pt-2">
+      <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
+        <ToolButton pressed={pressed === 'study'}>
+          <img src={studyUrl} width={20} height={17} alt="" />
+        </ToolButton>
+        <ToolButton pressed={pressed === 'paste'}>
+          <img src={pasteUrl} width={16} height={20} alt="" />
+        </ToolButton>
+        <div className="relative">
+          {pressed === 'check' && <Touch inset={-6} />}
+          <ToolButton pressed={pressed === 'check'}>
+            <img src={checkUrl} width={20} height={20} alt="" />
+          </ToolButton>
+        </div>
+        <div className="flex-1" />
+        <div className="relative">
+          {pressed === 'reword' && <Touch inset={-6} />}
+          <div
+            className="relative flex items-stretch overflow-hidden rounded-[12px]"
+            style={{ height: 50, backgroundColor: pressed === 'reword' ? AX.itemPressed : AX.item }}
+          >
+            <div className="relative flex items-center px-[14px]">
+              <span className={`text-[16px] font-medium text-white ${loading ? 'invisible' : ''}`}>Reword</span>
+              {loading && (
+                <span className="absolute inset-0 grid place-items-center">
+                  <Spinner t={s.t} />
+                </span>
+              )}
+            </div>
+            <div className="self-center" style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.5)' }} />
+            <div className="relative grid place-items-center" style={{ width: 40 }}>
+              <ChevronDown className="h-4 w-4 text-white" strokeWidth={2.4} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Header */}
+      <div className="mb-[8px] flex gap-[5px]">
+        {row1.map((l, i) => (
+          <Key key={l} label={cap(l)} num={nums[i]} down={keyDown === l} />
+        ))}
+      </div>
+      <div className="mb-[8px] flex gap-[5px] px-[18px]">
+        {row2.map((l) => (
+          <Key key={l} label={cap(l)} down={keyDown === l} />
+        ))}
+      </div>
+      <div className="mb-[8px] flex gap-[5px]">
+        <Key bg={AX.actionKey} grow={1.5}>
+          <img src={shiftUrl} width={19} height={17} alt="" />
+        </Key>
+        {row3.map((l) => (
+          <Key key={l} label={cap(l)} down={keyDown === l} />
+        ))}
+        <Key bg={AX.actionKey} grow={1.5}>
+          <img src={backspaceUrl} width={23} height={17} alt="" />
+        </Key>
+      </div>
+      <div className="mb-2 flex gap-[5px]">
+        <Key bg={AX.actionKey} grow={1.6} fontSize={15} down={keyDown === '123'}>
+          123
+        </Key>
+        <Key bg={AX.actionKey} grow={1.2}>
+          <img src={localesUrl} width={14} height={17} alt="" />
+        </Key>
+        <Key grow={5} fontSize={15} down={keyDown === 'space'}>
+          <span style={{ opacity: 0.85 }}>space</span>
+        </Key>
+        <Key bg={AX.actionKey} grow={1.6}>
+          <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Key>
+      </div>
+    </div>
+  );
+}
+
+function GlobeRow({ tall }: { tall?: boolean }) {
+  return (
+    <div style={{ backgroundColor: AX.keyboardBg, paddingTop: tall ? 22 : 17 }} className="flex shrink-0 items-center justify-between px-5 pb-[28px]">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+        <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+        <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
+      </svg>
+      <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
+    </div>
+  );
+}
+
+function Cursor({ on, color }: { on: boolean; color: string }) {
+  return <span className="ml-[1px] inline-block h-[18px] w-[2px] translate-y-[3px] rounded-full" style={{ background: color, opacity: on ? 1 : 0 }} />;
+}
+
+// ── iMessage ────────────────────────────────────────────────────────────────
+
+function MessagesApp({ s }: { s: ScreenState }) {
+  const hasText = s.text.length > 0 || (s.swap < 1 && s.prevText.length > 0);
+  // The cursor is solid while typing and blinks (iOS: ~0.5s on, 0.5s off) when idle.
+  const cursor = <Cursor on={s.typing || Math.floor(s.t * 2) % 2 === 0} color={AX.send} />;
+  return (
+    <>
       <div className="flex shrink-0 flex-col items-center border-b px-4 pb-3 pt-1" style={{ borderColor: AX.hairline }}>
         <div className="flex w-full items-center justify-between">
           <ChevronLeft className="h-7 w-7" style={{ color: AX.send }} strokeWidth={2.4} />
           <div className="w-7" />
         </div>
         <div className="-mt-5 flex flex-col items-center gap-1">
-          <div
-            className="grid h-12 w-12 place-items-center rounded-full text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(160deg,#8e9bd6,#6f7fc4)' }}
-          >
+          <div className="grid h-12 w-12 place-items-center rounded-full text-sm font-semibold text-white" style={{ background: 'linear-gradient(160deg,#8e9bd6,#6f7fc4)' }}>
             JA
           </div>
           <div className="flex items-center gap-1">
@@ -203,7 +313,6 @@ function Screen({ s }: { s: ScreenState }) {
         </div>
       </div>
 
-      {/* Conversation */}
       <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-hidden px-3 pb-2">
         <div className="text-center text-[13px] font-medium" style={{ color: AX.inkMuted }}>
           iMessage
@@ -220,12 +329,7 @@ function Screen({ s }: { s: ScreenState }) {
             <div key={i} className="flex flex-col items-end">
               <div
                 className="max-w-[78%] origin-bottom-right rounded-[20px] px-3.5 py-2 text-[17px] text-white"
-                style={{
-                  background: AX.send,
-                  transform: `translateY(${y}px) scale(${sc})`,
-                  opacity: clamp01(k * 3),
-                  fontFamily: "Inter, 'Noto Sans JP', sans-serif",
-                }}
+                style={{ background: AX.send, transform: `translateY(${y}px) scale(${sc})`, opacity: clamp01(k * 3), fontFamily: JP_FONT }}
               >
                 {m.text}
               </div>
@@ -239,30 +343,20 @@ function Screen({ s }: { s: ScreenState }) {
         })}
       </div>
 
-      {/* Input bar */}
       <div className="flex shrink-0 items-end gap-2 px-3 pb-2 pt-1">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
           <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
         </div>
-        <div
-          className="relative flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2"
-          style={{ borderColor: AX.fieldBorder, fontFamily: "Inter, 'Noto Sans JP', sans-serif" }}
-        >
+        <div className="relative flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2" style={{ borderColor: AX.fieldBorder, fontFamily: JP_FONT }}>
           {hasText ? (
             s.swap < 1 ? (
               // Reword: the original blurs out as the new text resolves in.
               <span className="relative min-w-0 flex-1 text-[15px] leading-5">
-                <span
-                  className="block break-words"
-                  style={{ color: AX.ink, opacity: s.swap, filter: `blur(${(1 - s.swap) * 6}px)` }}
-                >
+                <span className="block break-words" style={{ color: AX.ink, opacity: s.swap, filter: `blur(${(1 - s.swap) * 6}px)` }}>
                   {s.text}
                   {cursor}
                 </span>
-                <span
-                  className="absolute inset-x-0 top-0 block break-words"
-                  style={{ color: AX.ink, opacity: 1 - s.swap, filter: `blur(${s.swap * 6}px)` }}
-                >
+                <span className="absolute inset-x-0 top-0 block break-words" style={{ color: AX.ink, opacity: 1 - s.swap, filter: `blur(${s.swap * 6}px)` }}>
                   {s.prevText}
                 </span>
               </span>
@@ -298,105 +392,156 @@ function Screen({ s }: { s: ScreenState }) {
           </div>
         )}
       </div>
+    </>
+  );
+}
 
-      {s.view === 'none' && (
-        <div style={{ backgroundColor: AX.keyboardBg }} className="shrink-0 px-[5px] pb-1 pt-2">
-          <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-            <ToolButton pressed={s.pressed === 'study'}>
-              <img src={studyUrl} width={20} height={17} alt="" />
-            </ToolButton>
-            <ToolButton pressed={s.pressed === 'paste'}>
-              <img src={pasteUrl} width={16} height={20} alt="" />
-            </ToolButton>
-            <div className="relative">
-              {s.pressed === 'check' && <Touch inset={-6} />}
-              <ToolButton pressed={s.pressed === 'check'}>
-                <img src={checkUrl} width={20} height={20} alt="" />
-              </ToolButton>
-            </div>
-            <div className="flex-1" />
-            <div className="relative">
-              {s.pressed === 'reword' && <Touch inset={-6} />}
-              <div
-                className="relative flex items-stretch overflow-hidden rounded-[12px]"
-                style={{ height: 50, backgroundColor: s.pressed === 'reword' ? AX.itemPressed : AX.item }}
-              >
-                <div className="relative flex items-center px-[14px]">
-                  <span className={`text-[16px] font-medium text-white ${s.rewordLoading ? 'invisible' : ''}`}>Reword</span>
-                  {s.rewordLoading && (
-                    <span className="absolute inset-0 grid place-items-center">
-                      <Spinner t={s.t} />
-                    </span>
-                  )}
-                </div>
-                <div className="self-center" style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.5)' }} />
-                <div className="relative grid place-items-center" style={{ width: 40 }}>
-                  <ChevronDown className="h-4 w-4 text-white" strokeWidth={2.4} />
-                </div>
-              </div>
-            </div>
-          </div>
+// ── Other messaging apps (generic look-alikes, no logos) ─────────────────────
 
-          <div className="mb-[8px] flex gap-[5px]">
-            {row1.map((l, i) => (
-              <Key key={l} label={cap(l)} num={nums[i]} down={s.keyDown === l} />
-            ))}
+const OTHER_LOOK = {
+  whatsapp: {
+    headerBg: '#FFFFFF',
+    chatBg: '#EFEAE2',
+    pattern: 'radial-gradient(rgba(120,100,70,0.08) 1.2px, transparent 1.3px)',
+    barBg: '#F6F6F6',
+    accent: '#25D366',
+    avatar: 'linear-gradient(160deg,#f6b26b,#e8835a)',
+  },
+  telegram: {
+    headerBg: '#F7F7F7',
+    chatBg: 'linear-gradient(160deg,#dfe9b0 0%,#b5d6a3 45%,#94c4b6 100%)',
+    pattern: 'radial-gradient(rgba(255,255,255,0.22) 1.4px, transparent 1.5px)',
+    barBg: '#F7F7F7',
+    accent: '#3390EC',
+    avatar: 'linear-gradient(160deg,#72d5fd,#2a9ef1)',
+  },
+} as const;
+
+function OtherApp({ card, t }: { card: AppCard; t: number }) {
+  const look = OTHER_LOOK[card.app as 'whatsapp' | 'telegram'];
+  const wa = card.app === 'whatsapp';
+  const initials = card.contact.slice(0, 1);
+  return (
+    <>
+      {/* Header */}
+      {wa ? (
+        <div className="flex shrink-0 items-center gap-2 border-b px-2 pb-2 pt-1" style={{ background: look.headerBg, borderColor: 'rgba(0,0,0,0.08)' }}>
+          <ChevronLeft className="h-7 w-7 text-black" strokeWidth={2.2} />
+          <div className="grid h-9 w-9 place-items-center rounded-full text-[15px] font-semibold text-white" style={{ background: look.avatar }}>
+            {initials}
           </div>
-          <div className="mb-[8px] flex gap-[5px] px-[18px]">
-            {row2.map((l) => (
-              <Key key={l} label={cap(l)} down={s.keyDown === l} />
-            ))}
+          <div className="flex-1 leading-tight">
+            <div className="text-[16px] font-semibold text-black">{card.contact}</div>
+            <div className="text-[12px] text-black/50">online</div>
           </div>
-          <div className="mb-[8px] flex gap-[5px]">
-            <Key bg={AX.actionKey} grow={1.5}>
-              <img src={shiftUrl} width={19} height={17} alt="" />
-            </Key>
-            {row3.map((l) => (
-              <Key key={l} label={cap(l)} down={s.keyDown === l} />
-            ))}
-            <Key bg={AX.actionKey} grow={1.5}>
-              <img src={backspaceUrl} width={23} height={17} alt="" />
-            </Key>
+          <Video className="h-6 w-6 text-black" strokeWidth={1.8} />
+          <Phone_ className="ml-4 mr-2 h-[22px] w-[22px] text-black" strokeWidth={1.8} />
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center border-b px-2 pb-2 pt-1" style={{ background: look.headerBg, borderColor: 'rgba(0,0,0,0.1)' }}>
+          <div className="flex w-[90px] items-center text-[17px]" style={{ color: '#007AFF' }}>
+            <ChevronLeft className="h-7 w-7" strokeWidth={2.2} />
+            Chats
           </div>
-          <div className="mb-2 flex gap-[5px]">
-            <Key bg={AX.actionKey} grow={1.6} fontSize={15} down={s.keyDown === '123'}>
-              123
-            </Key>
-            <Key bg={AX.actionKey} grow={1.2}>
-              <img src={localesUrl} width={14} height={17} alt="" />
-            </Key>
-            <Key grow={5} fontSize={15} down={s.keyDown === 'space'}>
-              <span style={{ opacity: 0.85 }}>space</span>
-            </Key>
-            <Key bg={AX.actionKey} grow={1.6}>
-              <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Key>
+          <div className="flex-1 text-center leading-tight">
+            <div className="text-[16px] font-semibold text-black">{card.contact}</div>
+            <div className="text-[13px] text-black/45">last seen recently</div>
+          </div>
+          <div className="flex w-[90px] justify-end pr-1">
+            <div className="grid h-9 w-9 place-items-center rounded-full text-[15px] font-semibold text-white" style={{ background: look.avatar }}>
+              {initials}
+            </div>
           </div>
         </div>
       )}
 
-      {s.view === 'check' && (
-        <div className="shrink-0">
-          <CheckPanel state={s.check} data={s.checkData} scrollRef={scrollRef} />
+      {/* Chat */}
+      <div className="relative flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-hidden px-3 pb-2" style={{ background: look.chatBg }}>
+        <div className="absolute inset-0" style={{ backgroundImage: look.pattern, backgroundSize: '18px 18px' }} />
+        <div className="relative mb-1 self-center rounded-[8px] bg-white/85 px-2.5 py-0.5 text-[12px] font-medium text-black/55 shadow-sm">
+          Today
         </div>
-      )}
-
-      <div
-        style={{ backgroundColor: AX.keyboardBg, paddingTop: s.view === 'none' ? 17 : 22 }}
-        className="flex shrink-0 items-center justify-between px-5 pb-[28px]"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
-          <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
-          <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
-        </svg>
-        <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
+        {card.received.map((m, i) => (
+          <div key={i} className="relative flex justify-start">
+            <div className="max-w-[78%] rounded-[16px] rounded-bl-[4px] bg-white px-3 py-1.5 text-[16px] text-black shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]">
+              {m}
+              <span className="ml-2 inline-block translate-y-[3px] text-[11px] text-black/40">9:38</span>
+            </div>
+          </div>
+        ))}
       </div>
-      {/* Home indicator */}
-      <div className="absolute bottom-[8px] left-1/2 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-black" />
+
+      {/* Input bar with a message ready to send */}
+      <div className="flex shrink-0 items-end gap-2 px-2 pb-2 pt-1.5" style={{ background: look.barBg }}>
+        <div className="grid h-9 w-8 shrink-0 place-items-center">
+          {wa ? <Plus className="h-6 w-6 text-black" strokeWidth={2} /> : <Paperclip className="h-6 w-6 text-black/45" strokeWidth={1.9} />}
+        </div>
+        <div className="flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border bg-white py-[7px] pl-3.5 pr-2" style={{ borderColor: 'rgba(0,0,0,0.12)' }}>
+          <span className="min-w-0 flex-1 break-words text-[15px] leading-5 text-black">
+            {card.text}
+            <Cursor on={Math.floor(t * 2) % 2 === 0} color={look.accent} />
+          </span>
+        </div>
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: look.accent }}>
+          {wa ? <SendHorizontal className="h-[18px] w-[18px] translate-x-[1px] text-white" strokeWidth={2.4} /> : <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Screen({ s }: { s: ScreenState }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = s.checkScroll;
+  });
+  const switching = s.cards.length > 1;
+
+  return (
+    <div className="relative h-full overflow-hidden" style={{ borderRadius: 44, background: '#0b0d12' }}>
+      {s.cards.map((c) => {
+        const other = c.index > 0 ? s.others[c.index - 1] : null;
+        return (
+          <div
+            key={c.index}
+            className="absolute inset-0 flex flex-col overflow-hidden"
+            style={{
+              background: other ? OTHER_LOOK[other.app as 'whatsapp' | 'telegram'].headerBg : AX.screen,
+              borderRadius: switching ? 40 : 44,
+              transform: `translateX(${c.x}px) scale(${c.scale})`,
+              boxShadow: switching ? '0 10px 40px rgba(0,0,0,0.45)' : undefined,
+            }}
+          >
+            <div style={{ background: other ? OTHER_LOOK[other.app as 'whatsapp' | 'telegram'].headerBg : undefined }}>
+              <StatusBar />
+            </div>
+            {other ? <OtherApp card={other} t={s.t} /> : <MessagesApp s={s} />}
+            {!other && s.view === 'check' ? (
+              <div className="relative shrink-0">
+                <CheckPanel state={s.check} data={s.checkData} scrollRef={scrollRef} />
+                {/* The close tap: the panel's × is 38pt at its top right. */}
+                {s.pressed === 'close' && <span className="absolute h-[52px] w-[52px] rounded-full bg-black/15" style={{ right: -3, top: -3 }} />}
+              </div>
+            ) : (
+              <Keyboard s={s} idle={!!other} />
+            )}
+            <GlobeRow tall={!other && s.view === 'check'} />
+            <div className="absolute bottom-[8px] left-1/2 h-[5px] w-[134px] -translate-x-1/2 rounded-full bg-black" />
+          </div>
+        );
+      })}
+      {/* The swipe along the home indicator that switches apps. */}
+      {s.swipe !== null && (
+        <span
+          className="absolute h-[44px] w-[44px] rounded-full"
+          style={{
+            bottom: 0,
+            left: 280 - 170 * easeOutCubic(s.swipe) - 22,
+            background: 'radial-gradient(circle, rgba(255,255,255,0.75), rgba(255,255,255,0.25) 60%, transparent 70%)',
+            opacity: Math.sin(Math.PI * s.swipe) * 1.4,
+          }}
+        />
+      )}
     </div>
   );
 }

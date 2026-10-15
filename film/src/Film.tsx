@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import Phone, { OUTER_W, OUTER_H } from './Phone';
-import { SHOTS, DURATION, REVERSE_AT, camAt, cues, screenAt, type Cam, type Shot } from './timeline';
+import { SHOTS, DURATION, REVERSE_AT, SWITCHES, WORDS, WORD_TIMES, camAt, cues, screenAt, type Cam, type Shot } from './timeline';
 import { clamp01, easeOutCubic, easeOutExpo, span } from './ease';
 
 /**
@@ -19,6 +19,7 @@ const W = 1920;
 const H = 1080;
 const BLUE_A = '#3370FF';
 const BLUE_B = '#7BA2FF';
+const DISPLAY = "'Inter Display', Inter, sans-serif";
 
 declare global {
   interface Window {
@@ -82,18 +83,18 @@ function TitleCard({ shot, t }: { shot: Extract<Shot, { kind: 'title' }>; t: num
       <div
         className="text-center text-white"
         style={{
-          fontFamily: "'Inter Display', Inter, sans-serif",
+          fontFamily: DISPLAY,
           fontWeight: 700,
-          fontSize: 136,
+          fontSize: shot.size ?? 136,
           letterSpacing: '-0.035em',
-          lineHeight: 1.04,
+          lineHeight: 1.06,
           opacity: 1 - out,
           transform: `scale(${1 + local * 0.012}) translateY(${-out * 24}px)`,
           filter: `blur(${out * 8}px)`,
         }}
       >
         {shot.lines.map((l, i) => {
-          const t0 = shot.start + 0.12 + wordIndex * 0.09 + i * 0.12;
+          const t0 = shot.start + 0.12 + wordIndex * 0.08 + i * 0.1;
           wordIndex += l.text.split(' ').length;
           return (
             <div key={i}>
@@ -119,14 +120,11 @@ function PhoneStage({ cam, t, glow = 1 }: { cam: Cam; t: number; glow?: number }
         className="absolute inset-0"
         style={{
           opacity: glow,
-          background: `radial-gradient(60% 70% at ${50 + cam.ry * 0.4}% ${58 - cam.rx * 0.3}%, rgba(51,112,255,0.30), rgba(51,112,255,0.08) 45%, rgba(0,0,0,0) 70%)`,
+          background: `radial-gradient(60% 70% at ${50 + cam.ox / 38 + cam.ry * 0.4}% ${58 - cam.rx * 0.3}%, rgba(51,112,255,0.30), rgba(51,112,255,0.08) 45%, rgba(0,0,0,0) 70%)`,
         }}
       />
       <div className="absolute inset-0" style={{ perspective: 2200, perspectiveOrigin: '50% 50%' }}>
-        <div
-          className="absolute left-0 top-0"
-          style={{ width: OUTER_W, height: OUTER_H, transformOrigin: '0 0', transformStyle: 'preserve-3d', transform }}
-        >
+        <div className="absolute left-0 top-0" style={{ width: OUTER_W, height: OUTER_H, transformOrigin: '0 0', transformStyle: 'preserve-3d', transform }}>
           <Phone s={s} glare={cam.ry / 30} />
         </div>
       </div>
@@ -134,68 +132,181 @@ function PhoneStage({ cam, t, glow = 1 }: { cam: Cam; t: number; glow?: number }
   );
 }
 
-function ArcatextMark({ size }: { size: number }) {
+/**
+ * The Arcatext mark (ArcatextLogo.imageset: a column with a beam at each
+ * corner), built in two moves: the column grows out from its centre (`grow`),
+ * then the four beams slide out from it (`beams`).
+ */
+function ArcatextMark({ size, grow = 1, beams = 1 }: { size: number; grow?: number; beams?: number }) {
+  const ch = 40 * grow;
+  const bw = 12 * beams;
   return (
-    <svg width={(size * 31) / 50} height={size} viewBox="0 0 31 50" fill="none">
+    <svg width={(size * 31) / 50} height={size} viewBox="0 0 31 50" fill="none" overflow="visible">
       <defs>
         <linearGradient id="axm" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={BLUE_B} />
           <stop offset="1" stopColor={BLUE_A} />
         </linearGradient>
       </defs>
-      <rect x="0" y="0" width="12" height="5" fill="url(#axm)" />
-      <rect x="19" y="0" width="12" height="5" fill="url(#axm)" />
-      <rect x="12" y="5" width="7" height="40" fill="url(#axm)" />
-      <rect x="0" y="45" width="12" height="5" fill="url(#axm)" />
-      <rect x="19" y="45" width="12" height="5" fill="url(#axm)" />
+      <rect x="12" y={25 - ch / 2 - 5 * grow} width="7" height={ch + 10 * grow} fill="url(#axm)" />
+      {beams > 0 && (
+        <>
+          <rect x={12 - bw} y="0" width={bw} height="5" fill="url(#axm)" />
+          <rect x="19" y="0" width={bw} height="5" fill="url(#axm)" />
+          <rect x={12 - bw} y="45" width={bw} height="5" fill="url(#axm)" />
+          <rect x="19" y="45" width={bw} height="5" fill="url(#axm)" />
+        </>
+      )}
     </svg>
   );
 }
 
-function EndCard({ shot, t }: { shot: Extract<Shot, { kind: 'end' }>; t: number }) {
-  const cam = camAt(shot.keys, t);
-  const inPhone = span(t, shot.start, shot.start + 0.9, easeOutExpo);
-  const a = (d: number) => span(t, shot.start + d, shot.start + d + 0.7, easeOutExpo);
-  const fade = span(t, DURATION - 0.6, DURATION, (k) => k);
-  const cam2: Cam = { ...cam, oy: cam.oy + (1 - inPhone) * 220, ry: cam.ry - (1 - inPhone) * 25 };
+/** Icon, wordmark and a line under them, each rising in on its own beat. */
+function BrandLockup({ t, t0, children }: { t: number; t0: number; children: ReactNode }) {
+  const grow = span(t, t0 + 0.1, t0 + 0.6, easeOutExpo);
+  const beams = span(t, t0 + 0.45, t0 + 0.9, easeOutExpo);
+  const word = span(t, t0 + 0.75, t0 + 1.45, easeOutExpo);
   return (
-    <div className="absolute inset-0">
-      <PhoneStage cam={cam2} t={t} />
-      <div className="absolute left-[160px] top-1/2 -translate-y-1/2 text-white" style={{ fontFamily: "'Inter Display', Inter, sans-serif" }}>
-        <div style={{ opacity: a(0.15), transform: `translateY(${(1 - a(0.15)) * 30}px)` }}>
-          <ArcatextMark size={104} />
-        </div>
-        <div
-          className="mt-8"
-          style={{ fontSize: 150, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, opacity: a(0.3), transform: `translateY(${(1 - a(0.3)) * 30}px)` }}
-        >
-          Arcatext
-        </div>
-        <div className="mt-6" style={{ fontSize: 64, fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.12, color: 'rgba(255,255,255,0.62)' }}>
-          <div style={{ opacity: a(0.55), transform: `translateY(${(1 - a(0.55)) * 24}px)` }}>Write in yours.</div>
-          <div style={{ opacity: a(0.75), transform: `translateY(${(1 - a(0.75)) * 24}px)` }}>
-            Send in{' '}
-            <span style={{ backgroundImage: `linear-gradient(100deg, ${BLUE_A}, ${BLUE_B})`, WebkitBackgroundClip: 'text', color: 'transparent' }}>
-              theirs.
-            </span>
+    <div className="flex flex-col items-center text-center text-white" style={{ fontFamily: DISPLAY }}>
+      <div style={{ filter: `drop-shadow(0 0 ${24 * beams}px rgba(51,112,255,${0.55 * beams}))` }}>
+        <ArcatextMark size={120} grow={grow} beams={beams} />
+      </div>
+      <div
+        className="mt-9"
+        style={{ fontSize: 156, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, opacity: word, transform: `translateY(${(1 - word) * 36}px)`, filter: `blur(${(1 - word) * 10}px)` }}
+      >
+        Arcatext
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Opening({ shot, t }: { shot: Extract<Shot, { kind: 'open' }>; t: number }) {
+  const sub = span(t, shot.start + 1.2, shot.start + 1.9, easeOutExpo);
+  const out = span(t, shot.end - 0.35, shot.end, (k) => k * k);
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-black">
+      <Glow />
+      <div style={{ opacity: 1 - out, transform: `scale(${1 + (t - shot.start) * 0.01}) translateY(${-out * 30}px)`, filter: `blur(${out * 10}px)` }}>
+        <BrandLockup t={t} t0={shot.start}>
+          <div className="mt-7" style={{ fontSize: 60, fontWeight: 600, letterSpacing: '-0.02em', color: 'rgba(255,255,255,0.62)', opacity: sub, transform: `translateY(${(1 - sub) * 26}px)` }}>
+            Practical language learning
           </div>
-        </div>
+        </BrandLockup>
+      </div>
+    </div>
+  );
+}
+
+/** "Learn languages by texting" over a word that turns over on the beat. */
+function Closing({ shot, t }: { shot: Extract<Shot, { kind: 'close' }>; t: number }) {
+  const sub = span(t, shot.start + 1.2, shot.start + 1.9, easeOutExpo);
+  const fade = span(t, DURATION - 0.6, DURATION, (k) => k);
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-black">
+      <Glow />
+      <div style={{ transform: `scale(${1 + (t - shot.start) * 0.008})` }}>
+        <BrandLockup t={t} t0={shot.start}>
+          <div className="mt-7" style={{ fontSize: 60, fontWeight: 600, letterSpacing: '-0.02em', color: 'rgba(255,255,255,0.62)', opacity: sub, transform: `translateY(${(1 - sub) * 26}px)` }}>
+            Learn languages by texting
+          </div>
+          <div className="relative mt-1 w-[1000px]" style={{ height: 96 }}>
+            {WORDS.map((w, i) => {
+              const inK = span(t, WORD_TIMES[i], WORD_TIMES[i] + 0.4, easeOutExpo);
+              const outK = i + 1 < WORDS.length ? span(t, WORD_TIMES[i + 1], WORD_TIMES[i + 1] + 0.3, (k) => k * k) : 0;
+              if (inK <= 0 || outK >= 1) return null;
+              return (
+                <div
+                  key={w}
+                  className="absolute inset-x-0 top-0"
+                  style={{
+                    fontSize: 84,
+                    fontWeight: 700,
+                    letterSpacing: '-0.03em',
+                    lineHeight: '96px',
+                    opacity: inK * (1 - outK),
+                    transform: `translateY(${(1 - inK) * 50 - outK * 50}px)`,
+                    filter: `blur(${(1 - inK) * 10 + outK * 10}px)`,
+                  }}
+                >
+                  <span style={{ backgroundImage: `linear-gradient(100deg, ${BLUE_A}, ${BLUE_B} 60%, #B8CCFF)`, WebkitBackgroundClip: 'text', color: 'transparent' }}>
+                    {w}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </BrandLockup>
       </div>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
     </div>
   );
 }
 
+function Glow() {
+  return (
+    <div
+      className="absolute inset-0"
+      style={{ background: 'radial-gradient(50% 55% at 50% 45%, rgba(51,112,255,0.22), rgba(51,112,255,0.06) 45%, rgba(0,0,0,0) 70%)' }}
+    />
+  );
+}
+
+/** The app's name beside the phone during the switching scene. */
+const APP_NAMES = ['Messages', 'WhatsApp', 'Telegram'];
+function AppLabel({ t, start }: { t: number; start: number }) {
+  const first = span(t, start + 0.2, start + 0.8, easeOutExpo);
+  return (
+    <div className="absolute left-[150px] top-1/2 h-[140px] w-[700px] -translate-y-1/2" style={{ fontFamily: DISPLAY }}>
+      <div className="mb-2 text-[40px] font-semibold tracking-[-0.02em]" style={{ color: 'rgba(255,255,255,0.55)', opacity: first }}>
+        Works in
+      </div>
+      {APP_NAMES.map((name, i) => {
+        // Each name turns over at the middle of the swipe that reaches its app.
+        // The outgoing name clears before the incoming one rises.
+        const at = i === 0 ? start + 0.3 : (SWITCHES[i - 1][0] + SWITCHES[i - 1][1]) / 2 + 0.1;
+        const inK = span(t, at, at + 0.45, easeOutExpo);
+        const next = i + 1 < APP_NAMES.length ? (SWITCHES[i][0] + SWITCHES[i][1]) / 2 - 0.15 : Infinity;
+        const outK = span(t, next, next + 0.25, (k) => k * k);
+        if (inK <= 0 || outK >= 1) return null;
+        return (
+          <div
+            key={name}
+            className="absolute left-0 text-white"
+            style={{
+              top: 56,
+              fontSize: 104,
+              fontWeight: 700,
+              letterSpacing: '-0.035em',
+              lineHeight: 1,
+              opacity: inK * (1 - outK),
+              transform: `translateY(${(1 - inK) * 40 - outK * 40}px)`,
+              filter: `blur(${(1 - inK) * 8 + outK * 8}px)`,
+            }}
+          >
+            {name}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function Frame({ t }: { t: number }) {
   const shot = SHOTS.find((s) => t >= s.start && t < s.end) ?? SHOTS[SHOTS.length - 1];
+  if (shot.kind === 'open') return <Opening shot={shot} t={t} />;
   if (shot.kind === 'title') return <TitleCard shot={shot} t={t} />;
-  if (shot.kind === 'end') return <EndCard shot={shot} t={t} />;
+  if (shot.kind === 'close') return <Closing shot={shot} t={t} />;
   // A quick exposure lift on every cut into a phone shot, like a flash frame.
   const flash = 1 - clamp01((t - shot.start) / 0.18);
+  const out = shot.label ? span(t, shot.end - 0.3, shot.end, (k) => k * k) : 0;
   return (
     <>
       <PhoneStage cam={camAt(shot.keys, t)} t={t} glow={0.85 + 0.15 * easeOutCubic(clamp01((t - shot.start) / 0.6))} />
+      {shot.label && <AppLabel t={t} start={shot.start} />}
       <div className="pointer-events-none absolute inset-0 bg-white" style={{ opacity: flash * 0.06 }} />
+      <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: out }} />
     </>
   );
 }

@@ -13,7 +13,7 @@ import path from 'node:path';
 const here = path.dirname(new URL(import.meta.url).pathname);
 const out = path.join(here, 'out');
 fs.mkdirSync(out, { recursive: true });
-const url = process.env.FILM_URL ?? 'http://localhost:5199/';
+const url = process.env.FILM_URL ?? 'http://127.0.0.1:5199/';
 const args = process.argv.slice(2);
 const flag = (name) => {
   const i = args.indexOf(name);

@@ -2,7 +2,9 @@
 
 120 BPM in C major (C - G - Am - F, a bar each), four on the floor, with the
 UI's own sounds on top: a click per typed key, a soft thock per tap, a whoosh
-on send and a shimmer when the reword and the reverse translation land.
+on send and on each app switch, and a shimmer when the reword and the reverse
+translation land. The arrangement follows the cue sheet's sections: logo
+cards, headline cards and product shots.
 
     python3 film/soundtrack.py            -> film/out/soundtrack.wav
 
@@ -181,12 +183,20 @@ CHORDS = [  # (bass, chord tones)
     (45, [57, 60, 64, 69]),  # Am
     (41, [57, 60, 65, 69]),  # F
 ]
-end_t = cues['cuts'][-1]          # the end card
-titles = [(0, 2), (6, 8), (14, 16)]
+titles = [tuple(x) for x in cues['titles']]
+phones = cues['phones']
+closing = cues['closing']
+open_end = cues['opening'][1]
 
 
-def in_title(t):
-    return any(a <= t < b for a, b in titles)
+def section(t):
+    if t < open_end:
+        return 'open'
+    if t >= closing:
+        return 'close'
+    if any(a <= t < b for a, b in titles):
+        return 'title'
+    return 'phone'
 
 
 drums = np.zeros(N)
@@ -201,66 +211,64 @@ K, CL = kick(), clap()
 nbeats = int(cues['duration'] / BEAT)
 for b in range(nbeats):
     t = b * BEAT
-    bar = int(t // BAR)
     beat_in_bar = b % 4
-    if t < 2:  # intro: pad and arp only
+    sec = section(t)
+    if sec in ('open', 'close'):  # the logo cards: pad, arp and their hits only
         continue
-    groove = not in_title(t) or (6 <= t < 8)
-    if t >= end_t + BAR:  # last bar: let the end chord ring
-        continue
-    if groove and not (14 <= t < 16):
+    if sec == 'phone':  # four on the floor under the product shots
         place(drums, K, t, 0.75)
         i = int(t * SR)
         dn = int(0.22 * SR)
         duck[i:i + dn] = np.minimum(duck[i:i + dn], 0.35 + 0.65 * (np.arange(min(dn, N - i)) / dn) ** 0.6)
-        if beat_in_bar in (1, 3) and t >= 8:
-            place(drums, CL, t, 0.55)
-    # Hats on the offbeats everywhere but the intro; 16ths in the busiest sections.
-    place(drums, hat(open_=(beat_in_bar == 3)), t + BEAT / 2, 0.8)
-    if t >= 8 and not (14 <= t < 16):
+        if beat_in_bar in (1, 3):
+            place(drums, CL, t, 0.5)
         place(drums, hat(), t + BEAT / 4, 0.22)
         place(drums, hat(), t + 3 * BEAT / 4, 0.22)
+    # Offbeat hats keep the pulse through the headline cards too.
+    place(drums, hat(open_=(beat_in_bar == 3)), t + BEAT / 2, 0.8)
 
-# Snare build into the reword shot.
-for k in range(8):
-    place(drums, CL, 7.5 + k * BEAT / 8, 0.15 + 0.05 * k)
+# A snare build on the last beat into each product shot, and a riser under it.
+for at in phones:
+    for k in range(8):
+        place(drums, CL, at - BEAT + k * BEAT / 8, 0.12 + 0.05 * k)
+for at in phones + [closing]:
+    place(fx, riser(1.6), at - 1.6, 0.45)
 
 nbars = int(np.ceil(cues['duration'] / BAR))
 for bar in range(nbars):
     t0 = bar * BAR
     root, tones = CHORDS[bar % 4]
-    last = t0 >= end_t
-    # Pad: the chord, soft and wide; the end card holds the tonic.
-    if last:
+    sec = section(t0)
+    if sec == 'close':  # the closing card holds the tonic
         root, tones = CHORDS[0]
-    padlen = BAR + (2.5 if t0 >= end_t + BAR else 0.05)
     for m in tones:
         for det in (-0.08, 0.08):
-            place(pad, saw_note(mtof(m + det), padlen, bright=3, a=0.25), t0, 0.05)
-    if t0 >= 2 and t0 < end_t + BAR:
+            place(pad, saw_note(mtof(m + det), BAR + (2.5 if t0 + BAR >= cues['duration'] else 0.05), bright=3, a=0.25), t0, 0.05)
+    if sec in ('phone', 'title'):
         for k in range(8):  # driving 8th-note bass
-            place(bass, saw_note(mtof(root), BEAT / 2 * 0.9, bright=6, a=0.003, d=0.12), t0 + k * BEAT / 2, 0.26)
-    # Arp: 16ths up and down the chord, an octave up.
+            place(bass, saw_note(mtof(root), BEAT / 2 * 0.9, bright=6, a=0.003, d=0.12), t0 + k * BEAT / 2, 0.26 if sec == 'phone' else 0.18)
+    # Arp: 16ths up and down the chord, an octave up; it thins out on the closing card.
     pattern = [0, 1, 2, 3, 2, 1, 2, 3] * 2
-    if t0 < end_t + BAR:
+    if t0 < closing + BAR:
         for k, idx in enumerate(pattern):
-            g = 0.16 if t0 < 2 else 0.26
-            if in_title(t0) and t0 > 0:
-                g *= 0.7
+            g = {'open': 0.16, 'title': 0.2, 'phone': 0.26, 'close': 0.12}[sec]
             place(arp, pluck(mtof(tones[idx] + 12)), t0 + k * BEAT / 4, g)
 
-# Risers into each phone shot after a title; a big tonic hit on the end card.
-for at in (2, 8, 16):
-    r = riser(1.6)
-    place(fx, r, at - 1.6, 0.5)
+# The logo landing, on the opening and the closing card.
+for at in (cues['opening'][0] + 0.5, closing + 0.5):
+    for k, m in enumerate([72, 79, 84, 88]):
+        place(fx, bell(mtof(m)), at + k * 0.05, 0.08)
 for m in (36, 48, 60, 64, 67, 72, 76):
-    place(fx, saw_note(mtof(m), 3.8, bright=6, a=0.004, d=1.2), end_t, 0.09)
-place(fx, kick(), end_t, 1.0)
+    place(fx, saw_note(mtof(m), 4.5, bright=6, a=0.004, d=1.4), closing, 0.09)
+place(fx, kick(), closing, 1.0)
 
-# Shimmers when the reword and the reverse translation land.
+# Shimmers when the reword and the reverse translation land; a note per
+# closing word.
 for at in (cues['reword'], cues['reveal']):
     for k, m in enumerate([84, 88, 91, 96]):
         place(fx, bell(mtof(m)), at + k * 0.045, 0.09)
+for at, m in zip(cues['words'], [76, 79, 81, 84]):
+    place(fx, bell(mtof(m)), at, 0.1)
 
 # UI sounds.
 for k in cues['keys']:
@@ -268,6 +276,8 @@ for k in cues['keys']:
 for at in cues['taps']:
     place(ui, tap(), at, 0.35)
 place(ui, whoosh(), cues['send'] - 0.04, 0.55)
+for at in cues['swipes']:
+    place(ui, whoosh(), at + 0.05, 0.3)
 
 # ── Mix ─────────────────────────────────────────────────────────────────────
 
