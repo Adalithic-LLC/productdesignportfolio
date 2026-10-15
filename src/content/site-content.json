@@ -3880,16 +3880,7 @@
                 }
               }
             ],
-            "r3c1": [
-              {
-                "type": "element",
-                "variant": "card-text",
-                "data": {
-                  "body": "A short note that stands on its own, with no heading above it.",
-                  "size": "lg"
-                }
-              }
-            ]
+            "r3c1": []
           }
         }
       ]
