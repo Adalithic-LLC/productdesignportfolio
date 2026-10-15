@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
+import { Seams } from '@/content/EditableBlocks';
 import { HeroShowcase } from '@/components/HeroShowcase';
 import { HeroBody } from '@/components/HeroBody';
 import { afterLeadingEdge } from '@/lib/heroReveal';
@@ -66,32 +67,37 @@ export default function Hero() {
             on the right. One zone rather than a scattered collage: every
             screen now gets the same room instead of competing for it. */}
         <HeroShowcase>
-          <h1
-            ref={titleRef}
-            /* The brand blue, through the same class the rest of the site
-               marks its name with. */
-            className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
-          >
-            <HeroBody path="hero.title" />
-          </h1>
+          {/* Every gap in the hero copy is an insertion point in admin, the same
+              as a case study's section body: above the headline, between the
+              headline and the paragraph, and under the role line. */}
+          <Seams id="hero">
+            <h1
+              ref={titleRef}
+              /* The brand blue, through the same class the rest of the site
+                 marks its name with. */
+              className="gradient-text text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 tracking-tight text-balance"
+            >
+              <HeroBody path="hero.title" />
+            </h1>
 
-          <p
-            ref={subtitleRef}
-            /* pre-line so the blank line typed into the copy reads as a paragraph break. */
-            className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
-          >
-            <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
-          </p>
+            <p
+              ref={subtitleRef}
+              /* pre-line so the blank line typed into the copy reads as a paragraph break. */
+              className="whitespace-pre-line text-[15px] sm:text-lg lg:text-2xl font-semibold text-foreground/80 leading-relaxed text-balance"
+            >
+              <HeroBody path="hero.subtitle" delay={afterLeadingEdge(titleWords)} />
+            </p>
 
-          {/* Same shape as the case-study callouts: label over value. */}
-          <dl className="mt-8">
-            <Editable
-              as="dt"
-              path="hero.roleLabel"
-              className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block"
-            />
-            <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
-          </dl>
+            {/* Same shape as the case-study callouts: label over value. */}
+            <dl className="mt-8">
+              <Editable
+                as="dt"
+                path="hero.roleLabel"
+                className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block"
+              />
+              <Editable as="dd" path="hero.roleValue" className="text-base text-foreground/90" />
+            </dl>
+          </Seams>
         </HeroShowcase>
       </div>
 

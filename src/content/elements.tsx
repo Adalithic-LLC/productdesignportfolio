@@ -587,6 +587,32 @@ export const ELEMENTS: ElementDef[] = [
     },
   },
   {
+    id: 'card-text',
+    label: 'Card — text only',
+    group: 'Cards',
+    defaultData: { body: 'A short note that stands on its own, with no heading above it.' },
+    /* Rendered directly rather than through `makeField`: that builds a
+       component during render, which remounts the field on every keystroke and
+       drops the caret. */
+    body: (ctx) =>
+      ctx.path ? (
+        <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
+          <Editable
+            as="p"
+            path={`${ctx.path}.data.body`}
+            multiline
+            className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
+          />
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
+          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+            {ctx.data.body ?? ''}
+          </p>
+        </div>
+      ),
+  },
+  {
     id: 'card-numbered',
     label: 'Card — numbered',
     group: 'Cards',
