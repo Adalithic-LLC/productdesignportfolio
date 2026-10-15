@@ -17,6 +17,7 @@ import {
   KEYS_VIEW,
   STUDY_GROW,
   STUDY_FLICK,
+  HIDE_SENT,
   TAGLINE_LANDS,
   TAGLINE_WORDS,
   FIELD_MSGS,
@@ -432,8 +433,10 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     // …or as a later line that stands alone arrives…
     const clearer = all.slice(i + 1).find((x) => x.clearAbove);
     if (clearer) fadeAt = Math.min(fadeAt, clearer.at);
-    // …and the whole conversation clears as the keyboard comes up.
+    // …and the whole conversation clears as the keyboard comes up, and the
+    // sent replies once the Study list has been flicked through.
     if (m.index < TIMED.length) fadeAt = Math.min(fadeAt, PAN[0]);
+    else fadeAt = Math.min(fadeAt, HIDE_SENT);
     const out = clamp01((t - fadeAt) / FADE_OUT);
     if (out >= 1) break;
     const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
@@ -477,10 +480,10 @@ const KEYS_H = 270;
 /** The Study list after a finger-flick: fast off the mark, decelerating to a
     stop, like a scroll view's momentum. (The view's own CSS transition is
     switched off so every frame is set here.) */
-const FLICK_DISTANCE = 300;
+const FLICK_DISTANCE = 760;
 function studyScroll(t: number) {
   if (t < STUDY_FLICK) return 0;
-  return FLICK_DISTANCE * (1 - Math.exp(-(t - STUDY_FLICK) / 0.22));
+  return FLICK_DISTANCE * (1 - Math.exp(-(t - STUDY_FLICK) / 0.3));
 }
 
 /** The camera after the pan: hold a framing, ease between them on each move. */

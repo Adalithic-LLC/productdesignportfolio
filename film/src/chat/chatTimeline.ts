@@ -257,6 +257,8 @@ export const STUDY_SKELETON = STUDY_OPEN + 0.35;
 export const STUDY_ROWS = STUDY_OPEN + 1.0;
 /** A finger-flick down the entries once they've loaded. */
 export const STUDY_FLICK = STUDY_ROWS + 0.7;
+/** Once it settles, the sent reply fades so the field is the only focus. */
+export const HIDE_SENT = STUDY_FLICK + 1.3;
 // The English question isn't sent: once the entries have been seen, the field
 // is cleared for the last line.
 FIELD_MSGS[1].clearAt = STUDY_FLICK + 2.0;
@@ -307,7 +309,7 @@ export const TAGLINE_LANDS: number[] = (() => {
 // The end card runs the app's splash (3s), the reel, then holds.
 export const DURATION = Math.ceil((ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1] + 1.8) * 2) / 2;
 
-/** The Study Guide's entries: words from the conversation's Japanese. */
+/** The Study Guide's entries: words from the Japanese reply first, then older ones. */
 export const STUDY_ROWS_DATA = [
   { entry: '翻訳', translations: 'translation', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 2 },
   { entry: '入力', translations: 'input, typing', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Noun', misses: 3 },
@@ -315,6 +317,15 @@ export const STUDY_ROWS_DATA = [
   { entry: 'ボタン', translations: 'button', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Noun', misses: 1 },
   { entry: '〜だけで', translations: 'just by …', sentence: 'ボタンを押すだけで翻訳してくれるの？', tag: 'Phrase', misses: 1 },
   { entry: 'じゃあ', translations: 'so, well then', sentence: 'じゃあ、入力してボタンを押すだけで…', tag: 'Phrase', misses: 1 },
+  // Older entries further down, from earlier conversations.
+  { entry: '週末', translations: 'weekend', sentence: '今週末、ビーチに行こうよ！', tag: 'Noun', misses: 2 },
+  { entry: '練習', translations: 'practice', sentence: '毎日ちょっとずつ練習してるよ。', tag: 'Noun', misses: 2 },
+  { entry: '友達', translations: 'friend', sentence: '友達とメッセージで話すのが好き。', tag: 'Noun', misses: 1 },
+  { entry: '会話', translations: 'conversation', sentence: '会話の中で覚えるのが一番だね。', tag: 'Noun', misses: 3 },
+  { entry: '興味', translations: 'interest', sentence: '日本の映画に興味があるんだ。', tag: 'Noun', misses: 1 },
+  { entry: '毎日', translations: 'every day', sentence: '毎日ちょっとずつ練習してるよ。', tag: 'Adverb', misses: 1 },
+  { entry: '覚える', translations: 'to learn, to remember', sentence: '会話の中で覚えるのが一番だね。', tag: 'Verb', misses: 2 },
+  { entry: '楽しみ', translations: 'looking forward to', sentence: '来週会えるのが楽しみ！', tag: 'Noun', misses: 1 },
 ]
 
 export function cues() {
