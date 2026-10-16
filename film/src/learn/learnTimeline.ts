@@ -24,19 +24,21 @@ const jitter = (i: number, seed: number) => {
   return x - Math.floor(x) - 0.5;
 };
 /** When each character of `text` lands, from `start`, at `per` seconds a key. */
-function typeTimes(text: string, start: number, per: number, seed: number) {
+/** `pauses` holds extra seconds after the character at each index. */
+function typeTimes(text: string, start: number, per: number, seed: number, pauses: Record<number, number> = {}) {
   const out: number[] = [];
   let c = start;
   [...text].forEach((ch, i) => {
     out.push(c);
-    c += per + jitter(i, seed) * per * 0.4 + (',.?!'.includes(ch) ? 0.08 : 0) + (ch === ' ' ? 0.015 : 0);
+    c += per + jitter(i, seed) * per * 0.4 + (',.?!'.includes(ch) ? 0.08 : 0) + (ch === ' ' ? 0.015 : 0) + (pauses[i] ?? 0);
   });
   return out;
 }
 
 /** Named delays, so the Cut Room can list and retime them. */
 export const D = {
-  chunk: 0.55, // between the headline's chunks
+  chunk: 0.75, // between the headline's chunks
+  keyboardPause: 0.5, // the typed line pauses after "keyboard"
   titleHold: 1.3, // the full headline holds
   titleOut: 0.5, // it fades away
   slotHold: 0.9, // each app in the headline's reel holds
@@ -44,6 +46,8 @@ export const D = {
   line2Hold: 1.5, // the typed line holds once done
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
+  kbWait: 1.0, // the first bubble shows alone before the keyboard comes up
+  kbSlide: 0.35, // the keyboard slides up
   pan: 1.0, // the camera moves between the chat and the field
   afterType: 0.5, // a typed run holds
   glide: 0.75, // the camera glides to a button
@@ -59,7 +63,6 @@ export const D = {
 };
 
 // ── 1. Titles ──
-export const EYEBROW = 'Arcatext';
 export const CHUNKS = ['How can translations', 'become', 'self-guided', 'language learning?'];
 export const CHUNK_AT = CHUNKS.map((_, i) => 0.5 + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
@@ -68,7 +71,9 @@ export const LINE2_A = 'With an AI keyboard that turns your chats in ';
 export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'Any messaging app'];
 export const LINE2_B = ' into a learning system.';
 const L2_START = TITLE1_OUT + D.titleOut + 0.2;
-export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3);
+/** Index of the last letter of "keyboard", which the typing pauses after. */
+export const LINE2_A_PAUSE_AT = LINE2_A.indexOf('keyboard') + 'keyboard'.length - 1;
+export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3, { [LINE2_A_PAUSE_AT]: D.keyboardPause });
 /** The reel's first word types on, each word holds, then rolls to the next. */
 export const LINE2_SLOT_TIMES = typeTimes(LINE2_SLOT[0], LINE2_A_TIMES[LINE2_A_TIMES.length - 1] + 0.12, 0.05, 5);
 export const LINE2_LANDS: number[] = [LINE2_SLOT_TIMES[LINE2_SLOT_TIMES.length - 1] + 0.05];
@@ -109,7 +114,9 @@ export const FIELD_ES = 'Hola, ¿cómo estás? ¿Qué tal tu fin de semana?';
 
 let c = WORLD_IN + 0.4;
 BUBBLES.push({ text: 'First, type what you know...', who: 'them', at: c });
-c += D.readBubble;
+/** The keyboard comes up a moment after the first bubble, pushing the chat up. */
+export const KB_IN = c + D.kbWait;
+c = Math.max(c + D.readBubble, KB_IN + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
 const KNOW_TIMES = typeTimes(FIELD_KNOW, c + 0.2, 0.075, 11);
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
@@ -194,7 +201,9 @@ export function scenes() {
     i < CHUNKS.length - 1 ? [{ text: c }, inline(`chunk-${i}`, `after “${c}”`, D.chunk, CHUNK_AT[i])] : [{ text: c }]);
   const reelStart = LINE2_SLOT_TIMES[0] - LINE2_A_TIMES[LINE2_A_TIMES.length - 1];
   const line2Flow = [
-    typed(LINE2_A.trimEnd(), LINE2_A_TIMES),
+    typed(LINE2_A.slice(0, LINE2_A_PAUSE_AT + 1), LINE2_A_TIMES),
+    inline('pause-keyboard', 'after “keyboard”', D.keyboardPause, LINE2_A_TIMES[LINE2_A_PAUSE_AT]),
+    typed(LINE2_A.slice(LINE2_A_PAUSE_AT + 2).trimEnd(), LINE2_A_TIMES, LINE2_A_PAUSE_AT + 2),
     inline('reel-start', 'before the reel', reelStart, LINE2_A_TIMES[LINE2_A_TIMES.length - 1]),
     ...LINE2_SLOT.flatMap((w, i) =>
       i < LINE2_SLOT.length - 1
@@ -229,6 +238,7 @@ export function scenes() {
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
       start: i === 0 ? WORLD_IN : b.who === 'me' ? CAMERA.find((x) => x[2].kind === 'whole')![0] : b.at - 0.2,
       texts: [{ key: `b${i + 1}`, label: b.who === 'me' ? 'Sent message' : 'Left bubble', text: b.text }],
+      ...(i === 0 ? { flows: [[{ text: b.text }, inline('kb-wait', 'before the keyboard comes up', D.kbWait, b.at)]] } : {}),
     })),
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },

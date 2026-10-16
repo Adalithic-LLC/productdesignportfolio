@@ -16,11 +16,11 @@ import {
   END_LINES,
   END_LINE_AT,
   ENDING,
-  EYEBROW,
   FIELD,
   FIELD_EN,
   FIELD_ES,
   FRAME,
+  KB_IN,
   LANGS,
   LANG_LANDS,
   LANG_ROLL,
@@ -60,6 +60,8 @@ const COL = 402;
 const SIDE = 14;
 const KEYS_H = 270;
 const GLOBE_H = 69;
+/** Below the field when the keyboard is down: the home indicator's inset. */
+const HOME_H = 34;
 const FONT = "Inter, 'SF Pro Text', system-ui, sans-serif";
 const DISPLAY = "'Inter Display', Inter, system-ui, sans-serif";
 const ACCENT = '#7FA2FF';
@@ -127,7 +129,8 @@ const typedCount = (t: number) => {
 };
 function geometry(met: Metrics, t: number) {
   const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
-  const block = lerp(KEYS_H, VIEW_H, grow) + GLOBE_H;
+  const kb = easeOutCubic(clamp01((t - KB_IN) / D.kbSlide));
+  const block = lerp(HOME_H, lerp(KEYS_H, VIEW_H, grow) + GLOBE_H, kb);
   const swapped = t >= FIELD.swap + 0.16;
   const sent = t >= FIELD.sendAt;
   const lines = sent ? 1 : swapped ? met.esLines : met.caretLine[typedCount(t)] + 1;
@@ -148,7 +151,7 @@ function geometry(met: Metrics, t: number) {
     placed.push({ i, bottom: y, h, out, claim });
     y += (h + 10) * claim;
   }
-  return { grow, block, fieldH, fieldTop, convBottom, convTop: convBottom + y, placed };
+  return { grow, kb, block, fieldH, fieldTop, convBottom, convTop: convBottom + y, placed };
 }
 
 /** Where a framing points (x across the column, h up from the keyboard's
@@ -212,13 +215,11 @@ function camera(met: Metrics, t: number) {
 function Headline({ t }: { t: number }) {
   const out = span(t, TITLE1_OUT, TITLE1_OUT + D.titleOut, (x) => x);
   if (out >= 1) return null;
-  const eyebrow = span(t, 0.1, 0.6, easeOutCubic);
   return (
     <div
       className="absolute"
       style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy, transform: `translateY(calc(-50% - ${out * 40}px))`, opacity: 1 - out }}
     >
-      <div style={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 34, color: ACCENT, letterSpacing: '-0.01em', marginBottom: 18, opacity: eyebrow }}>{EYEBROW}</div>
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 100, lineHeight: 1.04, letterSpacing: '-0.025em', color: '#fff', textWrap: 'balance' }}>
         {CHUNKS.map((c, i) => {
           const k = span(t, CHUNK_AT[i], CHUNK_AT[i] + 0.55, easeOutCubic);
@@ -274,6 +275,8 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
     >
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: LINE2_SIZE, lineHeight: `${lineH}px`, letterSpacing: '-0.02em', color: '#fff' }}>
         {a}
+        {/* The reel types and rolls on the line below. */}
+        {t >= LINE2_SLOT_TIMES[0] && <br />}
         {t >= LINE2_SLOT_TIMES[0] &&
           (reelStarted ? (
             <span className="relative inline-block overflow-hidden align-top" style={{ width: w, height: lineH, color: ACCENT }}>
@@ -286,7 +289,9 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
           ) : (
             <span style={{ color: ACCENT }}>{first}</span>
           ))}
-        {bTyped}
+        {/* Then the rest types out on the line below. */}
+        {bTyped && <br />}
+        {bTyped.trimStart()}
         {cursor}
       </div>
     </div>
@@ -375,7 +380,10 @@ function World({ met, t }: { met: Metrics; t: number }) {
       <div className="absolute left-0" style={{ width: COL, bottom: g.block + 8 }}>
         <Field t={t} />
       </div>
-      <div className="absolute bottom-0 left-0 overflow-hidden rounded-[26px] ring-1 ring-white/10" style={{ width: COL }}>
+      <div
+        className="absolute bottom-0 left-0 overflow-hidden rounded-[26px] ring-1 ring-white/10"
+        style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * (KEYS_H + GLOBE_H)}px)` }}
+      >
         <div className="relative overflow-hidden" style={{ height: lerp(KEYS_H, VIEW_H, g.grow) }}>
           {g.grow < 1 && (
             <div className="absolute inset-x-0 top-0" style={{ opacity: 1 - g.grow }}>
