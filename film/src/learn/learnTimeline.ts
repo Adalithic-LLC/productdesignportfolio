@@ -39,7 +39,6 @@ function typeTimes(text: string, start: number, per: number, seed: number, pause
 /** Named delays, so the Cut Room can list and retime them. */
 export const D = {
   chunk: 0.75, // between the headline's chunks
-  keyboardPause: 0.5, // the typed line pauses after "keyboard"
   titleHold: 1.3, // the full headline holds
   titleStart: 0.5, // before the headline's first chunk
   titleOut: 0.5, // it fades away
@@ -73,13 +72,11 @@ export const CHUNKS = ['How can texting', 'become', 'self-guided', 'language lea
 export const CHUNK_AT = CHUNKS.map((_, i) => D.titleStart + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
 
-export const LINE2_A = 'With an AI keyboard that turns your chats in ';
+export const LINE2_A = 'By turning your chats in ';
 export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'Any messaging app'];
 export const LINE2_B = ' into a learning system.';
 const L2_START = TITLE1_OUT + D.titleOut + 0.2;
-/** Index of the last letter of "keyboard", which the typing pauses after. */
-export const LINE2_A_PAUSE_AT = LINE2_A.indexOf('keyboard') + 'keyboard'.length - 1;
-export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3, { [LINE2_A_PAUSE_AT]: D.keyboardPause });
+export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3);
 /** The reel's first word types on, each word holds, then rolls to the next. */
 export const LINE2_SLOT_TIMES = typeTimes(LINE2_SLOT[0], LINE2_A_TIMES[LINE2_A_TIMES.length - 1] + 0.12, 0.05, 5);
 export const LINE2_LANDS: number[] = [LINE2_SLOT_TIMES[LINE2_SLOT_TIMES.length - 1] + 0.05];
@@ -225,9 +222,7 @@ export function scenes() {
   ];
   const reelStart = LINE2_SLOT_TIMES[0] - LINE2_A_TIMES[LINE2_A_TIMES.length - 1];
   const line2Flow = [
-    typed(LINE2_A.slice(0, LINE2_A_PAUSE_AT + 1), LINE2_A_TIMES),
-    inline('pause-keyboard', 'after “keyboard”', D.keyboardPause, LINE2_A_TIMES[LINE2_A_PAUSE_AT]),
-    typed(LINE2_A.slice(LINE2_A_PAUSE_AT + 2).trimEnd(), LINE2_A_TIMES, LINE2_A_PAUSE_AT + 2),
+    typed(LINE2_A.trimEnd(), LINE2_A_TIMES),
     inline('reel-start', 'before the reel', reelStart, LINE2_A_TIMES[LINE2_A_TIMES.length - 1]),
     ...LINE2_SLOT.flatMap((w, i) =>
       i < LINE2_SLOT.length - 1
@@ -266,7 +261,7 @@ export function scenes() {
   const list = [
     { id: 'title1', name: 'Headline: How can texting become self-guided…', start: 0,
       texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
-    { id: 'title2', name: 'Typed: With an AI keyboard… [apps] …learning system.', start: TITLE1_OUT,
+    { id: 'title2', name: 'Typed: By turning your chats in [apps] into a learning system.', start: TITLE1_OUT,
       texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }], flows: [line2Flow] },
     ...BUBBLES.map((b, i) => ({
       id: `b${i + 1}`,
