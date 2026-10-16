@@ -21,6 +21,9 @@ import {
   FIELD_EN,
   FIELD_ES,
   FRAME,
+  LANGS,
+  LANG_LANDS,
+  LANG_ROLL,
   LINE2_A,
   LINE2_A_TIMES,
   LINE2_B,
@@ -77,6 +80,7 @@ type Metrics = {
   esLines: number;
   /** The typed line's reel words, at its size. */
   slotW: number[];
+  langW: number[];
 };
 
 function measure(root: HTMLElement): Metrics {
@@ -108,8 +112,10 @@ function measure(root: HTMLElement): Metrics {
   f.remove();
   const word = probe({ whiteSpace: 'nowrap', fontFamily: DISPLAY, fontWeight: '700', fontSize: `${LINE2_SIZE}px`, letterSpacing: '-0.02em' });
   const slotW = LINE2_SLOT.map((x) => ((word.textContent = x), word.offsetWidth));
+  Object.assign(word.style, { fontSize: '46px', fontWeight: '600', letterSpacing: '-0.015em' });
+  const langW = LANGS.map((x) => ((word.textContent = x), word.offsetWidth));
   word.remove();
-  return { bubbles, caretX, caretLine, esLines, slotW };
+  return { bubbles, caretX, caretLine, esLines, slotW, langW };
 }
 
 // ── The phone world's geometry, from the keyboard's bottom edge up ──
@@ -390,7 +396,25 @@ function World({ met, t }: { met: Metrics; t: number }) {
 
 // ── The end card ──
 
-function Ending({ t }: { t: number }) {
+/** The end card's reel of languages, rolling up in place at the line's end. */
+function Reel({ met, local }: { met: Metrics; local: number }) {
+  let p = 0;
+  for (let i = 1; i < LANG_LANDS.length; i++) p += clamp01(easeInOutCubic((local - (LANG_LANDS[i] - LANG_ROLL)) / LANG_ROLL));
+  const i0 = Math.min(LANGS.length - 1, Math.floor(p));
+  const w = lerp(met.langW[i0], met.langW[Math.min(LANGS.length - 1, i0 + 1)], p - i0);
+  const lineH = 58;
+  return (
+    <span className="relative inline-block overflow-hidden text-left align-top" style={{ width: w, height: lineH, color: ACCENT }}>
+      {LANGS.map((s, i) => (
+        <span key={s} className="absolute left-0 top-0 whitespace-nowrap" style={{ transform: `translateY(${(i - p) * lineH}px)`, opacity: 1 - Math.min(1, Math.abs(i - p)) * 0.7 }}>
+          {s}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function Ending({ t, met }: { t: number; met: Metrics }) {
   const local = t - ENDING;
   const fadeIn = span(t, WORLD_OUT, ENDING, (x) => x);
   const fade = span(t, DURATION - 0.6, DURATION, (x) => x);
@@ -408,11 +432,12 @@ function Ending({ t }: { t: number }) {
           className="absolute text-center"
           style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
         >
-          {END_LINES.map((x, i) => (
-            <div key={i} style={{ ...line(END_LINE_AT[i]), marginBottom: 22, textWrap: 'balance' }}>
-              {x}
+          <div style={line(END_LINE_AT[0])}>
+            <div>{END_LINES[0]}</div>
+            <div className="whitespace-nowrap">
+              {END_LINES[1]} <Reel met={met} local={local} />
             </div>
-          ))}
+          </div>
         </div>
       </div>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
@@ -444,7 +469,7 @@ export default function LearnFilm() {
         Promise.all([
           document.fonts.load('17px Inter', FIELD_EN + FIELD_ES),
           document.fonts.load("700 62px 'Inter Display'", LINE2_A + LINE2_SLOT.join('')),
-          document.fonts.load("600 46px 'Inter Display'", END_LINES.join('')),
+          document.fonts.load("600 46px 'Inter Display'", END_LINES.join('') + LANGS.join('')),
           document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
           document.fonts.load("700 32px 'Noto Sans'", 'Arcatext'),
         ]),
@@ -490,7 +515,7 @@ export default function LearnFilm() {
         </>
       )}
       {met && t >= WORLD_IN && t < ENDING && <World met={met} t={t} />}
-      {met && t >= WORLD_OUT && <Ending t={t} />}
+      {met && t >= WORLD_OUT && <Ending t={t} met={met} />}
     </div>
   );
 }
