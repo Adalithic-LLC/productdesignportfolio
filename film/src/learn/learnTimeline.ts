@@ -147,7 +147,7 @@ c = REWORD_SWAP + D.readEs;
 // The study-guide line: the phone fades away and the line comes in chunk by
 // chunk, as the headline does; the camera waits on Study for the phone's return.
 export const NOTE_IN = c;
-export const NOTE_CHUNKS = ['We add each word', 'you miss', 'to your study guide,', "so you don't lose track."];
+export const NOTE_CHUNKS = ['We add each word', 'you miss', 'to your study guide.'];
 export const NOTE_AT = NOTE_CHUNKS.map((_, i) => NOTE_IN + D.noteFade + 0.1 + i * D.noteChunk);
 export const NOTE_OUT = NOTE_AT[NOTE_AT.length - 1] + 0.5 + D.noteHold;
 move(NOTE_IN + D.noteFade, 0.01, { kind: 'button', which: 'study', scale: TYPE_ZOOM });
@@ -277,7 +277,7 @@ export function scenes() {
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
     { id: 'reword', name: 'Reword to Spanish', start: CAMERA[3][0], texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
-    { id: 'note', name: "Text: We add each word you miss… so you don't lose track.", start: NOTE_IN,
+    { id: 'note', name: 'Text: We add each word you miss to your study guide.', start: NOTE_IN,
       texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
     { id: 'study', name: 'Open the Study Guide', start: NOTE_OUT + D.noteFade, texts: [] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
