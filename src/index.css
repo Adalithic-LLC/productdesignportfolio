@@ -721,25 +721,11 @@ html[data-preview] .sticky.top-0 {
 
 /* Hero typing reveal -----------------------------------------------------
    Every character is in the page from the first frame, holding its own space;
-   only `visibility` is flipped as the cursor reaches it, so the copy is its
+   only `visibility` is flipped as the typing reaches it, so the copy is its
    final size before a word of it can be read and nothing below it moves while
-   it types. The cursor itself is drawn outside the flow, on the last character
-   typed, so it cannot nudge the line it sits on. */
+   it types. No cursor is drawn (see HeroBody). */
 .hero-char {
   position: relative;
-}
-
-.hero-char.is-cursor::after {
-  content: '';
-  position: absolute;
-  right: -0.07em;
-  top: 0.08em;
-  bottom: 0.1em;
-  width: 0.07em;
-  min-width: 2px;
-  border-radius: 1px;
-  background: hsl(var(--primary));
-  pointer-events: none;
 }
 
 /* Hero card sequence -----------------------------------------------------
