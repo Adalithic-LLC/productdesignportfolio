@@ -156,14 +156,13 @@ export const NOTE_IN = c;
 export const NOTE_CHUNKS = ['We add each word', 'you miss', 'to your study guide.'];
 export const NOTE_AT = NOTE_CHUNKS.map((_, i) => NOTE_IN + D.noteFade + 0.1 + i * D.noteChunk);
 export const NOTE_OUT = NOTE_AT[NOTE_AT.length - 1] + 0.5 + D.noteHold;
-move(NOTE_IN + D.noteFade, 0.01, { kind: 'button', which: 'study', scale: TYPE_ZOOM });
-// The phone comes back once the line has gone.
-c = NOTE_OUT + 2 * D.noteFade + 0.2;
-export const STUDY_TAP = c + D.tapAfter;
-export const STUDY_OPEN = STUDY_TAP + 0.18;
-export const STUDY_GROW = 0.4;
-c = move(STUDY_TAP + 0.1, D.glide + 0.15, { kind: 'study', scale: 1.9 });
-c = STUDY_OPEN + STUDY_GROW + D.studyRead;
+// The phone comes back once the line has gone, already on the open Study Guide:
+// it opens, and the camera settles on it, while the phone is away.
+move(NOTE_IN + D.noteFade, 0.01, { kind: 'study', scale: 1.9 });
+export const STUDY_OPEN = NOTE_OUT;
+export const STUDY_TAP = STUDY_OPEN; // no tap: it is simply open
+export const STUDY_GROW = 0.01;
+c = NOTE_OUT + 2 * D.noteFade + D.studyRead;
 export const FIELD = {
   times: [...KNOW_TIMES, ...ADD_TIMES],
   rewordTap: REWORD_TAP,
@@ -280,7 +279,8 @@ export function scenes() {
     { id: 'reword', name: 'Reword to Spanish', start: CAMERA[3][0], texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
     { id: 'note', name: 'Text: We add each word you miss to your study guide.', start: NOTE_IN,
       texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
-    { id: 'study', name: 'Open the Study Guide', start: NOTE_OUT + D.noteFade, texts: [] },
+    { id: 'study', name: 'The Study Guide, open', start: NOTE_OUT + D.noteFade, texts: [],
+      flows: [[{ text: 'Study Guide' }, inline('study-read', 'the open Study Guide holds', D.studyRead, NOTE_OUT + 2 * D.noteFade, 'hold', 'Hold')]] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
       texts: [{ key: 'line1', label: 'Line 1', text: `${END_CHUNKS.map((x) => `[${x}]`).join(' ')} [${LANGS.join(' / ')}]` }], flows: [endFlow] },
   ].sort((a, b) => a.start - b.start);
@@ -296,7 +296,7 @@ export function cues() {
       ...FIELD.times.map((t, i) => ({ t, space: FIELD_EN[i] === ' ' })),
       ...[...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES].map((t) => ({ t, space: true })),
     ],
-    taps: [REWORD_TAP, STUDY_TAP, SEND_TAP],
+    taps: [REWORD_TAP, SEND_TAP],
     reword: REWORD_SWAP,
     reveal: null,
     send: SEND_AT,
