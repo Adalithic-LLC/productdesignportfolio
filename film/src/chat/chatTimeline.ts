@@ -210,13 +210,13 @@ const SHORT_SCRIPT: Line[] = [
     kind: 'block',
     text: 'Arcatext is a keyboard for',
     maxW: 340,
-    slot: ['translation.', 'correction.', 'analysis.', 'study.'],
+    slot: ['translation.', 'correction.', 'analysis.', 'study.', 'in any messaging app.'],
+    read: true,
     slotTypeDelay: 1.0,
     clearAbove: true,
     after: 1.0,
     afterSend: true,
   },
-  { who: 'them', kind: 'block', text: 'Use it in any messaging app!', after: 1.0, afterSend: true },
 ]
 
 export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
@@ -248,7 +248,7 @@ const D = {
   pan2Hold: 0.3, // the same, after the second pan
   zoom: 0.75, // each camera push in or out
   typePause: 0.5, // each pause mid-typing in the field
-  afterType: 1.0, // a typed message holds before the camera backs out
+  afterType: SHORT ? 0.4 : 1.0, // a typed message holds before the camera moves on
   rewordTap: 0.35, // backed out, then Reword is tapped
   readJa: 1.3, // the Japanese reads before Send
   backAfterSend: 0.6, // the sent reply rises before the camera goes back up
@@ -465,7 +465,14 @@ export type FieldMsg = {
  *   FIELD       close on the field over the keys
  *   FIELD_STUDY close on the field over the open Study view
  */
-export type View = { scale: number; kb: number };
+export type View = {
+  scale: number;
+  kb: number;
+  /** The column x (pt) at the frame's centre; the column's middle when unset. */
+  cx?: number;
+  /** Follow the caret of FIELD_MSGS[follow] as it types (overrides cx). */
+  follow?: number;
+};
 // Portrait frames the same world taller and narrower, all of it inside the
 // platforms' safe area (STAGE): the keyboard ends above the caption zone.
 const KEYS: View = PORTRAIT ? { scale: 2.05, kb: 1430 } : { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
@@ -476,9 +483,19 @@ const FIELD_STUDY: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 551 * 2.2 } : 
 // The short cut is already this close over Study, so its last line pushes in further.
 const FIELD_CLOSE: View = PORTRAIT ? { scale: 2.85, kb: STAGE.cy + 551 * 2.85 } : { scale: 3.4, kb: 540 + 551 * 3.4 };
 const ZOOM = D.zoom;
+/** The short cut's typing close-up: right in on the field's caret line (364pt
+    above the keyboard's bottom edge, however many lines it has), following
+    the caret; then over to a toolbar button (306pt up) for the tap. */
+export const TYPE_ZOOM = PORTRAIT ? 3.8 : 4.6;
+const typeView = (follow: number): View => ({ scale: TYPE_ZOOM, kb: STAGE.cy + 364 * TYPE_ZOOM, follow });
+const VIS_W = STAGE.w / TYPE_ZOOM;
+/** Reword's label (right of the toolbar) and the Study button (left), kept
+    inside the keyboard's own edges. */
+const REWORD_VIEW: View = { scale: TYPE_ZOOM, kb: STAGE.cy + 306 * TYPE_ZOOM, cx: Math.min(310, 402 - 4 - VIS_W / 2) };
+const STUDY_BTN_VIEW: View = { scale: TYPE_ZOOM, kb: STAGE.cy + 306 * TYPE_ZOOM, cx: Math.max(36.5, 4 + VIS_W / 2) };
 /** The framing each pan down lands on. The short cut lands straight on the
-    close-up and stays there to type, Reword and send. */
-export const START_VIEW: View = SHORT ? FIELD : KEYS;
+    typing close-up. */
+export const START_VIEW: View = SHORT ? typeView(0) : KEYS;
 /** Scene starts the Cut Room lists, set as the timeline is built. */
 const AT = { field1: 0, reword: 0, study: 0, field3: 0 };
 
@@ -503,10 +520,13 @@ if (!SHORT) c = move(c, FIELD);
 {
   const times = typeTimes(FIELD_RAW, c + 0.2, 99);
   AT.reword = times[times.length - 1] + D.afterType;
-  c = SHORT ? AT.reword : move(AT.reword, KEYS);
+  // (The short cut glides over to Reword at the same zoom.)
+  c = move(AT.reword, SHORT ? REWORD_VIEW : KEYS);
   const rewordTap = c + D.rewordTap;
   // No loading state: the tap press, then the swap.
   const rewordDone = rewordTap + 0.22;
+  // The short cut backs out to the field as the Japanese swaps in.
+  if (SHORT) move(rewordTap + 0.1, FIELD);
   const sendTap = rewordDone + D.readJa;
   FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17, clearAt: sendTap + 0.17 });
   c = sendTap + 0.17;
@@ -524,14 +544,19 @@ const tail = (() => {
   const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + D.pan] as const;
   let c = PAN2[1] + D.pan2Hold;
   // 2. Close on the field again; this one stays in English. Back out, and open Study.
-  if (!SHORT) c = move(c, FIELD);
+  // (The short cut switches to following this message while the camera is up
+  // in the chat, so the pan down lands on its typing close-up.)
+  if (SHORT) CAMERA.push([BACK[1], BACK[1] + 0.01, typeView(1)]);
+  else c = move(c, FIELD);
   {
     const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
     AT.study = times[times.length - 1] + D.afterType;
-    // (The short cut holds its zoom as Study opens under the field.)
-    c = SHORT ? AT.study : move(AT.study, KEYS);
+    // (The short cut glides over to Study at the same zoom.)
+    c = move(AT.study, SHORT ? STUDY_BTN_VIEW : KEYS);
     FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   }
+  // The short cut backs out to see Study open.
+  if (SHORT) move(c + D.studyTap + 0.1, FIELD);
   return { PAN2, STUDY_TAP: c + D.studyTap };
 })();
 export const PAN2 = tail.PAN2;
@@ -736,11 +761,11 @@ export function scenes() {
     { id: 'field1', name: `Type: ${FIELD_TEXT.slice(0, 24)}…`, texts: typed('Typed message', FIELD_TEXT), start: AT.field1, flows: flow(fieldFlow(FIELD_RAW, F1.times)),
       delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2, PAN[1]) : dl('zoom-in', 'Push in on the field', D.zoom), dl('after-type', 'Hold after typing', D.afterType, typedEnd(F1))] },
     { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: AT.reword,
-      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap, F1.rewordTap - D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa, F1.rewordDone), dl('after-send', SHORT ? 'Sent reply holds before the camera goes up' : 'Reply rises before the camera goes up', SENT_HOLD, BACK[0] - SENT_HOLD)] },
+      delays: [...(SHORT ? [dl('to-reword', 'Glide over to Reword', D.zoom, AT.reword)] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap, F1.rewordTap - D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa, F1.rewordDone), dl('after-send', SHORT ? 'Sent reply holds before the camera goes up' : 'Reply rises before the camera goes up', SENT_HOLD, BACK[0] - SENT_HOLD)] },
     { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0], flows: flow(fieldFlow(FIELD2_RAW, F2.times)),
       delays: [dl('pan', 'Pan down to the keyboard', D.pan, PAN2[0]), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold, PAN2[1]), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), dl('after-type', 'Hold after typing', D.afterType, typedEnd(F2))] },
     { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
-      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap, STUDY_TAP - D.studyTap), ...(SHORT ? [] : [dl('study-load', 'Entries appear after', D.studyLoad, STUDY_OPEN)]), dl('study-flick', 'Entries read before the flick', D.studyFlick, STUDY_ROWS), dl('study-clear', 'Field clears after the flick', D.studyClear, STUDY_FLICK)] },
+      delays: [...(SHORT ? [dl('to-study', 'Glide over to Study', D.zoom, AT.study)] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap, STUDY_TAP - D.studyTap), ...(SHORT ? [] : [dl('study-load', 'Entries appear after', D.studyLoad, STUDY_OPEN)]), dl('study-flick', 'Entries read before the flick', D.studyFlick, STUDY_ROWS), dl('study-clear', 'Field clears after the flick', D.studyClear, STUDY_FLICK)] },
     { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3, flows: flow(fieldFlow(FIELD3_RAW, F3.times)),
       delays: [dl('zoom-in', 'Push in on the field', D.zoom), dl('end-hold', 'Hold before the fade', D.endHold, typedEnd(F3)), dl('fade', 'Fade to the end card', END_FADE, ENDING - END_FADE)] },
     { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE, flows: [tagFlow],

@@ -37,6 +37,7 @@ import {
   flickEase,
   cues,
   type FieldMsg,
+  type View,
   type Timed,
   type Who,
 } from './chatTimeline';
@@ -64,6 +65,10 @@ const RECV = '#2C2C2E';
 const SLOT_COLOR = '#A9C2FF';
 /** How long an older bubble takes to fade out once two newer ones are up. */
 const FADE_OUT = 0.4;
+/** The field's text box: where its text starts in the column, and its width
+    (the row's padding, the + button, the gap, the border and the text inset). */
+const FIELD_TEXT_X = 12 + 36 + 8 + 1 + 16;
+const FIELD_TEXT_W = COL - 24 - 36 - 36 - 16 - 2 - 16 - 8;
 
 type Metrics = {
   /** heights[i][k]: bubble i's height with k characters typed. */
@@ -88,6 +93,9 @@ type Metrics = {
   /** For a `focusPhrase`: the phrase's centre within its bubble (from the
       bubble's top-left, padding included). */
   phrase: ({ x: number; y: number } | null)[];
+  /** fieldCaret[i][k]: where the caret sits (pt from the field text's left
+      edge) with k characters of FIELD_MSGS[i] typed, wrapping as the field does. */
+  fieldCaret: number[][];
 };
 
 const bubbleStyle = {
@@ -217,9 +225,22 @@ function measure(root: HTMLElement, extra: string[]): Metrics {
       }),
     );
   });
+  const fp = document.createElement('div');
+  Object.assign(fp.style, { position: 'absolute', left: '-10000px', top: '0', visibility: 'hidden', width: `${FIELD_TEXT_W}px`, fontFamily: FONT, fontSize: '16px', lineHeight: '20px', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+  root.appendChild(fp);
+  const fieldCaret = FIELD_MSGS.map((f) =>
+    [...Array(f.en.length + 1)].map((_, k) => {
+      fp.textContent = f.en.slice(0, k);
+      const mark = document.createElement('span');
+      mark.textContent = '\u200b';
+      fp.appendChild(mark);
+      return mark.offsetLeft;
+    }),
+  );
+  fp.remove();
   probe.remove();
   word.remove();
-  return { heights, slotW, slotTypeW, slotLastTypeW, inlineH, lineW, lastW, otherW, spaceW, phrase };
+  return { heights, slotW, slotTypeW, slotLastTypeW, inlineH, lineW, lastW, otherW, spaceW, phrase, fieldCaret };
 }
 
 // ── Bubble geometry over time ────────────────────────────────────────────────
@@ -608,17 +629,39 @@ function studyScroll(t: number) {
   return FLICK_DISTANCE * (1 - Math.exp(-(t - STUDY_FLICK) / 0.3));
 }
 
+/** Where a following camera centres: just behind the caret of FIELD_MSGS[i],
+    eased over the last half second so it glides rather than ticks per letter,
+    and kept within the field. */
+function followX(met: Metrics, i: number, scale: number, t: number) {
+  const f = FIELD_MSGS[i];
+  const caret = met.fieldCaret[i];
+  const visW = STAGE.w / scale;
+  const lo = 50 + visW / 2;
+  const hi = COL - 6 - visW / 2;
+  const at = (tt: number) => {
+    let n = 0;
+    while (n < f.times.length && f.times[n] <= tt) n++;
+    return Math.min(hi, Math.max(lo, FIELD_TEXT_X + (caret[n] ?? 0) - visW * 0.12));
+  };
+  let sum = 0;
+  const N = 12;
+  for (let j = 0; j < N; j++) sum += at(t - (0.5 * j) / N);
+  return sum / N;
+}
+
 /** The camera after the pan: hold a framing, ease between them on each move. */
-function framingAt(t: number) {
+function framingAt(met: Metrics, t: number) {
+  const resolve = (v: View) => ({ scale: v.scale, kb: v.kb, cx: v.follow != null ? followX(met, v.follow, v.scale, t) : v.cx ?? COL / 2 });
   let v = START_VIEW;
   for (const [a, b, to] of CAMERA) {
     if (t >= b) v = to;
     else if (t > a) {
       const k = easeInOutCubic((t - a) / (b - a));
-      return { scale: lerp(v.scale, to.scale, k), kb: lerp(v.kb, to.kb, k) };
+      const p = resolve(v), q = resolve(to);
+      return { scale: lerp(p.scale, q.scale, k), kb: lerp(p.kb, q.kb, k), cx: lerp(p.cx, q.cx, k) };
     }
   }
-  return v;
+  return resolve(v);
 }
 
 /** Before the pan, the chat hangs at this scale with its bottom bubble's
@@ -645,11 +688,25 @@ const READ_ZOOM = 1.6;
     on to that one's first words. Zoomed in from the first `read` bubble (from
     the very start when that is the film's first line) until the pan away. */
 function readCamera(met: Metrics, t: number) {
-  const reads = TIMED.filter((m) => m.read);
-  if (!reads.length) return null;
+  // Consecutive `read` bubbles with no pan between them read as one run.
+  const cuts = [PAN[0], BACK[0], PAN2[0]];
+  const all = TIMED.filter((m) => m.read).sort((a, b) => a.at - b.at);
+  if (!all.length) return null;
+  const runs: Timed[][] = [];
+  for (const m of all) {
+    const prev = runs.at(-1)?.at(-1);
+    if (prev && !cuts.some((x) => x > prev.at && x <= m.at)) runs.at(-1)!.push(m);
+    else runs.push([m]);
+  }
+  const run = runs.find((r) => {
+    const end = cuts.find((x) => x > r.at(-1)!.at) ?? Infinity;
+    return t >= (r[0].index === 0 ? 0 : r[0].at) && t < end + 0.9;
+  });
+  if (!run) return null;
+  const reads = run;
   const first = reads[0];
   const last = reads[reads.length - 1];
-  const release = [PAN[0], BACK[0], PAN2[0]].find((x) => x > last.at) ?? Infinity;
+  const release = cuts.find((x) => x > last.at) ?? Infinity;
   const kIn = first.index === 0 ? 1 : easeInOutCubic(clamp01((t - first.at) / 0.7));
   const k = kIn * (1 - easeInOutCubic(clamp01((t - release) / 0.9)));
   if (k <= 0) return null;
@@ -658,10 +715,12 @@ function readCamera(met: Metrics, t: number) {
   const keys: { t: number; x: number; y: number }[] = [];
   for (const m of reads) {
     const slotMax = Math.max(0, ...(met.slotW[m.index] ?? []));
-    const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)!;
-    const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : met.lineW[m.index].at(-1)!) + 25;
+    // A reel on its own line adds that line under the text.
+    const ownLine = !!m.slot && !m.slotInline;
+    const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)! + (ownLine ? LINE : 0);
+    const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : Math.max(met.lineW[m.index].at(-1)!, slotMax)) + 25;
     const bx = m.who === 'me' ? COL - SIDE - bw : SIDE;
-    const lines = Math.max(1, Math.round((bh - 14) / LINE));
+    const lines = Math.max(1, Math.round((bh - 14) / LINE)) - (ownLine ? 1 : 0);
     // A point within the bubble (from its top-left) on screen, with the bubble at the bottom.
     const at = (x: number, y: number) => ({ x: left + (bx + x) * CHAT_SCALE, y: CHAT_BOTTOM - (bh - y) * CHAT_SCALE });
     const lineY = (k2: number) => 7 + LINE * (k2 + 0.5);
@@ -674,7 +733,7 @@ function readCamera(met: Metrics, t: number) {
     keys.push({ t: arrive, ...at(x0, lineY(0)) });
     const reach = m.slot ? m.slotAt - 0.05 : m.done;
     if (lines > 1) keys.push({ t: arrive + (reach - arrive) * 0.62, ...at(x1, lineY(0)) });
-    keys.push({ t: reach, ...at(xs, lineY(lines - 1)) });
+    keys.push({ t: reach, ...at(xs, lineY(ownLine ? lines : lines - 1)) });
   }
   // Ease along the path one leg at a time; hold the first point before it and the last after.
   let p = keys[0];
@@ -749,7 +808,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
   // field gains a line, or Study opens taller than the keys, everything above
   // rises with it.
   const chatKb = CHAT_BOTTOM + (90 + BELOW_CHAT) * chatScale;
-  const after = framingAt(t);
+  const after = framingAt(met, t);
   const scale = lerp(chatScale, after.scale, k);
   const keyboardBottom = lerp(chatKb, after.kb, k);
   const fade = span(t, ENDING - END_FADE, ENDING, (x) => x);
@@ -761,7 +820,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
       style={{
         width: COL,
         transformOrigin: '0 0',
-        transform: `translate(${STAGE.cx - (COL / 2) * scale}px, ${keyboardBottom}px) scale(${scale})`,
+        transform: `translate(${STAGE.cx - lerp(COL / 2, after.cx, k) * scale}px, ${keyboardBottom}px) scale(${scale})`,
         opacity: 1 - fade,
       }}
     >
