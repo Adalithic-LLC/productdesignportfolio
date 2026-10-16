@@ -34,8 +34,15 @@ const workers = Number(flag('--workers') ?? 1);
 
 if (workers > 1) {
   // Split the frame range, render each part in its own process, then join the
-  // parts without re-encoding (they share every encoder setting).
-  const cuesProbe = JSON.parse(fs.readFileSync(cuesFile, 'utf8'));
+  // parts without re-encoding (they share every encoder setting). The frame
+  // count comes from the film as it is now, not the last run's cues file.
+  const probe = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const probePage = await probe.newPage({ viewport: { width: VW, height: VH } });
+  await probePage.goto(url);
+  await probePage.waitForFunction(() => window.__cues);
+  const cuesProbe = await probePage.evaluate(() => window.__cues);
+  await probe.close();
+  fs.writeFileSync(cuesFile, JSON.stringify(cuesProbe, null, 2));
   const total = Math.round(cuesProbe.duration * fps);
   const parts = [];
   for (let w = 0; w < workers; w++) {
