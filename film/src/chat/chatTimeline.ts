@@ -244,7 +244,7 @@ const D = {
   readJa: 1.3, // the Japanese reads before Send
   backAfterSend: 0.6, // the sent reply rises before the camera goes back up
   studyTap: 0.4, // backed out, then Study is tapped
-  studyLoad: 1.0, // Study opens, then its entries appear
+  studyLoad: SHORT ? 0 : 1.0, // Study opens, then its entries appear (the short has no loading state)
   studyFlick: 2.2, // the entries are read, then flicked
   studyClear: 2.0, // after the flick, the field clears for the last line
   endHold: 1.0, // the last line holds before the fade to the end card
@@ -731,7 +731,7 @@ export function scenes() {
     { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0], flows: flow(fieldFlow(FIELD2_RAW, F2.times)),
       delays: [dl('pan', 'Pan down to the keyboard', D.pan, PAN2[0]), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold, PAN2[1]), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), dl('after-type', 'Hold after typing', D.afterType, typedEnd(F2))] },
     { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
-      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap, STUDY_TAP - D.studyTap), dl('study-load', 'Entries appear after', D.studyLoad, STUDY_OPEN), dl('study-flick', 'Entries read before the flick', D.studyFlick, STUDY_ROWS), dl('study-clear', 'Field clears after the flick', D.studyClear, STUDY_FLICK)] },
+      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap, STUDY_TAP - D.studyTap), ...(SHORT ? [] : [dl('study-load', 'Entries appear after', D.studyLoad, STUDY_OPEN)]), dl('study-flick', 'Entries read before the flick', D.studyFlick, STUDY_ROWS), dl('study-clear', 'Field clears after the flick', D.studyClear, STUDY_FLICK)] },
     { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3, flows: flow(fieldFlow(FIELD3_RAW, F3.times)),
       delays: [dl('zoom-in', 'Push in on the field', D.zoom), dl('end-hold', 'Hold before the fade', D.endHold, typedEnd(F3)), dl('fade', 'Fade to the end card', END_FADE, ENDING - END_FADE)] },
     { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE, flows: [tagFlow],
