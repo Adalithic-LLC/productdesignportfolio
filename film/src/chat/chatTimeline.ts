@@ -200,11 +200,10 @@ const SHORT_SCRIPT: Line[] = [
     after: 1.0,
     afterSend: true,
   },
-  { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
   {
     who: 'them',
     kind: 'block',
-    text: 'In any messaging app!',
+    text: 'Use it in any messaging app!',
     slot: ['WhatsApp', 'HelloTalk', 'Instagram'],
     slotInline: true,
     after: 1.0,
@@ -457,6 +456,8 @@ const KEYS: View = PORTRAIT ? { scale: 2.05, kb: 1430 } : { scale: 1.6, kb: 335 
 // keys, and 551pt over the (taller) Study view.
 const FIELD: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 365 * 2.2 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
 const FIELD_STUDY: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 551 * 2.2 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
+// The short cut is already this close over Study, so its last line pushes in further.
+const FIELD_CLOSE: View = PORTRAIT ? { scale: 2.5, kb: STAGE.cy + 551 * 2.5 } : { scale: 3.4, kb: 540 + 551 * 3.4 };
 const ZOOM = D.zoom;
 /** The framing each pan down lands on. The short cut lands straight on the
     close-up and stays there to type, Reword and send. */
@@ -510,7 +511,8 @@ const tail = (() => {
   {
     const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
     AT.study = times[times.length - 1] + D.afterType;
-    c = move(AT.study, KEYS);
+    // (The short cut holds its zoom as Study opens under the field.)
+    c = SHORT ? AT.study : move(AT.study, KEYS);
     FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   }
   return { PAN2, STUDY_TAP: c + D.studyTap };
@@ -535,7 +537,7 @@ export const HIDE_SENT = STUDY_FLICK + 1.3;
   FIELD_MSGS[1].clearAt = STUDY_FLICK + D.studyClear;
   // 3. Close on the field over Study for the last line, which stays unsent.
   AT.field3 = FIELD_MSGS[1].clearAt + 0.1;
-  c = move(AT.field3, FIELD_STUDY);
+  c = move(AT.field3, SHORT ? FIELD_CLOSE : FIELD_STUDY);
   const times = typeTimes(FIELD3_RAW, c + 0.2, 23);
   FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   c = times[times.length - 1];
@@ -632,7 +634,7 @@ export function scenes() {
     { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0],
       delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), ...fieldDelays(FIELD2_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
-      delays: [dl('zoom-out', 'Back out to the keys', D.zoom), dl('study-tap', 'Then tap Study after', D.studyTap), dl('study-load', 'Entries appear after', D.studyLoad), dl('study-flick', 'Entries read before the flick', D.studyFlick), dl('study-clear', 'Field clears after the flick', D.studyClear)] },
+      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap), dl('study-load', 'Entries appear after', D.studyLoad), dl('study-flick', 'Entries read before the flick', D.studyFlick), dl('study-clear', 'Field clears after the flick', D.studyClear)] },
     { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3,
       delays: [dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD3_RAW), dl('end-hold', 'Hold before the fade', D.endHold), dl('fade', 'Fade to the end card', END_FADE)] },
     { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE,
