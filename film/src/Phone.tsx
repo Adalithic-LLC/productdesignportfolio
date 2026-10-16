@@ -200,7 +200,7 @@ export function Keyboard({ s, idle }: { s: Pick<ScreenState, 't' | 'text' | 'key
     <div style={{ backgroundColor: AX.keyboardBg }} className="shrink-0 px-[5px] pb-1 pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
         <div className="relative">
-          {pressed === 'study' && <Touch inset={-6} />}
+          {/* The app's pressed state is the button's own fill (ToolbarButtonPressedColor), no touch halo. */}
           <ToolButton pressed={pressed === 'study'}>
             <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
           </ToolButton>

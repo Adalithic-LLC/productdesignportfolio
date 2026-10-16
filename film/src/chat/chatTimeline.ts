@@ -219,14 +219,16 @@ const SHORT_SCRIPT: Line[] = [
 export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
 
 // A '|' marks a half-second pause in the typing; it isn't typed.
+/** A field message's pauses: '|' holds for D.typePause (0.5s), '{0.25}' for exactly that long. */
+const stripPauses = (raw: string) => raw.replace(/\||\{[\d.]+\}/g, '');
 const FIELD_RAW = SHORT ? 'So...|I type a message| and tap Reword?' : 'So...| I just type a message| then tap a button to translate?';
-export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
+export const FIELD_TEXT = stripPauses(FIELD_RAW);
 // The short cut names the button as the Japanese app labels it (button.reword).
 export const FIELD_JA = SHORT ? 'じゃあ…メッセージを入力して「変換」を押すの？' : 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
-const FIELD2_RAW = SHORT ? 'And it adds words I miss| to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
-export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
+const FIELD2_RAW = SHORT ? 'And{0.25} it adds words I miss{0.25} to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
+export const FIELD2_TEXT = stripPauses(FIELD2_RAW);
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
-export const FIELD3_TEXT = FIELD3_RAW.replaceAll('|', '');
+export const FIELD3_TEXT = stripPauses(FIELD3_RAW);
 
 export const FPS = 60;
 export const BPM = 120;
@@ -413,22 +415,29 @@ const LAST = TIMED[TIMED.length - 1];
 export const PAN = [LAST.done + (LAST.after ?? 0.55), LAST.done + (LAST.after ?? 0.55) + D.pan] as const;
 
 /** When each character of a field message lands, from `start`. `raw` is the
-    message with a '|' wherever the typing pauses for half a second. */
+    message with a pause marker wherever the typing waits (see PAUSE_RE). */
 function typeTimes(raw: string, start: number, seed: number) {
   const out: number[] = [];
   let c = start;
   let i = 0;
-  for (const ch of raw) {
-    if (ch === '|') {
+  for (const tok of raw.split(/(\||\{[\d.]+\})/)) {
+    if (tok === '|') {
       c += D.typePause;
       continue;
     }
-    out.push(c);
-    let dt = 0.058 + jitter(i, seed) * 0.024;
-    if (ch === ' ') dt += 0.02;
-    if (',.'.includes(ch)) dt += 0.08;
-    c += dt;
-    i++;
+    const m = /^\{([\d.]+)\}$/.exec(tok);
+    if (m) {
+      c += Number(m[1]);
+      continue;
+    }
+    for (const ch of tok) {
+      out.push(c);
+      let dt = 0.058 + jitter(i, seed) * 0.024;
+      if (ch === ' ') dt += 0.02;
+      if (',.'.includes(ch)) dt += 0.08;
+      c += dt;
+      i++;
+    }
   }
   return out;
 }
@@ -463,7 +472,7 @@ const KEYS: View = PORTRAIT ? { scale: 2.05, kb: 1430 } : { scale: 1.6, kb: 335 
 const FIELD: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 365 * 2.2 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
 const FIELD_STUDY: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 551 * 2.2 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
 // The short cut is already this close over Study, so its last line pushes in further.
-const FIELD_CLOSE: View = PORTRAIT ? { scale: 2.5, kb: STAGE.cy + 551 * 2.5 } : { scale: 3.4, kb: 540 + 551 * 3.4 };
+const FIELD_CLOSE: View = PORTRAIT ? { scale: 2.85, kb: STAGE.cy + 551 * 2.85 } : { scale: 3.4, kb: 540 + 551 * 3.4 };
 const ZOOM = D.zoom;
 /** The framing each pan down lands on. The short cut lands straight on the
     close-up and stays there to type, Reword and send. */
@@ -685,14 +694,21 @@ export function scenes() {
     ];
   };
   const fieldFlow = (raw: string, times: number[]): Part[] => {
-    const segs = raw.split('|');
+    // Alternating text and pause markers ('|' or '{secs}').
+    const toks = raw.split(/(\||\{[\d.]+\})/);
+    const out: Part[] = [];
     let offset = 0;
-    return segs.flatMap((seg, i): Part[] => {
-      const part = typedText(seg, offset, times);
+    let n = 0;
+    for (let i = 0; i < toks.length; i += 2) {
+      const seg = toks[i];
+      out.push(typedText(seg, offset, times));
       offset += seg.length;
-      if (i === segs.length - 1) return [part];
-      return [part, inline(`type-pause-${i}`, `after “${lastWord(seg)}”`, D.typePause, (times[offset] ?? 0) - D.typePause)];
-    });
+      const mark = toks[i + 1];
+      if (mark == null) break;
+      const secs = mark === '|' ? D.typePause : Number(mark.slice(1, -1));
+      out.push(inline(`type-pause-${n++}`, `after “${lastWord(seg)}”`, secs, (times[offset] ?? 0) - secs));
+    }
+    return out;
   };
   const flow = (parts: Part[]) => (parts.length ? [parts] : []);
   const tagFlow: Part[] = [
