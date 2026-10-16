@@ -166,25 +166,58 @@ export const END_LINE_AT = [D.splash - 0.3];
 export const DURATION = Math.ceil((ENDING + END_LINE_AT[END_LINE_AT.length - 1] + 0.6 + D.finalHold) * 2) / 2;
 
 export function scenes() {
+  // Inline timings for the Cut Room, as the chat film gives them: {text}
+  // runs (`typed`, with `wordTimes`, when they type out letter by letter, so a
+  // delay can go between any two words), {word} reel words, and timings
+  // {key, kind, name, label, value, at}.
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  const r3 = (x: number) => Math.round(x * 1000) / 1000;
+  const inline = (key: string, label: string, value: number, at: number, kind = 'delay', name = 'Delay') =>
+    ({ key, kind, name, label, value: r2(value), at: r3(at) });
+  /** Typed text whose characters land at times[offset...]. */
+  const typed = (text: string, times: number[], offset = 0) => {
+    const ends: number[] = [];
+    const re = /\S+/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) ends.push(m.index + m[0].length - 1);
+    return { text, typed: true, wordTimes: ends.slice(0, -1).map((e) => r3((times[offset + e] ?? 0) + 0.03)) };
+  };
+  const headlineFlow = CHUNKS.flatMap((c, i) =>
+    i < CHUNKS.length - 1 ? [{ text: c }, inline(`chunk-${i}`, `after “${c}”`, D.chunk, CHUNK_AT[i])] : [{ text: c }]);
+  const reelStart = LINE2_SLOT_TIMES[0] - LINE2_A_TIMES[LINE2_A_TIMES.length - 1];
+  const line2Flow = [
+    typed(LINE2_A.trimEnd(), LINE2_A_TIMES),
+    inline('reel-start', 'before the reel', reelStart, LINE2_A_TIMES[LINE2_A_TIMES.length - 1]),
+    ...LINE2_SLOT.flatMap((w, i) =>
+      i < LINE2_SLOT.length - 1
+        ? [
+            { word: w },
+            inline(i === 0 ? 'reel-first' : `reel-each-${i}`, `on “${w}”`, D.slotHold, LINE2_LANDS[i], 'hold', 'Hold'),
+            inline(`reel-roll-${i}`, `from “${w}” to “${LINE2_SLOT[i + 1]}”`, D.slotRoll, LINE2_LANDS[i] + D.slotHold, 'duration', 'Scroll'),
+          ]
+        : [{ word: w }]),
+    inline('after-reel', `after “${LINE2_SLOT[LINE2_SLOT.length - 1]}”`, LINE2_B_TIMES[0] - LINE2_LANDS[LINE2_LANDS.length - 1], LINE2_LANDS[LINE2_LANDS.length - 1]),
+    typed(LINE2_B, LINE2_B_TIMES),
+  ];
   const list = [
     { id: 'title1', name: 'Headline: How can translations become self-guided…', start: 0,
-      texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }] },
+      texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
     { id: 'title2', name: 'Typed: With an AI keyboard… [apps] …learning system.', start: TITLE1_OUT,
-      texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }] },
+      texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }], flows: [line2Flow] },
     ...BUBBLES.map((b, i) => ({
       id: `b${i + 1}`,
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
       start: i === 0 ? WORLD_IN : b.who === 'me' ? CAMERA.find((x) => x[2].kind === 'whole')![0] : b.at - 0.2,
       texts: [{ key: `b${i + 1}`, label: b.who === 'me' ? 'Sent message' : 'Left bubble', text: b.text }],
     })),
-    { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }] },
-    { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD.trim() }] },
+    { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
+    { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
     { id: 'reword', name: 'Reword to Spanish', start: CAMERA[3][0], texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
     { id: 'study', name: 'Open the Study Guide', start: CAMERA.find((x) => x[2].kind === 'button' && x[2].which === 'study')![0], texts: [] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
       texts: END_LINES.map((x, i) => ({ key: `line${i + 1}`, label: `Line ${i + 1}`, text: x })) },
   ].sort((a, b) => a.start - b.start);
-  return list.map((s, i) => ({ ...s, delays: [], end: i + 1 < list.length ? list[i + 1].start : DURATION }));
+  return list.map((s, i) => ({ flows: [] as unknown[], ...s, delays: [], end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
 
 export function cues() {
