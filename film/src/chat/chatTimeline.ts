@@ -170,7 +170,15 @@ const FULL_SCRIPT: Line[] = [
 /** The short cut (the owner's script): a quicker setup, both keyboard
     sequences, the same ending. Bubble 1 types out plainly, with no reel. */
 const SHORT_SCRIPT: Line[] = [
-  { who: 'them', kind: 'type', text: 'Want to learn a new language...', noWrap: true },
+  {
+    who: 'them',
+    kind: 'type',
+    text: 'Want to learn practical language skills based on your',
+    maxW: 340,
+    // The reel has its own line, so a word typing on never re-wraps the text.
+    slot: ['life.', 'interests.', 'actual conversations.'],
+    slotTypeDelay: 0.3,
+  },
   {
     who: 'them',
     kind: 'block',
@@ -465,6 +473,11 @@ const KEYS: View = PORTRAIT ? { scale: 2.05, kb: 1430 } : { scale: 1.6, kb: 335 
 const FIELD: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 365 * 2.2 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
 const FIELD_STUDY: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 551 * 2.2 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
 const ZOOM = D.zoom;
+/** The framing each pan down lands on. The short cut lands straight on the
+    close-up and stays there to type, Reword and send. */
+export const START_VIEW: View = SHORT ? FIELD : KEYS;
+/** Scene starts the Cut Room lists, set as the timeline is built. */
+const AT = { field1: 0, reword: 0, study: 0, field3: 0 };
 
 /** Camera moves after the pan: [start, end, to]. */
 export const CAMERA: [number, number, View][] = [];
@@ -481,10 +494,13 @@ TIMED.push(...keysLines);
 const KEYS_LAST = keysLines[keysLines.length - 1];
 let c = KEYS_LAST ? KEYS_LAST.done + (KEYS_LAST.after ?? 0.8) : PAN[1] + D.keysHold;
 // 1. Close on the field while it's typed; back out to the keys to Reword it, and send.
-c = move(c, FIELD);
+// (The short cut is already close on the field, and stays there.)
+AT.field1 = SHORT ? PAN[1] : c;
+if (!SHORT) c = move(c, FIELD);
 {
   const times = typeTimes(FIELD_RAW, c + 0.2, 99);
-  c = move(times[times.length - 1] + D.afterType, KEYS);
+  AT.reword = times[times.length - 1] + D.afterType;
+  c = SHORT ? AT.reword : move(AT.reword, KEYS);
   const rewordTap = c + D.rewordTap;
   // No loading state: the tap press, then the swap.
   const rewordDone = rewordTap + 0.22;
@@ -496,16 +512,20 @@ c = move(c, FIELD);
 /** Once the reply has risen into the chat, the camera goes back up to the
     conversation for the afterSend bubbles, then pans down to the keyboard again. */
 export const BACK = [c + D.backAfterSend, c + D.backAfterSend + D.pan] as const;
-TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + 0.2));
+/** In the short cut the sent reply rides up with the camera and holds this
+    long in the chat before the next bubble clears it. */
+export const SENT_HOLD = SHORT ? 1.5 : 0;
+TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + (SHORT ? SENT_HOLD : 0.2)));
 const LAST2 = TIMED[TIMED.length - 1];
 const tail = (() => {
   const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + D.pan] as const;
   let c = PAN2[1] + D.pan2Hold;
   // 2. Close on the field again; this one stays in English. Back out, and open Study.
-  c = move(c, FIELD);
+  if (!SHORT) c = move(c, FIELD);
   {
     const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
-    c = move(times[times.length - 1] + D.afterType, KEYS);
+    AT.study = times[times.length - 1] + D.afterType;
+    c = move(AT.study, KEYS);
     FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   }
   return { PAN2, STUDY_TAP: c + D.studyTap };
@@ -529,7 +549,8 @@ export const HIDE_SENT = STUDY_FLICK + 1.3;
   // field is cleared for the last line.
   FIELD_MSGS[1].clearAt = STUDY_FLICK + D.studyClear;
   // 3. Close on the field over Study for the last line, which stays unsent.
-  c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
+  AT.field3 = FIELD_MSGS[1].clearAt + 0.1;
+  c = move(AT.field3, FIELD_STUDY);
   const times = typeTimes(FIELD3_RAW, c + 0.2, 23);
   FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   c = times[times.length - 1];
@@ -613,21 +634,21 @@ export function scenes() {
       id: `b${i + 1}`,
       name: `${i + 1}. ${short(m)}`,
       texts: [{ key: `b${i + 1}`, label: m.who === 'me' ? 'Right bubble' : 'Left bubble', text: m.text + (m.slot ? ` [${reel(m.slot)}]` : '') }],
-      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan)] : []), ...bubbleDelays(m)],
+      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan), ...(SHORT ? [dl('sent-hold', 'Sent message holds before this bubble', SENT_HOLD)] : [])] : []), ...bubbleDelays(m)],
       // The first bubble back in the chat owns the pan up to it.
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
     { id: 'keyboard', name: 'Pan to keyboard', texts: [], start: PAN[0],
-      delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', 'Hold before closing in on the field', D.keysHold)] },
-    { id: 'field1', name: 'Type: So... I just type a message…', texts: typed('Typed message', FIELD_TEXT), start: CAMERA[0][0],
-      delays: [dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
-    { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: CAMERA[1][0],
-      delays: [dl('zoom-out', 'Back out to the keys', D.zoom), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', 'Reply rises before the camera goes up', D.backAfterSend)] },
+      delays: [dl('pan', 'Pan down to the keyboard', D.pan), ...(SHORT ? [] : [dl('keys-hold', 'Hold before closing in on the field', D.keysHold)])] },
+    { id: 'field1', name: 'Type: So... I just type a message…', texts: typed('Typed message', FIELD_TEXT), start: AT.field1,
+      delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2) : dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
+    { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: AT.reword,
+      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', 'Reply rises before the camera goes up', D.backAfterSend)] },
     { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0],
-      delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', 'Hold before closing in on the field', D.pan2Hold), dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD2_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
-    { id: 'study', name: 'Study Guide + flick', texts: [], start: CAMERA[3][0],
+      delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), ...fieldDelays(FIELD2_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
+    { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
       delays: [dl('zoom-out', 'Back out to the keys', D.zoom), dl('study-tap', 'Then tap Study after', D.studyTap), dl('study-load', 'Entries appear after', D.studyLoad), dl('study-flick', 'Entries read before the flick', D.studyFlick), dl('study-clear', 'Field clears after the flick', D.studyClear)] },
-    { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: CAMERA[4][0],
+    { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3,
       delays: [dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD3_RAW), dl('end-hold', 'Hold before the fade', D.endHold), dl('fade', 'Fade to the end card', END_FADE)] },
     { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE,
       delays: [dl('tag-first', 'Tagline’s first word lands after', D.tagFirst), dl('tag-hold', 'Each of the first three words holds', D.tagHold), dl('tag-spin', 'Spin to “a language”', D.tagSpin), dl('tag-rest', 'Final hold', D.tagRest)] },

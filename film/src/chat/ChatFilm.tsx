@@ -16,7 +16,8 @@ import {
   BACK,
   PAN2,
   CAMERA,
-  KEYS_VIEW,
+  START_VIEW,
+  SHORT,
   STUDY_GROW,
   STUDY_FLICK,
   HIDE_SENT,
@@ -549,7 +550,10 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     // Everything clears at the next cut between the chat and the keyboard: the
     // opening as the camera first pans down, the keyboard-side bubbles and the
     // sent reply as it goes back up, the second chat as it comes down again.
-    fadeAt = Math.min(fadeAt, [PAN[0], BACK[0], PAN2[0], HIDE_SENT].find((x) => x > m.at) ?? Infinity);
+    // (In the short cut the sent reply rides up with the camera, and the next
+    // bubble clears it.)
+    const sentRides = SHORT && m.index >= TIMED.length;
+    fadeAt = Math.min(fadeAt, [PAN[0], ...(sentRides ? [] : [BACK[0]]), PAN2[0], HIDE_SENT].find((x) => x > m.at) ?? Infinity);
     const out = clamp01((t - fadeAt) / FADE_OUT);
     if (out >= 1) break;
     const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
@@ -601,7 +605,7 @@ function studyScroll(t: number) {
 
 /** The camera after the pan: hold a framing, ease between them on each move. */
 function framingAt(t: number) {
-  let v = KEYS_VIEW;
+  let v = START_VIEW;
   for (const [a, b, to] of CAMERA) {
     if (t >= b) v = to;
     else if (t > a) {
