@@ -302,7 +302,7 @@ const countAt = (times: number[], t: number) => {
 function TypedLine({ t, met }: { t: number; met: Metrics }) {
   const start = LINE2_A_TIMES[0] - 0.05;
   if (t < start) return null;
-  const out = span(t, LINE2_OUT, LINE2_OUT + 0.4, (x) => x);
+  const out = span(t, LINE2_OUT, LINE2_OUT + D.line2Out, (x) => x);
   if (out >= 1) return null;
   const a = LINE2_A.slice(0, countAt(LINE2_A_TIMES, t));
   const first = LINE2_SLOT[0].slice(0, countAt(LINE2_SLOT_TIMES, t));

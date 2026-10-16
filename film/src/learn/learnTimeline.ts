@@ -41,10 +41,12 @@ export const D = {
   chunk: 0.75, // between the headline's chunks
   keyboardPause: 0.5, // the typed line pauses after "keyboard"
   titleHold: 1.3, // the full headline holds
+  titleStart: 0.5, // before the headline's first chunk
   titleOut: 0.5, // it fades away
   slotHold: 0.9, // each app in the headline's reel holds
   slotRoll: 0.32, // and rolls to the next
   line2Hold: 1.5, // the typed line holds once done
+  line2Out: 0.4, // then fades away
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
   kbWait: 1.0, // a narration bubble shows alone before the keyboard comes up
@@ -62,13 +64,13 @@ export const D = {
   zoomOut: 0.9, // the camera pulls back to the whole phone
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
-  splash: 3.0, // the app's splash
+  splash: 2.7, // the app's splash plays before the end card's line
   finalHold: 1.8, // the finished card holds on “any language.”
 };
 
 // ── 1. Titles ──
 export const CHUNKS = ['How can translations', 'become', 'self-guided', 'language learning?'];
-export const CHUNK_AT = CHUNKS.map((_, i) => 0.5 + i * D.chunk);
+export const CHUNK_AT = CHUNKS.map((_, i) => D.titleStart + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
 
 export const LINE2_A = 'With an AI keyboard that turns your chats in ';
@@ -186,7 +188,7 @@ export const ENDING = WORLD_OUT + D.endFade;
 /** The end card's line, in chunks: the first on its own line, the other two
     (then the reel) on the second. */
 export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
-export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash - 0.3 + i * D.endChunk);
+export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash + i * D.endChunk);
 export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'any language.'];
 /** When each language is up, from the card's start: the first lands as the
     line settles, three hold, then a run that slows to land on "any language.". */
@@ -213,8 +215,13 @@ export function scenes() {
     while ((m = re.exec(text))) ends.push(m.index + m[0].length - 1);
     return { text, typed: true, wordTimes: ends.slice(0, -1).map((e) => r3((times[offset + e] ?? 0) + 0.03)) };
   };
-  const headlineFlow = CHUNKS.flatMap((c, i) =>
-    i < CHUNKS.length - 1 ? [{ text: c }, inline(`chunk-${i}`, `after “${c}”`, D.chunk, CHUNK_AT[i])] : [{ text: c }]);
+  const headlineFlow = [
+    inline('title-start', `before “${CHUNKS[0]}”`, D.titleStart, 0),
+    ...CHUNKS.flatMap((c, i) =>
+      i < CHUNKS.length - 1 ? [{ text: c }, inline(`chunk-${i}`, `after “${c}”`, D.chunk, CHUNK_AT[i])] : [{ text: c }]),
+    inline('title-hold', 'the full headline holds', D.titleHold, CHUNK_AT[CHUNK_AT.length - 1] + 0.5, 'hold', 'Hold'),
+    inline('title-out', 'the headline fades out', D.titleOut, TITLE1_OUT, 'duration', 'Fade'),
+  ];
   const reelStart = LINE2_SLOT_TIMES[0] - LINE2_A_TIMES[LINE2_A_TIMES.length - 1];
   const line2Flow = [
     typed(LINE2_A.slice(0, LINE2_A_PAUSE_AT + 1), LINE2_A_TIMES),
@@ -231,8 +238,11 @@ export function scenes() {
         : [{ word: w }]),
     inline('after-reel', `after “${LINE2_SLOT[LINE2_SLOT.length - 1]}”`, LINE2_B_TIMES[0] - LINE2_LANDS[LINE2_LANDS.length - 1], LINE2_LANDS[LINE2_LANDS.length - 1]),
     typed(LINE2_B, LINE2_B_TIMES),
+    inline('line2-hold', 'the full line holds', D.line2Hold, LINE2_B_TIMES[LINE2_B_TIMES.length - 1], 'hold', 'Hold'),
+    inline('line2-out', 'the line fades out', D.line2Out, LINE2_OUT, 'duration', 'Fade'),
   ];
   const endFlow = [
+    inline('end-logo', 'before the line (the logo plays)', D.splash, ENDING),
     ...END_CHUNKS.flatMap((x, i) =>
       i < END_CHUNKS.length - 1 ? [{ text: x }, inline(`end-${i}`, `after “${x}”`, D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
     ...LANGS.flatMap((w, i) =>
@@ -245,8 +255,13 @@ export function scenes() {
         : [{ word: w }]),
     inline('final-hold', `on “${LANGS[LANGS.length - 1]}”`, D.finalHold, ENDING + LANG_LANDS[LANG_LANDS.length - 1], 'hold', 'Hold'),
   ];
-  const noteFlow = NOTE_CHUNKS.flatMap((x, i) =>
-    i < NOTE_CHUNKS.length - 1 ? [{ text: x }, inline(`note-${i}`, `after “${x}”`, D.noteChunk, NOTE_AT[i])] : [{ text: x }, inline('note-hold', 'the full line holds', D.noteHold, NOTE_AT[i] + 0.5, 'hold', 'Hold')]);
+  const noteFlow = [
+    inline('note-in', 'the phone fades out', D.noteFade, NOTE_IN, 'duration', 'Fade'),
+    ...NOTE_CHUNKS.flatMap((x, i) =>
+      i < NOTE_CHUNKS.length - 1 ? [{ text: x }, inline(`note-${i}`, `after “${x}”`, D.noteChunk, NOTE_AT[i])] : [{ text: x }]),
+    inline('note-hold', 'the full line holds', D.noteHold, NOTE_AT[NOTE_AT.length - 1] + 0.5, 'hold', 'Hold'),
+    inline('note-out', 'the line fades out', D.noteFade, NOTE_OUT, 'duration', 'Fade'),
+  ];
   const list = [
     { id: 'title1', name: 'Headline: How can translations become self-guided…', start: 0,
       texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
