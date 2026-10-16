@@ -57,6 +57,7 @@ export const D = {
   noteFade: 0.5, // the phone fades out for the study-guide line, and back
   noteChunk: 0.75, // between the study-guide line's chunks
   noteHold: 1.6, // the full study-guide line holds
+  endChunk: 0.75, // between the end card's chunks
   studyRead: 2.4, // Study's entries are read
   zoomOut: 0.9, // the camera pulls back to the whole phone
   sentHold: 1.8, // the sent message holds
@@ -182,13 +183,15 @@ export const STUDY_ROWS_DATA = [
 
 // ── 3. The end card ──
 export const ENDING = WORLD_OUT + D.endFade;
-export const END_LINES = ['Your safety net to explore,', 'make mistakes, and learn'];
-export const END_LINE_AT = [D.splash - 0.3];
+/** The end card's line, in chunks: the first on its own line, the other two
+    (then the reel) on the second. */
+export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
+export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash - 0.3 + i * D.endChunk);
 export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'any language.'];
 /** When each language is up, from the card's start: the first lands as the
     line settles, three hold, then a run that slows to land on "any language.". */
 export const LANG_GAPS = [0.75, 0.75, 0.45, 0.32, 0.26, 0.26, 0.32, 0.45];
-export const LANG_LANDS: number[] = [END_LINE_AT[0] + 0.6];
+export const LANG_LANDS: number[] = [END_CHUNK_AT[END_CHUNK_AT.length - 1] + 0.6];
 for (const g of LANG_GAPS) LANG_LANDS.push(LANG_LANDS[LANG_LANDS.length - 1] + g);
 export const LANG_ROLL = 0.22;
 export const DURATION = Math.ceil((ENDING + LANG_LANDS[LANG_LANDS.length - 1] + D.finalHold) * 2) / 2;
@@ -230,7 +233,8 @@ export function scenes() {
     typed(LINE2_B, LINE2_B_TIMES),
   ];
   const endFlow = [
-    { text: END_LINES.join(' ') },
+    ...END_CHUNKS.flatMap((x, i) =>
+      i < END_CHUNKS.length - 1 ? [{ text: x }, inline(`end-${i}`, `after “${x}”`, D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
     ...LANGS.flatMap((w, i) =>
       i < LANGS.length - 1
         ? [
@@ -262,7 +266,7 @@ export function scenes() {
       texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
     { id: 'study', name: 'Open the Study Guide', start: NOTE_OUT + D.noteFade, texts: [] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
-      texts: [{ key: 'line1', label: 'Line 1', text: `${END_LINES.join(' ')} [${LANGS.join(' / ')}]` }], flows: [endFlow] },
+      texts: [{ key: 'line1', label: 'Line 1', text: `${END_CHUNKS.map((x) => `[${x}]`).join(' ')} [${LANGS.join(' / ')}]` }], flows: [endFlow] },
   ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ flows: [] as unknown[], ...s, delays: [], end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }

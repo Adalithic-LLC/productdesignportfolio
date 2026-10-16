@@ -13,8 +13,8 @@ import {
   CHUNK_AT,
   CHUNKS,
   DURATION,
-  END_LINES,
-  END_LINE_AT,
+  END_CHUNKS,
+  END_CHUNK_AT,
   ENDING,
   FIELD,
   FIELD_EN,
@@ -492,10 +492,13 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
           style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
         >
           {/* Left-aligned, as the film's other lines, in a block centered at its widest. */}
-          <div style={line(END_LINE_AT[0])}>
-            <div>{END_LINES[0]}</div>
+          <div>
+            <div style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</div>
             <div className="whitespace-nowrap">
-              {END_LINES[1]} <Reel met={met} local={local} />
+              <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>{' '}
+              <span className="inline-block" style={line(END_CHUNK_AT[2])}>
+                {END_CHUNKS[2]} <Reel met={met} local={local} />
+              </span>
             </div>
           </div>
         </div>
@@ -529,7 +532,7 @@ export default function LearnFilm() {
         Promise.all([
           document.fonts.load('17px Inter', FIELD_EN + FIELD_ES),
           document.fonts.load("700 62px 'Inter Display'", LINE2_A + LINE2_SLOT.join('')),
-          document.fonts.load("600 46px 'Inter Display'", END_LINES.join('') + LANGS.join('')),
+          document.fonts.load("600 46px 'Inter Display'", END_CHUNKS.join('') + LANGS.join('')),
           document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
           document.fonts.load("700 32px 'Noto Sans'", 'Arcatext'),
         ]),
