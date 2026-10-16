@@ -65,7 +65,7 @@ export const D = {
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
   splash: 2.7, // the app's splash plays before the end card's line
-  finalHold: 1.8, // the finished card holds on “any language.”
+  finalHold: 1.8, // the finished card holds on “a language.”
 };
 
 // ── 1. Titles ──
@@ -189,13 +189,14 @@ export const ENDING = WORLD_OUT + D.endFade;
     (then the reel) on the second. */
 export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
 export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash + i * D.endChunk);
-export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'any language.'];
+export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'a language.'];
 /** When each language is up, from the card's start: the first lands as the
-    line settles, three hold, then a run that slows to land on "any language.". */
-export const LANG_GAPS = [0.75, 0.75, 0.45, 0.32, 0.26, 0.26, 0.32, 0.45];
+    line settles, and every language holds long enough to read as the reel
+    scrolls through them all, easing in to land on "a language.". */
+export const LANG_GAPS = [0.7, 0.6, 0.55, 0.5, 0.5, 0.55, 0.6, 0.75];
 export const LANG_LANDS: number[] = [END_CHUNK_AT[END_CHUNK_AT.length - 1] + 0.6];
 for (const g of LANG_GAPS) LANG_LANDS.push(LANG_LANDS[LANG_LANDS.length - 1] + g);
-export const LANG_ROLL = 0.22;
+export const LANG_ROLL = 0.24;
 export const DURATION = Math.ceil((ENDING + LANG_LANDS[LANG_LANDS.length - 1] + D.finalHold) * 2) / 2;
 
 export function scenes() {
