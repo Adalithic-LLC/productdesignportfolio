@@ -609,21 +609,28 @@ export function scenes() {
     return [dl('hold', 'Hold before what comes next', next - m.done)];
   };
   // Typing and reel sequences as text with each delay in place, for the Cut
-  // Room's inline controls: {text} runs, {word} reel words, {key, label, value} delays.
-  type Part = { text: string } | { word: string } | { key: string; label: string; value: number };
+  // Room's inline controls: {text} runs (`typed` when they type out letter by
+  // letter, so a delay can go between any two words), {word} reel words, and
+  // timings {key, kind, name, label, value}: a `delay` is a wait, a `hold` how
+  // long a word stays up, a `duration` how long a motion (a scroll, a spin) takes.
+  type Kind = 'delay' | 'hold' | 'duration';
+  type Part = { text: string; typed?: boolean } | { word: string } | { key: string; kind: Kind; name: string; label: string; value: number };
   const lastWord = (x: string) => x.trim().split(/\s+/).pop() ?? '';
-  const inline = (key: string, label: string, value: number): Part => ({ key, label, value: r2(value) });
-  /** A reel: its words with the hold on each, or held words then a spin. */
-  const reelParts = (words: string[], start: number, startLabel: string, holds: (i: number) => [string, number] | null, spin?: { held: number; secs: number }): Part[] => {
+  const inline = (key: string, label: string, value: number, kind: Kind = 'delay', name = 'Delay'): Part => ({ key, kind, name, label, value: r2(value) });
+  /** A reel: its words with the hold on each and the scroll between them, or
+      held words then a spin. */
+  const reelParts = (words: string[], start: number, startLabel: string, holds: (i: number) => [string, number] | null, spin?: { held: number; secs: number }, roll = SLOT_ROLL): Part[] => {
     const out: Part[] = [inline('reel-start', startLabel, start)];
     const shown = spin ? spin.held : words.length;
     for (let i = 0; i < shown; i++) {
       out.push({ word: words[i] });
       const h = holds(i);
-      if (h) out.push(inline(h[0], `on “${words[i]}”`, h[1]));
+      if (h) out.push(inline(h[0], `on “${words[i]}”`, h[1], 'hold', 'Hold'));
+      if (i < shown - 1) out.push(inline(`${h ? h[0].replace(/-(first|each|hold).*$/, '') : 'reel'}-roll-${i}`, `from “${words[i]}” to “${words[i + 1]}”`, roll, 'duration', 'Scroll'));
+      else if (!spin && i < words.length - 1) out.push(inline(`reel-roll-${i}`, `from “${words[i]}” to “${words[i + 1]}”`, roll, 'duration', 'Scroll'));
     }
     if (spin) {
-      out.push(inline('reel-spin', `spinning to “${words[words.length - 1]}”`, spin.secs));
+      out.push(inline('reel-spin', `to “${words[words.length - 1]}”`, spin.secs, 'duration', 'Spin'));
       if (words.length > spin.held + 1) out.push({ text: '…' });
       out.push({ word: words[words.length - 1] });
     }
@@ -631,15 +638,16 @@ export function scenes() {
   };
   const bubbleFlow = (m: Timed): Part[] => {
     const out: Part[] = [];
+    const typed = m.kind === 'type';
     let rest = m.text.replace(/\n/g, ' ');
     for (const p of m.pauses ?? []) {
       const at = rest.indexOf(p.after);
       if (at < 0) continue;
-      out.push({ text: rest.slice(0, at + p.after.length) }, inline(`pause-${p.after}`, `after “${p.after}”`, p.secs));
+      out.push({ text: rest.slice(0, at + p.after.length), typed }, inline(`pause-${p.after}`, `after “${p.after}”`, p.secs));
       rest = rest.slice(at + p.after.length);
     }
-    out.push({ text: rest });
-    if (!m.slot) return m.pauses?.length ? out : [];
+    out.push({ text: rest, typed });
+    if (!m.slot) return typed ? out : [];
     const w = m.slot;
     const fl = m.slotFlick;
     const start = (m.kind === 'type' ? 0.15 : 0.3) + (m.slotTypeDelay ?? 0);
@@ -651,15 +659,14 @@ export function scenes() {
     ];
   };
   const fieldFlow = (raw: string): Part[] => {
-    if (!raw.includes('|')) return [];
     const segs = raw.split('|');
     return segs.flatMap((seg, i): Part[] =>
-      i < segs.length - 1 ? [{ text: seg }, inline(`type-pause-${i}`, `after “${lastWord(seg)}”`, D.typePause)] : [{ text: seg }]);
+      i < segs.length - 1 ? [{ text: seg, typed: true }, inline(`type-pause-${i}`, `after “${lastWord(seg)}”`, D.typePause)] : [{ text: seg, typed: true }]);
   };
   const flow = (parts: Part[]) => (parts.length ? [parts] : []);
   const tagFlow: Part[] = [
     { text: 'Text and learn' },
-    ...reelParts(TAGLINE_WORDS, D.tagFirst, 'before the first word', (i) => [`tag-hold-${i}`, D.tagHold], { held: 3, secs: D.tagSpin }),
+    ...reelParts(TAGLINE_WORDS, D.tagFirst, 'before the first word', (i) => [`tag-hold-${i}`, D.tagHold], { held: 3, secs: D.tagSpin }, 0.3),
   ];
   const firstAfterSend = TIMED.find((m) => m.afterSend);
   const list = [
