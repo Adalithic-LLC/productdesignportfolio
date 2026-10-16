@@ -455,12 +455,12 @@ function World({ met, t }: { met: Metrics; t: number }) {
 
 // ── The end card ──
 
-/** The end card's reel of languages, rolling up in place at the line's end. */
+/** The end card's reel of languages, rolling up in place at the line's end.
+    Its box is as wide as the longest language, so the line never moves. */
 function Reel({ met, local }: { met: Metrics; local: number }) {
   let p = 0;
   for (let i = 1; i < LANG_LANDS.length; i++) p += clamp01(easeInOutCubic((local - (LANG_LANDS[i] - LANG_ROLL)) / LANG_ROLL));
-  const i0 = Math.min(LANGS.length - 1, Math.floor(p));
-  const w = lerp(met.langW[i0], met.langW[Math.min(LANGS.length - 1, i0 + 1)], p - i0);
+  const w = Math.max(...met.langW);
   const lineH = 58;
   return (
     <span className="relative inline-block overflow-hidden text-left align-top" style={{ width: w, height: lineH, color: ACCENT }}>
@@ -488,9 +488,10 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
           {local >= 0 && <SplashLogo s={local} scale={2.2} />}
         </div>
         <div
-          className="absolute text-center"
+          className="absolute flex justify-center"
           style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
         >
+          {/* Left-aligned, as the film's other lines, in a block centered at its widest. */}
           <div style={line(END_LINE_AT[0])}>
             <div>{END_LINES[0]}</div>
             <div className="whitespace-nowrap">
