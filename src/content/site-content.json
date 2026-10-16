@@ -24,13 +24,13 @@
     "subtitle": "...a digital product designer [mark:outline:green:3:6:1]using AI[/mark] to create [mark:highlight:blue:2:4:1]fully functional products.[/mark] I make intuitive & cohesive systems, so the interface enables the product's value and users [mark:underline:yellow:2:4:1]keep coming back.[/mark]",
     "roleLabel": "SURFACES I DESIGNED FOR",
     "roleValue": "Desktop · Web · iOS/Android · Chat UI · Figma plugins",
-    "typeSpeed": "12",
+    "typeSpeed": "17",
     "showcaseCaptions": {
-      "arcatext": "",
-      "arcatext-analysis": "",
-      "d2c": "",
-      "conversant": "",
-      "usaa": ""
+      "arcatext": "Arcatext, user driven language learning",
+      "arcatext-analysis": "Arcatext Analysis, understanding keyboard performance & adjusting real parameters",
+      "d2c": "D2C, a 2-way bridge between Figma & Claude Code",
+      "conversant": "Conversant, an enterprise system for USAA employees",
+      "usaa": "USAA Web and Mobile, cross-platform homepages for the complete member relationship"
     },
     "intro": [
       "",
@@ -3880,16 +3880,7 @@
                 }
               }
             ],
-            "r3c1": [
-              {
-                "type": "element",
-                "variant": "card-text",
-                "data": {
-                  "body": "A short note that stands on its own, with no heading above it.",
-                  "size": "lg"
-                }
-              }
-            ]
+            "r3c1": []
           }
         }
       ]

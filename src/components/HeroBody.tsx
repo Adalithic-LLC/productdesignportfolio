@@ -5,8 +5,9 @@
  * column rather than two that overlap.
  *
  * The copy is there from the first frame -- every character is in the DOM,
- * holding its own space, and only `visibility` is flipped as the cursor
- * reaches it. So the paragraph is its final size before a word of it can be
+ * holding its own space, and only `visibility` is flipped as the typing
+ * reaches it. There is no cursor: one riding the last character typed dropped
+ * to the next line whenever that character was a space at a line break. So the paragraph is its final size before a word of it can be
  * read, and nothing below it moves while it types. A reveal that built the
  * text up instead would reflow the page on every character and shift the
  * previews under it line by line.
@@ -139,7 +140,7 @@ export function HeroBody({
       }
 
       /* One piece per word, each drawing over exactly the time that word takes
-         to type, so the mark arrives under the cursor rather than ahead of or
+         to type, so the mark arrives with the typing rather than ahead of or
          behind it. A segment with no words in it (whitespace between two
          marks) has nothing to time, so it stays whole. */
       const pieces = toPieces(tokens);
@@ -198,7 +199,6 @@ export function HeroBody({
     letters.forEach((letter) => (letter.style.visibility = 'hidden'));
 
     let shown = 0;
-    let cursor: HTMLElement | null = null;
     const startAt = performance.now() + delay * 1000;
 
     const step = (now: number) => {
@@ -209,20 +209,13 @@ export function HeroBody({
       if (want !== shown) {
         for (let i = shown; i < want; i++) letters[i].style.visibility = 'visible';
         shown = want;
-        // The cursor rides the last character typed, drawn outside the flow so
-        // it cannot nudge the line it sits on.
-        cursor?.classList.remove('is-cursor');
-        cursor = shown > 0 ? letters[shown - 1] : null;
-        cursor?.classList.add('is-cursor');
       }
       if (shown < letters.length) frame = requestAnimationFrame(step);
-      else cursor?.classList.remove('is-cursor');
     };
 
     let frame = requestAnimationFrame(step);
     return () => {
       cancelAnimationFrame(frame);
-      cursor?.classList.remove('is-cursor');
       // Whatever interrupted this -- an edit, a theme change, a speed change --
       // must not leave the copy half written.
       letters.forEach((letter) => (letter.style.visibility = ''));

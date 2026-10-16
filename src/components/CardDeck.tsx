@@ -25,7 +25,7 @@
  *
  * The motion itself lives in .deck-card in index.css.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -34,8 +34,11 @@ const BASE = import.meta.env.BASE_URL;
 /** How long a card's trip to the back takes; must match the deck-flick keyframe. */
 const FLICK_MS = 750;
 
-/** `darkSrc`: the same screen in dark appearance, shown on the dark theme. */
-export type DeckCard = { src: string; alt: string; darkSrc?: string };
+/**
+ * A card is a picture (`src`, with `darkSrc` for the dark theme) or a drawn
+ * screen (`screen`), which themes itself. `id` keys it either way.
+ */
+export type DeckCard = { id: string; alt: string; src?: string; darkSrc?: string; screen?: ReactNode };
 
 export function CardDeck({
   cards,
@@ -115,10 +118,18 @@ export function CardDeck({
         const isLeaving = leaving === i;
         const lit = isFront || isLeaving;
         return (
-          <button
-            key={card.src}
-            type="button"
+          /* A div with a button's role rather than a <button>: a drawn
+             screen has buttons of its own inside, and buttons cannot nest. */
+          <div
+            key={card.id}
+            role="button"
             onClick={onSelect}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect();
+              }
+            }}
             tabIndex={isFront ? 0 : -1}
             aria-hidden={!isFront}
             aria-label={`${card.alt} — see the projects`}
@@ -131,20 +142,22 @@ export function CardDeck({
               isLeaving ? 'deck-card--leaving' : '',
             ].join(' ')}
           >
-            <img
-              src={`${BASE}hero-tiles/${dark && card.darkSrc ? card.darkSrc : card.src}`}
-              alt=""
-              width={width}
-              height={height}
-              decoding="sync"
-              className="h-full w-full object-contain"
-            />
+            {card.screen ?? (
+              <img
+                src={`${BASE}hero-tiles/${dark && card.darkSrc ? card.darkSrc : card.src}`}
+                alt=""
+                width={width}
+                height={height}
+                decoding="sync"
+                className="h-full w-full object-contain"
+              />
+            )}
             {/* The plain grey card the deck shows behind the live screen. */}
             <span
               aria-hidden
               className={`absolute inset-0 bg-neutral-300 dark:bg-neutral-700 transition-opacity ${lit ? 'opacity-0 duration-0' : 'opacity-100 duration-200'}`}
             />
-          </button>
+          </div>
         );
       })}
     </div>

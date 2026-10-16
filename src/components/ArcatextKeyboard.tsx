@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, Plus, ArrowUp, Mic, RotateCcw, Pause, Play } from 'lucide-react';
 // Keyboard glyphs, from the Arcatext design assets (shared with adalithic.com),
 // so the toolbar and action keys match the shipping app rather than approximating it.
@@ -26,7 +26,9 @@ import obArrowUrl from '@/assets/arcatext/ob-arrow.png';
 import ArcatextOptionsPage, { type OptionsConfig } from '@/components/ArcatextOptionsPage';
 import {
   CheckPanel,
+  FixWordsCard,
   PastePanel,
+  VIEW_H,
   StudyPanel,
   Spinner,
   type CheckState,
@@ -128,8 +130,32 @@ const japaneseOptions = (alphabet: 'standard' | 'romanized'): OptionsConfig => (
     caption at each element, waiting for Next (the Check case study's figure). */
 export type Scene = 'type' | 'reword' | 'check' | 'checkTour' | 'checkGuide' | 'paste' | 'study' | 'options';
 
-type View = 'none' | 'check' | 'paste' | 'study' | 'options';
+export type View = 'none' | 'check' | 'fixWords' | 'paste' | 'study' | 'options';
 type Bubble = { id: number; text: string };
+
+/**
+ * One held frame instead of the timeline: the screen as it stands at some
+ * moment of a scene, drawn and themed like the playing phones. The home page
+ * hero's cards are these. Unset fields take the timeline's resting values.
+ */
+export type Still = {
+  view?: View;
+  /** The message field. */
+  text?: string;
+  sent?: string[];
+  received?: string | null;
+  /** Check results; the view opens loaded (reverse translation done). */
+  check?: Partial<CheckState>;
+  /** Scroll the Check view so this `data-tour` target sits near its top. */
+  checkAt?: string;
+  paste?: { stage: PasteStage; original: string; translation: string };
+  study?: { stage: StudyStage; scroll?: number; rows?: StudyRow[] };
+  /** The Options page's settings (the language, its genders, copy, …). */
+  options?: OptionsConfig;
+  /** Fix Words: the sentence in its field, and whether it has been changed
+      (which lights Apply). */
+  fixWords?: { text: string; edited: boolean };
+};
 
 const DESIGN_W = 402;
 const SCREEN_H = 874;
@@ -374,6 +400,8 @@ export default function ArcatextKeyboard({
   onPause,
   onPlay,
   onRestart,
+  still,
+  bare = false,
 }: {
   /** The scenes this phone plays, in order, looping. */
   scenes?: Scene[];
@@ -388,21 +416,30 @@ export default function ArcatextKeyboard({
   onRestart?: () => void;
   /** Accepted for older call sites; the demo is always the compact phone. */
   compact?: boolean;
+  /** Hold this frame rather than play (see `Still`). */
+  still?: Still;
+  /** The screen alone, square-cornered: no bezel and no controls, for a
+      container that supplies its own frame (the hero's cards). */
+  bare?: boolean;
 } = {}) {
   const phoneScale = scale ?? BASE_SCALE;
   // ── visual state driven by the timeline ──
-  const [text, setText] = useState('');
-  const [sent, setSent] = useState<Bubble[]>([]);
-  const [received, setReceived] = useState<Bubble | null>(null);
-  const [view, setView] = useState<View>('none');
+  const [text, setText] = useState(still?.text ?? '');
+  const [sent, setSent] = useState<Bubble[]>(() => (still?.sent ?? []).map((t, i) => ({ id: -1 - i, text: t })));
+  const [received, setReceived] = useState<Bubble | null>(() =>
+    still?.received ? { id: -100, text: still.received } : null,
+  );
+  const [view, setView] = useState<View>(still?.view ?? 'none');
   const [rewordLoading, setRewordLoading] = useState(false);
   const [pressed, setPressed] = useState<string | null>(null);
-  const [check, setCheck] = useState<CheckState>(CHECK_IDLE);
+  const [check, setCheck] = useState<CheckState>(() =>
+    still ? { ...CHECK_IDLE, opening: false, reverse: 'done', ...still.check } : CHECK_IDLE,
+  );
   /** The guided tour's current stop, while it waits for Next. */
   const [callout, setCallout] = useState<TourStop | null>(null);
-  const [pasteStage, setPasteStage] = useState<PasteStage>('empty');
-  const [studyStage, setStudyStage] = useState<StudyStage>('spinner');
-  const [studyScroll, setStudyScroll] = useState(0);
+  const [pasteStage, setPasteStage] = useState<PasteStage>(still?.paste?.stage ?? 'empty');
+  const [studyStage, setStudyStage] = useState<StudyStage>(still?.study?.stage ?? 'spinner');
+  const [studyScroll, setStudyScroll] = useState(still?.study?.scroll ?? 0);
   const [optMenuOpen, setOptMenuOpen] = useState(false);
   const [optHighlight, setOptHighlight] = useState<string | null>(null);
   const [alphabet, setAlphabet] = useState<'standard' | 'romanized'>('standard');
@@ -482,8 +519,18 @@ export default function ArcatextKeyboard({
     tRef.current = setTimeout(schedule, beat.ms);
   }, []);
 
-  // Build the timeline for this phone's scenes.
+  const isStill = still !== undefined;
+  const checkAt = still?.checkAt;
+  // A still frame opens the Check view already scrolled to its subject.
+  useLayoutEffect(() => {
+    const c = checkScrollRef.current;
+    const el = checkAt ? c?.querySelector<HTMLElement>(`[data-tour="${checkAt}"]`) : null;
+    if (c && el) c.scrollTop = Math.max(0, Math.min(el.offsetTop - 70, c.scrollHeight - c.clientHeight));
+  }, [checkAt]);
+
+  // Build the timeline for this phone's scenes. A still frame has none.
   useEffect(() => {
+    if (isStill) return;
     const beats: { fn: () => void; ms: number }[] = [];
     const b = (fn: () => void, ms: number) => beats.push({ fn, ms });
     const reset = (opts: { text?: string; sent?: string[]; received?: string | null } = {}) => {
@@ -675,7 +722,7 @@ export default function ArcatextKeyboard({
     playRef.current = true;
     schedule();
     return () => clearTimeout(tRef.current);
-  }, [schedule, scenesKey]);
+  }, [schedule, scenesKey, isStill]);
 
   // Play only while on screen: a row of phones would otherwise all run at once.
   useEffect(() => {
@@ -747,6 +794,327 @@ export default function ArcatextKeyboard({
   const row3 = ['z', 'x', 'c', 'v', 'b', 'n', 'm'];
   const nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
+  /** The four rows of keys: under the toolbar, and in Fix Words' own sheet. */
+  const keyRows = (
+    <>
+      <div className="mb-[8px] flex gap-[5px]">
+        {row1.map((l, i) => (
+          <Key key={l} label={lower ? l : l.toUpperCase()} num={nums[i]} />
+        ))}
+      </div>
+      <div className="mb-[8px] flex gap-[5px] px-[18px]">
+        {row2.map((l) => (
+          <Key key={l} label={lower ? l : l.toUpperCase()} />
+        ))}
+      </div>
+      <div className="mb-[8px] flex gap-[5px]">
+        <Key bg={C.actionKey} grow={1.5}>
+          <AxIcon light={shiftUrl} dark={shiftDarkUrl} width={19} height={17} />
+        </Key>
+        {row3.map((l) => (
+          <Key key={l} label={lower ? l : l.toUpperCase()} />
+        ))}
+        <Key bg={C.actionKey} grow={1.5}>
+          <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
+        </Key>
+      </div>
+      <div className="mb-2 flex gap-[5px]">
+        <Key bg={C.actionKey} grow={1.6} fontSize={15}>
+          123
+        </Key>
+        <Key bg={C.actionKey} grow={1.2}>
+          <AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />
+        </Key>
+        <Key grow={5} fontSize={15}>
+          <span style={{ opacity: 0.85 }}>space</span>
+        </Key>
+        <Key bg={C.actionKey} grow={1.6}>
+          <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Key>
+      </div>
+    </>
+  );
+
+  /* The screen itself. A playing phone sets it in a bezel with controls under
+     it; a bare one (the hero's cards) is the screen alone, square-cornered for
+     the card to round. */
+  const screen = (
+    <div
+      className="relative flex flex-col overflow-hidden"
+      style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: bare ? 0 : 44, background: AX.screen }}
+    >
+      {/* Status bar */}
+      <div className="relative flex h-11 shrink-0 items-center justify-between px-7 pt-1" style={{ color: AX.ink }}>
+        <span className="text-[15px] font-semibold">12:11</span>
+        <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-end gap-[2px]">
+            {[6, 9, 12, 15].map((h, i) => (
+              <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: AX.ink }} />
+            ))}
+          </div>
+          <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
+            <path
+              d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l-1.3 1.4A7.7 7.7 0 008.5 4.1 7.7 7.7 0 003.3 6.2L2 4.8A9.5 9.5 0 018.5 2.2zm0 3.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4a3.5 3.5 0 00-5 0L4.6 7.4A5.5 5.5 0 018.5 5.8zm0 3.5c.7 0 1.3.3 1.8.8L8.5 12 6.7 10.1c.5-.5 1.1-.8 1.8-.8z"
+              fill="currentColor"
+            />
+          </svg>
+          <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: AX.batteryRing }}>
+            <div className="h-full w-full rounded-[1px]" style={{ background: AX.ink }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="flex shrink-0 flex-col items-center border-b px-4 pb-3 pt-1" style={{ borderColor: AX.hairline }}>
+        <div className="flex w-full items-center justify-between">
+          <ChevronLeft className="h-7 w-7" style={{ color: C.send }} strokeWidth={2.4} />
+          <div className="w-7" />
+        </div>
+        <div className="-mt-5 flex flex-col items-center gap-1">
+          <div
+            className="grid h-12 w-12 place-items-center rounded-full text-sm font-semibold text-white"
+            style={{ background: 'linear-gradient(160deg,#8e9bd6,#6f7fc4)' }}
+          >
+            JA
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-[15px] font-semibold" style={{ color: AX.ink }}>+1 (888) 555-1212</span>
+            <ChevronRight className="h-4 w-4" style={{ color: AX.inkMuted }} strokeWidth={2.4} />
+          </div>
+        </div>
+      </div>
+
+      {/* Conversation */}
+      <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-hidden px-3 pb-2">
+        {showChat && (
+          <>
+            <div className="text-center text-[13px] font-medium" style={{ color: AX.inkMuted }}>iMessage</div>
+            <div className="mb-1 flex items-center justify-center gap-1 text-[12px]" style={{ color: AX.inkMuted }}>
+              <svg width="9" height="11" viewBox="0 0 9 11" fill="none">
+                <rect x="0.6" y="4.6" width="7.8" height="6" rx="1.6" fill="currentColor" />
+                <path d="M2 4.5V3a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.1" fill="none" />
+              </svg>
+              Encrypted
+            </div>
+            <div className="mb-1 text-center text-[12px]" style={{ color: AX.inkMuted }}>
+              Today <span className="font-medium">12:12 AM</span>
+            </div>
+          </>
+        )}
+        {sent.map((m, i) => (
+          <div key={m.id} className="flex flex-col items-end">
+            {/* Rises out of the field as it sends. */}
+            <div
+              className="max-w-[78%] origin-bottom-right rounded-[20px] px-3.5 py-2 text-[17px] text-white animate-in fade-in-0 zoom-in-90 slide-in-from-bottom-6 duration-300"
+              style={{ background: C.sentBubble }}
+            >
+              {m.text}
+            </div>
+            {i === sent.length - 1 && !received && (
+              <span className="mr-1 mt-0.5 text-[11px]" style={{ color: AX.inkMuted }}>Delivered</span>
+            )}
+          </div>
+        ))}
+        {received && (
+          <div className="flex justify-start">
+            <div
+              className="max-w-[78%] origin-bottom-left rounded-[20px] px-3.5 py-2 text-[17px] animate-in fade-in-0 zoom-in-95 duration-300"
+              style={{ background: C.recvGray, color: AX.ink }}
+            >
+              {received.text}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input bar. The field grows a line at a time as the message wraps,
+          like Messages: the + and send buttons stay on its bottom line. */}
+      <div className="flex shrink-0 items-end gap-2 px-3 pb-2 pt-1">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
+          <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
+        </div>
+        <div
+          className="flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2"
+          style={{ borderColor: AX.fieldBorder }}
+        >
+          {hasText ? (
+            <span className="min-w-0 flex-1 break-words text-[15px] leading-5" style={{ color: AX.ink }}>
+              {text}
+              <span className="ml-[1px] inline-block h-4 w-[2px] translate-y-[3px] animate-pulse" style={{ background: C.send }} />
+            </span>
+          ) : (
+            <>
+              <span className="text-[15px] leading-5" style={{ color: AX.fieldPlaceholder }}>
+                iMessage
+              </span>
+              <span className="ml-[1px] inline-block h-4 w-[2px] self-center animate-pulse" style={{ background: C.send }} />
+              <div className="flex-1" />
+              <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />
+            </>
+          )}
+        </div>
+        {hasText && (
+          <div className="relative h-9 w-9 shrink-0">
+            {/* The tap: a touch halo, and the button dips while held. */}
+            {pressed === 'send' && (
+              <span
+                aria-hidden
+                className="absolute -inset-2 rounded-full bg-black/15 animate-in fade-in-0 zoom-in-50 duration-150 dark:bg-white/25"
+              />
+            )}
+            <div
+              className="relative grid h-9 w-9 place-items-center rounded-full"
+              style={{
+                backgroundColor: C.send,
+                transform: pressed === 'send' ? 'scale(0.86)' : 'scale(1)',
+                filter: pressed === 'send' ? 'brightness(0.82)' : 'none',
+                transition: 'transform 120ms ease-out, filter 120ms ease-out',
+              }}
+            >
+              <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Keyboard, or the open view in its place (a view replaces the
+          toolbar and the keys together). */}
+      {view === 'none' && (
+        <div style={{ backgroundColor: C.toolbarBar }} className="shrink-0 px-[5px] pb-1 pt-2">
+          {/* Toolbar: Study, Paste, Check left-clustered with 12pt gaps
+              and 8pt edge margins; the split Reword pill at the trailing
+              edge (StandardToolbar base metrics). */}
+          <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
+            <ToolButton pressed={pressed === 'study'} onClick={() => jump('study')} label="Open Study">
+              <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
+            </ToolButton>
+            <ToolButton pressed={pressed === 'paste'} onClick={() => jump('paste')} label="Open Paste">
+              <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
+            </ToolButton>
+            <ToolButton pressed={pressed === 'check'} onClick={() => jump('check')} label="Open Check">
+              <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
+            </ToolButton>
+            <div className="flex-1" />
+            <div
+              className="relative flex items-stretch overflow-hidden rounded-[12px] transition-colors duration-100"
+              style={{ height: 50, backgroundColor: pressed === 'reword' ? C.rewordPressed : C.rewordBg }}
+            >
+              {/* The label stays in the layout (hidden) under the spinner,
+                  as StandardToolbar does with opacity 0, so the pill
+                  keeps its width while it loads. */}
+              <button
+                onClick={() => jump(scenesKey.includes('reword') ? 'reword' : 'options')}
+                className="relative flex items-center px-[14px]"
+                aria-label="Reword"
+              >
+                <span className={`text-[16px] font-medium text-white ${rewordLoading ? 'invisible' : ''}`}>Reword</span>
+                {rewordLoading && (
+                  <span className="absolute inset-0 grid place-items-center">
+                    <Spinner size={20} color="#fff" track="rgba(255,255,255,0.4)" />
+                  </span>
+                )}
+              </button>
+              <div className="self-center" style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.5)' }} />
+              <button
+                onClick={() => jump('options')}
+                className="relative grid place-items-center transition-colors duration-100"
+                style={{ width: 40, background: pressed === 'options' ? 'rgba(0,0,0,0.2)' : undefined }}
+                aria-label="Reword options"
+              >
+                <ChevronDown className="h-4 w-4 text-white" strokeWidth={2.4} />
+              </button>
+            </div>
+          </div>
+
+          {keyRows}
+        </div>
+      )}
+
+      {view === 'check' && (
+        <div className="shrink-0">
+          <CheckPanel
+            state={check}
+            data={isStill || scenesKey.includes('checkGuide') ? CHECK_ES : CHECK_DATA}
+            scrollRef={checkScrollRef}
+            synRef={synRef}
+            detectRef={detectRef}
+            onClose={closeView}
+            showAnalyze={isStill || scenesKey.includes('checkGuide')}
+            pressed={pressed}
+          />
+        </div>
+      )}
+      {/* Fix Words opens as a sheet over Check: its card at the top, its own
+          four rows of keys at the bottom, no toolbar. */}
+      {view === 'fixWords' && (
+        <div className="flex shrink-0 flex-col" style={{ height: VIEW_H, background: AX.pageBg }}>
+          <div className="pt-5">
+            <FixWordsCard
+              text={still?.fixWords?.text ?? CHECK_ES.reverse}
+              edited={still?.fixWords?.edited ?? false}
+            />
+          </div>
+          <div className="flex-1" />
+          <div className="px-[5px]">{keyRows}</div>
+        </div>
+      )}
+      {view === 'paste' && (
+        <div className="shrink-0">
+          <PastePanel
+            stage={pasteStage}
+            original={still?.paste?.original ?? RECV_JA}
+            translation={still?.paste?.translation ?? RECV_EN}
+            pastePressed={pressed === 'pasteButton'}
+            onClose={closeView}
+          />
+        </div>
+      )}
+      {view === 'study' && (
+        <div className="shrink-0">
+          <StudyPanel stage={studyStage} rows={still?.study?.rows ?? STUDY_ROWS} total={36} scroll={studyScroll} onClose={closeView} />
+        </div>
+      )}
+      {view === 'options' && (
+        <div className="shrink-0">
+          <ArcatextOptionsPage
+            config={still?.options ?? japaneseOptions(alphabet)}
+            scriptMenuOpen={optMenuOpen}
+            scriptHighlight={optHighlight ?? undefined}
+            onClose={closeView}
+          />
+        </div>
+      )}
+
+      {/* Globe and dictation, under the keyboard and under every view.
+          Spaced as on device captures: 29pt from the last key row to the
+          icons (12pt of keyboard padding + 17pt), 22pt from the bottom of
+          an open view, and 28pt under them for the home indicator. */}
+      <div
+        style={{ backgroundColor: C.toolbarBar, paddingTop: view === 'none' ? 17 : 22 }}
+        className="flex shrink-0 items-center justify-between px-5 pb-[28px]"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+          <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
+          <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
+        </svg>
+        <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
+      </div>
+    </div>
+  );
+
+  if (bare) {
+    return (
+      <div ref={rootRef} style={{ width: DESIGN_W * phoneScale, height: SCREEN_H * phoneScale }}>
+        <div style={{ width: DESIGN_W, transform: `scale(${phoneScale})`, transformOrigin: 'top left' }}>{screen}</div>
+      </div>
+    );
+  }
+
   return (
     <div ref={rootRef} className="flex flex-col items-center">
       {/* iPhone */}
@@ -773,292 +1141,7 @@ export default function ArcatextKeyboard({
             boxShadow: `0 0 0 1px ${AX.bezelRing}, 0 30px 60px -20px rgba(20,10,40,0.5)`,
           }}
         >
-          <div
-            className="relative flex flex-col overflow-hidden"
-            style={{ width: DESIGN_W, height: SCREEN_H, borderRadius: 44, background: AX.screen }}
-          >
-            {/* Status bar */}
-            <div className="relative flex h-11 shrink-0 items-center justify-between px-7 pt-1" style={{ color: AX.ink }}>
-              <span className="text-[15px] font-semibold">12:11</span>
-              <div className="absolute left-1/2 top-2 h-7 w-[100px] -translate-x-1/2 rounded-full bg-black" />
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-end gap-[2px]">
-                  {[6, 9, 12, 15].map((h, i) => (
-                    <span key={i} className="w-[3px] rounded-[1px]" style={{ height: h, background: AX.ink }} />
-                  ))}
-                </div>
-                <svg width="17" height="13" viewBox="0 0 17 13" fill="none">
-                  <path
-                    d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l-1.3 1.4A7.7 7.7 0 008.5 4.1 7.7 7.7 0 003.3 6.2L2 4.8A9.5 9.5 0 018.5 2.2zm0 3.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4a3.5 3.5 0 00-5 0L4.6 7.4A5.5 5.5 0 018.5 5.8zm0 3.5c.7 0 1.3.3 1.8.8L8.5 12 6.7 10.1c.5-.5 1.1-.8 1.8-.8z"
-                    fill="currentColor"
-                  />
-                </svg>
-                <div className="ml-[1px] flex h-[13px] w-[24px] items-center rounded-[3px] border p-[1.5px]" style={{ borderColor: AX.batteryRing }}>
-                  <div className="h-full w-full rounded-[1px]" style={{ background: AX.ink }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Header */}
-            <div className="flex shrink-0 flex-col items-center border-b px-4 pb-3 pt-1" style={{ borderColor: AX.hairline }}>
-              <div className="flex w-full items-center justify-between">
-                <ChevronLeft className="h-7 w-7" style={{ color: C.send }} strokeWidth={2.4} />
-                <div className="w-7" />
-              </div>
-              <div className="-mt-5 flex flex-col items-center gap-1">
-                <div
-                  className="grid h-12 w-12 place-items-center rounded-full text-sm font-semibold text-white"
-                  style={{ background: 'linear-gradient(160deg,#8e9bd6,#6f7fc4)' }}
-                >
-                  JA
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[15px] font-semibold" style={{ color: AX.ink }}>+1 (888) 555-1212</span>
-                  <ChevronRight className="h-4 w-4" style={{ color: AX.inkMuted }} strokeWidth={2.4} />
-                </div>
-              </div>
-            </div>
-
-            {/* Conversation */}
-            <div className="flex min-h-0 flex-1 flex-col justify-end gap-1.5 overflow-hidden px-3 pb-2">
-              {showChat && (
-                <>
-                  <div className="text-center text-[13px] font-medium" style={{ color: AX.inkMuted }}>iMessage</div>
-                  <div className="mb-1 flex items-center justify-center gap-1 text-[12px]" style={{ color: AX.inkMuted }}>
-                    <svg width="9" height="11" viewBox="0 0 9 11" fill="none">
-                      <rect x="0.6" y="4.6" width="7.8" height="6" rx="1.6" fill="currentColor" />
-                      <path d="M2 4.5V3a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.1" fill="none" />
-                    </svg>
-                    Encrypted
-                  </div>
-                  <div className="mb-1 text-center text-[12px]" style={{ color: AX.inkMuted }}>
-                    Today <span className="font-medium">12:12 AM</span>
-                  </div>
-                </>
-              )}
-              {sent.map((m, i) => (
-                <div key={m.id} className="flex flex-col items-end">
-                  {/* Rises out of the field as it sends. */}
-                  <div
-                    className="max-w-[78%] origin-bottom-right rounded-[20px] px-3.5 py-2 text-[17px] text-white animate-in fade-in-0 zoom-in-90 slide-in-from-bottom-6 duration-300"
-                    style={{ background: C.sentBubble }}
-                  >
-                    {m.text}
-                  </div>
-                  {i === sent.length - 1 && !received && (
-                    <span className="mr-1 mt-0.5 text-[11px]" style={{ color: AX.inkMuted }}>Delivered</span>
-                  )}
-                </div>
-              ))}
-              {received && (
-                <div className="flex justify-start">
-                  <div
-                    className="max-w-[78%] origin-bottom-left rounded-[20px] px-3.5 py-2 text-[17px] animate-in fade-in-0 zoom-in-95 duration-300"
-                    style={{ background: C.recvGray, color: AX.ink }}
-                  >
-                    {received.text}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input bar. The field grows a line at a time as the message wraps,
-                like Messages: the + and send buttons stay on its bottom line. */}
-            <div className="flex shrink-0 items-end gap-2 px-3 pb-2 pt-1">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
-                <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
-              </div>
-              <div
-                className="flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2"
-                style={{ borderColor: AX.fieldBorder }}
-              >
-                {hasText ? (
-                  <span className="min-w-0 flex-1 break-words text-[15px] leading-5" style={{ color: AX.ink }}>
-                    {text}
-                    <span className="ml-[1px] inline-block h-4 w-[2px] translate-y-[3px] animate-pulse" style={{ background: C.send }} />
-                  </span>
-                ) : (
-                  <>
-                    <span className="text-[15px] leading-5" style={{ color: AX.fieldPlaceholder }}>
-                      iMessage
-                    </span>
-                    <span className="ml-[1px] inline-block h-4 w-[2px] self-center animate-pulse" style={{ background: C.send }} />
-                    <div className="flex-1" />
-                    <Mic className="h-5 w-5 shrink-0" style={{ color: AX.fieldPlaceholder }} strokeWidth={2} />
-                  </>
-                )}
-              </div>
-              {hasText && (
-                <div className="relative h-9 w-9 shrink-0">
-                  {/* The tap: a touch halo, and the button dips while held. */}
-                  {pressed === 'send' && (
-                    <span
-                      aria-hidden
-                      className="absolute -inset-2 rounded-full bg-black/15 animate-in fade-in-0 zoom-in-50 duration-150 dark:bg-white/25"
-                    />
-                  )}
-                  <div
-                    className="relative grid h-9 w-9 place-items-center rounded-full"
-                    style={{
-                      backgroundColor: C.send,
-                      transform: pressed === 'send' ? 'scale(0.86)' : 'scale(1)',
-                      filter: pressed === 'send' ? 'brightness(0.82)' : 'none',
-                      transition: 'transform 120ms ease-out, filter 120ms ease-out',
-                    }}
-                  >
-                    <ArrowUp className="h-5 w-5 text-white" strokeWidth={2.8} />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Keyboard, or the open view in its place (a view replaces the
-                toolbar and the keys together). */}
-            {view === 'none' && (
-              <div style={{ backgroundColor: C.toolbarBar }} className="shrink-0 px-[5px] pb-1 pt-2">
-                {/* Toolbar: Study, Paste, Check left-clustered with 12pt gaps
-                    and 8pt edge margins; the split Reword pill at the trailing
-                    edge (StandardToolbar base metrics). */}
-                <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-                  <ToolButton pressed={pressed === 'study'} onClick={() => jump('study')} label="Open Study">
-                    <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
-                  </ToolButton>
-                  <ToolButton pressed={pressed === 'paste'} onClick={() => jump('paste')} label="Open Paste">
-                    <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
-                  </ToolButton>
-                  <ToolButton pressed={pressed === 'check'} onClick={() => jump('check')} label="Open Check">
-                    <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
-                  </ToolButton>
-                  <div className="flex-1" />
-                  <div
-                    className="relative flex items-stretch overflow-hidden rounded-[12px] transition-colors duration-100"
-                    style={{ height: 50, backgroundColor: pressed === 'reword' ? C.rewordPressed : C.rewordBg }}
-                  >
-                    {/* The label stays in the layout (hidden) under the spinner,
-                        as StandardToolbar does with opacity 0, so the pill
-                        keeps its width while it loads. */}
-                    <button
-                      onClick={() => jump(scenesKey.includes('reword') ? 'reword' : 'options')}
-                      className="relative flex items-center px-[14px]"
-                      aria-label="Reword"
-                    >
-                      <span className={`text-[16px] font-medium text-white ${rewordLoading ? 'invisible' : ''}`}>Reword</span>
-                      {rewordLoading && (
-                        <span className="absolute inset-0 grid place-items-center">
-                          <Spinner size={20} color="#fff" track="rgba(255,255,255,0.4)" />
-                        </span>
-                      )}
-                    </button>
-                    <div className="self-center" style={{ width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.5)' }} />
-                    <button
-                      onClick={() => jump('options')}
-                      className="relative grid place-items-center transition-colors duration-100"
-                      style={{ width: 40, background: pressed === 'options' ? 'rgba(0,0,0,0.2)' : undefined }}
-                      aria-label="Reword options"
-                    >
-                      <ChevronDown className="h-4 w-4 text-white" strokeWidth={2.4} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-[8px] flex gap-[5px]">
-                  {row1.map((l, i) => (
-                    <Key key={l} label={lower ? l : l.toUpperCase()} num={nums[i]} />
-                  ))}
-                </div>
-                <div className="mb-[8px] flex gap-[5px] px-[18px]">
-                  {row2.map((l) => (
-                    <Key key={l} label={lower ? l : l.toUpperCase()} />
-                  ))}
-                </div>
-                <div className="mb-[8px] flex gap-[5px]">
-                  <Key bg={C.actionKey} grow={1.5}>
-                    <AxIcon light={shiftUrl} dark={shiftDarkUrl} width={19} height={17} />
-                  </Key>
-                  {row3.map((l) => (
-                    <Key key={l} label={lower ? l : l.toUpperCase()} />
-                  ))}
-                  <Key bg={C.actionKey} grow={1.5}>
-                    <AxIcon light={backspaceUrl} dark={backspaceDarkUrl} width={23} height={17} />
-                  </Key>
-                </div>
-                <div className="mb-2 flex gap-[5px]">
-                  <Key bg={C.actionKey} grow={1.6} fontSize={15}>
-                    123
-                  </Key>
-                  <Key bg={C.actionKey} grow={1.2}>
-                    <AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />
-                  </Key>
-                  <Key grow={5} fontSize={15}>
-                    <span style={{ opacity: 0.85 }}>space</span>
-                  </Key>
-                  <Key bg={C.actionKey} grow={1.6}>
-                    <svg width="24" height="22" viewBox="0 0 24 24" fill="none">
-                      <path d="M19 7v4a2 2 0 0 1-2 2H7" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M11 9l-4 4 4 4" stroke={AX.glyph} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </Key>
-                </div>
-              </div>
-            )}
-
-            {view === 'check' && (
-              <div className="shrink-0">
-                <CheckPanel
-                  state={check}
-                  data={scenesKey.includes('checkGuide') ? CHECK_ES : CHECK_DATA}
-                  scrollRef={checkScrollRef}
-                  synRef={synRef}
-                  detectRef={detectRef}
-                  onClose={closeView}
-                  showAnalyze={scenesKey.includes('checkGuide')}
-                  pressed={pressed}
-                />
-              </div>
-            )}
-            {view === 'paste' && (
-              <div className="shrink-0">
-                <PastePanel
-                  stage={pasteStage}
-                  original={RECV_JA}
-                  translation={RECV_EN}
-                  pastePressed={pressed === 'pasteButton'}
-                  onClose={closeView}
-                />
-              </div>
-            )}
-            {view === 'study' && (
-              <div className="shrink-0">
-                <StudyPanel stage={studyStage} rows={STUDY_ROWS} total={36} scroll={studyScroll} onClose={closeView} />
-              </div>
-            )}
-            {view === 'options' && (
-              <div className="shrink-0">
-                <ArcatextOptionsPage
-                  config={japaneseOptions(alphabet)}
-                  scriptMenuOpen={optMenuOpen}
-                  scriptHighlight={optHighlight ?? undefined}
-                  onClose={closeView}
-                />
-              </div>
-            )}
-
-            {/* Globe and dictation, under the keyboard and under every view.
-                Spaced as on device captures: 29pt from the last key row to the
-                icons (12pt of keyboard padding + 17pt), 22pt from the bottom of
-                an open view, and 28pt under them for the home indicator. */}
-            <div
-              style={{ backgroundColor: C.toolbarBar, paddingTop: view === 'none' ? 17 : 22 }}
-              className="flex shrink-0 items-center justify-between px-5 pb-[28px]"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9.2" stroke={AX.glyph} strokeWidth="1.5" />
-                <ellipse cx="12" cy="12" rx="4" ry="9.2" stroke={AX.glyph} strokeWidth="1.5" />
-                <path d="M3 12h18M4.5 7.5h15M4.5 16.5h15" stroke={AX.glyph} strokeWidth="1.5" />
-              </svg>
-              <Mic className="h-6 w-6" style={{ color: AX.glyph }} strokeWidth={2} />
-            </div>
-          </div>
+          {screen}
         </div>
       </div>
 
