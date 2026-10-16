@@ -260,7 +260,12 @@ const D = {
   tagFirst: 2.4, // the end card's first tagline word lands
   tagHold: 0.5, // each of the tagline's first three words holds
   tagSpin: SHORT ? 1.0 : 2.2, // the tagline's spin to "a language"
-  tagRest: SHORT ? 1.5 : 1.8, // the finished card holds
+  tagRest: SHORT ? 1.2 : 1.8, // the finished card holds
+  // The short cut's outro, once "a language" lands: the splash plays in reverse
+  // (its logo steps run 1.6s; "Arcatext" backspaces meanwhile), then the camera
+  // pushes in on the tagline.
+  logoOut: SHORT ? 1.6 : 0,
+  tagZoom: SHORT ? 0.9 : 0,
 };
 
 /** Deterministic jitter so typing has a human rhythm. */
@@ -606,7 +611,12 @@ export const TAGLINE_LANDS: number[] = (() => {
   return out;
 })();
 // The end card runs the app's splash (3s), the reel, then holds.
-export const DURATION = Math.ceil((ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1] + D.tagRest) * 2) / 2;
+/** The short cut's outro, from the card's start: the reversal begins as the
+    reel lands, and the push-in on the tagline follows. */
+export const OUTRO = { start: 0, zoomAt: 0, zoom: D.tagZoom };
+OUTRO.start = TAGLINE_LANDS[TAGLINE_LANDS.length - 1];
+OUTRO.zoomAt = OUTRO.start + D.logoOut - 0.3;
+export const DURATION = Math.ceil((ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1] + D.logoOut + D.tagZoom + D.tagRest) * 2) / 2;
 
 /** The Study Guide's entries: words from the Japanese reply first, then older ones. */
 export const STUDY_ROWS_DATA = [
@@ -769,7 +779,10 @@ export function scenes() {
     { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3, flows: flow(fieldFlow(FIELD3_RAW, F3.times)),
       delays: [dl('zoom-in', 'Push in on the field', D.zoom), dl('end-hold', 'Hold before the fade', D.endHold, typedEnd(F3)), dl('fade', 'Fade to the end card', END_FADE, ENDING - END_FADE)] },
     { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE, flows: [tagFlow],
-      delays: [dl('tag-rest', 'Final hold', D.tagRest, ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1])] },
+      delays: [
+        ...(SHORT ? [dl('logo-out', 'Logo reverses and "Arcatext" backspaces', D.logoOut, ENDING + OUTRO.start), dl('tag-zoom', 'Push in on the tagline', D.tagZoom, ENDING + OUTRO.zoomAt)] : []),
+        dl('tag-rest', 'Final hold', D.tagRest, ENDING + TAGLINE_LANDS[TAGLINE_LANDS.length - 1] + D.logoOut + D.tagZoom),
+      ] },
   ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }

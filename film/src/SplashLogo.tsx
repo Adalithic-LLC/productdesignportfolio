@@ -51,7 +51,17 @@ const GREY: [number, number, number] = [0xc0, 0xc0, 0xc0];
 export const SPLASH_LETTERS = Array.from({ length: NAME.length }, (_, i) => TYPE_START + (TYPE_LEN / NAME.length) * i);
 export const SPLASH_DONE = 3.0;
 
-export default function SplashLogo({ s, scale = 1, children }: { s: number; scale?: number; children?: ReactNode }) {
+/** How long the splash's logo steps run, to the grey settling (see above). */
+export const SPLASH_LOGO_LEN = TYPE_START + 0.1;
+
+/**
+ * `out`, when set, is seconds into a true reversal of the splash: the logo's
+ * steps run backwards from the end (grey to blue, back up to full size, the
+ * beams in until it's a line, the line shrinking away) while "Arcatext"
+ * backspaces at the rate it typed.
+ */
+export default function SplashLogo({ s: sIn, scale = 1, out, children }: { s: number; scale?: number; out?: number; children?: ReactNode }) {
+  const s = out != null ? Math.max(0, SPLASH_LOGO_LEN - out) : sIn;
   const column = COLUMN_H * easeInOut(s / 0.4);
   const beam = BEAM_W * easeInOut((s - 0.4) / 0.2);
   const shift = BEAM_H * easeInOut((s - 0.6) / 0.2);
@@ -59,7 +69,9 @@ export default function SplashLogo({ s, scale = 1, children }: { s: number; scal
   const g = easeInOut((s - TYPE_START) / 0.1);
   const color = `rgb(${BLUE.map((c, i) => Math.round(lerp(c, GREY[i], g))).join(',')})`;
   let letters = 0;
-  while (letters < NAME.length && s >= SPLASH_LETTERS[letters]) letters++;
+  while (letters < NAME.length && sIn >= SPLASH_LETTERS[letters]) letters++;
+  // Backspacing: a letter goes at once, then one per typing step.
+  if (out != null) letters = Math.max(0, NAME.length - Math.ceil(out / (TYPE_LEN / NAME.length) - 1e-9));
 
   const w = COLUMN_W + BEAM_W * 2;
   const beamY = COLUMN_H / 2 - BEAM_H / 2 + shift; // centre offset of the lower beams

@@ -34,6 +34,7 @@ import {
   FRAME,
   PORTRAIT,
   STAGE,
+  OUTRO,
   flickEase,
   cues,
   type FieldMsg,
@@ -888,6 +889,8 @@ function taglinePos(s: number) {
 
 const TAG_SIZE = 19;
 const TAG_LINE = TAG_SIZE * 1.3;
+/** How far the short cut's outro pushes in on the tagline. */
+const TAG_ZOOM = 1.3;
 
 /** "Text and learn …": the reel is left-anchored, sized for "a language", so
     the line stays put while the words roll past at any speed. */
@@ -925,12 +928,24 @@ function Ending({ t }: { t: number }) {
   const local = t - ENDING;
   const sub = span(t, ENDING + SPLASH_DONE - 0.6, ENDING + SPLASH_DONE + 0.1, (x) => 1 - (1 - x) ** 3);
   const fade = span(t, DURATION - 0.6, DURATION, (x) => x);
+  const splashScale = PORTRAIT ? 2.4 : 3.2;
+  // The short cut's outro: the splash reverses once the reel lands, then the
+  // camera pushes in on the tagline, which by then sits under the empty
+  // full-size logo frame (the name's line, the gap, the frame, the tagline's
+  // margin and half its line), centred on the stage.
+  const out = OUTRO.zoom > 0 && local >= OUTRO.start ? local - OUTRO.start : undefined;
+  const zk = OUTRO.zoom > 0 ? easeInOutCubic(clamp01((local - OUTRO.zoomAt) / OUTRO.zoom)) : 0;
+  const tagY = ((32 * 1.362 + 2 + 150) / 2 + 16 + TAG_LINE / 2) * splashScale;
   return (
     <div className="absolute inset-0 grid place-items-center bg-black">
       <Glow />
       {/* Centred on the stage (in portrait, above the platforms' caption zone). */}
+      <div
+        className="absolute inset-0 grid place-items-center"
+        style={{ transformOrigin: `${STAGE.cx}px ${STAGE.cy + tagY}px`, transform: zk ? `translate(0px, ${-tagY * zk}px) scale(${lerp(1, TAG_ZOOM, zk)})` : undefined }}
+      >
       <div style={{ transform: `translate(${STAGE.cx - W / 2}px, ${STAGE.cy - H / 2}px)` }}>
-      <SplashLogo s={local} scale={PORTRAIT ? 2.4 : 3.2}>
+      <SplashLogo s={local} scale={splashScale} out={out}>
         <div
           className="mt-4"
           style={{
@@ -945,6 +960,7 @@ function Ending({ t }: { t: number }) {
           <Tagline s={local} />
         </div>
       </SplashLogo>
+      </div>
       </div>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
     </div>
