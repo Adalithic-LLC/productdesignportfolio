@@ -32,7 +32,6 @@ import {
   TIMED,
   FRAME,
   PORTRAIT,
-  SHORT,
   STAGE,
   flickEase,
   cues,
@@ -510,7 +509,7 @@ function keyboardState(t: number) {
     // No key popups in this film: the keys stay flat while the field types.
     keyDown: null,
     pressed,
-    rewordLoading: !!rewording && !SHORT,
+    rewordLoading: false,
   };
 }
 
