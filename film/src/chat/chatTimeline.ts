@@ -172,7 +172,8 @@ const FULL_SCRIPT: Line[] = [
 const SHORT_SCRIPT: Line[] = [
   {
     who: 'them',
-    kind: 'type',
+    // Arrives already written; only the reel's first word types on.
+    kind: 'block',
     // Broken before "based on your" so the reel sits on the second line and
     // even "actual conversations." fits after it.
     text: 'Want to learn practical language skills\nbased on your',
@@ -180,6 +181,7 @@ const SHORT_SCRIPT: Line[] = [
     slot: ['life?', 'interests?', 'actual conversations?'],
     slotInline: true,
     slotTypeDelay: 0.3,
+    after: 1.0,
   },
   {
     who: 'them',
@@ -191,8 +193,8 @@ const SHORT_SCRIPT: Line[] = [
     slot: ['friends.', 'penpals.', 'classmates.', 'AI.'],
     slotInline: true,
     slotTypeDelay: 1.0,
+    after: 1.0,
   },
-  { who: 'me', kind: 'block', text: 'Sounds like something I could use!', after: 1.0 },
   // ── Back up in the chat once the reply is sent, then down again ──
   {
     who: 'them',
@@ -205,20 +207,11 @@ const SHORT_SCRIPT: Line[] = [
     after: 1.0,
     afterSend: true,
   },
-  {
-    who: 'them',
-    kind: 'block',
-    text: 'Use it in any messaging app!',
-    slot: ['WhatsApp', 'HelloTalk', 'Instagram'],
-    slotInline: true,
-    after: 1.0,
-    afterSend: true,
-  },
+  { who: 'them', kind: 'block', text: 'Use it in any messaging app!', after: 1.0, afterSend: true },
 ]
 
 export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
 
-// A '|' marks a half-second pause in the typing; it isn't typed.
 /** A field message's pauses: '|' holds for D.typePause (0.5s), '{0.25}' for exactly that long. */
 const stripPauses = (raw: string) => raw.replace(/\||\{[\d.]+\}/g, '');
 const FIELD_RAW = SHORT ? 'So...|I type a message| and tap Reword?' : 'So...| I just type a message| then tap a button to translate?';
@@ -257,8 +250,8 @@ const D = {
   endHold: 1.0, // the last line holds before the fade to the end card
   tagFirst: 2.4, // the end card's first tagline word lands
   tagHold: 0.5, // each of the tagline's first three words holds
-  tagSpin: 2.2, // the tagline's spin to "a language"
-  tagRest: SHORT ? 1.0 : 1.8, // the finished card holds
+  tagSpin: SHORT ? 1.0 : 2.2, // the tagline's spin to "a language"
+  tagRest: SHORT ? 1.5 : 1.8, // the finished card holds
 };
 
 /** Deterministic jitter so typing has a human rhythm. */
