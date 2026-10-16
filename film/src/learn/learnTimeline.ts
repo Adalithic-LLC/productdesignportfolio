@@ -6,8 +6,7 @@
  *   2. The phone: narration bubbles above the field and keyboard, and a camera
  *      that moves between them: type what you know, add what you want to
  *      learn, Reword it to Spanish, open Study, send.
- *   3. The end card: the app's splash, then three lines, the last with a reel
- *      of languages.
+ *   3. The end card: the app's splash, then its line.
  *
  * Every time here is in seconds from the film's start. The world is laid out
  * in iOS points; heights are measured up from the keyboard's bottom edge.
@@ -55,8 +54,7 @@ export const D = {
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
   splash: 3.0, // the app's splash
-  lineGap: 1.3, // between the end card's lines
-  finalHold: 1.6, // the finished card holds
+  finalHold: 2.6, // the finished card holds, long enough to read its line
 };
 
 // ── 1. Titles ──
@@ -163,18 +161,9 @@ export const STUDY_ROWS_DATA = [
 
 // ── 3. The end card ──
 export const ENDING = WORLD_OUT + D.endFade;
-export const END_LINES = ['Your safety net to explore, make mistakes, and learn.', 'A keyboard available in all your apps'];
-export const END_LINE_AT = END_LINES.map((_, i) => D.splash - 0.3 + i * D.lineGap);
-export const LEARN_LEAD = 'So you can learn';
-export const LEARN_AT = END_LINE_AT[END_LINE_AT.length - 1] + D.lineGap;
-export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'any language.'];
-/** When each language is up, from the card's start: three that hold, then a
-    run that slows to land on "any language.". */
-const GAPS = [0.75, 0.75, 0.45, 0.32, 0.26, 0.26, 0.32, 0.45];
-export const LANG_LANDS: number[] = [LEARN_AT + 0.6];
-for (const g of GAPS) LANG_LANDS.push(LANG_LANDS[LANG_LANDS.length - 1] + g);
-export const LANG_ROLL = 0.22;
-export const DURATION = Math.ceil((ENDING + LANG_LANDS[LANG_LANDS.length - 1] + D.finalHold) * 2) / 2;
+export const END_LINES = ['Your safety net to explore, make mistakes, and learn.'];
+export const END_LINE_AT = [D.splash - 0.3];
+export const DURATION = Math.ceil((ENDING + END_LINE_AT[END_LINE_AT.length - 1] + 0.6 + D.finalHold) * 2) / 2;
 
 export function scenes() {
   const list = [
@@ -193,7 +182,7 @@ export function scenes() {
     { id: 'reword', name: 'Reword to Spanish', start: CAMERA[3][0], texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
     { id: 'study', name: 'Open the Study Guide', start: CAMERA.find((x) => x[2].kind === 'button' && x[2].which === 'study')![0], texts: [] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
-      texts: [...END_LINES.map((x, i) => ({ key: `line${i + 1}`, label: `Line ${i + 1}`, text: x })), { key: 'learn', label: 'Line 3', text: `${LEARN_LEAD} [${LANGS.join(' / ')}]` }] },
+      texts: END_LINES.map((x, i) => ({ key: `line${i + 1}`, label: `Line ${i + 1}`, text: x })) },
   ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ ...s, delays: [], end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
@@ -214,7 +203,7 @@ export function cues() {
     sends: [SEND_AT],
     swipes: [],
     words: [...LINE2_LANDS, ...CHUNK_AT],
-    ticks: LANG_LANDS.map((x) => ENDING + x),
+    ticks: [],
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
     titles: [[0, WORLD_IN]],
     phones: [WORLD_IN],
