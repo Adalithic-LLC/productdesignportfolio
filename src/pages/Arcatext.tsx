@@ -141,14 +141,24 @@ export default function Arcatext() {
         </div>
       </div>
 
-      {/* What the product actually does, up front: one card per feature, its
+      {/* The keyboard in motion, first on the page: a phone per view in a
+          sideways row. It breaks out to the full window width so the row can
+          run to the right edge, and starts on the page's content column (see
+          ArcatextDemoRow). The product shows itself before it is described. */}
+      <section className="pt-32 pb-12 sm:pt-40 sm:pb-16">
+        <div className="mx-[calc(50%-50vw)]">
+          <ArcatextDemoRow />
+        </div>
+      </section>
+
+      {/* What the product actually does: one card per feature, its
           screen on the left and its name on the right, ahead of the title.
           Both are content, so the titles can be reworded and the thumbnails
           swapped from admin.
           The thumbnails crop from the centre, which is where each screen's own
           panel sits -- cropping from the top gives the same chat header on
           every one of them. */}
-      <section className="pt-32 pb-2 sm:pt-40 sm:pb-4">
+      <section className="pt-8 pb-2 sm:pt-10 sm:pb-4">
         {/* The heading keeps the page's text measure; the strip below it does
             not. It runs wider than the copy so the seven items have room to
             breathe, and scrolls where the viewport is narrower than they are. */}
@@ -258,15 +268,6 @@ export default function Arcatext() {
         </div>
       </section>
 
-
-      {/* The keyboard in motion: a phone per view in a sideways row. It breaks
-          out to the full window width so the row can run to the right edge,
-          and starts on the page's content column (see ArcatextDemoRow). */}
-      <section className="py-12 sm:py-16">
-        <div className="mx-[calc(50%-50vw)]">
-          <ArcatextDemoRow />
-        </div>
-      </section>
 
       {/* 01 — Overview */}
       <ReorderableSections pageKey="arcatext">
