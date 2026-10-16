@@ -227,6 +227,14 @@ function camera(met: Metrics, t: number) {
 
 // ── Titles ──
 
+/** The headline's words in the accent color; everything else is white. */
+const HEADLINE_ACCENTS = ['texting', 'language learning'];
+/** `text` with each of `phrases` it contains wrapped in the accent color. */
+function accentParts(text: string, phrases: string[]) {
+  const re = new RegExp(`(${phrases.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
+  return text.split(re).map((x, i) => (phrases.includes(x) ? <span key={i} style={{ color: ACCENT }}>{x}</span> : x));
+}
+
 function Headline({ t }: { t: number }) {
   const out = span(t, TITLE1_OUT, TITLE1_OUT + D.titleOut, (x) => x);
   if (out >= 1) return null;
@@ -246,10 +254,9 @@ function Headline({ t }: { t: number }) {
                   opacity: k,
                   transform: `translateY(${(1 - k) * 26}px)`,
                   filter: k < 1 ? `blur(${(1 - k) * 12}px)` : undefined,
-                  color: c === 'self-guided' ? ACCENT : undefined,
                 }}
               >
-                {c}
+                {accentParts(c, HEADLINE_ACCENTS)}
               </span>{' '}
             </span>
           );
