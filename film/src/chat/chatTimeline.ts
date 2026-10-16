@@ -173,10 +173,12 @@ const SHORT_SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'type',
-    text: 'Want to learn practical language skills based on your',
+    // Broken before "based on your" so the reel sits on the second line and
+    // even "actual conversations." fits after it.
+    text: 'Want to learn practical language skills\nbased on your',
     maxW: 340,
-    // The reel has its own line, so a word typing on never re-wraps the text.
     slot: ['life.', 'interests.', 'actual conversations.'],
+    slotInline: true,
     slotTypeDelay: 0.3,
   },
   {
