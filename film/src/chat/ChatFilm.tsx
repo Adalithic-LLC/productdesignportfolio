@@ -550,11 +550,16 @@ function Conversation({ met, t }: { met: Metrics; t: number }) {
     // Everything clears at the next cut between the chat and the keyboard: the
     // opening as the camera first pans down, the keyboard-side bubbles and the
     // sent reply as it goes back up, the second chat as it comes down again.
-    // (In the short cut the sent reply rides up with the camera, and the next
-    // bubble clears it.)
-    const sentRides = SHORT && m.index >= TIMED.length;
-    fadeAt = Math.min(fadeAt, [PAN[0], ...(sentRides ? [] : [BACK[0]]), PAN2[0], HIDE_SENT].find((x) => x > m.at) ?? Infinity);
-    const out = clamp01((t - fadeAt) / FADE_OUT);
+    // (In the short cut the sent reply leaves with the keyboard instead, on
+    // the keyboard's own fade as the camera goes back up.)
+    const sentLeaves = SHORT && m.index >= TIMED.length;
+    fadeAt = Math.min(fadeAt, [PAN[0], ...(sentLeaves ? [] : [BACK[0]]), PAN2[0], HIDE_SENT].find((x) => x > m.at) ?? Infinity);
+    let out = clamp01((t - fadeAt) / FADE_OUT);
+    if (sentLeaves && t >= BACK[0]) {
+      const kb = 1 - easeInOutCubic(clamp01((t - BACK[0]) / (BACK[1] - BACK[0])));
+      // (Inverts the easeOutCubic below, so its opacity tracks the keyboard's exactly.)
+      out = Math.max(out, 1 - Math.cbrt(clamp01(kb * 2.5)));
+    }
     if (out >= 1) break;
     const h = m.index >= TIMED.length ? met.heights[m.index]?.at(-1) ?? 36 : heightAt(m, met, t);
     const claim = m.kind === 'block' ? arrival(m.at, t) : arrival(m.at, t, 0.2);

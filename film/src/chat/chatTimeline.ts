@@ -185,6 +185,9 @@ const SHORT_SCRIPT: Line[] = [
     who: 'them',
     kind: 'block',
     text: 'Use Arcatext to chat with',
+    // Wide enough for the longest word on the same line, so the bubble's
+    // height never changes as the reel rolls.
+    maxW: 340,
     slot: ['friends.', 'penpals.', 'classmates.', 'AI.'],
     slotInline: true,
     slotTypeDelay: 1.0,
@@ -218,7 +221,8 @@ export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
 // A '|' marks a half-second pause in the typing; it isn't typed.
 const FIELD_RAW = SHORT ? 'So...|I type a message| and tap Reword?' : 'So...| I just type a message| then tap a button to translate?';
 export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
-export const FIELD_JA = SHORT ? 'じゃあ…メッセージを入力して、Rewordを押すの？' : 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
+// The short cut names the button as the Japanese app labels it (button.reword).
+export const FIELD_JA = SHORT ? 'じゃあ…メッセージを入力して「変換」を押すの？' : 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
 const FIELD2_RAW = SHORT ? 'And it adds words I miss| to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
@@ -499,11 +503,11 @@ if (!SHORT) c = move(c, FIELD);
 
 /** Once the reply has risen into the chat, the camera goes back up to the
     conversation for the afterSend bubbles, then pans down to the keyboard again. */
-export const BACK = [c + D.backAfterSend, c + D.backAfterSend + D.pan] as const;
-/** In the short cut the sent reply rides up with the camera and holds this
-    long in the chat before the next bubble clears it. */
-export const SENT_HOLD = SHORT ? 1.5 : 0;
-TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + (SHORT ? SENT_HOLD : 0.2)));
+/** In the short cut the sent reply holds this long over the keyboard, then
+    leaves with it as the camera goes back up. */
+export const SENT_HOLD = SHORT ? 1.5 : D.backAfterSend;
+export const BACK = [c + SENT_HOLD, c + SENT_HOLD + D.pan] as const;
+TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + 0.2));
 const LAST2 = TIMED[TIMED.length - 1];
 const tail = (() => {
   const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + D.pan] as const;
@@ -623,7 +627,7 @@ export function scenes() {
       id: `b${i + 1}`,
       name: `${i + 1}. ${short(m)}`,
       texts: [{ key: `b${i + 1}`, label: m.who === 'me' ? 'Right bubble' : 'Left bubble', text: m.text + (m.slot ? ` [${reel(m.slot)}]` : '') }],
-      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan), ...(SHORT ? [dl('sent-hold', 'Sent message holds before this bubble', SENT_HOLD)] : [])] : []), ...bubbleDelays(m)],
+      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan), ] : []), ...bubbleDelays(m)],
       // The first bubble back in the chat owns the pan up to it.
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
@@ -632,7 +636,7 @@ export function scenes() {
     { id: 'field1', name: `Type: ${FIELD_TEXT.slice(0, 24)}…`, texts: typed('Typed message', FIELD_TEXT), start: AT.field1,
       delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2) : dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: AT.reword,
-      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', 'Reply rises before the camera goes up', D.backAfterSend)] },
+      delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', SHORT ? 'Sent reply holds before the camera goes up' : 'Reply rises before the camera goes up', SENT_HOLD)] },
     { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0],
       delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), ...fieldDelays(FIELD2_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
