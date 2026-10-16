@@ -558,22 +558,27 @@ export const STUDY_ROWS_DATA = [
 /** Scene boundaries for the review tool: each runs until the next starts.
     Ids stay stable across versions so timing notes carry over. */
 export function scenes() {
-  const short = (m: Timed) => m.text.replace(/\n/g, ' ') + (m.slot ? ` [${m.slot.join(' / ')}]` : '');
+  // A long reel (the language list) reads as its first few words and its last.
+  const reel = (w: string[]) => (w.length > 8 ? [...w.slice(0, 3), '…', w[w.length - 1]] : w).join(' / ');
+  const short = (m: Timed) => m.text.replace(/\n/g, ' ') + (m.slot ? ` [${reel(m.slot)}]` : '');
+  // The words on screen in each scene, so the Cut Room can offer them for direct edits.
+  const typed = (label: string, text: string) => [{ key: label.toLowerCase().replace(/\W+/g, '-'), label, text }];
   const firstAfterSend = TIMED.find((m) => m.afterSend);
   const list = [
     ...TIMED.map((m, i) => ({
       id: `b${i + 1}`,
       name: `${i + 1}. ${short(m)}`,
+      texts: [{ key: `b${i + 1}`, label: m.who === 'me' ? 'Right bubble' : 'Left bubble', text: m.text + (m.slot ? ` [${reel(m.slot)}]` : '') }],
       // The first bubble back in the chat owns the pan up to it.
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
-    { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
-    { id: 'field1', name: 'Type: So... I just type a message…', start: CAMERA[0][0] },
-    { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
-    { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, start: PAN2[0] },
-    { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },
-    { id: 'field3', name: 'Type: Ok this is cool…', start: CAMERA[4][0] },
-    { id: 'end', name: 'End card', start: ENDING - END_FADE },
+    { id: 'keyboard', name: 'Pan to keyboard', texts: [], start: PAN[0] },
+    { id: 'field1', name: 'Type: So... I just type a message…', texts: typed('Typed message', FIELD_TEXT), start: CAMERA[0][0] },
+    { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: CAMERA[1][0] },
+    { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0] },
+    { id: 'study', name: 'Study Guide + flick', texts: [], start: CAMERA[3][0] },
+    { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: CAMERA[4][0] },
+    { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE },
   ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
