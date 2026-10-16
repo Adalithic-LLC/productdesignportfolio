@@ -367,11 +367,16 @@ export type FieldMsg = {
  *   FIELD_STUDY close on the field over the open Study view
  */
 export type View = { scale: number; kb: number };
-const KEYS: View = { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
+/** Portrait (1080x1920) when the page is opened with ?portrait. */
+export const PORTRAIT = typeof location !== 'undefined' && new URLSearchParams(location.search).has('portrait');
+export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
+// Portrait frames the same world taller and narrower: the keyboard fills the
+// width at the bottom, and close-ups stay within 1080px.
+const KEYS: View = PORTRAIT ? { scale: 2.2, kb: 1840 } : { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
 // The field's middle sits 365pt above the keyboard's bottom edge over the
 // keys, and 551pt over the (taller) Study view.
-const FIELD: View = { scale: 2.9, kb: 540 + 365 * 2.9 };
-const FIELD_STUDY: View = { scale: 2.9, kb: 540 + 551 * 2.9 };
+const FIELD: View = PORTRAIT ? { scale: 2.6, kb: 960 + 365 * 2.6 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
+const FIELD_STUDY: View = PORTRAIT ? { scale: 2.6, kb: 960 + 551 * 2.6 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
 const ZOOM = 0.75;
 
 /** Camera moves after the pan: [start, end, to]. */

@@ -20,8 +20,11 @@ const flag = (name) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const film = flag('--film') ?? 'main';
-const suffix = film === 'main' ? '' : `-${film}`;
-const url = (process.env.FILM_URL ?? 'http://127.0.0.1:5199/') + (film === 'main' ? '' : `?film=${film}`);
+// --portrait renders the chat film at 1080x1920 (out/frames-chat-portrait.mp4).
+const portrait = args.includes('--portrait');
+const suffix = (film === 'main' ? '' : `-${film}`) + (portrait ? '-portrait' : '');
+const url = (process.env.FILM_URL ?? 'http://127.0.0.1:5199/') + (film === 'main' ? '' : `?film=${film}`) + (portrait ? (film === 'main' ? '?portrait' : '&portrait') : '');
+const [VW, VH] = portrait ? [1080, 1920] : [1920, 1080];
 const cuesFile = path.join(out, `cues${suffix}.json`);
 const fps = Number(flag('--fps') ?? 60);
 const workers = Number(flag('--workers') ?? 1);
@@ -37,7 +40,7 @@ if (workers > 1) {
     const f1 = Math.floor((total * (w + 1)) / workers);
     const name = `part${suffix}${w}.mp4`;
     parts.push(name);
-    const child = spawn(process.execPath, [new URL(import.meta.url).pathname, '--f0', String(f0), '--f1', String(f1), '--out', name, '--fps', String(fps), '--film', film], { stdio: ['ignore', 'pipe', 'inherit'] });
+    const child = spawn(process.execPath, [new URL(import.meta.url).pathname, '--f0', String(f0), '--f1', String(f1), '--out', name, '--fps', String(fps), '--film', film, ...(portrait ? ['--portrait'] : [])], { stdio: ['ignore', 'pipe', 'inherit'] });
     child.stdout.on('data', (d) => process.stdout.write(`[${w}] ${d}`));
     parts[w] = new Promise((r) => child.on('close', () => r(name)));
   }
@@ -52,7 +55,7 @@ if (workers > 1) {
 }
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--force-color-profile=srgb'] });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
 await page.goto(url);
 await page.waitForFunction(() => typeof window.__seek === 'function');
 await page.evaluate(() => window.__ready);
@@ -62,14 +65,14 @@ fs.writeFileSync(cuesFile, JSON.stringify(cues, null, 2));
 
 const shot = async (ms, type = 'png') => {
   await page.evaluate((v) => window.__seek(v), ms);
-  return page.screenshot({ type, ...(type === 'jpeg' ? { quality: 97 } : {}), clip: { x: 0, y: 0, width: 1920, height: 1080 } });
+  return page.screenshot({ type, ...(type === 'jpeg' ? { quality: 97 } : {}), clip: { x: 0, y: 0, width: VW, height: VH } });
 };
 
 if (flag('--stills')) {
   const dir = path.join(out, 'stills');
   fs.mkdirSync(dir, { recursive: true });
   for (const s of flag('--stills').split(',')) {
-    fs.writeFileSync(path.join(dir, `${film === 'main' ? '' : film + '-'}t${s}.png`), await shot(Number(s) * 1000));
+    fs.writeFileSync(path.join(dir, `${film === 'main' ? '' : film + '-'}${portrait ? 'portrait-' : ''}t${s}.png`), await shot(Number(s) * 1000));
     console.log('still', s);
   }
 } else {

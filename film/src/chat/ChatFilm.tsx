@@ -30,6 +30,8 @@ import {
   STUDY_SKELETON,
   STUDY_TAP,
   TIMED,
+  FRAME,
+  PORTRAIT,
   flickEase,
   cues,
   type FieldMsg,
@@ -49,8 +51,8 @@ import {
  * up without any state carried between frames.
  */
 
-const W = 1920;
-const H = 1080;
+const W = FRAME.w;
+const H = FRAME.h;
 const COL = 402;
 const FONT = "Inter, 'Noto Sans JP', sans-serif";
 const LINE = 22;
@@ -611,11 +613,11 @@ function framingAt(t: number) {
 
 /** Before the pan, the chat hangs at this scale with its bottom bubble's
     lower edge this far down the frame. */
-const CHAT_SCALE = 2.35;
-const CHAT_BOTTOM = 760;
+const CHAT_SCALE = PORTRAIT ? 2.6 : 2.35;
+const CHAT_BOTTOM = PORTRAIT ? 1150 : 760;
 const FOCUS_ZOOM = 1.7;
 /** The second push-in, onto a bubble's `focusPhrase`, once the first settles. */
-const PHRASE_ZOOM = 3.0;
+const PHRASE_ZOOM = PORTRAIT ? 2.3 : 3.0;
 const PHRASE_DELAY = 1.1;
 /** The push-in onto a `focusSlot` bubble's reel. */
 const SLOT_ZOOM = 2.6;
@@ -638,7 +640,10 @@ function focusTransform(met: Metrics, t: number) {
     const bx = m.who === 'me' ? COL - SIDE - bw : SIDE;
     let px = left + (bx + bw / 2) * CHAT_SCALE;
     let py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
-    let zoom = FOCUS_ZOOM;
+    // Close-ups never push the bubble (or the reel) past the frame's edges.
+    const fit = (w: number) => (0.92 * W) / (w * CHAT_SCALE);
+    const focusZoom = Math.min(FOCUS_ZOOM, fit(bw));
+    let zoom = focusZoom;
     const ph = met.phrase[m.index];
     if (m.focusSlot && m.slot) {
       // Onto the reel (after the text on its last line, or on a line of its
@@ -648,12 +653,12 @@ function focusTransform(met: Metrics, t: number) {
       const sy = bh - 7 - LINE / 2;
       px = lerp(px, left + (bx + sx) * CHAT_SCALE, k2);
       py = lerp(py, CHAT_BOTTOM - (bh - sy) * CHAT_SCALE, k2);
-      zoom = lerp(FOCUS_ZOOM, SLOT_ZOOM, k2);
+      zoom = lerp(focusZoom, Math.min(SLOT_ZOOM, fit(slotMax + 24)), k2);
     } else if (ph) {
       const k2 = easeInOutCubic(clamp01((t - (m.at + PHRASE_DELAY)) / 0.6));
       px = lerp(px, left + (bx + ph.x) * CHAT_SCALE, k2);
       py = lerp(py, CHAT_BOTTOM - (bh - ph.y) * CHAT_SCALE, k2);
-      zoom = lerp(FOCUS_ZOOM, PHRASE_ZOOM, k2);
+      zoom = lerp(focusZoom, PHRASE_ZOOM, k2);
     }
     const z = lerp(1, zoom, k);
     return `translate(${lerp(px, W / 2, k)}px, ${lerp(py, H / 2, k)}px) scale(${z}) translate(${-px}px, ${-py}px)`;
@@ -794,7 +799,7 @@ function Ending({ t }: { t: number }) {
   return (
     <div className="absolute inset-0 grid place-items-center bg-black">
       <Glow />
-      <SplashLogo s={local} scale={3.2}>
+      <SplashLogo s={local} scale={PORTRAIT ? 2.6 : 3.2}>
         <div
           className="mt-4"
           style={{
