@@ -605,46 +605,87 @@ export function scenes() {
   const dl = (key: string, label: string, value: number) => ({ key, label, value: r2(value) });
   const events = [...TIMED.map((m) => m.at), PAN[0], BACK[0], PAN2[0], ...CAMERA.map((x) => x[0]), ENDING - END_FADE];
   const bubbleDelays = (m: Timed) => {
-    const d = (m.pauses ?? []).map((p) => dl(`pause-${p.after}`, `Pause after “${p.after}”`, p.secs));
-    if (m.slot) {
-      d.push(dl('reel-start', 'Reel starts after the bubble', (m.kind === 'type' ? 0.15 : 0.3) + (m.slotTypeDelay ?? 0)));
-      if (m.slotFlick) {
-        d.push(dl('reel-hold', `Each of the first ${m.slotFlick.holds} words holds`, m.slotFlick.hold));
-        d.push(dl('reel-spin', 'Spin to the last word', m.slotFlick.flick));
-      } else {
-        d.push(dl('reel-first', 'First word holds', m.slotHold ?? SLOT_DELAY));
-        if (m.slot.length > 2) d.push(dl('reel-each', 'Each later word holds', m.slotDwell ?? SLOT_DWELL));
-      }
-    }
     const next = Math.min(...events.filter((x) => x > m.done + 1e-6), DURATION);
-    d.push(dl('hold', 'Hold before what comes next', next - m.done));
-    return d;
+    return [dl('hold', 'Hold before what comes next', next - m.done)];
   };
-  const fieldDelays = (raw: string) => (raw.includes('|') ? [dl('type-pause', 'Each pause mid-typing', D.typePause)] : []);
+  // Typing and reel sequences as text with each delay in place, for the Cut
+  // Room's inline controls: {text} runs, {word} reel words, {key, label, value} delays.
+  type Part = { text: string } | { word: string } | { key: string; label: string; value: number };
+  const lastWord = (x: string) => x.trim().split(/\s+/).pop() ?? '';
+  const inline = (key: string, label: string, value: number): Part => ({ key, label, value: r2(value) });
+  /** A reel: its words with the hold on each, or held words then a spin. */
+  const reelParts = (words: string[], start: number, startLabel: string, holds: (i: number) => [string, number] | null, spin?: { held: number; secs: number }): Part[] => {
+    const out: Part[] = [inline('reel-start', startLabel, start)];
+    const shown = spin ? spin.held : words.length;
+    for (let i = 0; i < shown; i++) {
+      out.push({ word: words[i] });
+      const h = holds(i);
+      if (h) out.push(inline(h[0], `on “${words[i]}”`, h[1]));
+    }
+    if (spin) {
+      out.push(inline('reel-spin', `spinning to “${words[words.length - 1]}”`, spin.secs));
+      if (words.length > spin.held + 1) out.push({ text: '…' });
+      out.push({ word: words[words.length - 1] });
+    }
+    return out;
+  };
+  const bubbleFlow = (m: Timed): Part[] => {
+    const out: Part[] = [];
+    let rest = m.text.replace(/\n/g, ' ');
+    for (const p of m.pauses ?? []) {
+      const at = rest.indexOf(p.after);
+      if (at < 0) continue;
+      out.push({ text: rest.slice(0, at + p.after.length) }, inline(`pause-${p.after}`, `after “${p.after}”`, p.secs));
+      rest = rest.slice(at + p.after.length);
+    }
+    out.push({ text: rest });
+    if (!m.slot) return m.pauses?.length ? out : [];
+    const w = m.slot;
+    const fl = m.slotFlick;
+    const start = (m.kind === 'type' ? 0.15 : 0.3) + (m.slotTypeDelay ?? 0);
+    if (fl) return [...out, ...reelParts(w, start, 'before the reel', (i) => [`reel-hold-${i}`, fl.hold], { held: fl.holds, secs: fl.flick })];
+    return [
+      ...out,
+      ...reelParts(w, start, 'before the reel', (i) =>
+        i === w.length - 1 ? null : i === 0 ? ['reel-first', m.slotHold ?? SLOT_DELAY] : [`reel-each-${i}`, m.slotDwell ?? SLOT_DWELL]),
+    ];
+  };
+  const fieldFlow = (raw: string): Part[] => {
+    if (!raw.includes('|')) return [];
+    const segs = raw.split('|');
+    return segs.flatMap((seg, i): Part[] =>
+      i < segs.length - 1 ? [{ text: seg }, inline(`type-pause-${i}`, `after “${lastWord(seg)}”`, D.typePause)] : [{ text: seg }]);
+  };
+  const flow = (parts: Part[]) => (parts.length ? [parts] : []);
+  const tagFlow: Part[] = [
+    { text: 'Text and learn' },
+    ...reelParts(TAGLINE_WORDS, D.tagFirst, 'before the first word', (i) => [`tag-hold-${i}`, D.tagHold], { held: 3, secs: D.tagSpin }),
+  ];
   const firstAfterSend = TIMED.find((m) => m.afterSend);
   const list = [
     ...TIMED.map((m, i) => ({
       id: `b${i + 1}`,
       name: `${i + 1}. ${short(m)}`,
       texts: [{ key: `b${i + 1}`, label: m.who === 'me' ? 'Right bubble' : 'Left bubble', text: m.text + (m.slot ? ` [${reel(m.slot)}]` : '') }],
-      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan), ] : []), ...bubbleDelays(m)],
+      flows: flow(bubbleFlow(m)),
+      delays: [...(m === firstAfterSend ? [dl('pan', 'Pan back up to the chat', D.pan)] : []), ...bubbleDelays(m)],
       // The first bubble back in the chat owns the pan up to it.
       start: i === 0 ? 0 : m === firstAfterSend ? BACK[0] : m.at,
     })),
     { id: 'keyboard', name: 'Pan to keyboard', texts: [], start: PAN[0],
       delays: [dl('pan', 'Pan down to the keyboard', D.pan), ...(SHORT ? [] : [dl('keys-hold', 'Hold before closing in on the field', D.keysHold)])] },
-    { id: 'field1', name: `Type: ${FIELD_TEXT.slice(0, 24)}…`, texts: typed('Typed message', FIELD_TEXT), start: AT.field1,
-      delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2) : dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
+    { id: 'field1', name: `Type: ${FIELD_TEXT.slice(0, 24)}…`, texts: typed('Typed message', FIELD_TEXT), start: AT.field1, flows: flow(fieldFlow(FIELD_RAW)),
+      delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2) : dl('zoom-in', 'Push in on the field', D.zoom), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: AT.reword,
       delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', SHORT ? 'Sent reply holds before the camera goes up' : 'Reply rises before the camera goes up', SENT_HOLD)] },
-    { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0],
-      delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), ...fieldDelays(FIELD2_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
+    { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, texts: typed('Typed message', FIELD2_TEXT), start: PAN2[0], flows: flow(fieldFlow(FIELD2_RAW)),
+      delays: [dl('pan', 'Pan down to the keyboard', D.pan), dl('keys-hold', SHORT ? 'Hold before typing' : 'Hold before closing in on the field', SHORT ? D.pan2Hold + 0.2 : D.pan2Hold), ...(SHORT ? [] : [dl('zoom-in', 'Push in on the field', D.zoom)]), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'study', name: 'Study Guide + flick', texts: [], start: AT.study,
       delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('study-tap', 'Then tap Study after', D.studyTap), dl('study-load', 'Entries appear after', D.studyLoad), dl('study-flick', 'Entries read before the flick', D.studyFlick), dl('study-clear', 'Field clears after the flick', D.studyClear)] },
-    { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3,
-      delays: [dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD3_RAW), dl('end-hold', 'Hold before the fade', D.endHold), dl('fade', 'Fade to the end card', END_FADE)] },
-    { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE,
-      delays: [dl('tag-first', 'Tagline’s first word lands after', D.tagFirst), dl('tag-hold', 'Each of the first three words holds', D.tagHold), dl('tag-spin', 'Spin to “a language”', D.tagSpin), dl('tag-rest', 'Final hold', D.tagRest)] },
+    { id: 'field3', name: 'Type: Ok this is cool…', texts: typed('Typed message', FIELD3_TEXT), start: AT.field3, flows: flow(fieldFlow(FIELD3_RAW)),
+      delays: [dl('zoom-in', 'Push in on the field', D.zoom), dl('end-hold', 'Hold before the fade', D.endHold), dl('fade', 'Fade to the end card', END_FADE)] },
+    { id: 'end', name: 'End card', texts: typed('Tagline', `Text and learn [${reel(TAGLINE_WORDS)}]`), start: ENDING - END_FADE, flows: [tagFlow],
+      delays: [dl('tag-rest', 'Final hold', D.tagRest)] },
   ].sort((a, b) => a.start - b.start);
   return list.map((s, i) => ({ ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
