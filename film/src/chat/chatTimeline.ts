@@ -177,7 +177,7 @@ const SHORT_SCRIPT: Line[] = [
     // even "actual conversations." fits after it.
     text: 'Want to learn practical language skills\nbased on your',
     maxW: 340,
-    slot: ['life.', 'interests.', 'actual conversations.'],
+    slot: ['life?', 'interests?', 'actual conversations?'],
     slotInline: true,
     slotTypeDelay: 0.3,
   },
@@ -256,7 +256,7 @@ const D = {
   tagFirst: 2.4, // the end card's first tagline word lands
   tagHold: 0.5, // each of the tagline's first three words holds
   tagSpin: 2.2, // the tagline's spin to "a language"
-  tagRest: 1.8, // the finished card holds
+  tagRest: SHORT ? 1.0 : 1.8, // the finished card holds
 };
 
 /** Deterministic jitter so typing has a human rhythm. */
