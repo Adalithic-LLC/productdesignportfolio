@@ -69,7 +69,7 @@ export const D = {
 };
 
 // ── 1. Titles ──
-export const CHUNKS = ['How can translations', 'become', 'self-guided', 'language learning?'];
+export const CHUNKS = ['How can texting', 'become', 'self-guided', 'language learning?'];
 export const CHUNK_AT = CHUNKS.map((_, i) => D.titleStart + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
 
@@ -263,7 +263,7 @@ export function scenes() {
     inline('note-out', 'the line fades out', D.noteFade, NOTE_OUT, 'duration', 'Fade'),
   ];
   const list = [
-    { id: 'title1', name: 'Headline: How can translations become self-guided…', start: 0,
+    { id: 'title1', name: 'Headline: How can texting become self-guided…', start: 0,
       texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
     { id: 'title2', name: 'Typed: With an AI keyboard… [apps] …learning system.', start: TITLE1_OUT,
       texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }], flows: [line2Flow] },
