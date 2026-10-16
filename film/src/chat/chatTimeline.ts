@@ -168,9 +168,9 @@ const FULL_SCRIPT: Line[] = [
 ]
 
 /** The short cut (the owner's script): a quicker setup, both keyboard
-    sequences, the same ending. Bubble 1 is the full film's. */
+    sequences, the same ending. Bubble 1 types out plainly, with no reel. */
 const SHORT_SCRIPT: Line[] = [
-  FULL_SCRIPT[0],
+  { who: 'them', kind: 'type', text: 'Want to learn a new language...', noWrap: true },
   {
     who: 'them',
     kind: 'block',
