@@ -32,6 +32,7 @@ import {
   TIMED,
   FRAME,
   PORTRAIT,
+  STAGE,
   flickEase,
   cues,
   type FieldMsg,
@@ -613,8 +614,8 @@ function framingAt(t: number) {
 
 /** Before the pan, the chat hangs at this scale with its bottom bubble's
     lower edge this far down the frame. */
-const CHAT_SCALE = PORTRAIT ? 2.6 : 2.35;
-const CHAT_BOTTOM = PORTRAIT ? 1150 : 760;
+const CHAT_SCALE = PORTRAIT ? 2.15 : 2.35;
+const CHAT_BOTTOM = PORTRAIT ? 1080 : 760;
 const FOCUS_ZOOM = 1.7;
 /** The second push-in, onto a bubble's `focusPhrase`, once the first settles. */
 const PHRASE_ZOOM = PORTRAIT ? 2.3 : 3.0;
@@ -635,13 +636,13 @@ function focusTransform(met: Metrics, t: number) {
     const slotMax = Math.max(0, ...(met.slotW[m.index] ?? []));
     const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : met.lineW[m.index].at(-1)!) + 25;
     const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)!;
-    const left = W / 2 - (COL / 2) * CHAT_SCALE;
+    const left = STAGE.cx - (COL / 2) * CHAT_SCALE;
     // The bubble's left edge in the chat column (it sits at the bottom of the stack).
     const bx = m.who === 'me' ? COL - SIDE - bw : SIDE;
     let px = left + (bx + bw / 2) * CHAT_SCALE;
     let py = CHAT_BOTTOM - (bh / 2) * CHAT_SCALE;
     // Close-ups never push the bubble (or the reel) past the frame's edges.
-    const fit = (w: number) => (0.92 * W) / (w * CHAT_SCALE);
+    const fit = (w: number) => STAGE.w / (w * CHAT_SCALE);
     const focusZoom = Math.min(FOCUS_ZOOM, fit(bw));
     let zoom = focusZoom;
     const ph = met.phrase[m.index];
@@ -661,7 +662,7 @@ function focusTransform(met: Metrics, t: number) {
       zoom = lerp(focusZoom, PHRASE_ZOOM, k2);
     }
     const z = lerp(1, zoom, k);
-    return `translate(${lerp(px, W / 2, k)}px, ${lerp(py, H / 2, k)}px) scale(${z}) translate(${-px}px, ${-py}px)`;
+    return `translate(${lerp(px, STAGE.cx, k)}px, ${lerp(py, STAGE.cy, k)}px) scale(${z}) translate(${-px}px, ${-py}px)`;
   }
   return undefined;
 }
@@ -691,7 +692,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
       style={{
         width: COL,
         transformOrigin: '0 0',
-        transform: `translate(${W / 2 - (COL / 2) * scale}px, ${keyboardBottom}px) scale(${scale})`,
+        transform: `translate(${STAGE.cx - (COL / 2) * scale}px, ${keyboardBottom}px) scale(${scale})`,
         opacity: 1 - fade,
       }}
     >
@@ -799,7 +800,9 @@ function Ending({ t }: { t: number }) {
   return (
     <div className="absolute inset-0 grid place-items-center bg-black">
       <Glow />
-      <SplashLogo s={local} scale={PORTRAIT ? 2.6 : 3.2}>
+      {/* Centred on the stage (in portrait, above the platforms' caption zone). */}
+      <div style={{ transform: `translate(${STAGE.cx - W / 2}px, ${STAGE.cy - H / 2}px)` }}>
+      <SplashLogo s={local} scale={PORTRAIT ? 2.4 : 3.2}>
         <div
           className="mt-4"
           style={{
@@ -814,6 +817,7 @@ function Ending({ t }: { t: number }) {
           <Tagline s={local} />
         </div>
       </SplashLogo>
+      </div>
       <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
     </div>
   );

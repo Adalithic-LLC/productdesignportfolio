@@ -21,7 +21,11 @@ import numpy as np
 SR = 48000
 HERE = Path(__file__).parent
 FILM = sys.argv[sys.argv.index('--film') + 1] if '--film' in sys.argv else 'main'
-SUFFIX = '' if FILM == 'main' else f'-{FILM}'
+SUFFIX = ('' if FILM == 'main' else f'-{FILM}')
+if '--cut' in sys.argv:  # the short cut, as rendered with render.mjs --cut short
+    SUFFIX += '-' + sys.argv[sys.argv.index('--cut') + 1]
+if '--portrait' in sys.argv:  # same timing as landscape; reads its own cue file
+    SUFFIX += '-portrait'
 cues = json.loads((HERE / 'out' / f'cues{SUFFIX}.json').read_text())
 DUR = cues['duration'] + 1.5
 BEAT = 60 / cues['bpm']

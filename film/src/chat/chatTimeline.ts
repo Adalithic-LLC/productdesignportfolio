@@ -39,6 +39,8 @@ export type Line = {
   /** Extra seconds before the reel's first word types on (after a block
       lands, or after a typed bubble's text). */
   slotTypeDelay?: number;
+  /** Seconds each later reel word holds (default SLOT_DWELL). */
+  slotDwell?: number;
   /** Seconds the reel's first word holds before it rolls (default SLOT_DELAY). */
   slotHold?: number;
   /** The camera closes on this bubble while it types, and opens back out as
@@ -56,6 +58,17 @@ export type Line = {
       thing happening; otherwise a reading pause scaled to its length. */
   after?: number;
 };
+
+const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+/** Portrait (1080x1920) when the page is opened with ?portrait. */
+export const PORTRAIT = params.has('portrait');
+/** The short ad cut (?cut=short): fewer lines, both keyboard sequences, the same ending. */
+export const SHORT = params.get('cut') === 'short';
+export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
+/** Where the action sits. Portrait keeps it inside the area TikTok, Reels and
+    Shorts leave clear of their top bar, right-hand buttons and caption/CTA
+    (roughly x 60-940, y 150-1440 of 1080x1920); landscape uses the frame. */
+export const STAGE = PORTRAIT ? { cx: 500, cy: 800, w: 860 } : { cx: 960, cy: 540, w: 1766 };
 
 /** Reword's languages (Arcatext/Data/LanguageData.swift on main), names
     shortened to how they read in a sentence. */
@@ -76,7 +89,7 @@ const LEAD = ['English', 'Spanish', 'Mandarin'];
     Times are from the start of the end card. */
 export const TAGLINE_WORDS = [...LEAD, ...REWORD_LANGUAGES.filter((l) => !LEAD.includes(l)), 'a language'];
 
-export const SCRIPT: Line[] = [
+const FULL_SCRIPT: Line[] = [
   // ── The opening conversation ──
   {
     who: 'them',
@@ -154,11 +167,65 @@ export const SCRIPT: Line[] = [
   },
 ]
 
+/** The short cut (the owner's script): a quicker setup, both keyboard
+    sequences, the same ending. Bubble 1 is the full film's. */
+const SHORT_SCRIPT: Line[] = [
+  FULL_SCRIPT[0],
+  {
+    who: 'them',
+    kind: 'block',
+    text: 'Just by texting your',
+    slot: ['friends?', 'penpals?', 'classmates?', 'AI?'],
+    slotInline: true,
+    slotTypeDelay: 1.0,
+  },
+  { who: 'me', kind: 'block', text: "Yeah! Let's see it.", after: 1.0 },
+  // ── Back up in the chat once the reply is sent, then down again ──
+  {
+    who: 'them',
+    kind: 'block',
+    text: "Yes! It's a keyboard with features for",
+    maxW: 340,
+    slot: ['translation.', 'correction.', 'analysis.', 'study.'],
+    slotTypeDelay: 1.0,
+    clearAbove: true,
+    after: 1.0,
+    afterSend: true,
+  },
+  {
+    who: 'them',
+    kind: 'type',
+    // Broken before "based on your" so even "actual conversations." fits after it.
+    text: 'Learn the practical language\nbased on your',
+    maxW: 340,
+    slot: ['life.', 'interests.', 'actual conversations.'],
+    slotInline: true,
+    slotHold: 2.0,
+    slotTypeDelay: 1.0,
+    focus: true,
+    focusSlot: true,
+    clearAbove: true,
+    afterSend: true,
+  },
+  { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
+  {
+    who: 'them',
+    kind: 'block',
+    text: 'In any messaging app!',
+    slot: ['WhatsApp', 'HelloTalk', 'Instagram'],
+    slotInline: true,
+    after: 1.0,
+    afterSend: true,
+  },
+]
+
+export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
+
 // A '|' marks a half-second pause in the typing; it isn't typed.
 const FIELD_RAW = 'So...| I just type a message| then tap a button to translate?';
 export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
 export const FIELD_JA = 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
-const FIELD2_RAW = 'One more thing...it actually adds the words I missed| to a study guide?';
+const FIELD2_RAW = SHORT ? 'And it adds words I miss| to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
 export const FIELD3_TEXT = FIELD3_RAW.replaceAll('|', '');
@@ -273,7 +340,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
           land += (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
           for (let i = 1; i < line.slot.length; i++) {
             slotLands.push(land);
-            land += SLOT_DWELL + SLOT_ROLL;
+            land += (line.slotDwell ?? SLOT_DWELL) + SLOT_ROLL;
           }
         }
         done = slotLands[slotLands.length - 1] + 0.25;
@@ -288,7 +355,7 @@ function timeLines(lines: [Line, number][], start: number): Timed[] {
       let land = first + (line.slotHold ?? SLOT_DELAY) + SLOT_ROLL;
       for (let i = 1; i < line.slot.length; i++) {
         slotLands.push(land);
-        land += SLOT_DWELL + SLOT_ROLL;
+        land += (line.slotDwell ?? SLOT_DWELL) + SLOT_ROLL;
       }
       if (line.slotTypeLast) {
         // The last word types on where the reel stood, a dwell after the one before.
@@ -367,16 +434,13 @@ export type FieldMsg = {
  *   FIELD_STUDY close on the field over the open Study view
  */
 export type View = { scale: number; kb: number };
-/** Portrait (1080x1920) when the page is opened with ?portrait. */
-export const PORTRAIT = typeof location !== 'undefined' && new URLSearchParams(location.search).has('portrait');
-export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
-// Portrait frames the same world taller and narrower: the keyboard fills the
-// width at the bottom, and close-ups stay within 1080px.
-const KEYS: View = PORTRAIT ? { scale: 2.2, kb: 1840 } : { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
+// Portrait frames the same world taller and narrower, all of it inside the
+// platforms' safe area (STAGE): the keyboard ends above the caption zone.
+const KEYS: View = PORTRAIT ? { scale: 2.05, kb: 1430 } : { scale: 1.6, kb: 335 + (14 + 383) * 1.6 };
 // The field's middle sits 365pt above the keyboard's bottom edge over the
 // keys, and 551pt over the (taller) Study view.
-const FIELD: View = PORTRAIT ? { scale: 2.6, kb: 960 + 365 * 2.6 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
-const FIELD_STUDY: View = PORTRAIT ? { scale: 2.6, kb: 960 + 551 * 2.6 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
+const FIELD: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 365 * 2.2 } : { scale: 2.9, kb: 540 + 365 * 2.9 };
+const FIELD_STUDY: View = PORTRAIT ? { scale: 2.2, kb: STAGE.cy + 551 * 2.2 } : { scale: 2.9, kb: 540 + 551 * 2.9 };
 const ZOOM = 0.75;
 
 /** Camera moves after the pan: [start, end, to]. */
@@ -410,20 +474,23 @@ c = move(c, FIELD);
 export const BACK = [c + 0.6, c + 0.6 + 1.2] as const;
 TIMED.push(...timeLines(indexed.filter(([l]) => l.afterSend), BACK[1] + 0.2));
 const LAST2 = TIMED[TIMED.length - 1];
-export const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + 1.2] as const;
-c = PAN2[1] + 0.3;
-
-// 2. Close on the field again; this one stays in English. Back out, and open Study.
-c = move(c, FIELD);
-{
-  const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
-  c = move(times[times.length - 1] + 1.0, KEYS);
-  FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
-}
+const tail = (() => {
+  const PAN2 = [LAST2.done + (LAST2.after ?? 0.55), LAST2.done + (LAST2.after ?? 0.55) + 1.2] as const;
+  let c = PAN2[1] + 0.3;
+  // 2. Close on the field again; this one stays in English. Back out, and open Study.
+  c = move(c, FIELD);
+  {
+    const times = typeTimes(FIELD2_RAW, c + 0.2, 7);
+    c = move(times[times.length - 1] + 1.0, KEYS);
+    FIELD_MSGS.push({ en: FIELD2_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
+  }
+  return { PAN2, STUDY_TAP: c + 0.4 };
+})();
+export const PAN2 = tail.PAN2;
 
 /** The Study tap, the view opening (its height easing from the keys' to its
     own), and its loading stages. The camera holds its zoom throughout. */
-export const STUDY_TAP = c + 0.4;
+export const STUDY_TAP = tail.STUDY_TAP;
 export const STUDY_OPEN = STUDY_TAP + 0.18;
 export const STUDY_GROW = 0.4;
 export const STUDY_SKELETON = STUDY_OPEN + 0.35;
@@ -432,13 +499,13 @@ export const STUDY_ROWS = STUDY_OPEN + 1.0;
 export const STUDY_FLICK = STUDY_ROWS + 0.7 + 1.5;
 /** Once it settles, the sent reply fades so the field is the only focus. */
 export const HIDE_SENT = STUDY_FLICK + 1.3;
-// The English question isn't sent: once the entries have been seen, the field
-// is cleared for the last line.
-FIELD_MSGS[1].clearAt = STUDY_FLICK + 2.0;
 
-// 3. Close on the field over Study for the last line, which stays unsent.
-c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
 {
+  // The English question isn't sent: once the entries have been seen, the
+  // field is cleared for the last line.
+  FIELD_MSGS[1].clearAt = STUDY_FLICK + 2.0;
+  // 3. Close on the field over Study for the last line, which stays unsent.
+  c = move(FIELD_MSGS[1].clearAt + 0.1, FIELD_STUDY);
   const times = typeTimes(FIELD3_RAW, c + 0.2, 23);
   FIELD_MSGS.push({ en: FIELD3_TEXT, ja: '', times, rewordTap: Infinity, rewordDone: Infinity, sendTap: Infinity, sendAt: Infinity, clearAt: Infinity });
   c = times[times.length - 1];
@@ -502,7 +569,7 @@ export function scenes() {
     { id: 'keyboard', name: 'Pan to keyboard', start: PAN[0] },
     { id: 'field1', name: 'Type: So... I just type a message…', start: CAMERA[0][0] },
     { id: 'reword', name: 'Reword to Japanese + send', start: CAMERA[1][0] },
-    { id: 'field2', name: 'Back to keyboard, type: One more thing…', start: PAN2[0] },
+    { id: 'field2', name: `Back to keyboard, type: ${FIELD2_TEXT.slice(0, 22)}…`, start: PAN2[0] },
     { id: 'study', name: 'Study Guide + flick', start: CAMERA[3][0] },
     { id: 'field3', name: 'Type: Ok this is cool…', start: CAMERA[4][0] },
     { id: 'end', name: 'End card', start: ENDING - END_FADE },

@@ -22,8 +22,11 @@ const flag = (name) => {
 const film = flag('--film') ?? 'main';
 // --portrait renders the chat film at 1080x1920 (out/frames-chat-portrait.mp4).
 const portrait = args.includes('--portrait');
-const suffix = (film === 'main' ? '' : `-${film}`) + (portrait ? '-portrait' : '');
-const url = (process.env.FILM_URL ?? 'http://127.0.0.1:5199/') + (film === 'main' ? '' : `?film=${film}`) + (portrait ? (film === 'main' ? '?portrait' : '&portrait') : '');
+// --cut short renders the short ad cut (out/frames-chat-short[-portrait].mp4).
+const cut = flag('--cut');
+const suffix = (film === 'main' ? '' : `-${film}`) + (cut ? `-${cut}` : '') + (portrait ? '-portrait' : '');
+const query = [film === 'main' ? '' : `film=${film}`, cut ? `cut=${cut}` : '', portrait ? 'portrait' : ''].filter(Boolean).join('&');
+const url = (process.env.FILM_URL ?? 'http://127.0.0.1:5199/') + (query ? `?${query}` : '');
 const [VW, VH] = portrait ? [1080, 1920] : [1920, 1080];
 const cuesFile = path.join(out, `cues${suffix}.json`);
 const fps = Number(flag('--fps') ?? 60);
@@ -40,7 +43,7 @@ if (workers > 1) {
     const f1 = Math.floor((total * (w + 1)) / workers);
     const name = `part${suffix}${w}.mp4`;
     parts.push(name);
-    const child = spawn(process.execPath, [new URL(import.meta.url).pathname, '--f0', String(f0), '--f1', String(f1), '--out', name, '--fps', String(fps), '--film', film, ...(portrait ? ['--portrait'] : [])], { stdio: ['ignore', 'pipe', 'inherit'] });
+    const child = spawn(process.execPath, [new URL(import.meta.url).pathname, '--f0', String(f0), '--f1', String(f1), '--out', name, '--fps', String(fps), '--film', film, ...(portrait ? ['--portrait'] : []), ...(cut ? ['--cut', cut] : [])], { stdio: ['ignore', 'pipe', 'inherit'] });
     child.stdout.on('data', (d) => process.stdout.write(`[${w}] ${d}`));
     parts[w] = new Promise((r) => child.on('close', () => r(name)));
   }
@@ -72,7 +75,7 @@ if (flag('--stills')) {
   const dir = path.join(out, 'stills');
   fs.mkdirSync(dir, { recursive: true });
   for (const s of flag('--stills').split(',')) {
-    fs.writeFileSync(path.join(dir, `${film === 'main' ? '' : film + '-'}${portrait ? 'portrait-' : ''}t${s}.png`), await shot(Number(s) * 1000));
+    fs.writeFileSync(path.join(dir, `${film === 'main' ? '' : film + '-'}${cut ? cut + '-' : ''}${portrait ? 'portrait-' : ''}t${s}.png`), await shot(Number(s) * 1000));
     console.log('still', s);
   }
 } else {
