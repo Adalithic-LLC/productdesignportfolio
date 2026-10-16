@@ -46,7 +46,7 @@ export const D = {
   line2Hold: 1.5, // the typed line holds once done
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
-  kbWait: 1.0, // the first bubble shows alone before the keyboard comes up
+  kbWait: 1.0, // a narration bubble shows alone before the keyboard comes up
   kbSlide: 0.35, // the keyboard slides up
   pan: 1.0, // the camera moves between the chat and the field
   afterType: 0.5, // a typed run holds
@@ -83,7 +83,8 @@ export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
 
 // ── 2. The phone ──
 export const WORLD_IN = LINE2_OUT + 0.2;
-export type Bubble = { text: string; who: 'them' | 'me'; at: number };
+/** `hide`: when a narration bubble fades away on its own (typing starts). */
+export type Bubble = { text: string; who: 'them' | 'me'; at: number; hide?: number };
 export const BUBBLES: Bubble[] = [];
 
 /** Camera framings: a target point (x across the 402pt column, h up from the
@@ -114,18 +115,23 @@ export const FIELD_ES = 'Hola, ¿cómo estás? ¿Qué tal tu fin de semana?';
 
 let c = WORLD_IN + 0.4;
 BUBBLES.push({ text: 'First, type what you know...', who: 'them', at: c });
-/** The keyboard comes up a moment after the first bubble, pushing the chat up. */
-export const KB_IN = c + D.kbWait;
-c = Math.max(c + D.readBubble, KB_IN + D.kbSlide + 0.45);
+/** The keyboard: down while each of the first two bubbles is read, then up a
+    moment later, pushing the chat up. Each entry is [at, up]. */
+export const KB: [number, boolean][] = [[c + D.kbWait, true]];
+c = Math.max(c + D.readBubble, c + D.kbWait + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
 const KNOW_TIMES = typeTimes(FIELD_KNOW, c + 0.2, 0.075, 11);
+BUBBLES[0].hide = KNOW_TIMES[0];
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
-// Back up to the chat for the next bubble.
+// Back up to the chat for the next bubble; the keyboard goes down with it.
+KB.push([c, false]);
 c = move(c, D.pan, { kind: 'bubble', i: 1, scale: 3.2 });
 BUBBLES.push({ text: 'Then add what you want to learn...', who: 'them', at: c - 0.3 });
-c += D.readBubble;
+KB.push([c - 0.3 + D.kbWait, true]);
+c = Math.max(c + D.readBubble, c - 0.3 + D.kbWait + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
 const ADD_TIMES = typeTimes(FIELD_ADD, c + 0.2, 0.065, 13);
+BUBBLES[1].hide = ADD_TIMES[0];
 c = ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 c = move(c, D.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
 export const REWORD_TAP = c + D.tapAfter;
@@ -238,7 +244,7 @@ export function scenes() {
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
       start: i === 0 ? WORLD_IN : b.who === 'me' ? CAMERA.find((x) => x[2].kind === 'whole')![0] : b.at - 0.2,
       texts: [{ key: `b${i + 1}`, label: b.who === 'me' ? 'Sent message' : 'Left bubble', text: b.text }],
-      ...(i === 0 ? { flows: [[{ text: b.text }, inline('kb-wait', 'before the keyboard comes up', D.kbWait, b.at)]] } : {}),
+      ...(i < 2 ? { flows: [[{ text: b.text }, inline(i === 0 ? 'kb-wait' : `kb-wait-${i + 1}`, 'before the keyboard comes up', D.kbWait, b.at)]] } : {}),
     })),
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },

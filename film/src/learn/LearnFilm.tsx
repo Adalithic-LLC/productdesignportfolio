@@ -20,7 +20,7 @@ import {
   FIELD_EN,
   FIELD_ES,
   FRAME,
-  KB_IN,
+  KB,
   LANGS,
   LANG_LANDS,
   LANG_ROLL,
@@ -127,9 +127,20 @@ const typedCount = (t: number) => {
   while (n < FIELD.times.length && FIELD.times[n] <= t) n++;
   return n;
 };
+/** How far up the keyboard is: 0 down, 1 up, sliding at each KB change. */
+function kbLevel(t: number) {
+  let v = 0;
+  for (const [at, up] of KB) {
+    if (t < at) break;
+    const k = easeOutCubic(clamp01((t - at) / D.kbSlide));
+    v = up ? k : 1 - k;
+  }
+  return v;
+}
+
 function geometry(met: Metrics, t: number) {
   const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
-  const kb = easeOutCubic(clamp01((t - KB_IN) / D.kbSlide));
+  const kb = kbLevel(t);
   const block = lerp(HOME_H, lerp(KEYS_H, VIEW_H, grow) + GLOBE_H, kb);
   const swapped = t >= FIELD.swap + 0.16;
   const sent = t >= FIELD.sendAt;
@@ -144,7 +155,7 @@ function geometry(met: Metrics, t: number) {
     const m = BUBBLES[i];
     if (t < m.at) continue;
     const next = BUBBLES.slice(i + 1).find((x) => x.who === 'them' && m.who === 'them');
-    const out = next ? clamp01((t - next.at) / 0.45) : 0;
+    const out = Math.max(next ? clamp01((t - next.at) / 0.45) : 0, m.hide !== undefined ? clamp01((t - m.hide) / 0.45) : 0);
     if (out >= 1) continue;
     const claim = easeOutCubic(clamp01((t - m.at) / 0.35));
     const h = met.bubbles[i].h;
