@@ -463,7 +463,8 @@ c = move(c, FIELD);
   const times = typeTimes(FIELD_RAW, c + 0.2, 99);
   c = move(times[times.length - 1] + 1.0, KEYS);
   const rewordTap = c + 0.35;
-  const rewordDone = rewordTap + 1.0;
+  // The short cut skips the loading state: the tap press, then the swap.
+  const rewordDone = rewordTap + (SHORT ? 0.22 : 1.0);
   const sendTap = rewordDone + 1.3;
   FIELD_MSGS.push({ en: FIELD_TEXT, ja: FIELD_JA, times, rewordTap, rewordDone, sendTap, sendAt: sendTap + 0.17, clearAt: sendTap + 0.17 });
   c = sendTap + 0.17;
