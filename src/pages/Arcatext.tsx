@@ -1,5 +1,5 @@
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import ArcatextDemoRow from '@/components/ArcatextDemoRow';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { CaseStudyStrip } from '@/components/CaseStudyStrip';
+import { CaseStudyCard, CaseStudyRow } from '@/components/ArcatextCaseStudies';
 import { EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
@@ -91,6 +91,18 @@ export default function Arcatext() {
   const { content } = useContent();
   const arc = content.arcatext;
 
+  /* The case studies are folded into one card until asked for -- see
+     ArcatextCaseStudies. Each carries its own index in the feature list rather
+     than its place in the row, because the titles and bodies are read from the
+     content store by index and a hidden case study would otherwise shift the
+     labels of every one after it. */
+  const [casesOpen, setCasesOpen] = useState(false);
+  const toggleCases = () => setCasesOpen((open) => !open);
+  const caseStudies = arc.features
+    .map((f, index) => ({ slug: f.slug, index, hidden: f.hidden }))
+    .filter((f) => !f.hidden)
+    .map(({ slug, index }) => ({ slug, index }));
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -121,7 +133,15 @@ export default function Arcatext() {
 
   return (
     <div ref={rootRef} className="relative">
-      <SectionToc items={tocItems} labels={content.arcatext.toc} routeHash="#/arcatext" order={content.arcatext.sectionOrder} />
+      <SectionToc
+        items={tocItems}
+        labels={content.arcatext.toc}
+        routeHash="#/arcatext"
+        order={content.arcatext.sectionOrder}
+        /* The card the case studies live in sits above the section list: it is
+           navigation too, and this is where the page keeps its navigation. */
+        before={<CaseStudyCard items={caseStudies} open={casesOpen} onToggle={toggleCases} />}
+      />
 
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/50">
@@ -141,51 +161,10 @@ export default function Arcatext() {
         </div>
       </div>
 
-      {/* The keyboard in motion, first on the page: a phone per view in a
-          sideways row. It breaks out to the full window width so the row can
-          run to the right edge, and starts on the page's content column (see
-          ArcatextDemoRow). The product shows itself before it is described. */}
-      <section className="pt-32 pb-12 sm:pt-40 sm:pb-16">
-        <div className="mx-[calc(50%-50vw)]">
-          <ArcatextDemoRow />
-        </div>
-      </section>
-
-      {/* What the product actually does: one card per feature, its
-          screen on the left and its name on the right, ahead of the title.
-          Both are content, so the titles can be reworded and the thumbnails
-          swapped from admin.
-          The thumbnails crop from the centre, which is where each screen's own
-          panel sits -- cropping from the top gives the same chat header on
-          every one of them. */}
-      <section className="pt-8 pb-2 sm:pt-10 sm:pb-4">
-        {/* The heading keeps the page's text measure; the strip below it does
-            not. It runs wider than the copy so the seven items have room to
-            breathe, and scrolls where the viewport is narrower than they are. */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Editable
-            as="h2"
-            path="arcatext.featuresTitle"
-            className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-          />
-        </div>
-        {/* Left edge with the copy, right edge with the viewport.
-            Centring a wider container instead put the strip's left edge into
-            the gutter the section nav is fixed in, and from 1600px up -- where
-            that rail appears -- the two overlapped. */}
-        <div className="mt-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mr-[calc(50%-50vw)]">
-            <CaseStudyStrip
-              items={arc.features
-                .map((f, index) => ({ slug: f.slug, index, hidden: f.hidden }))
-                .filter((f) => !f.hidden)}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Hero */}
-      <section className="relative pt-10 pb-20 sm:pt-14 sm:pb-24 overflow-hidden">
+      {/* The page header: what this is, whose it is, and the facts of it.
+          First on the page, because everything under it -- the case studies
+          and the keyboards -- is the product itself. */}
+      <section className="relative pt-28 pb-12 sm:pt-32 sm:pb-16 overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-60"
           style={{
@@ -268,6 +247,30 @@ export default function Arcatext() {
         </div>
       </section>
 
+
+
+      {/* The case studies, under the header and above the keyboards: folded
+          into one card by the section nav until someone asks for them, then
+          flown out into this row. See ArcatextCaseStudies. */}
+      <section className="pb-6 sm:pb-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Below 1600px the rail does not exist, so the card that holds them
+              sits here instead -- and is what they fly from. */}
+          <div className="mb-6 min-[1600px]:hidden">
+            <CaseStudyCard items={caseStudies} open={casesOpen} onToggle={toggleCases} />
+          </div>
+          <CaseStudyRow items={caseStudies} open={casesOpen} />
+        </div>
+      </section>
+
+      {/* The keyboard in motion: a phone per view in a sideways row. It breaks
+          out to the full window width so the row can run to the right edge,
+          and starts on the page's content column (see ArcatextDemoRow). */}
+      <section className="pt-4 pb-12 sm:pt-6 sm:pb-16">
+        <div className="mx-[calc(50%-50vw)]">
+          <ArcatextDemoRow />
+        </div>
+      </section>
 
       {/* 01 — Overview */}
       <ReorderableSections pageKey="arcatext">

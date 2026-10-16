@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,6 +26,8 @@ interface SectionNavProps {
   routeHash: string;
   /** Admin-set section display order (ids); falls back to natural order. */
   order?: string[];
+  /** Rendered above the list, in the same fixed rail (desktop only). */
+  before?: ReactNode;
 }
 
 /** Reorder items + parallel labels by a list of section ids. */
@@ -108,7 +111,7 @@ function useSectionJump(routeHash: string): (id: string) => void {
  * centred content column. On narrower screens it renders nothing — the top-bar
  * SectionNavDropdown takes over there.
  */
-export function SectionToc({ items: rawItems, labels: rawLabels, routeHash, order }: SectionNavProps) {
+export function SectionToc({ items: rawItems, labels: rawLabels, routeHash, order, before }: SectionNavProps) {
   const { items, labels } = applyOrder(rawItems, rawLabels, order);
   const activeId = useActiveSection(items);
   const jump = useSectionJump(routeHash);
@@ -118,6 +121,8 @@ export function SectionToc({ items: rawItems, labels: rawLabels, routeHash, orde
       aria-label="Section navigation"
       className="hidden min-[1600px]:block fixed top-1/2 left-6 -translate-y-1/2 z-40"
     >
+      {before && <div className="mb-5">{before}</div>}
+
       <ol className="space-y-3 text-sm">
         {items.map((item, i) => {
           const isActive = activeId === item.id;
