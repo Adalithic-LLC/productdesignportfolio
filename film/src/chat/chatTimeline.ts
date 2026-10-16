@@ -229,7 +229,7 @@ export const FIELD_TEXT = stripPauses(FIELD_RAW);
 export const FIELD_JA = SHORT ? 'じゃあ…メッセージを入力して「変換」を押すの？' : 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
 const FIELD2_RAW = SHORT ? 'And{0.25} it adds words I miss{0.25} to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = stripPauses(FIELD2_RAW);
-const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
+const FIELD3_RAW = SHORT ? "Ok this is cool.| I'm going to text my friend in Japan. What about you?" : 'Ok this is cool.| I kind of want to practice now.';
 export const FIELD3_TEXT = stripPauses(FIELD3_RAW);
 
 export const FPS = 60;
@@ -256,7 +256,7 @@ const D = {
   studyLoad: SHORT ? 0 : 1.0, // Study opens, then its entries appear (the short has no loading state)
   studyFlick: 2.2, // the entries are read, then flicked
   studyClear: 2.0, // after the flick, the field clears for the last line
-  endHold: 1.0, // the last line holds before the fade to the end card
+  endHold: SHORT ? 0.5 : 1.0, // the last line holds before the fade to the end card
   tagFirst: 2.4, // the end card's first tagline word lands
   tagHold: 0.5, // each of the tagline's first three words holds
   tagSpin: SHORT ? 1.0 : 2.2, // the tagline's spin to "a language"
@@ -588,7 +588,7 @@ export const HIDE_SENT = STUDY_FLICK + 1.3;
 export const SEND_AT = FIELD_MSGS[0].sendAt;
 /** The end card: a second after the last line is typed, the scene fades out
     over END_FADE, then the card. */
-export const END_FADE = 0.9;
+export const END_FADE = SHORT ? 0.5 : 0.9;
 export const ENDING = c + D.endHold + END_FADE;
 
 /** When the closing reel's flick begins (Mandarin's hold over), from the card's start. */
