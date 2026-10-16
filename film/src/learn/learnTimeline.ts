@@ -5,8 +5,8 @@
  *      inline reel of apps.
  *   2. The phone: narration bubbles above the field and keyboard, and a camera
  *      that moves between them: type what you know, add what you want to
- *      learn, Reword it to Spanish; then the study-guide line in chunks
- *      while the phone steps away; then open Study, send.
+ *      learn, Reword it to Spanish and send it; then the study-guide line in
+ *      chunks while the phone steps away; then open Study.
  *   3. The end card: the app's splash, then its line, ending on a reel of
  *      languages.
  *
@@ -144,6 +144,12 @@ export const REWORD_TAP = c + D.tapAfter;
 export const REWORD_SWAP = REWORD_TAP + 0.22;
 move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
 c = REWORD_SWAP + D.readEs;
+// Pull back to the whole phone and send the Spanish.
+c = move(c, D.zoomOut, { kind: 'whole', scale: 1.6 });
+export const SEND_TAP = c + 0.35;
+export const SEND_AT = SEND_TAP + 0.17;
+BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
+c = SEND_AT + D.sentHold;
 // The study-guide line: the phone fades away and the line comes in chunk by
 // chunk, as the headline does; the camera waits on Study for the phone's return.
 export const NOTE_IN = c;
@@ -158,11 +164,6 @@ export const STUDY_OPEN = STUDY_TAP + 0.18;
 export const STUDY_GROW = 0.4;
 c = move(STUDY_TAP + 0.1, D.glide + 0.15, { kind: 'study', scale: 1.9 });
 c = STUDY_OPEN + STUDY_GROW + D.studyRead;
-// Pull back to the whole phone and send the Spanish.
-c = move(c, D.zoomOut, { kind: 'whole', scale: 1.6 });
-export const SEND_TAP = c + 0.35;
-export const SEND_AT = SEND_TAP + 0.17;
-BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
 export const FIELD = {
   times: [...KNOW_TIMES, ...ADD_TIMES],
   rewordTap: REWORD_TAP,
@@ -170,7 +171,7 @@ export const FIELD = {
   sendTap: SEND_TAP,
   sendAt: SEND_AT,
 };
-export const WORLD_OUT = SEND_AT + D.sentHold;
+export const WORLD_OUT = c;
 
 /** Study's entries: the Spanish this message used that a learner would miss. */
 export const STUDY_ROWS_DATA = [

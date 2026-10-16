@@ -442,7 +442,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
             </div>
           )}
           {t >= STUDY_OPEN && (
-            <div className="absolute inset-x-0 top-0 [&_*]:!transition-none" style={{ opacity: g.grow }}>
+            <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: g.grow }}>
               <StudyPanel stage="rows" rows={STUDY_ROWS_DATA} total={18} scroll={0} />
             </div>
           )}
