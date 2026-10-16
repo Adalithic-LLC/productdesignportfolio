@@ -21,6 +21,10 @@ import {
   FIELD_ES,
   FRAME,
   KB,
+  NOTE_AT,
+  NOTE_CHUNKS,
+  NOTE_IN,
+  NOTE_OUT,
   LANGS,
   LANG_LANDS,
   LANG_ROLL,
@@ -255,6 +259,40 @@ function Headline({ t }: { t: number }) {
   );
 }
 
+/** The study-guide line, in bold chunks while the phone steps away. */
+function Note({ t }: { t: number }) {
+  if (t < NOTE_IN || t > NOTE_OUT + D.noteFade) return null;
+  const out = span(t, NOTE_OUT, NOTE_OUT + D.noteFade, (x) => x);
+  return (
+    <div
+      className="absolute"
+      style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}
+    >
+      <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 76, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>
+        {NOTE_CHUNKS.map((c, i) => {
+          const k = span(t, NOTE_AT[i], NOTE_AT[i] + 0.55, easeOutCubic);
+          const parts = c.split('study guide');
+          return (
+            <span key={i}>
+              <span style={{ display: 'inline-block', opacity: k, transform: `translateY(${(1 - k) * 22}px)`, filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
+                {parts.length > 1 ? (
+                  <>
+                    {parts[0]}
+                    <span style={{ color: ACCENT }}>study guide</span>
+                    {parts[1]}
+                  </>
+                ) : (
+                  c
+                )}
+              </span>{' '}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const countAt = (times: number[], t: number) => {
   let n = 0;
   while (n < times.length && times[n] <= t) n++;
@@ -358,7 +396,9 @@ function Field({ t }: { t: number }) {
 function World({ met, t }: { met: Metrics; t: number }) {
   const g = geometry(met, t);
   const cam = camera(met, t);
-  const fade = span(t, WORLD_IN, WORLD_IN + D.worldIn, (x) => x) * (1 - span(t, WORLD_OUT, ENDING, (x) => x));
+  const away = span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) * (1 - span(t, NOTE_OUT + D.noteFade, NOTE_OUT + 2 * D.noteFade, (x) => x));
+  const fade = span(t, WORLD_IN, WORLD_IN + D.worldIn, (x) => x) * (1 - span(t, WORLD_OUT, ENDING, (x) => x)) * (1 - away);
+  if (fade <= 0 && t > WORLD_IN + D.worldIn) return null;
   const pressed = t >= FIELD.rewordTap && t < FIELD.rewordTap + 0.22 ? 'reword' : t >= STUDY_TAP && t < STUDY_OPEN ? 'study' : null;
   const sent = t >= FIELD.sendAt;
   return (
@@ -534,6 +574,7 @@ export default function LearnFilm() {
         </>
       )}
       {met && t >= WORLD_IN && t < ENDING && <World met={met} t={t} />}
+      <Note t={t} />
       {met && t >= WORLD_OUT && <Ending t={t} met={met} />}
     </div>
   );

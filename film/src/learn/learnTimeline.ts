@@ -5,7 +5,8 @@
  *      inline reel of apps.
  *   2. The phone: narration bubbles above the field and keyboard, and a camera
  *      that moves between them: type what you know, add what you want to
- *      learn, Reword it to Spanish, open Study, send.
+ *      learn, Reword it to Spanish; then the study-guide line in chunks
+ *      while the phone steps away; then open Study, send.
  *   3. The end card: the app's splash, then its line, ending on a reel of
  *      languages.
  *
@@ -53,7 +54,9 @@ export const D = {
   glide: 0.75, // the camera glides to a button
   tapAfter: 0.35, // then taps it
   readEs: 1.6, // the Spanish is read
-  readStudyBubble: 2.6, // the study-guide bubble is read
+  noteFade: 0.5, // the phone fades out for the study-guide line, and back
+  noteChunk: 0.75, // between the study-guide line's chunks
+  noteHold: 1.6, // the full study-guide line holds
   studyRead: 2.4, // Study's entries are read
   zoomOut: 0.9, // the camera pulls back to the whole phone
   sentHold: 1.8, // the sent message holds
@@ -138,11 +141,15 @@ export const REWORD_TAP = c + D.tapAfter;
 export const REWORD_SWAP = REWORD_TAP + 0.22;
 move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
 c = REWORD_SWAP + D.readEs;
-// The study-guide bubble arrives above the field; the camera takes in both.
-c = move(c - 0.3, 0.8, { kind: 'bubbleField', i: 2, scale: 1.95 });
-BUBBLES.push({ text: "We add each word you miss to your study guide, so you don't lose track.", who: 'them', at: c - 0.4 });
-c += D.readStudyBubble;
-c = move(c, D.glide, { kind: 'button', which: 'study', scale: TYPE_ZOOM });
+// The study-guide line: the phone fades away and the line comes in chunk by
+// chunk, as the headline does; the camera waits on Study for the phone's return.
+export const NOTE_IN = c;
+export const NOTE_CHUNKS = ['We add each word', 'you miss', 'to your study guide,', "so you don't lose track."];
+export const NOTE_AT = NOTE_CHUNKS.map((_, i) => NOTE_IN + D.noteFade + 0.1 + i * D.noteChunk);
+export const NOTE_OUT = NOTE_AT[NOTE_AT.length - 1] + 0.5 + D.noteHold;
+move(NOTE_IN + D.noteFade, 0.01, { kind: 'button', which: 'study', scale: TYPE_ZOOM });
+// The phone comes back once the line has gone.
+c = NOTE_OUT + 2 * D.noteFade + 0.2;
 export const STUDY_TAP = c + D.tapAfter;
 export const STUDY_OPEN = STUDY_TAP + 0.18;
 export const STUDY_GROW = 0.4;
@@ -234,6 +241,8 @@ export function scenes() {
         : [{ word: w }]),
     inline('final-hold', `on “${LANGS[LANGS.length - 1]}”`, D.finalHold, ENDING + LANG_LANDS[LANG_LANDS.length - 1], 'hold', 'Hold'),
   ];
+  const noteFlow = NOTE_CHUNKS.flatMap((x, i) =>
+    i < NOTE_CHUNKS.length - 1 ? [{ text: x }, inline(`note-${i}`, `after “${x}”`, D.noteChunk, NOTE_AT[i])] : [{ text: x }, inline('note-hold', 'the full line holds', D.noteHold, NOTE_AT[i] + 0.5, 'hold', 'Hold')]);
   const list = [
     { id: 'title1', name: 'Headline: How can translations become self-guided…', start: 0,
       texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
@@ -249,7 +258,9 @@ export function scenes() {
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
     { id: 'reword', name: 'Reword to Spanish', start: CAMERA[3][0], texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
-    { id: 'study', name: 'Open the Study Guide', start: CAMERA.find((x) => x[2].kind === 'button' && x[2].which === 'study')![0], texts: [] },
+    { id: 'note', name: "Text: We add each word you miss… so you don't lose track.", start: NOTE_IN,
+      texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
+    { id: 'study', name: 'Open the Study Guide', start: NOTE_OUT + D.noteFade, texts: [] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
       texts: [{ key: 'line1', label: 'Line 1', text: `${END_LINES.join(' ')} [${LANGS.join(' / ')}]` }], flows: [endFlow] },
   ].sort((a, b) => a.start - b.start);
@@ -271,7 +282,7 @@ export function cues() {
     send: SEND_AT,
     sends: [SEND_AT],
     swipes: [],
-    words: [...LINE2_LANDS, ...CHUNK_AT],
+    words: [...LINE2_LANDS, ...CHUNK_AT, ...NOTE_AT],
     ticks: LANG_LANDS.slice(1).map((x) => ENDING + x),
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
     titles: [[0, WORLD_IN]],
