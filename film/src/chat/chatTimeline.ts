@@ -34,6 +34,10 @@ export type Line = {
   pauses?: { after: string; secs: number }[];
   /** With `focus`: push in again onto the reel as its first word types. */
   focusSlot?: boolean;
+  /** The camera reads this bubble: zoomed in, it pans along the text and comes
+      to rest on the reel, holding there until the next bubble (or the pan to
+      the keyboard). A run of `read` bubbles stays zoomed in from one to the next. */
+  read?: boolean;
   /** The reel's last word types on in place of the reel rather than rolling in. */
   slotTypeLast?: boolean;
   /** Extra seconds before the reel's first word types on (after a block
@@ -180,7 +184,9 @@ const SHORT_SCRIPT: Line[] = [
     maxW: 340,
     slot: ['life?', 'interests?', 'actual conversations?'],
     slotInline: true,
-    slotTypeDelay: 0.3,
+    // The camera reads the text first; the reel starts as it arrives.
+    read: true,
+    slotTypeDelay: 2.0,
     after: 1.0,
   },
   {
@@ -192,6 +198,9 @@ const SHORT_SCRIPT: Line[] = [
     maxW: 340,
     slot: ['friends.', 'penpals.', 'classmates.', 'AI.'],
     slotInline: true,
+    read: true,
+    // Bubble 1 fades as this one arrives.
+    clearAbove: true,
     slotTypeDelay: 1.0,
     after: 1.0,
   },

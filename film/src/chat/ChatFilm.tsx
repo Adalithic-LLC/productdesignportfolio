@@ -635,7 +635,67 @@ const SLOT_ZOOM = 2.6;
 /** A close-up on a `focus` bubble: the camera eases in on it as it starts
     typing and opens back out as the next bubble arrives. Returns the CSS
     transform for the whole chat, about the bubble's (final) centre. */
+/** How far the camera pushes in (over the chat's own scale) to read a `read` bubble. */
+const READ_ZOOM = 1.6;
+
+/** The reading camera for `read` bubbles: a path of points (in frame pixels,
+    for the bubble at the bottom of the stack) the camera centres on. It reads
+    each bubble's first line from its start to its end, carries down to the
+    reel, and rests there until the next `read` bubble arrives, when it moves
+    on to that one's first words. Zoomed in from the first `read` bubble (from
+    the very start when that is the film's first line) until the pan away. */
+function readCamera(met: Metrics, t: number) {
+  const reads = TIMED.filter((m) => m.read);
+  if (!reads.length) return null;
+  const first = reads[0];
+  const last = reads[reads.length - 1];
+  const release = [PAN[0], BACK[0], PAN2[0]].find((x) => x > last.at) ?? Infinity;
+  const kIn = first.index === 0 ? 1 : easeInOutCubic(clamp01((t - first.at) / 0.7));
+  const k = kIn * (1 - easeInOutCubic(clamp01((t - release) / 0.9)));
+  if (k <= 0) return null;
+  const left = STAGE.cx - (COL / 2) * CHAT_SCALE;
+  const visW = STAGE.w / (READ_ZOOM * CHAT_SCALE);
+  const keys: { t: number; x: number; y: number }[] = [];
+  for (const m of reads) {
+    const slotMax = Math.max(0, ...(met.slotW[m.index] ?? []));
+    const bh = m.slotInline ? met.inlineH[m.index] : met.heights[m.index].at(-1)!;
+    const bw = (m.slotInline ? Math.max(met.otherW[m.index], met.lastW[m.index] + met.spaceW + slotMax) : met.lineW[m.index].at(-1)!) + 25;
+    const bx = m.who === 'me' ? COL - SIDE - bw : SIDE;
+    const lines = Math.max(1, Math.round((bh - 14) / LINE));
+    // A point within the bubble (from its top-left) on screen, with the bubble at the bottom.
+    const at = (x: number, y: number) => ({ x: left + (bx + x) * CHAT_SCALE, y: CHAT_BOTTOM - (bh - y) * CHAT_SCALE });
+    const lineY = (k2: number) => 7 + LINE * (k2 + 0.5);
+    const firstW = lines > 1 ? met.otherW[m.index] : met.lastW[m.index];
+    // The bubble's left edge, then its first line's end, at the safe area's edges.
+    const x0 = Math.min(visW / 2, bw / 2);
+    const x1 = Math.max(x0, 12 + firstW + 14 - visW / 2);
+    const xs = m.slot ? 12 + (m.slotInline ? met.lastW[m.index] + met.spaceW : 0) + slotMax / 2 : x1;
+    const arrive = m === first ? m.at : m.at + 0.5;
+    keys.push({ t: arrive, ...at(x0, lineY(0)) });
+    const reach = m.slot ? m.slotAt - 0.05 : m.done;
+    if (lines > 1) keys.push({ t: arrive + (reach - arrive) * 0.62, ...at(x1, lineY(0)) });
+    keys.push({ t: reach, ...at(xs, lineY(lines - 1)) });
+  }
+  // Ease along the path one leg at a time; hold the first point before it and the last after.
+  let p = keys[0];
+  if (t >= keys[keys.length - 1].t) p = keys[keys.length - 1];
+  else {
+    for (let i = 0; i < keys.length - 1; i++) {
+      const a = keys[i], b = keys[i + 1];
+      if (t >= a.t && t < b.t) {
+        const e = easeInOutCubic((t - a.t) / Math.max(1e-6, b.t - a.t));
+        p = { t, x: lerp(a.x, b.x, e), y: lerp(a.y, b.y, e) };
+        break;
+      }
+    }
+  }
+  const z = lerp(1, READ_ZOOM, k);
+  return `translate(${lerp(p.x, STAGE.cx, k)}px, ${lerp(p.y, STAGE.cy, k)}px) scale(${z}) translate(${-p.x}px, ${-p.y}px)`;
+}
+
 function focusTransform(met: Metrics, t: number) {
+  const read = readCamera(met, t);
+  if (read) return read;
   for (const m of TIMED) {
     if (!m.focus) continue;
     const next = TIMED[m.index + 1];
