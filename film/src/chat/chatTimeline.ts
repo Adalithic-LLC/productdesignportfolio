@@ -182,37 +182,22 @@ const SHORT_SCRIPT: Line[] = [
   {
     who: 'them',
     kind: 'block',
-    text: 'Just by texting your',
-    slot: ['friends?', 'penpals?', 'classmates?', 'AI?'],
+    text: 'Use Arcatext to chat with',
+    slot: ['friends.', 'penpals.', 'classmates.', 'AI.'],
     slotInline: true,
     slotTypeDelay: 1.0,
   },
-  { who: 'me', kind: 'block', text: "Yeah! Let's see it.", after: 1.0 },
+  { who: 'me', kind: 'block', text: 'Sounds like something I could use!', after: 1.0 },
   // ── Back up in the chat once the reply is sent, then down again ──
   {
     who: 'them',
     kind: 'block',
-    text: "Yes! It's a keyboard with features for",
+    text: 'Arcatext is a keyboard for',
     maxW: 340,
     slot: ['translation.', 'correction.', 'analysis.', 'study.'],
     slotTypeDelay: 1.0,
     clearAbove: true,
     after: 1.0,
-    afterSend: true,
-  },
-  {
-    who: 'them',
-    kind: 'type',
-    // Broken before "based on your" so even "actual conversations." fits after it.
-    text: 'Learn the practical language\nbased on your',
-    maxW: 340,
-    slot: ['life.', 'interests.', 'actual conversations.'],
-    slotInline: true,
-    slotHold: 2.0,
-    slotTypeDelay: 1.0,
-    focus: true,
-    focusSlot: true,
-    clearAbove: true,
     afterSend: true,
   },
   { who: 'me', kind: 'block', text: 'Where can I use it?', afterSend: true },
@@ -230,9 +215,9 @@ const SHORT_SCRIPT: Line[] = [
 export const SCRIPT: Line[] = SHORT ? SHORT_SCRIPT : FULL_SCRIPT;
 
 // A '|' marks a half-second pause in the typing; it isn't typed.
-const FIELD_RAW = 'So...| I just type a message| then tap a button to translate?';
+const FIELD_RAW = SHORT ? 'So...|I type a message| and tap Reword?' : 'So...| I just type a message| then tap a button to translate?';
 export const FIELD_TEXT = FIELD_RAW.replaceAll('|', '');
-export const FIELD_JA = 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
+export const FIELD_JA = SHORT ? 'じゃあ…メッセージを入力して、Rewordを押すの？' : 'じゃあ…メッセージを入力して、ボタンを押すだけで翻訳できるの？';
 const FIELD2_RAW = SHORT ? 'And it adds words I miss| to a study guide!' : 'One more thing...it actually adds the words I missed| to a study guide?';
 export const FIELD2_TEXT = FIELD2_RAW.replaceAll('|', '');
 const FIELD3_RAW = 'Ok this is cool.| I kind of want to practice now.';
@@ -640,7 +625,7 @@ export function scenes() {
     })),
     { id: 'keyboard', name: 'Pan to keyboard', texts: [], start: PAN[0],
       delays: [dl('pan', 'Pan down to the keyboard', D.pan), ...(SHORT ? [] : [dl('keys-hold', 'Hold before closing in on the field', D.keysHold)])] },
-    { id: 'field1', name: 'Type: So... I just type a message…', texts: typed('Typed message', FIELD_TEXT), start: AT.field1,
+    { id: 'field1', name: `Type: ${FIELD_TEXT.slice(0, 24)}…`, texts: typed('Typed message', FIELD_TEXT), start: AT.field1,
       delays: [SHORT ? dl('keys-hold', 'Hold before typing', D.keysHold + 0.2) : dl('zoom-in', 'Push in on the field', D.zoom), ...fieldDelays(FIELD_RAW), dl('after-type', 'Hold after typing', D.afterType)] },
     { id: 'reword', name: 'Reword to Japanese + send', texts: typed('Reworded (Japanese)', FIELD_JA), start: AT.reword,
       delays: [...(SHORT ? [] : [dl('zoom-out', 'Back out to the keys', D.zoom)]), dl('reword-tap', 'Then tap Reword after', D.rewordTap), dl('read-ja', 'Japanese reads before Send', D.readJa), dl('after-send', 'Reply rises before the camera goes up', D.backAfterSend)] },
