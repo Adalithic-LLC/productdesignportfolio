@@ -259,7 +259,7 @@ const D = {
   endHold: SHORT ? 0.5 : 1.0, // the last line holds before the fade to the end card
   tagFirst: 2.4, // the end card's first tagline word lands
   tagHold: 0.5, // each of the tagline's first three words holds
-  tagSpin: SHORT ? 1.0 : 2.2, // the tagline's spin to "a language"
+  tagSpin: SHORT ? 1.25 : 2.2, // the tagline's spin to "a language"
   tagRest: SHORT ? 1.2 : 1.8, // the finished card holds
   // The short cut's outro, once "a language" lands: the splash plays in reverse
   // (its logo steps run 1.6s; "Arcatext" backspaces meanwhile), then the camera
