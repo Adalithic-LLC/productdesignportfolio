@@ -1,3 +1,4 @@
+import { TryItOut } from '@/components/prototype/TryItOut';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
@@ -194,11 +195,13 @@ export default function Arcatext() {
               subtitle well clear of the title; giving row 2 the free space
               sends all of it there instead. */}
           <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-14">
-            {/* Row 1, left: the project's name. */}
-            <div className="lg:col-start-1 lg:row-start-1">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-balance">
+            {/* Row 1, left: the project's name, and beside it the way into
+                the interactive prototype. */}
+            <div className="mb-6 flex items-center gap-5 sm:gap-7 lg:col-start-1 lg:row-start-1">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
                 <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
               </h1>
+              <TryItOut />
             </div>
 
             {/* Row 2, left: what the product is. */}

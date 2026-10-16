@@ -49,8 +49,37 @@ export type OptionsConfig = {
   speakerGender: string | null;
 };
 
-/** The default shortcut chips (ConfigurationsView.defaultShortcutCodes). */
-const DEFAULT_CHIPS = ['English', 'Spanish', 'Chinese', 'French', 'German', 'Japanese', 'Italian'];
+/** The default shortcut chips (ConfigurationsView.defaultShortcutCodes:
+    en, es, zh-Hans, fr, de, ja, it; names drop any parenthetical). */
+const DEFAULT_CHIPS = ['English', 'Spanish', 'Mandarin', 'French', 'German', 'Japanese', 'Italian'];
+
+/**
+ * Taps, for the interactive prototype. Every handler is optional: a page given
+ * none (the stills and the demo) draws exactly as before and takes no taps.
+ */
+export type OptionsActions = {
+  recipient?: (g: 'Male' | 'Female') => void;
+  groupChat?: () => void;
+  scriptMenu?: () => void;
+  script?: (title: string) => void;
+  language?: (name: string) => void;
+  moreLanguages?: () => void;
+  copy?: () => void;
+  copyLanguage?: () => void;
+  autocorrect?: () => void;
+  speakerGender?: () => void;
+  typingSettings?: () => void;
+};
+
+/** A tappable wrapper when there is a handler, a plain block when not. */
+function Tap({ on, className, children }: { on?: () => void; className?: string; children: React.ReactNode }) {
+  if (!on) return <div className={className}>{children}</div>;
+  return (
+    <button type="button" onClick={on} className={`block w-full text-left transition-[filter] active:brightness-90 ${className ?? ''}`}>
+      {children}
+    </button>
+  );
+}
 
 /** iOS switch, drawn at its 51x31pt size. */
 function Toggle({ on }: { on: boolean }) {
@@ -134,7 +163,7 @@ function GridCard({ title, value, icon, muted }: { title: string; value?: string
 }
 
 /** "Who are you texting?" — accent ring on the selected tile. */
-function RecipientGender({ selected }: { selected: 'Male' | 'Female' }) {
+function RecipientGender({ selected, onPick }: { selected: 'Male' | 'Female'; onPick?: (g: 'Male' | 'Female') => void }) {
   return (
     <div>
       <SectionLabel>Who are you texting?</SectionLabel>
@@ -144,7 +173,9 @@ function RecipientGender({ selected }: { selected: 'Male' | 'Female' }) {
           return (
             <div
               key={name}
-              className="flex flex-1 items-center justify-center rounded-[10px] text-[16px] font-medium"
+              role={onPick ? 'button' : undefined}
+              onClick={onPick ? () => onPick(name) : undefined}
+              className={`flex flex-1 items-center justify-center rounded-[10px] text-[16px] font-medium ${onPick ? 'cursor-pointer' : ''}`}
               style={{
                 height: 46,
                 background: on ? AX.selectedBg : AX.cardBg,
@@ -161,9 +192,15 @@ function RecipientGender({ selected }: { selected: 'Male' | 'Female' }) {
   );
 }
 
-function GroupChat({ on }: { on: boolean }) {
+function GroupChat({ on, onToggle }: { on: boolean; onToggle?: () => void }) {
   return (
-    <div className="flex items-center justify-between rounded-[10px] px-3" style={{ height: 46, background: AX.cardBg }}>
+    <div
+      role={onToggle ? 'switch' : undefined}
+      aria-checked={onToggle ? on : undefined}
+      onClick={onToggle}
+      className={`flex items-center justify-between rounded-[10px] px-3 ${onToggle ? 'cursor-pointer' : ''}`}
+      style={{ height: 46, background: AX.cardBg }}
+    >
       <span className="text-[16px]" style={{ color: AX.label }}>
         Group Chat
       </span>
@@ -181,16 +218,25 @@ function RewordScript({
   script,
   menuOpen,
   highlight,
+  onOpen,
+  onPick,
 }: {
   script: NonNullable<OptionsConfig['script']>;
   menuOpen: boolean;
   highlight?: string;
+  onOpen?: () => void;
+  onPick?: (title: string) => void;
 }) {
   const others = script.all.filter((o) => o.title !== script.selected.title);
   return (
     <div className="relative z-10">
       <SectionLabel>Reword Script</SectionLabel>
-      <div className="flex items-center rounded-[13px] px-3" style={{ height: 48, background: AX.cardBg }}>
+      <div
+        role={onOpen ? 'button' : undefined}
+        onClick={onOpen}
+        className={`flex items-center rounded-[13px] px-3 ${onOpen ? 'cursor-pointer' : ''}`}
+        style={{ height: 48, background: AX.cardBg }}
+      >
         <span className="text-[16px] font-medium" style={{ color: AX.label }} dir={script.selected.rtl ? 'rtl' : undefined}>
           {script.selected.title}
         </span>
@@ -210,7 +256,9 @@ function RewordScript({
             <div key={o.title}>
               {i > 0 && <div className="ml-4" style={{ height: 1, background: AX.cardStroke }} />}
               <div
-                className="flex items-center gap-4 p-3 transition-colors"
+                role={onPick ? 'button' : undefined}
+                onClick={onPick ? () => onPick(o.title) : undefined}
+                className={`flex items-center gap-4 p-3 transition-colors ${onPick ? 'cursor-pointer active:brightness-90' : ''}`}
                 // The row being tapped takes PressedLabelColor, as
                 // AlphabetMenuRowButtonStyle does while pressed.
                 style={{ background: highlight === o.title ? AX.cardStroke : undefined }}
@@ -236,26 +284,56 @@ function RewordScript({
  * default shortcuts minus any already in recents. The row scrolls sideways and
  * is clipped by the card.
  */
-function RewordLanguageCard({ language }: { language: string }) {
-  const defaults = DEFAULT_CHIPS.filter((n) => n !== language);
+function RewordLanguageCard({
+  language,
+  recents = [],
+  onPick,
+  onMore,
+}: {
+  language: string;
+  /** Recently used languages after the current one (the prototype's). */
+  recents?: string[];
+  onPick?: (name: string) => void;
+  onMore?: () => void;
+}) {
+  const lead = [language, ...recents.filter((r) => r !== language)];
+  const defaults = DEFAULT_CHIPS.filter((n) => !lead.includes(n));
   return (
     <Card>
       <div className="py-4">
         <div className="px-4 text-[18px] font-medium leading-[25px]" style={{ color: AX.label }}>
           Reword Language
         </div>
-        <div className="mt-3 flex items-center gap-2 overflow-hidden whitespace-nowrap pl-4">
-          <span
-            className="flex shrink-0 items-center px-3 text-[16px]"
-            style={{ height: 46, borderRadius: 25, background: AX.selectedBg, color: AX.accent, boxShadow: `inset 0 0 0 2px ${AX.accent}` }}
-          >
-            {language}
-          </span>
+        <div
+          className={`mt-3 flex items-center gap-2 whitespace-nowrap pl-4 ${
+            onPick ? 'overflow-x-auto pr-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'overflow-hidden'
+          }`}
+        >
+          {lead.map((name, i) => {
+            const on = i === 0;
+            return (
+              <span
+                key={name}
+                role={onPick ? 'button' : undefined}
+                onClick={onPick ? () => onPick(name) : undefined}
+                className={`flex shrink-0 items-center px-3 text-[16px] transition-all duration-200 ${onPick ? 'cursor-pointer' : ''}`}
+                style={
+                  on
+                    ? { height: 46, borderRadius: 25, background: AX.selectedBg, color: AX.accent, boxShadow: `inset 0 0 0 2px ${AX.accent}` }
+                    : { height: 46, borderRadius: 12, background: AX.chipBg, color: AX.label, boxShadow: `inset 0 0 0 1px ${AX.cardStroke}` }
+                }
+              >
+                {name}
+              </span>
+            );
+          })}
           <span className="mx-1 shrink-0 rounded-full" style={{ width: 2, height: 32, background: AX.separator }} />
           {defaults.map((name) => (
             <span
               key={name}
-              className="flex shrink-0 items-center rounded-[12px] px-3 text-[16px]"
+              role={onPick ? 'button' : undefined}
+              onClick={onPick ? () => onPick(name) : undefined}
+              className={`flex shrink-0 items-center rounded-[12px] px-3 text-[16px] ${onPick ? 'cursor-pointer' : ''}`}
               style={{ height: 46, background: AX.chipBg, color: AX.label, boxShadow: `inset 0 0 0 1px ${AX.cardStroke}` }}
             >
               {name}
@@ -264,22 +342,42 @@ function RewordLanguageCard({ language }: { language: string }) {
         </div>
       </div>
       <CardDivider />
-      <ValueRow label="More Languages" value={language} />
+      <Tap on={onMore}>
+        <ValueRow label="More Languages" value={language} />
+      </Tap>
     </Card>
   );
 }
 
-function TranslationCopyCard({ on, language }: { on: boolean; language: string }) {
+function TranslationCopyCard({
+  on,
+  language,
+  onToggle,
+  onLanguage,
+}: {
+  on: boolean;
+  language: string;
+  onToggle?: () => void;
+  onLanguage?: () => void;
+}) {
   return (
     <Card>
-      <div className="flex items-center justify-between pl-4 pr-3" style={{ height: 56 }}>
+      <div
+        role={onToggle ? 'switch' : undefined}
+        aria-checked={onToggle ? on : undefined}
+        onClick={onToggle}
+        className={`flex items-center justify-between pl-4 pr-3 ${onToggle ? 'cursor-pointer' : ''}`}
+        style={{ height: 56 }}
+      >
         <span className="text-[16px]" style={{ color: AX.label }}>
           Reword Translation Copy
         </span>
         <Toggle on={on} />
       </div>
       <CardDivider />
-      <ValueRow label="View Copy In..." value={language} />
+      <Tap on={onLanguage}>
+        <ValueRow label="View Copy In..." value={language} />
+      </Tap>
     </Card>
   );
 }
@@ -290,8 +388,14 @@ export default function ArcatextOptionsPage({
   scriptMenuOpen = false,
   scriptHighlight,
   onClose,
+  actions,
+  recents,
 }: {
   config: OptionsConfig;
+  /** Taps (the prototype). With them the page scrolls natively. */
+  actions?: OptionsActions;
+  /** Recently used Reword languages, leading the chips after the current one. */
+  recents?: string[];
   /** How far the page is scrolled, in points. */
   scroll?: number;
   scriptMenuOpen?: boolean;
@@ -322,7 +426,10 @@ export default function ArcatextOptionsPage({
       </div>
 
       {/* The scroll view, clipped at the keyboard's height. */}
-      <div className="relative overflow-hidden" style={{ height: OPTIONS_VIEW_H - HEADER_H }}>
+      <div
+        className={`relative ${actions ? 'overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'overflow-hidden'}`}
+        style={{ height: OPTIONS_VIEW_H - HEADER_H }}
+      >
         <div
           className="px-3 transition-transform duration-500 ease-in-out"
           style={{ transform: `translateY(${-scroll}px)` }}
@@ -331,32 +438,50 @@ export default function ArcatextOptionsPage({
               and no top gap at all when the language has none of them. */}
           {hasEmbedded && (
             <div className="relative z-10 flex flex-col gap-4 pt-4">
-              {config.recipientGender && <RecipientGender selected={config.recipientGender} />}
-              {config.groupChat !== undefined && <GroupChat on={config.groupChat} />}
+              {config.recipientGender && <RecipientGender selected={config.recipientGender} onPick={actions?.recipient} />}
+              {config.groupChat !== undefined && <GroupChat on={config.groupChat} onToggle={actions?.groupChat} />}
               {config.script && (
-                <RewordScript script={config.script} menuOpen={scriptMenuOpen} highlight={scriptHighlight} />
+                <RewordScript
+                  script={config.script}
+                  menuOpen={scriptMenuOpen}
+                  highlight={scriptHighlight}
+                  onOpen={actions?.scriptMenu}
+                  onPick={actions?.script}
+                />
               )}
             </div>
           )}
           <div className="flex flex-col gap-4 pb-6 pt-4">
-            <RewordLanguageCard language={config.language} />
-            <TranslationCopyCard on={config.copy.on} language={config.copy.language} />
-            <GridCard
-              title="Autocorrect Languages"
-              value={`${config.keyboards} Keyboard${config.keyboards === 1 ? '' : 's'}`}
-              icon={<AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />}
+            <RewordLanguageCard
+              language={config.language}
+              recents={recents}
+              onPick={actions?.language}
+              onMore={actions?.moreLanguages}
             />
+            <TranslationCopyCard
+              on={config.copy.on}
+              language={config.copy.language}
+              onToggle={actions?.copy}
+              onLanguage={actions?.copyLanguage}
+            />
+            <Tap on={actions?.autocorrect}>
+              <GridCard
+                title="Autocorrect Languages"
+                value={`${config.keyboards} Keyboard${config.keyboards === 1 ? '' : 's'}`}
+                icon={<AxIcon light={localesUrl} dark={localesDarkUrl} width={14} height={17} />}
+              />
+            </Tap>
             <div className="flex gap-4">
-              <div className="flex-1">
+              <Tap on={config.speakerGender === null ? undefined : actions?.speakerGender} className="flex-1">
                 <GridCard
                   title="Your Gender"
                   value={config.speakerGender ?? 'Not needed'}
                   muted={config.speakerGender === null}
                 />
-              </div>
-              <div className="flex-1">
+              </Tap>
+              <Tap on={actions?.typingSettings} className="flex-1">
                 <GridCard title="Typing Settings" />
-              </div>
+              </Tap>
             </div>
           </div>
         </div>

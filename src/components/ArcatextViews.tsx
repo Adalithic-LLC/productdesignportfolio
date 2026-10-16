@@ -75,10 +75,12 @@ function Radio({ on }: { on: boolean }) {
 }
 
 /** CheckCardSelectionButtonStyle: a radio card, accent ring when selected. */
-function SelectRow({ text, on }: { text: string; on: boolean }) {
+function SelectRow({ text, on, onPick }: { text: string; on: boolean; onPick?: () => void }) {
   return (
     <div
-      className="flex items-start gap-2 rounded-[12px] p-3"
+      role={onPick ? 'button' : undefined}
+      onClick={onPick}
+      className={`flex items-start gap-2 rounded-[12px] p-3 ${onPick ? 'cursor-pointer active:brightness-95' : ''}`}
       style={{ background: AX.cardBg, boxShadow: `inset 0 0 0 ${on ? 2 : 1}px ${on ? AX.accent : AX.cardStroke}` }}
     >
       <p className="flex-1 text-[16px] leading-[26px]" style={{ color: AX.label }}>
@@ -111,6 +113,23 @@ export type CheckState = {
   gender?: 'idle' | 'loading' | 'done';
 };
 
+/**
+ * Taps, for the interactive prototype. A panel given none (the demo) draws as
+ * before. `select` picks a card: 'reword', 'original' or 'syn-N'.
+ */
+export type CheckActions = {
+  fixWords?: () => void;
+  synonyms?: () => void;
+  homographs?: () => void;
+  gender?: () => void;
+  analyze?: () => void;
+  hideAnalysis?: () => void;
+  select?: (key: string) => void;
+  meaning?: (i: number) => void;
+  genderOption?: (i: number) => void;
+  language?: () => void;
+};
+
 export type CheckData = {
   reverse: string;
   reword: string;
@@ -118,6 +137,8 @@ export type CheckData = {
   synonyms: string[];
   /** The original's word, and its meanings (the reword's word + an English gloss). */
   homograph: { word: string; meanings: { title: string; gloss: string }[] };
+  /** The Check language (the reverse translation's), "English" by default. */
+  checkLanguage?: string;
   /** Analysis word pairs: the gloss (bold, on top) over the reword's chunk. */
   analysis?: { gloss: string; chunk: string }[];
   /** A gendered word (the original's) and its options; the first is in use. */
@@ -130,11 +151,13 @@ function DetectionButton({
   label,
   pressed,
   tour,
+  onTap,
 }: {
   description: string;
   label: string;
   pressed?: boolean;
   tour?: string;
+  onTap?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-3 px-3" data-tour={tour}>
@@ -142,7 +165,11 @@ function DetectionButton({
         {description}
       </p>
       <div
-        className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium transition-[filter] duration-100"
+        role={onTap ? 'button' : undefined}
+        onClick={onTap}
+        className={`flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium transition-[filter] duration-100 ${
+          onTap ? 'cursor-pointer active:brightness-90' : ''
+        }`}
         style={{ background: AX.selectedBg, color: AX.checkText, filter: pressed ? 'brightness(0.88)' : 'none' }}
       >
         {label}
@@ -180,9 +207,19 @@ export function CheckPanel({
   onClose,
   showAnalyze = false,
   pressed,
+  actions,
+  selected = 'reword',
+  meaning = 0,
+  genderPick = 0,
 }: {
   state: CheckState;
   data: CheckData;
+  actions?: CheckActions;
+  /** The card in use: 'reword', 'original' or 'syn-N'. */
+  selected?: string;
+  /** The homograph meaning in use, and the gender option in use. */
+  meaning?: number;
+  genderPick?: number;
   scrollRef?: RefObject<HTMLDivElement | null>;
   synRef?: RefObject<HTMLDivElement | null>;
   detectRef?: RefObject<HTMLDivElement | null>;
@@ -229,11 +266,22 @@ export function CheckPanel({
                     )}
                   </div>
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="-ml-2 flex items-center gap-1 p-2 text-[16px] font-medium" style={{ color: AX.accent }}>
-                      English <ChevronRight className="h-3 w-3" strokeWidth={2.6} />
+                    <span
+                      role={actions?.language ? 'button' : undefined}
+                      onClick={actions?.language}
+                      className={`-ml-2 flex items-center gap-1 p-2 text-[16px] font-medium ${actions?.language ? 'cursor-pointer' : ''}`}
+                      style={{ color: AX.accent }}
+                    >
+                      {data.checkLanguage ?? 'English'} <ChevronRight className="h-3 w-3" strokeWidth={2.6} />
                     </span>
                     {state.reverse === 'done' && (
-                      <span data-tour="fixWords" className="text-[16px] font-medium" style={{ color: AX.accent }}>
+                      <span
+                        data-tour="fixWords"
+                        role={actions?.fixWords ? 'button' : undefined}
+                        onClick={actions?.fixWords}
+                        className={`text-[16px] font-medium ${actions?.fixWords ? 'cursor-pointer active:opacity-60' : ''}`}
+                        style={{ color: AX.accent }}
+                      >
                         Fix Words
                       </span>
                     )}
@@ -243,14 +291,20 @@ export function CheckPanel({
               <div className="flex flex-col gap-2.5">
                 <CheckLabel>Reword</CheckLabel>
                 <div className="px-3" data-tour="reword">
-                  <SelectRow text={data.reword} on />
+                  <SelectRow
+                    text={data.reword}
+                    on={selected === 'reword'}
+                    onPick={actions?.select ? () => actions.select!('reword') : undefined}
+                  />
                 </div>
                 {/* Reword analysis: "Analyze Reword" + Experimental, then a
                     shimmer, then the word-pair grid with "Hide analysis". */}
                 {showAnalyze && analysis === 'idle' && (
                   <div className="flex items-center gap-2 px-3" data-tour="analyze">
                     <span
-                      className="rounded-[12px] p-2 text-[16px] font-medium transition-colors duration-100"
+                      role={actions?.analyze ? 'button' : undefined}
+                      onClick={actions?.analyze}
+                      className={`rounded-[12px] p-2 text-[16px] font-medium transition-colors duration-100 ${actions?.analyze ? 'cursor-pointer' : ''}`}
                       style={{ color: AX.accent, background: pressed === 'analyze' ? AX.cardStroke : undefined }}
                     >
                       Analyze Reword
@@ -286,7 +340,12 @@ export function CheckPanel({
                       ))}
                     </div>
                     <div className="px-1 pb-1">
-                      <span className="block py-2 text-center text-[16px] font-medium" style={{ color: AX.accent }}>
+                      <span
+                        role={actions?.hideAnalysis ? 'button' : undefined}
+                        onClick={actions?.hideAnalysis}
+                        className={`block py-2 text-center text-[16px] font-medium ${actions?.hideAnalysis ? 'cursor-pointer' : ''}`}
+                        style={{ color: AX.accent }}
+                      >
                         Hide analysis
                       </span>
                     </div>
@@ -296,7 +355,11 @@ export function CheckPanel({
               <div className="flex flex-col gap-2.5">
                 <CheckLabel>Original message</CheckLabel>
                 <div className="px-3" data-tour="original">
-                  <SelectRow text={data.original} on={false} />
+                  <SelectRow
+                    text={data.original}
+                    on={selected === 'original'}
+                    onPick={actions?.select ? () => actions.select!('original') : undefined}
+                  />
                 </div>
               </div>
             </div>
@@ -306,10 +369,21 @@ export function CheckPanel({
               <CheckLabel>Synonyms</CheckLabel>
               <div className="flex flex-col gap-3 px-3" data-tour="synonyms">
                 {state.synonyms === 'done' ? (
-                  data.synonyms.map((s) => <SelectRow key={s} text={s} on={false} />)
+                  data.synonyms.map((s, i) => (
+                    <SelectRow
+                      key={s}
+                      text={s}
+                      on={selected === `syn-${i}`}
+                      onPick={actions?.select ? () => actions.select!(`syn-${i}`) : undefined}
+                    />
+                  ))
                 ) : (
                   <div
-                    className="flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium text-white transition-[filter] duration-100"
+                    role={actions?.synonyms ? 'button' : undefined}
+                    onClick={state.synonyms === 'idle' ? actions?.synonyms : undefined}
+                    className={`flex h-[38px] items-center justify-center rounded-[12px] text-[16px] font-medium text-white transition-[filter] duration-100 ${
+                      actions?.synonyms ? 'cursor-pointer active:brightness-90' : ''
+                    }`}
                     style={{ background: AX.primary, filter: pressed === 'synonyms' ? 'brightness(0.8)' : 'none' }}
                   >
                     {state.synonyms === 'loading' ? <Spinner size={16} color="#fff" track="rgba(255,255,255,0.35)" /> : 'Show synonyms'}
@@ -333,6 +407,7 @@ export function CheckPanel({
                     label="Check homographs"
                     pressed={pressed === 'homographs'}
                     tour="homographsButton"
+                    onTap={actions?.homographs}
                   />
                 )}
                 {state.homographs === 'loading' && (
@@ -352,12 +427,14 @@ export function CheckPanel({
                     {/* Meaning cards, 168pt wide; the meaning in use leads. */}
                     <div className="flex gap-2 overflow-hidden px-3 py-0.5">
                       {data.homograph.meanings.map((m, i) => {
-                        const on = i === 0;
+                        const on = i === meaning;
                         return (
                           <div
                             key={m.title}
-                            data-tour={on ? 'homographs' : undefined}
-                            className="flex w-[168px] shrink-0 flex-col gap-1 rounded-[10px] p-3"
+                            data-tour={i === 0 ? 'homographs' : undefined}
+                            role={actions?.meaning ? 'button' : undefined}
+                            onClick={actions?.meaning ? () => actions.meaning!(i) : undefined}
+                            className={`flex w-[168px] shrink-0 flex-col gap-1 rounded-[10px] p-3 transition-all duration-150 ${actions?.meaning ? 'cursor-pointer' : ''}`}
                             style={{
                               background: on ? AX.selectedBg : AX.cardBg,
                               boxShadow: `inset 0 0 0 ${on ? 2 : 1}px ${on ? AX.accent : AX.cardStroke}`,
@@ -378,12 +455,18 @@ export function CheckPanel({
                     label="Check gendered words"
                     pressed={pressed === 'gender'}
                     tour="genderButton"
+                    onTap={actions?.gender}
                   />
                 )}
                 {gender === 'loading' && (
                   <div className="min-h-[37px] px-3">
                     <LoadingBar />
                   </div>
+                )}
+                {gender === 'done' && !data.gender && (
+                  <p className="px-3 text-[16px] leading-[26px]" style={{ color: AX.placeholder }}>
+                    No gender dependent words detected.
+                  </p>
                 )}
                 {gender === 'done' && data.gender && (
                   <div className="flex flex-col gap-3">
@@ -393,8 +476,12 @@ export function CheckPanel({
                         <div
                           key={o.label}
                           data-tour={i === 0 ? 'gender' : undefined}
-                          className="flex flex-1 flex-col items-center gap-1 rounded-[10px] p-3 text-center"
-                          style={optionCardStyle(i === 0)}
+                          role={actions?.genderOption ? 'button' : undefined}
+                          onClick={actions?.genderOption ? () => actions.genderOption!(i) : undefined}
+                          className={`flex flex-1 flex-col items-center gap-1 rounded-[10px] p-3 text-center transition-all duration-150 ${
+                            actions?.genderOption ? 'cursor-pointer' : ''
+                          }`}
+                          style={optionCardStyle(i === genderPick)}
                         >
                           <span className="text-[16px] font-semibold">{o.word}</span>
                           <span className="text-[16px] font-medium leading-tight">{o.label}</span>
@@ -685,11 +772,27 @@ export function StudyPanel({
  * reverse translation in a 96pt field with the caret at its end, and a hint.
  * Apply stays at 40% until the text has changed.
  */
-export function FixWordsCard({ text, edited }: { text: string; edited: boolean }) {
+export function FixWordsCard({
+  text,
+  edited,
+  onCancel,
+  onApply,
+}: {
+  text: string;
+  edited: boolean;
+  /** Live controls (the prototype); the stills leave them inert. */
+  onCancel?: () => void;
+  onApply?: () => void;
+}) {
   return (
     <div className="flex flex-col gap-[14px] px-3" style={{ fontFamily: NOTO }}>
       <div className="flex items-center">
-        <span className="text-[16px]" style={{ color: AX.accent }}>
+        <span
+          role={onCancel ? 'button' : undefined}
+          onClick={onCancel}
+          className={`text-[16px] ${onCancel ? 'cursor-pointer active:opacity-60' : ''}`}
+          style={{ color: AX.accent }}
+        >
           Cancel
         </span>
         <div className="flex-1" />
@@ -697,7 +800,12 @@ export function FixWordsCard({ text, edited }: { text: string; edited: boolean }
           Fix Words
         </span>
         <div className="flex-1" />
-        <span className="text-[16px] font-semibold" style={{ color: AX.accent, opacity: edited ? 1 : 0.4 }}>
+        <span
+          role={onApply ? 'button' : undefined}
+          onClick={edited ? onApply : undefined}
+          className={`text-[16px] font-semibold ${onApply && edited ? 'cursor-pointer active:opacity-60' : ''}`}
+          style={{ color: AX.accent, opacity: edited ? 1 : 0.4 }}
+        >
           Apply
         </span>
       </div>
