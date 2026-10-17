@@ -60,13 +60,14 @@ export const SPLASH_LOGO_LEN = TYPE_START + 0.1;
  * beams in until it's a line, the line shrinking away) while "Arcatext"
  * backspaces at the rate it typed.
  */
-export default function SplashLogo({ s: sIn, scale = 1, out, children }: { s: number; scale?: number; out?: number; children?: ReactNode }) {
+/** `keepBlue` leaves the icon in the Reword blue instead of settling to grey. */
+export default function SplashLogo({ s: sIn, scale = 1, out, keepBlue = false, children }: { s: number; scale?: number; out?: number; keepBlue?: boolean; children?: ReactNode }) {
   const s = out != null ? Math.max(0, SPLASH_LOGO_LEN - out) : sIn;
   const column = COLUMN_H * easeInOut(s / 0.4);
   const beam = BEAM_W * easeInOut((s - 0.4) / 0.2);
   const shift = BEAM_H * easeInOut((s - 0.6) / 0.2);
   const logoScale = lerp(1, TARGET_SCALE, easeInOut((s - 1.0) / 0.2));
-  const g = easeInOut((s - TYPE_START) / 0.1);
+  const g = keepBlue ? 0 : easeInOut((s - TYPE_START) / 0.1);
   const color = `rgb(${BLUE.map((c, i) => Math.round(lerp(c, GREY[i], g))).join(',')})`;
   let letters = 0;
   while (letters < NAME.length && sIn >= SPLASH_LETTERS[letters]) letters++;

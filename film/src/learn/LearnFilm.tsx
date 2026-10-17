@@ -495,7 +495,7 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
     <div className="absolute inset-0" style={{ opacity: fadeIn }}>
       <div className="absolute left-0 top-0" style={{ width: W, height: H }}>
         <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: STAGE.cy - 330, height: 300 }}>
-          {local >= 0 && <SplashLogo s={local} scale={2.2} />}
+          {local >= 0 && <SplashLogo s={local} scale={2.2} keepBlue />}
         </div>
         <div
           className="absolute flex justify-center"
