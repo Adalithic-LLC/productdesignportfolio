@@ -237,8 +237,8 @@ function camera(met: Metrics, t: number) {
 
 // ── Titles ──
 
-/** The headline's words in the accent color; everything else is white. */
-const HEADLINE_ACCENTS = ['texting', 'language learning'];
+/** The headline's words (and its closing ?) in the accent color; everything else is white. */
+const HEADLINE_ACCENTS = ['texting', 'language learning?'];
 /** `text` with each of `phrases` it contains wrapped in the accent color. */
 function accentParts(text: string, phrases: string[]) {
   const re = new RegExp(`(${phrases.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
