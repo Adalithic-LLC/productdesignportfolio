@@ -38,6 +38,7 @@ import {
   LINE2_SLOT_TIMES,
   D,
   STAGE,
+  CAM_K,
   START_VIEW,
   STUDY_GROW,
   STUDY_OPEN,
@@ -440,7 +441,8 @@ function Field({ t }: { t: number }) {
 
 function World({ met, t }: { met: Metrics; t: number }) {
   const g = geometry(met, t);
-  const cam = camera(met, t);
+  const c0 = camera(met, t);
+  const cam = { ...c0, s: c0.s * CAM_K };
   const away = span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) * (1 - span(t, NOTE_OUT + D.noteFade, NOTE_OUT + 2 * D.noteFade, (x) => x));
   const fade = span(t, WORLD_IN, WORLD_IN + D.worldIn, (x) => x) * (1 - span(t, WORLD_OUT, ENDING, (x) => x)) * (1 - away);
   if (fade <= 0 && t > WORLD_IN + D.worldIn) return null;

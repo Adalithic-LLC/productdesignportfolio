@@ -16,9 +16,18 @@
 
 import { clamp01, easeInOutCubic } from '../ease';
 
-export const FRAME = { w: 1080, h: 1920 };
-/** The platforms' safe area for a 9:16 ad (as the chat film's portrait cut). */
-export const STAGE = { cx: 500, cy: 800, w: 860 };
+const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+/** Portrait (1080x1920, the 9:16 ad) with ?portrait; otherwise 16:9 (1920x1080). */
+export const PORTRAIT = params.has('portrait');
+export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
+/** Where the action sits. Portrait keeps to the platforms' safe area for a
+    9:16 ad (as the chat film's portrait cut); landscape centres on the frame.
+    `w` is the text column and the camera's framing width in both, so lines
+    wrap and close-ups frame the same way. */
+export const STAGE = PORTRAIT ? { cx: 500, cy: 800, w: 860 } : { cx: 960, cy: 540, w: 860 };
+/** Landscape has about half the room under the framing point, so its camera
+    pulls back by this much on every shot. */
+export const CAM_K = PORTRAIT ? 1 : +(params.get('camk') || 0.72);
 export const FPS = 60;
 export const BPM = 120;
 
