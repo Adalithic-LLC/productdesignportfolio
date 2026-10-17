@@ -436,7 +436,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
       </div>
       <div
         className="absolute bottom-0 left-0 overflow-hidden rounded-[26px] ring-1 ring-white/10"
-        style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * 40}px)` }}
+        style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * (KEYS_H + GLOBE_H)}px)` }}
       >
         <div className="relative overflow-hidden" style={{ height: lerp(KEYS_H, VIEW_H, g.grow) }}>
           {g.grow < 1 && (
