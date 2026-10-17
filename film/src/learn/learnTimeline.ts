@@ -140,7 +140,7 @@ c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 // Back up to the chat for the next bubble; the keyboard goes down with it.
 KB.push([c, false]);
 c = move(c, D.pan, { kind: 'bubble', i: 1, scale: 3.2 });
-BUBBLES.push({ text: 'And add something you need help with...', who: 'them', at: c - 0.3 });
+BUBBLES.push({ text: 'Add something you don’t know...', who: 'them', at: c - 0.3 });
 KB.push([c - 0.3 + D.kbWait, true]);
 c = Math.max(c + D.readBubble, c - 0.3 + D.kbWait + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
