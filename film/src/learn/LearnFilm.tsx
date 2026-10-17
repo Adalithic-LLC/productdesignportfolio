@@ -21,6 +21,7 @@ import {
   FIELD_ES,
   FRAME,
   KB,
+  LOGO_AT,
   NOTE_AT,
   NOTE_CHUNKS,
   NOTE_IN,
@@ -435,7 +436,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
       </div>
       <div
         className="absolute bottom-0 left-0 overflow-hidden rounded-[26px] ring-1 ring-white/10"
-        style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * (KEYS_H + GLOBE_H)}px)` }}
+        style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * 40}px)` }}
       >
         <div className="relative overflow-hidden" style={{ height: lerp(KEYS_H, VIEW_H, g.grow) }}>
           {g.grow < 1 && (
@@ -486,7 +487,7 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
     <div className="absolute inset-0" style={{ opacity: fadeIn }}>
       <div className="absolute left-0 top-0" style={{ width: W, height: H }}>
         <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: STAGE.cy - 330, height: 300 }}>
-          {local >= 0 && <SplashLogo s={local} scale={2.2} keepBlue />}
+          {local >= LOGO_AT && <SplashLogo s={local - LOGO_AT} scale={2.2} keepBlue />}
         </div>
         <div
           className="absolute flex justify-center"

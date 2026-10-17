@@ -7,8 +7,8 @@
  *      that moves between them: type what you know, add what you want to
  *      learn, Reword it to Spanish and send it; then the study-guide line in
  *      chunks while the phone steps away; then open Study.
- *   3. The end card: the app's splash, then its line, ending on a reel of
- *      languages.
+ *   3. The end card: its line, ending on a reel of languages, then the
+ *      app's logo animates in above it.
  *
  * Every time here is in seconds from the film's start. The world is laid out
  * in iOS points; heights are measured up from the keyboard's bottom edge.
@@ -70,7 +70,9 @@ export const D = {
   studyRead: 1.0, // and the entries it lands on are read
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
-  splash: 2.0, // the app's splash plays before the end card's line
+  endLead: 0.4, // the end card's line starts once the phone has faded
+  logoLen: 2.3, // the logo animates and types "Arcatext"
+  endHold: 1.5, // the finished card (line, logo and name) holds
   finalHold: 1.5, // the finished card holds on “a language.”
 };
 
@@ -128,11 +130,12 @@ BUBBLES.push({ text: 'First, type what you know...', who: 'them', at: c });
 /** The keyboard: down while each of the first two bubbles is read, then up a
     moment later, pushing the chat up. Each entry is [at, up]. */
 export const KB: [number, boolean][] = [[c + D.kbWait1, true]];
-c = Math.max(c + D.readBubble, c + D.kbWait1 + D.kbSlide + 0.45);
-c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
-// The bubble fades away completely, then typing starts.
+// The first bubble is seen alone; then, together, the keyboard fades in, the
+// bubble fades out and the camera moves to the field; then typing starts.
+c += D.kbWait1;
 BUBBLES[0].hide = c;
-const KNOW_TIMES = typeTimes(FIELD_KNOW, c + D.bubbleOut + 0.1, 0.075, 11);
+c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
+const KNOW_TIMES = typeTimes(FIELD_KNOW, Math.max(c, BUBBLES[0].hide + D.bubbleOut) + 0.1, 0.075, 11);
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 // Back up to the chat for the next bubble; the keyboard goes down with it.
 KB.push([c, false]);
@@ -201,7 +204,7 @@ export const ENDING = WORLD_OUT + D.endFade;
 /** The end card's line, in chunks: the first on its own line, the other two
     (then the reel) on the second. */
 export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
-export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash + i * D.endChunk);
+export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.endLead + i * D.endChunk);
 /** Every language Reword offers (Arcatext/Data/LanguageData.swift on main,
     the top-level names with their parentheticals dropped). */
 const REWORD_LANGS = [
@@ -248,7 +251,9 @@ for (const [i, t] of LANG_PASS_ALL.entries()) {
   if (last === undefined || t - last >= 0.07 || i === LANG_PASS_ALL.length - 1) LANG_PASS.push(t);
 }
 
-export const DURATION = Math.ceil((ENDING + LANG_END + D.finalHold) * 2) / 2;
+/** The logo plays once the reel has landed and held on "a language.". */
+export const LOGO_AT = LANG_END + D.finalHold;
+export const DURATION = Math.ceil((ENDING + LOGO_AT + D.logoLen + D.endHold) * 2) / 2;
 
 export function scenes() {
   // Inline timings for the Cut Room, as the chat film gives them: {text}
@@ -292,7 +297,7 @@ export function scenes() {
     inline('line2-out', 'the line fades out', D.line2Out, LINE2_OUT, 'duration', 'Fade'),
   ];
   const endFlow = [
-    inline('end-logo', 'before the line (the logo plays)', D.splash, ENDING),
+    inline('end-lead', 'before the line', D.endLead, ENDING),
     ...END_CHUNKS.flatMap((x, i) =>
       i < END_CHUNKS.length - 1 ? [{ text: x }, inline(`end-${i}`, `after “${x}”`, D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
     ...LANGS.slice(0, LANG_SHOWN).flatMap((w, i) => [
@@ -302,7 +307,9 @@ export function scenes() {
     ]),
     inline('lang-flick', 'through the rest', D.langFlick, ENDING + LANG_FLICK_AT, 'duration', 'Flick'),
     ...LANGS.slice(LANG_SHOWN).map((w) => ({ word: w })),
-    inline('final-hold', `on “${LANGS[LANGS.length - 1]}”`, D.finalHold, ENDING + LANG_END, 'hold', 'Hold'),
+    inline('final-hold', `on “${LANGS[LANGS.length - 1]}”, before the logo`, D.finalHold, ENDING + LANG_END, 'hold', 'Hold'),
+    { text: 'Arcatext (logo)' },
+    inline('end-hold', 'the finished card holds', D.endHold, ENDING + LOGO_AT + D.logoLen, 'hold', 'Hold'),
   ];
   const noteFlow = [
     inline('note-in', 'the phone fades out', D.noteFade, NOTE_IN, 'duration', 'Fade'),
@@ -358,7 +365,7 @@ export function cues() {
     titles: [[0, WORLD_IN]],
     phones: [WORLD_IN],
     opening: [0, 0],
-    closing: ENDING,
+    closing: ENDING + LOGO_AT,
     studyFlick: null,
   };
 }
