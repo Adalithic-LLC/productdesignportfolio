@@ -362,9 +362,19 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
 
 // ── The phone ──
 
+const ES_WORDS = FIELD_ES.split(' ');
+
 function Field({ t }: { t: number }) {
   const n = typedCount(t);
   const swap = t >= FIELD.swap ? clamp01((t - FIELD.swap) / 0.32) : 0;
+  // The reword lands loudly: the field rings blue and pulses, a light sweeps
+  // across it, and the Spanish cascades in word by word in blue before
+  // settling to ink.
+  const since = t - FIELD.swap;
+  const ring = since >= 0 ? Math.sin(Math.PI * clamp01(since / 1.1)) * (since < 0.25 ? clamp01(since / 0.12) : 1) : 0;
+  const pulse = since >= 0 ? clamp01(since / 0.7) : 0;
+  const sweep = since >= 0 && since < 0.75 ? easeInOutCubic(clamp01(since / 0.75)) : null;
+  const pop = since >= 0 && since < 0.5 ? 1 + 0.035 * Math.sin(Math.PI * clamp01(since / 0.5)) : 1;
   const sent = t >= FIELD.sendAt;
   const pressed = t >= FIELD.sendTap && t < FIELD.sendAt;
   const has = n > 0 && !sent;
@@ -373,14 +383,41 @@ function Field({ t }: { t: number }) {
       <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: AX.plusBg }}>
         <Plus className="h-5 w-5" style={{ color: AX.plusIcon }} strokeWidth={2.6} />
       </div>
-      <div className="relative flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2" style={{ borderColor: AX.fieldBorder }}>
+      <div
+        className="relative flex min-h-9 min-w-0 flex-1 items-end rounded-[18px] border py-[7px] pl-4 pr-2"
+        style={{
+          borderColor: ring > 0.02 ? `color-mix(in srgb, ${AX.send} ${Math.round(ring * 100)}%, ${AX.fieldBorder})` : AX.fieldBorder,
+          boxShadow: ring > 0.02 ? `0 0 0 ${1.5 * ring}px color-mix(in srgb, ${AX.send} ${Math.round(ring * 100)}%, transparent), 0 0 ${6 + 22 * pulse}px ${2 + 8 * pulse}px color-mix(in srgb, ${AX.send} ${Math.round(ring * 45 * (1 - pulse * 0.6))}%, transparent)` : undefined,
+          transform: pop !== 1 ? `scale(${pop})` : undefined,
+        }}
+      >
+        {sweep !== null && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[18px]">
+            <div className="absolute inset-y-0" style={{ left: `${-40 + sweep * 140}%`, width: '40%', background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${AX.send} 22%, transparent), transparent)` }} />
+          </div>
+        )}
         {has ? (
           <span className="relative min-w-0 flex-1 text-[16px] leading-5" style={{ color: AX.ink }}>
-            <span className="block break-words" style={{ opacity: swap ? swap : 1, filter: swap && swap < 1 ? `blur(${(1 - swap) * 6}px)` : undefined }}>
-              {swap ? FIELD_ES : FIELD_EN.slice(0, n)}
-            </span>
+            {swap ? (
+              <span className="block break-words">
+                {ES_WORDS.map((w, i) => {
+                  const k = easeOutCubic(clamp01((since - 0.06 - i * 0.055) / 0.3));
+                  const tint = clamp01(1 - (since - 0.35 - i * 0.055) / 0.9);
+                  return (
+                    <span key={i}>
+                      {i > 0 && ' '}
+                      <span className="inline-block" style={{ opacity: k, transform: k < 1 ? `translateY(${(1 - k) * 7}px)` : undefined, filter: k < 1 ? `blur(${(1 - k) * 4}px)` : undefined, color: tint > 0 ? `color-mix(in srgb, ${AX.send} ${Math.round(tint * 100)}%, ${AX.ink})` : undefined }}>
+                        {w}
+                      </span>
+                    </span>
+                  );
+                })}
+              </span>
+            ) : (
+              <span className="block break-words">{FIELD_EN.slice(0, n)}</span>
+            )}
             {swap > 0 && swap < 1 && (
-              <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: 1 - swap, filter: `blur(${swap * 6}px)` }}>
+              <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: clamp01(1 - since / 0.18), filter: `blur(${clamp01(since / 0.18) * 6}px)` }}>
                 {FIELD_EN}
               </span>
             )}
