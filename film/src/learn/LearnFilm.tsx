@@ -107,13 +107,22 @@ function measure(root: HTMLElement): Metrics {
   const f = probe({ width: `${FIELD_TEXT_W}px`, fontFamily: FONT, fontSize: '16px', lineHeight: '20px', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
   const caretX: number[] = [];
   const caretLine: number[] = [];
+  // Each typed prefix is laid out with the rest of its word after it (unseen,
+  // as the field draws it), so a word wraps where it finally will from its
+  // first letter instead of starting on one line and jumping to the next.
+  // The caret is the right edge of the last typed character, read from a
+  // Range so measuring adds nothing to the line that could move a break.
   for (let k = 0; k <= FIELD_EN.length; k++) {
-    f.textContent = FIELD_EN.slice(0, k);
-    const mark = document.createElement('span');
-    mark.textContent = '​';
-    f.appendChild(mark);
-    caretX.push(mark.offsetLeft);
-    caretLine.push(Math.round(mark.offsetTop / 20));
+    f.textContent = FIELD_EN.slice(0, k) + wordRest(k);
+    if (k === 0) { caretX.push(0); caretLine.push(0); continue; }
+    const r = document.createRange();
+    r.setStart(f.firstChild!, k - 1);
+    r.setEnd(f.firstChild!, k);
+    const rects = r.getClientRects();
+    const box = rects[rects.length - 1];
+    const fb = f.getBoundingClientRect();
+    caretX.push(box.right - fb.left);
+    caretLine.push(Math.round((box.top - fb.top) / 20));
   }
   f.textContent = FIELD_ES;
   const esLines = Math.max(1, Math.round(f.offsetHeight / 20));
@@ -128,6 +137,12 @@ function measure(root: HTMLElement): Metrics {
 
 // ── The phone world's geometry, from the keyboard's bottom edge up ──
 
+/** The untyped rest of the word the caret is in, after `k` characters. */
+function wordRest(k: number) {
+  if (k === 0 || FIELD_EN[k - 1] === ' ') return '';
+  const m = /^\S*/.exec(FIELD_EN.slice(k));
+  return m ? m[0] : '';
+}
 const typedCount = (t: number) => {
   let n = 0;
   while (n < FIELD.times.length && FIELD.times[n] <= t) n++;
@@ -180,6 +195,9 @@ function geometry(met: Metrics, t: number) {
   return { grow, kb, block, fieldH, fieldTop, convBottom, convTop: convBottom + y, placed };
 }
 
+/** How far ahead (s) the typing camera looks for a line break. */
+const CARET_LEAD = 0.6;
+
 /** Where a framing points (x across the column, h up from the keyboard's
     bottom) and how close, at time t. */
 function resolve(v: View, met: Metrics, t: number) {
@@ -201,7 +219,16 @@ function resolve(v: View, met: Metrics, t: number) {
       // Just behind the caret, eased over the last half second, kept within the field.
       const lo = 50 + visW / 2;
       const hi = COL - 6 - visW / 2;
-      const at = (tt: number) => Math.min(hi, Math.max(lo, FIELD_TEXT_X + met.caretX[typedCount(tt)] - visW * 0.12));
+      // Looks ahead: when the caret is about to start a new line, the camera
+      // is already heading to that line's start, so it arrives as the first
+      // letter there is typed.
+      const at = (tt: number) => {
+        const n = typedCount(tt);
+        const ahead = typedCount(tt + CARET_LEAD);
+        let m = n;
+        for (let j = n + 1; j <= ahead; j++) if (met.caretLine[j] > met.caretLine[n]) { m = j; break; }
+        return Math.min(hi, Math.max(lo, FIELD_TEXT_X + met.caretX[m] - visW * 0.12));
+      };
       let sum = 0;
       for (let j = 0; j < 12; j++) sum += at(t - (0.5 * j) / 12);
       return { x: sum / 12, h: g.block + 25, s: v.scale };
@@ -415,7 +442,10 @@ function Field({ t }: { t: number }) {
                 })}
               </span>
             ) : (
-              <span className="block break-words">{FIELD_EN.slice(0, n)}</span>
+              <span className="block break-words">
+                {FIELD_EN.slice(0, n)}
+                <span style={{ visibility: 'hidden' }}>{wordRest(n)}</span>
+              </span>
             )}
             {swap > 0 && swap < 1 && (
               <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: clamp01(1 - since / 0.18), filter: `blur(${clamp01(since / 0.18) * 6}px)` }}>

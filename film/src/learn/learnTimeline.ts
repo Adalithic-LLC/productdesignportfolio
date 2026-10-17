@@ -158,8 +158,9 @@ const ADD_TIMES = typeTimes(FIELD_ADD, c + D.bubbleOut + 0.1, 0.065, 13);
 c = ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 c = move(c, D.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
 export const REWORD_TAP = c + D.tapAfter;
-export const REWORD_SWAP = REWORD_TAP + 0.22;
+// The camera pulls back to the field first; the reword plays once it is there.
 move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
+export const REWORD_SWAP = REWORD_TAP + 0.1 + D.glide + 0.05;
 c = REWORD_SWAP + D.readEs;
 // Send the Spanish from where the camera already is, on the field.
 export const SEND_TAP = c + 0.35;
