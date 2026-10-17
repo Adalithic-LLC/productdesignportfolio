@@ -73,12 +73,16 @@ def fft_filter(x, lo=None, hi=None):
     return np.fft.irfft(X * g, len(x))
 
 
-def env(n, a, d):
-    """Linear attack, exponential decay (seconds)."""
+def env(n, a, d, tail=0.03):
+    """Linear attack, exponential decay (seconds), and a short fade at the very
+    end so a note never stops on a step (a step is an audible click)."""
     tt = t_(n)
     e = np.exp(-tt / d)
     if a > 0:
         e *= np.clip(tt / a, 0, 1)
+    r = min(n, int(tail * SR))
+    if r:
+        e[-r:] *= np.linspace(1, 0, r)
     return e
 
 
@@ -118,7 +122,7 @@ def hat(open_=False):
     return fft_filter(rng.standard_normal(n), lo=7000) * env(n, 0, 0.09 if open_ else 0.018) * 0.6
 
 
-def saw_note(freq, dur, bright=12, a=0.005, d=None, rel=0.01):
+def saw_note(freq, dur, bright=12, a=0.005, d=None, rel=0.04):
     n = int(dur * SR)
     tt = t_(n)
     y = np.zeros(n)
@@ -134,11 +138,11 @@ def saw_note(freq, dur, bright=12, a=0.005, d=None, rel=0.01):
     return y * e
 
 
-def pluck(freq, dur=0.35):
+def pluck(freq, dur=0.6):
     n = int(dur * SR)
     tt = t_(n)
     y = np.sin(2 * np.pi * freq * tt) + 0.45 * np.sin(4 * np.pi * freq * tt) * np.exp(-tt / 0.05) + 0.25 * np.sin(6 * np.pi * freq * tt) * np.exp(-tt / 0.03)
-    return y * env(n, 0.002, 0.11)
+    return y * env(n, 0.002, 0.2)
 
 
 def bell(freq, dur=1.6):
@@ -248,8 +252,10 @@ for b in range(nbeats):
             place(drums, K, t, 0.75 if STYLE == 'pop' else 0.85)
             i = int(t * SR)
             dn = int(0.22 * SR)
-            depth = 0.35 if STYLE == 'pop' else 0.25
-            duck[i:i + dn] = np.minimum(duck[i:i + dn], depth + (1 - depth) * (np.arange(min(dn, N - i)) / dn) ** 0.6)
+            # A gentle duck under the kick, on the bass only: a deep one on
+            # everything made the bed pump (and read as choppy).
+            depth = 0.72
+            duck[i:i + dn] = np.minimum(duck[i:i + dn], depth + (1 - depth) * np.sin(np.pi / 2 * np.arange(min(dn, N - i)) / dn))
             if beat_in_bar in (1, 3):
                 place(drums, CL, t, 0.5 if STYLE == 'pop' else 0.6)
             place(drums, hat(), t + BEAT / 4, 0.22)
@@ -286,11 +292,11 @@ for bar in range(nbars):
     if sec in ('phone', 'title'):
         if STYLE == 'mellow':  # a round bass on 1 and the "and" of 2
             for off, g in ((0, 0.3), (1.5 * BEAT, 0.2), (3 * BEAT, 0.18)):
-                place(bass, saw_note(mtof(root), BEAT * 0.9, bright=1.2, a=0.01, d=0.5), t0 + off, g)
+                place(bass, saw_note(mtof(root), BEAT * 1.4, bright=1.2, a=0.02, d=0.8, rel=0.25), t0 + off, g)
         else:  # driving 8th-note bass
             for k in range(8):
                 note = root + (12 if STYLE == 'bright' and k % 2 else 0)
-                place(bass, saw_note(mtof(note), BEAT / 2 * 0.9, bright=6, a=0.003, d=0.12), t0 + k * BEAT / 2, 0.26 if sec == 'phone' else 0.18)
+                place(bass, saw_note(mtof(note), BEAT / 2 * 1.15, bright=6, a=0.006, d=0.3, rel=0.08), t0 + k * BEAT / 2, 0.24 if sec == 'phone' else 0.17)
     if t0 < closing + BAR:
         g = {'open': 0.16, 'title': 0.2, 'phone': 0.26, 'close': 0.12}[sec]
         if STYLE == 'mellow':
@@ -354,7 +360,7 @@ for at in cues['swipes']:
 
 bass = fft_filter(bass, hi=900)
 pad = fft_filter(pad, hi=3500)
-music = drums + (bass + pad * 1.0) * duck + reverb(arp * duck, 1.8, 0.35) + reverb(fx, 2.6, 0.3)
+music = drums + bass * duck + pad + reverb(arp, 1.8, 0.35) + reverb(fx, 2.6, 0.3)
 mix = (ui * 1.0) if sfx_only else (music * 0.8 + ui)
 
 # Fade out with the picture.

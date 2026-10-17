@@ -318,8 +318,6 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
   const a = LINE2_A.slice(0, countAt(LINE2_A_TIMES, t));
   const first = LINE2_SLOT[0].slice(0, countAt(LINE2_SLOT_TIMES, t));
   const bTyped = LINE2_B.slice(0, countAt(LINE2_B_TIMES, t));
-  const typing = t < LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + 0.3;
-  const cursorOn = typing ? Math.floor(t * 4) % 2 === 0 || t - (LINE2_A_TIMES.concat(LINE2_SLOT_TIMES, LINE2_B_TIMES).filter((x) => x <= t).pop() ?? 0) < 0.4 : false;
   // The reel: where it stands (fractional while rolling), and its width.
   let p = 0;
   for (let i = 1; i < LINE2_LANDS.length; i++) p += clamp01(easeInOutCubic((t - (LINE2_LANDS[i] - D.slotRoll)) / D.slotRoll));
@@ -327,7 +325,6 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
   const w = lerp(met.slotW[i0], met.slotW[Math.min(LINE2_SLOT.length - 1, i0 + 1)], p - i0);
   const reelStarted = t >= LINE2_LANDS[0];
   const lineH = LINE2_SIZE * 1.12;
-  const cursor = <span style={{ display: 'inline-block', width: 5, height: LINE2_SIZE * 0.9, marginLeft: 4, transform: 'translateY(8px)', background: ACCENT, opacity: cursorOn ? 1 : 0, borderRadius: 3 }} />;
   return (
     <div
       className="absolute"
@@ -352,7 +349,6 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
         {/* Then the rest types out on the line below. */}
         {bTyped && <br />}
         {bTyped.trimStart()}
-        {cursor}
       </div>
     </div>
   );
@@ -364,11 +360,7 @@ function Field({ t }: { t: number }) {
   const n = typedCount(t);
   const swap = t >= FIELD.swap ? clamp01((t - FIELD.swap) / 0.32) : 0;
   const sent = t >= FIELD.sendAt;
-  const typing = n > 0 && n < FIELD.times.length && t - FIELD.times[n - 1] < 0.5;
   const pressed = t >= FIELD.sendTap && t < FIELD.sendAt;
-  const cursor = (
-    <span className="ml-[1px] inline-block h-[18px] w-[2px] translate-y-[3px] rounded-full" style={{ background: AX.send, opacity: typing || Math.floor(t * 2) % 2 === 0 ? 1 : 0 }} />
-  );
   const has = n > 0 && !sent;
   return (
     <div className="flex items-end gap-2 px-3" style={{ fontFamily: FONT }}>
@@ -380,7 +372,6 @@ function Field({ t }: { t: number }) {
           <span className="relative min-w-0 flex-1 text-[16px] leading-5" style={{ color: AX.ink }}>
             <span className="block break-words" style={{ opacity: swap ? swap : 1, filter: swap && swap < 1 ? `blur(${(1 - swap) * 6}px)` : undefined }}>
               {swap ? FIELD_ES : FIELD_EN.slice(0, n)}
-              {cursor}
             </span>
             {swap > 0 && swap < 1 && (
               <span className="absolute inset-x-0 top-0 block break-words" style={{ opacity: 1 - swap, filter: `blur(${swap * 6}px)` }}>
