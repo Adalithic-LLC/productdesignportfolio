@@ -43,6 +43,33 @@ stretched: for the reel's single words, drop the trailing comma ("Spanish."
 reads shorter than "Spanish,") and use `speaking_rate` 1.1-1.3, then
 `vo_split.py ... --keys lang-2,lang-3 <mp3 URL>` replaces just those clips.
 
+### With Gemini TTS (the "Gemini 3.1 Flash" voices)
+
+The connector speaks Gemini voices by bare name (`Charon`) through the Gemini
+API (its `GEMINI_API_KEY`; the project's free tier allows only 10 requests a
+minute, so voice the whole script in ONE `synthesize` call per voice, not a
+dialogue of 11). Lead the text with a shared style direction in double
+brackets and put `<long pause>` between the lines:
+
+    [[Warm, relaxed, confident narrator ... leave a long pause after every line.]] How can texting become self-guided language learning?
+    <long pause>
+    By turning your chats in WhatsApp,
+    ...
+
+Gemini's pauses vary (a slow list's commas can outlast a line break), so
+split the take by its words rather than its pauses:
+
+    python3 film/vo_align.py --film learn --portrait --voice G-Charon <wav URL>
+
+It transcribes the take with Whisper (word timestamps), assigns each speech
+run between pauses to the script line its words belong to, and cuts in the
+pauses between lines. A line that still runs long (the "Type, make
+mistakes..." list) is re-voiced alone with a prompt like "one smooth,
+flowing phrase, no pauses between the items" and dropped in with
+`vo_split.py ... --keys end <wav URL>`. Gemini voices are stems only
+(`"stemOnly": true`, `"group": "Gemini 3.1 Flash"` in `voices`; the stem at
+`stems/v25/voice-g-<name>.mp4`), so Cut Room offers them where its mixer runs.
+
 The soundtrack wavs must be current (rendered with the cut), so run the usual
 `soundtrack.py` for pop, mellow and bright first, plus `--sfx-only` (the UI
 sounds alone, at their in-mix level) for the music-muted mixes. The 9:16 and 16:9 cuts share
