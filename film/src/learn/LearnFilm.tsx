@@ -489,7 +489,7 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
     return { opacity: k, transform: `translateY(${(1 - k) * 18}px)`, filter: k < 1 ? `blur(${(1 - k) * 8}px)` : undefined };
   };
   return (
-    <div className="absolute inset-0" style={{ opacity: fadeIn }}>
+    <div className="absolute inset-0" style={{ opacity: fadeIn * (CLEAR ? 1 - fade : 1) }}>
       <div className="absolute left-0 top-0" style={{ width: W, height: H }}>
         {/* The logo plays alone, centered, as the line fades away. */}
         <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: STAGE.cy - 150, height: 300 }}>
@@ -511,10 +511,15 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
           </div>
         </div>
       </div>
-      <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />
+      {!CLEAR && <div className="absolute inset-0 bg-black" style={{ opacity: fade }} />}
     </div>
   );
 }
+
+/** `?clear`: a transparent background and no glow, for an alpha render the
+    Cut Room can lay any background under. */
+const CLEAR = new URLSearchParams(location.search).has('clear');
+if (CLEAR) document.head.appendChild(Object.assign(document.createElement('style'), { textContent: 'html, body, #root { background: transparent !important; }' }));
 
 let resolveReady: () => void;
 export const learnReady = new Promise<void>((r) => (resolveReady = r));
@@ -577,8 +582,8 @@ export default function LearnFilm() {
   }, []);
 
   return (
-    <div ref={rootRef} className="relative overflow-hidden bg-black" style={{ width: W, height: H }}>
-      <Glow />
+    <div ref={rootRef} className={`relative overflow-hidden ${CLEAR ? '' : 'bg-black'}`} style={{ width: W, height: H }}>
+      {!CLEAR && <Glow />}
       {met && t < WORLD_IN + 1 && (
         <>
           <Headline t={t} />
