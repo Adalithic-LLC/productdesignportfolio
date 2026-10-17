@@ -39,6 +39,9 @@ sfx_only = '--sfx-only' in sys.argv
 STYLE = sys.argv[sys.argv.index('--style') + 1] if '--style' in sys.argv else 'pop'
 if STYLE != 'pop':
     SUFFIX += f'-{STYLE}'
+# The learn film has no dings: no bell hits on the logo, the reword or the
+# reel words, and its mellow keys drop the bell's inharmonic partials.
+NO_DINGS = FILM == 'learn'
 BEAT = 60 / {'pop': cues['bpm'], 'mellow': 90, 'bright': 124}[STYLE]
 BAR = BEAT * 4
 
@@ -151,6 +154,15 @@ def bell(freq, dur=1.6):
     y = (np.sin(2 * np.pi * freq * tt) + 0.5 * np.sin(2 * np.pi * freq * 2.76 * tt) * np.exp(-tt / 0.2)
          + 0.25 * np.sin(2 * np.pi * freq * 5.4 * tt) * np.exp(-tt / 0.08))
     return y * env(n, 0.001, 0.5)
+
+
+def keys(freq, dur=1.4):
+    # A soft electric-piano tone: harmonic partials only, so it never rings
+    # like a bell.
+    n = int(dur * SR)
+    tt = t_(n)
+    y = np.sin(2 * np.pi * freq * tt) + 0.3 * np.sin(4 * np.pi * freq * tt) * np.exp(-tt / 0.15)
+    return y * env(n, 0.006, 0.45)
 
 
 def riser(dur):
@@ -303,7 +315,7 @@ for bar in range(nbars):
             # Soft keys: the chord on 1, then two of its notes on the off-beats.
             for k, (off, idxs) in enumerate([(0, [0, 1, 2, 3]), (1.5 * BEAT, [2, 3]), (2.5 * BEAT, [1, 2]), (3.5 * BEAT, [3])]):
                 for idx in idxs:
-                    place(arp, bell(mtof(tones[idx] + 12), 1.4), t0 + off, g * 0.55 * 0.6)
+                    place(arp, (keys if NO_DINGS else bell)(mtof(tones[idx] + 12), 1.4), t0 + off, g * 0.55 * 0.6)
                     place(arp, pluck(mtof(tones[idx])), t0 + off, g * 0.55 * 0.4)
         else:
             # Arp: 16ths over the chord, an octave up; the answering phrase
@@ -315,7 +327,7 @@ for bar in range(nbars):
 
 # The logo landing, on the opening and the closing card.
 for at in ([cues['opening'][0] + 0.5] if cues['opening'][1] > 0 else []) + [closing + 0.5]:
-    for k, m in enumerate([72, 79, 84, 88]):
+    for k, m in enumerate([] if NO_DINGS else [72, 79, 84, 88]):
         place(fx, bell(mtof(m)), at + k * 0.05, 0.08)
 for m in (36, 48, 60, 64, 67, 72, 76):
     place(fx, saw_note(mtof(m), 4.5, bright=6, a=0.004, d=1.4), closing, 0.09)
@@ -323,7 +335,7 @@ place(fx, kick(), closing, 1.0)
 
 # Shimmers when the reword and the reverse translation land; a note per
 # closing word.
-for at in [c for c in (cues['reword'], cues.get('reveal')) if c is not None]:
+for at in [] if NO_DINGS else [c for c in (cues['reword'], cues.get('reveal')) if c is not None]:
     for k, m in enumerate([84, 88, 91, 96]):
         place(fx, bell(mtof(m)), at + k * 0.045, 0.09)
 # A bell per readable reel word; a spin's words just tick.
@@ -331,7 +343,7 @@ last_bell = -9.0
 notes = [76, 79, 81, 84]
 k = 0
 for at in sorted(cues['words']):
-    if at - last_bell >= 0.3:
+    if at - last_bell >= 0.3 and not NO_DINGS:
         place(fx, bell(mtof(notes[k % 4])), at, 0.1)
         last_bell = at
         k += 1
