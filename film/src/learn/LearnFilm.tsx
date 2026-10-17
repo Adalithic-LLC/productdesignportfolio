@@ -491,12 +491,13 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
   return (
     <div className="absolute inset-0" style={{ opacity: fadeIn }}>
       <div className="absolute left-0 top-0" style={{ width: W, height: H }}>
-        <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: STAGE.cy - 330, height: 300 }}>
+        {/* The logo plays alone, centered, as the line fades away. */}
+        <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: STAGE.cy - 150, height: 300 }}>
           {local >= LOGO_AT && <SplashLogo s={local - LOGO_AT} scale={2.2} keepBlue />}
         </div>
         <div
           className="absolute flex justify-center"
-          style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
+          style={{ opacity: 1 - span(local, LOGO_AT - 0.35, LOGO_AT + 0.15, (x) => x), left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
         >
           {/* Left-aligned, as the film's other lines, in a block centered at its widest. */}
           <div>
