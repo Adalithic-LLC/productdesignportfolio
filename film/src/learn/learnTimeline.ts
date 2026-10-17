@@ -63,7 +63,7 @@ export const D = {
   noteChunk: 0.75, // between the study-guide line's chunks
   noteHold: 1.6, // the full study-guide line holds
   endChunk: 1.0, // between the end card's chunks
-  langHold: 0.75, // each of the first three languages holds
+  langHold: 0.5, // each of the first three languages holds
   langFlick: 1.5, // then a flick spins through the rest and coasts onto the last
   studyPause: 2.0, // the open Study Guide is seen still, then
   studyFlick: 1.3, // flicked: a fast scroll that coasts to a stop
@@ -71,7 +71,7 @@ export const D = {
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
   splash: 2.0, // the app's splash plays before the end card's line
-  finalHold: 1.8, // the finished card holds on “a language.”
+  finalHold: 1.5, // the finished card holds on “a language.”
 };
 
 // ── 1. Titles ──
@@ -202,7 +202,22 @@ export const ENDING = WORLD_OUT + D.endFade;
     (then the reel) on the second. */
 export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
 export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash + i * D.endChunk);
-export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'a language.'];
+/** Every language Reword offers (Arcatext/Data/LanguageData.swift on main,
+    the top-level names with their parentheticals dropped). */
+const REWORD_LANGS = [
+  'Afrikaans', 'Albanian', 'Arabic', 'Armenian', 'Azerbaijani', 'Basque', 'Bengali', 'Bosnian',
+  'Bulgarian', 'Cantonese', 'Catalan', 'Croatian', 'Czech', 'Danish', 'Dari-Persian', 'Dutch',
+  'Egyptian Arabic', 'English', 'Esperanto', 'Estonian', 'Filipino', 'Finnish', 'Flemish',
+  'French', 'Galician', 'German', 'Greek', 'Gujarati', 'Haitian Creole', 'Hausa', 'Hebrew',
+  'Hindi', 'Hungarian', 'Icelandic', 'Indonesian', 'Irish', 'Italian', 'Japanese', 'Kannada',
+  'Kazakh', 'Khmer', 'Korean', 'Kurdish', 'Latin', 'Malay', 'Mandarin', 'Norwegian', 'Pashto',
+  'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Romanian', 'Russian', 'Serbian', 'Slovak',
+  'Slovenian', 'Spanish', 'Swahili', 'Swedish', 'Tagalog', 'Tamil', 'Telugu', 'Thai', 'Turkish',
+  'Ukrainian', 'Urdu', 'Uzbek', 'Valencian', 'Vietnamese', 'Welsh',
+];
+/** The reel: three to start, then the rest of Reword's list, then the landing. */
+const LANG_FIRST = ['Spanish', 'Japanese', 'Mandarin'];
+export const LANGS = [...LANG_FIRST, ...REWORD_LANGS.filter((x) => !LANG_FIRST.includes(x)), 'a language.'];
 /** The reel: the first three languages land one by one and hold, then a flick
     spins through the rest and coasts to a stop on "a language.". Times are
     from the card's start. */
@@ -219,13 +234,19 @@ export function langPos(local: number) {
   for (let i = 1; i < LANG_SHOWN; i++) p += clamp01(easeInOutCubic((local - (LANG_LANDS[i] - LANG_ROLL)) / LANG_ROLL));
   return p + (LANGS.length - LANG_SHOWN) * flickEase(clamp01((local - LANG_FLICK_AT) / D.langFlick));
 }
-/** When the reel passes each language after the first, for the soundtrack's ticks. */
-const LANG_PASS = LANGS.slice(1).map((_, k) => {
+/** When the reel passes each language after the first, for the soundtrack's
+    ticks (thinned so the fast part of the flick is a run of clicks, not a buzz). */
+const LANG_PASS_ALL = LANGS.slice(1).map((_, k) => {
   const n = k + 1;
   if (n < LANG_SHOWN) return LANG_LANDS[n] - LANG_ROLL / 2;
   const f = (n - (LANG_SHOWN - 1)) / (LANGS.length - LANG_SHOWN);
   return LANG_FLICK_AT + (1 - Math.pow(1 - f, 1 / 4)) * D.langFlick;
 });
+const LANG_PASS: number[] = [];
+for (const [i, t] of LANG_PASS_ALL.entries()) {
+  const last = LANG_PASS[LANG_PASS.length - 1];
+  if (last === undefined || t - last >= 0.07 || i === LANG_PASS_ALL.length - 1) LANG_PASS.push(t);
+}
 
 export const DURATION = Math.ceil((ENDING + LANG_END + D.finalHold) * 2) / 2;
 
