@@ -50,13 +50,20 @@ timing, so one set of mixes serves both.
 
 ## Cut Room
 
-Upload the four mixes (and the UI-sounds track) as assets and add to the version doc (both aspects):
+The artifact's asset store is full (1 GB), so voice mixes are published as
+files of the Cut Room page instead: `vo/<version>/<voice>-<cut|mellow|bright|none>.mp4`
+and `vo/<version>/sfx.mp4`, via the Artifact tool's `files` (at most 64 MB per
+publish, so 121 mixes go up in two halves). A page version holds at most 256 MB
+and 511 files in all, so before adding a new set, drop the oldest `vo/<version>/`
+folder (map its paths to null) and remove `voices` from the docs that used it.
+Cut Room treats any media ref containing `/` or `.` as such a path and anything
+else as an asset id. Then add to the version doc (both aspects):
 
 ```json
 "voices": [
-  { "id": "kore", "label": "Kore · F", "tracks": { "cut": "<pop mix id>", "mellow": "<mellow mix id>", "bright": "<bright mix id>", "none": "<no-music mix id>" } }
+  { "id": "kore", "label": "Kore · F", "tracks": { "cut": "vo/v25/kore-cut.mp4", "mellow": "vo/v25/kore-mellow.mp4", "bright": "vo/v25/kore-bright.mp4", "none": "vo/v25/kore-none.mp4" } }
 ],
-"sfxAssetId": "<sfx-only id>"
+"sfxAssetId": "vo/v25/sfx.mp4"
 ```
 
 `tracks` is keyed by the music option (`cut` = Original, `none` = music
