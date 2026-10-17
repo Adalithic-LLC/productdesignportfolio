@@ -48,7 +48,9 @@ export const D = {
   line2Out: 0.4, // then fades away
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
-  kbWait: 1.0, // a narration bubble shows alone before the keyboard comes up
+  kbWait1: 1.5, // the first bubble shows alone before the keyboard comes up
+  kbWait: 1.0, // and the second
+  bubbleOut: 0.45, // a narration bubble fades away completely before typing starts
   kbSlide: 0.35, // the keyboard slides up
   pan: 1.0, // the camera moves between the chat and the field
   afterType: 0.5, // a typed run holds
@@ -59,8 +61,9 @@ export const D = {
   noteChunk: 0.75, // between the study-guide line's chunks
   noteHold: 1.6, // the full study-guide line holds
   endChunk: 0.75, // between the end card's chunks
-  studyRead: 2.4, // Study's entries are read
-  zoomOut: 0.9, // the camera pulls back to the whole phone
+  studyPause: 0.5, // the open Study Guide is seen still, then
+  studyFlick: 1.3, // flicked: a fast scroll that coasts to a stop
+  studyRead: 1.2, // and the entries it lands on are read
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
   splash: 2.7, // the app's splash plays before the end card's line
@@ -120,11 +123,12 @@ let c = WORLD_IN + 0.4;
 BUBBLES.push({ text: 'First, type what you know...', who: 'them', at: c });
 /** The keyboard: down while each of the first two bubbles is read, then up a
     moment later, pushing the chat up. Each entry is [at, up]. */
-export const KB: [number, boolean][] = [[c + D.kbWait, true]];
-c = Math.max(c + D.readBubble, c + D.kbWait + D.kbSlide + 0.45);
+export const KB: [number, boolean][] = [[c + D.kbWait1, true]];
+c = Math.max(c + D.readBubble, c + D.kbWait1 + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
-const KNOW_TIMES = typeTimes(FIELD_KNOW, c + 0.2, 0.075, 11);
-BUBBLES[0].hide = KNOW_TIMES[0];
+// The bubble fades away completely, then typing starts.
+BUBBLES[0].hide = c;
+const KNOW_TIMES = typeTimes(FIELD_KNOW, c + D.bubbleOut + 0.1, 0.075, 11);
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 // Back up to the chat for the next bubble; the keyboard goes down with it.
 KB.push([c, false]);
@@ -133,16 +137,15 @@ BUBBLES.push({ text: 'Then add what you want to learn...', who: 'them', at: c - 
 KB.push([c - 0.3 + D.kbWait, true]);
 c = Math.max(c + D.readBubble, c - 0.3 + D.kbWait + D.kbSlide + 0.45);
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
-const ADD_TIMES = typeTimes(FIELD_ADD, c + 0.2, 0.065, 13);
-BUBBLES[1].hide = ADD_TIMES[0];
+BUBBLES[1].hide = c;
+const ADD_TIMES = typeTimes(FIELD_ADD, c + D.bubbleOut + 0.1, 0.065, 13);
 c = ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 c = move(c, D.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
 export const REWORD_TAP = c + D.tapAfter;
 export const REWORD_SWAP = REWORD_TAP + 0.22;
 move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
 c = REWORD_SWAP + D.readEs;
-// Pull back to the whole phone and send the Spanish.
-c = move(c, D.zoomOut, { kind: 'whole', scale: 1.6 });
+// Send the Spanish from where the camera already is, on the field.
 export const SEND_TAP = c + 0.35;
 export const SEND_AT = SEND_TAP + 0.17;
 BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
@@ -159,7 +162,9 @@ move(NOTE_IN + D.noteFade, 0.01, { kind: 'study', scale: 1.9 });
 export const STUDY_OPEN = NOTE_OUT;
 export const STUDY_TAP = STUDY_OPEN; // no tap: it is simply open
 export const STUDY_GROW = 0.01;
-c = NOTE_OUT + 2 * D.noteFade + D.studyRead;
+/** The flick down the open Study Guide, once the phone is back. */
+export const STUDY_FLICK = NOTE_OUT + 2 * D.noteFade + D.studyPause;
+c = STUDY_FLICK + D.studyFlick + D.studyRead;
 export const FIELD = {
   times: [...KNOW_TIMES, ...ADD_TIMES],
   rewordTap: REWORD_TAP,
@@ -178,6 +183,13 @@ export const STUDY_ROWS_DATA = [
   { entry: 'semana', translations: 'week', sentence: 'La semana pasada fue larga.', tag: 'Noun', misses: 1 },
   { entry: 'hola', translations: 'hello', sentence: '¡Hola! ¿Qué tal?', tag: 'Interjection', misses: 1 },
   { entry: 'tu', translations: 'your', sentence: '¿Cómo está tu familia?', tag: 'Determiner', misses: 1 },
+  { entry: 'quedar', translations: 'to meet up', sentence: '¿Quedamos el sábado?', tag: 'Verb', misses: 3 },
+  { entry: 'me apetece', translations: 'I feel like', sentence: 'Me apetece un café.', tag: 'Phrase', misses: 2 },
+  { entry: 'ahora mismo', translations: 'right now', sentence: 'Voy ahora mismo.', tag: 'Phrase', misses: 2 },
+  { entry: 'nos vemos', translations: 'see you', sentence: '¡Nos vemos mañana!', tag: 'Phrase', misses: 1 },
+  { entry: 'pues', translations: 'well / so', sentence: 'Pues no sé.', tag: 'Interjection', misses: 1 },
+  { entry: 'cansado', translations: 'tired', sentence: 'Estoy muy cansado.', tag: 'Adjective', misses: 1 },
+  { entry: 'genial', translations: 'great', sentence: '¡Qué genial!', tag: 'Adjective', misses: 1 },
 ];
 
 // ── 3. The end card ──
@@ -266,9 +278,9 @@ export function scenes() {
     ...BUBBLES.map((b, i) => ({
       id: `b${i + 1}`,
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
-      start: i === 0 ? WORLD_IN : b.who === 'me' ? CAMERA.find((x) => x[2].kind === 'whole')![0] : b.at - 0.2,
+      start: i === 0 ? WORLD_IN : b.who === 'me' ? SEND_TAP - 0.35 : b.at - 0.2,
       texts: [{ key: `b${i + 1}`, label: b.who === 'me' ? 'Sent message' : 'Left bubble', text: b.text }],
-      ...(i < 2 ? { flows: [[{ text: b.text }, inline(i === 0 ? 'kb-wait' : `kb-wait-${i + 1}`, 'before the keyboard comes up', D.kbWait, b.at)]] } : {}),
+      ...(i < 2 ? { flows: [[{ text: b.text }, inline(i === 0 ? 'kb-wait' : `kb-wait-${i + 1}`, 'before the keyboard comes up', i === 0 ? D.kbWait1 : D.kbWait, b.at)]] } : {}),
     })),
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: CAMERA[0][0], texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: CAMERA[2][0], texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
@@ -276,7 +288,8 @@ export function scenes() {
     { id: 'note', name: 'Text: If you miss a word, we add it to your study guide.', start: NOTE_IN,
       texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
     { id: 'study', name: 'The Study Guide, open', start: NOTE_OUT + D.noteFade, texts: [],
-      flows: [[{ text: 'Study Guide' }, inline('study-read', 'the open Study Guide holds', D.studyRead, NOTE_OUT + 2 * D.noteFade, 'hold', 'Hold')]] },
+      flows: [[{ text: 'Study Guide' }, inline('study-pause', 'before the flick', D.studyPause, NOTE_OUT + 2 * D.noteFade, 'hold', 'Hold'),
+        inline('study-flick', 'the flick', D.studyFlick, STUDY_FLICK, 'duration', 'Scroll'), inline('study-read', 'after the flick', D.studyRead, STUDY_FLICK + D.studyFlick, 'hold', 'Hold')]] },
     { id: 'end', name: 'End card', start: WORLD_OUT,
       texts: [{ key: 'line1', label: 'Line 1', text: `${END_CHUNKS.map((x) => `[${x}]`).join(' ')} [${LANGS.join(' / ')}]` }], flows: [endFlow] },
   ].sort((a, b) => a.start - b.start);

@@ -42,6 +42,7 @@ import {
   STUDY_GROW,
   STUDY_OPEN,
   STUDY_ROWS_DATA,
+  STUDY_FLICK,
   STUDY_TAP,
   TITLE1_OUT,
   WORLD_IN,
@@ -131,6 +132,10 @@ const typedCount = (t: number) => {
   while (n < FIELD.times.length && FIELD.times[n] <= t) n++;
   return n;
 };
+/** The flick down the open Study Guide: a fast start that coasts to a stop. */
+const STUDY_SCROLL_MAX = 470;
+const studyScroll = (t: number) => STUDY_SCROLL_MAX * (1 - Math.pow(1 - clamp01((t - STUDY_FLICK) / D.studyFlick), 4));
+
 /** How far up the keyboard is: 0 down, 1 up, sliding at each KB change. */
 function kbLevel(t: number) {
   let v = 0;
@@ -159,7 +164,7 @@ function geometry(met: Metrics, t: number) {
     const m = BUBBLES[i];
     if (t < m.at) continue;
     const next = BUBBLES.slice(i + 1).find((x) => x.who === 'them' && m.who === 'them');
-    const out = Math.max(next ? clamp01((t - next.at) / 0.45) : 0, m.hide !== undefined ? clamp01((t - m.hide) / 0.45) : 0);
+    const out = Math.max(next ? clamp01((t - next.at) / 0.45) : 0, m.hide !== undefined ? clamp01((t - m.hide) / D.bubbleOut) : 0);
     if (out >= 1) continue;
     const claim = easeOutCubic(clamp01((t - m.at) / 0.35));
     const h = met.bubbles[i].h;
@@ -450,7 +455,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
           )}
           {t >= STUDY_OPEN && (
             <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: g.grow }}>
-              <StudyPanel stage="rows" rows={STUDY_ROWS_DATA} total={18} scroll={0} />
+              <StudyPanel stage="rows" rows={STUDY_ROWS_DATA} total={18} scroll={studyScroll(t)} />
             </div>
           )}
         </div>
