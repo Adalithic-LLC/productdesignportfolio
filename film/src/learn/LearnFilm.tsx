@@ -151,10 +151,15 @@ function geometry(met: Metrics, t: number) {
   const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
   const kb = kbLevel(t);
   const block = lerp(HOME_H, lerp(KEYS_H, VIEW_H, grow) + GLOBE_H, kb);
-  const swapped = t >= FIELD.swap + 0.16;
-  const sent = t >= FIELD.sendAt;
-  const lines = sent ? 1 : swapped ? met.esLines : met.caretLine[typedCount(t)] + 1;
-  const fieldH = 36 + 20 * (lines - 1);
+  // The field's height eases over a quarter second when its line count
+  // changes (a wrap, the Reword, the send), so the camera that follows it
+  // glides instead of jumping.
+  const rawH = (tt: number) => {
+    const lines = tt >= FIELD.sendAt ? 1 : tt >= FIELD.swap + 0.16 ? met.esLines : met.caretLine[typedCount(tt)] + 1;
+    return 36 + 20 * (lines - 1);
+  };
+  let fieldH = 0;
+  for (let j = 0; j < 12; j++) fieldH += rawH(t - (0.25 * j) / 12) / 12;
   const fieldTop = block + 8 + fieldH;
   const convBottom = fieldTop + 16;
   // The stack, newest at the bottom; a narration bubble fades as the next one arrives.
