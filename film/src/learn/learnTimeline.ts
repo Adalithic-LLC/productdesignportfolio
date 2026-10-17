@@ -219,7 +219,7 @@ const REWORD_LANGS = [
   'Ukrainian', 'Urdu', 'Uzbek', 'Valencian', 'Vietnamese', 'Welsh',
 ];
 /** The reel: three to start, then the rest of Reword's list, then the landing. */
-const LANG_FIRST = ['Spanish', 'Japanese', 'Mandarin'];
+const LANG_FIRST = ['English', 'Spanish', 'Mandarin'];
 export const LANGS = [...LANG_FIRST, ...REWORD_LANGS.filter((x) => !LANG_FIRST.includes(x)), 'a language.'];
 /** The reel: the first three languages land one by one and hold, then a flick
     spins through the rest and coasts to a stop on "a language.". Times are
