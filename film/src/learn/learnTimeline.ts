@@ -82,7 +82,7 @@ export const CHUNK_AT = CHUNKS.map((_, i) => D.titleStart + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
 
 export const LINE2_A = 'By turning your chats in ';
-export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'Any messaging app'];
+export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'any messaging app'];
 export const LINE2_B = ' into a learning system.';
 const L2_START = TITLE1_OUT + D.titleOut + 0.2;
 export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3);
