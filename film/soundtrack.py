@@ -33,6 +33,9 @@ BAR = BEAT * 4
 N = int(DUR * SR)
 rng = np.random.default_rng(7)
 sfx_only = '--sfx-only' in sys.argv
+# --music-only: the bed without the UI sounds, at its in-mix level, so a
+# player can mix music, UI sounds and a voice at its own volumes.
+music_only = '--music-only' in sys.argv
 # --style picks the bed: 'pop' (the original 120 BPM C-G-Am-F), 'mellow'
 # (90 BPM, soft keys over Fmaj7-Em7-Dm7-Cmaj7) or 'bright' (124 BPM,
 # Am-F-C-G with a bigger pulse). The UI sounds are the same in all three.
@@ -46,7 +49,11 @@ NO_DINGS = FILM == 'learn'
 # continuous bass, and every layer eased in and out instead of switched at
 # section changes, so nothing pops or jumps from the first frame to the last.
 SMOOTH = FILM == 'learn'
-BEAT = 60 / {'pop': cues['bpm'], 'mellow': 90, 'bright': 124}[STYLE]
+# Percussion-only beds (no bass, chords or melody), for the learn film's smooth
+# arrangement: 'beats-house', '-boombap', '-trap', '-afro', '-minimal'.
+BEATS = {'beats-house': 122, 'beats-boombap': 90, 'beats-trap': 140, 'beats-afro': 104, 'beats-minimal': 100}
+PERC = STYLE in BEATS
+BEAT = 60 / {'pop': cues['bpm'], 'mellow': 90, 'bright': 124, **BEATS}[STYLE]
 BAR = BEAT * 4
 
 
@@ -217,7 +224,7 @@ CHORDS = {  # (bass, chord tones), a bar each
     'pop': [(48, [60, 64, 67, 72]), (43, [59, 62, 67, 71]), (45, [57, 60, 64, 69]), (41, [57, 60, 65, 69])],  # C G Am F
     'mellow': [(41, [57, 60, 64, 65]), (40, [55, 59, 62, 64]), (38, [53, 57, 60, 62]), (36, [55, 59, 60, 64])],  # Fmaj7 Em7 Dm7 Cmaj7
     'bright': [(45, [57, 60, 64, 69]), (41, [57, 60, 65, 69]), (48, [60, 64, 67, 72]), (43, [59, 62, 67, 71])],  # Am F C G
-}[STYLE]
+}['pop' if PERC else STYLE]
 titles = [tuple(x) for x in cues['titles']]
 phones = cues['phones']
 closing = cues['closing']
@@ -250,6 +257,116 @@ duck = np.ones(N)
 def smoothstep(x, a, b):
     u = np.clip((x - a) / (b - a), 0, 1)
     return u * u * (3 - 2 * u)
+
+
+def _env(n, a, d, tail=0.02):
+    """A drum envelope that can never click: a raised-cosine attack of `a`
+    seconds, exponential decay `d`, and a fade over the last `tail`."""
+    tt = t_(n)
+    e = np.sin(np.pi / 2 * np.clip(tt / a, 0, 1)) ** 2 * np.exp(-np.maximum(tt - a, 0) / d)
+    r = min(n, int(tail * SR))
+    e[-r:] *= np.linspace(1, 0, r)
+    return e
+
+
+def p_kick(depth=1.0):
+    n = int(0.42 * SR)
+    tt = t_(n)
+    f = 46 + 70 * depth * np.exp(-tt / 0.03)
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * _env(n, 0.003, 0.17)
+
+
+def p_snare():
+    n = int(0.3 * SR)
+    tt = t_(n)
+    body = np.sin(2 * np.pi * 190 * tt) * _env(n, 0.002, 0.045)
+    noise = fft_filter(rng.standard_normal(n), lo=1400, hi=7500) * _env(n, 0.0015, 0.08)
+    return body * 0.5 + noise * 0.55
+
+
+def p_clap():
+    n = int(0.3 * SR)
+    noise = fft_filter(rng.standard_normal(n), lo=900, hi=6000)
+    e = np.zeros(n)
+    for k, off in enumerate((0, 0.011, 0.022)):
+        i = int(off * SR)
+        e[i:] += _env(n - i, 0.001, 0.008 if k < 2 else 0.1)
+    return noise * e * 0.5
+
+
+def p_hat(open_=False):
+    n = int((0.3 if open_ else 0.07) * SR)
+    return fft_filter(rng.standard_normal(n), lo=7000, hi=14000) * _env(n, 0.001, 0.11 if open_ else 0.018) * 0.55
+
+
+def p_rim():
+    n = int(0.08 * SR)
+    tt = t_(n)
+    return (np.sin(2 * np.pi * 1700 * tt) * 0.5 + np.sin(2 * np.pi * 420 * tt)) * _env(n, 0.001, 0.012) * 0.6
+
+
+def p_conga(f):
+    n = int(0.35 * SR)
+    tt = t_(n)
+    ff = f * (1 + 0.25 * np.exp(-tt / 0.01))
+    return np.sin(2 * np.pi * np.cumsum(ff) / SR) * _env(n, 0.002, 0.12) + fft_filter(rng.standard_normal(n), lo=2000) * _env(n, 0.001, 0.004) * 0.15
+
+
+def p_clave():
+    n = int(0.12 * SR)
+    tt = t_(n)
+    return np.sin(2 * np.pi * 2500 * tt) * _env(n, 0.001, 0.025) * 0.5
+
+
+def p_shaker():
+    n = int(0.09 * SR)
+    return fft_filter(rng.standard_normal(n), lo=4500, hi=9000) * _env(n, 0.012, 0.03) * 0.5
+
+
+# Each style: step patterns over a 16-step bar, as {layer: [(step, gain), ...]}.
+# Layers fade with the film's sections: 'low' (kick, snare, clap, congas)
+# rises into the product shot and settles into the closing card; 'top'
+# (hats, shakers, rims) carries the pulse throughout.
+PATTERNS = {
+    'beats-house': dict(swing=0.5, low=[('kick', [0, 4, 8, 12], 0.9), ('clap', [4, 12], 0.55)],
+                        top=[('hat', [2, 6, 10, 14], 0.45), ('hat_open', [14], 0.25), ('shaker', list(range(16)), 0.12)]),
+    'beats-boombap': dict(swing=0.6, low=[('kick', [0, 7, 10], 0.95), ('snare', [4, 12], 0.7)],
+                          top=[('hat', [0, 2, 4, 6, 8, 10, 12, 14], 0.38), ('rim', [15], 0.25)]),
+    'beats-trap': dict(swing=0.5, low=[('kick', [0, 6, 11], 0.9), ('snare', [8], 0.75)],
+                       top=[('hat', list(range(0, 16, 2)), 0.32), ('hat_roll', [12, 13, 14, 15], 0.24), ('hat_open', [7], 0.18)]),
+    'beats-afro': dict(swing=0.55, low=[('kick', [0, 7, 10], 0.7), ('conga_lo', [3, 11, 14], 0.45), ('conga_hi', [2, 6, 9, 13], 0.38)],
+                       top=[('shaker', list(range(16)), 0.18), ('clave', [0, 3, 6, 10, 12], 0.3)]),
+    'beats-minimal': dict(swing=0.52, low=[('kick', [0, 10], 0.6)],
+                          top=[('rim', [4, 12], 0.35), ('shaker', [2, 6, 10, 14], 0.3), ('hat', [7, 15], 0.18)]),
+}
+
+
+def perc_bed(T, drive, outro):
+    """The percussion-only bed for a beats style."""
+    pat = PATTERNS[STYLE]
+    step = BEAT / 4
+    low, top = np.zeros(N), np.zeros(N)
+    kits = {'kick': p_kick, 'snare': p_snare, 'clap': p_clap, 'hat': p_hat, 'hat_open': lambda: p_hat(True),
+            'rim': p_rim, 'shaker': p_shaker, 'clave': p_clave, 'conga_lo': lambda: p_conga(180), 'conga_hi': lambda: p_conga(270)}
+    nbars = int(np.ceil(cues['duration'] / (16 * step))) + 1
+    for bar in range(nbars):
+        fill = bar % 4 == 3  # every fourth bar a small variation
+        for buf, layer in ((low, pat['low']), (top, pat['top'])):
+            for name, steps, g in layer:
+                for k in steps:
+                    # Swing pushes the off 16ths late; it never moves a downbeat.
+                    off = (pat['swing'] - 0.5) * 2 * step if k % 2 else 0.0
+                    at = (bar * 16 + k) * step + off
+                    if name == 'hat_roll':
+                        if fill:  # a triplet roll into the next bar
+                            for r in range(3):
+                                place(buf, p_hat(), at + r * step / 3, g * (0.7 + 0.15 * r))
+                        continue
+                    place(buf, kits[name](), at, g)
+    low = fft_filter(low, hi=9000)
+    top = fft_filter(top, hi=13000)
+    bed = low * (0.25 + 0.75 * drive) + top * (0.55 + 0.45 * drive)
+    return bed * outro * smoothstep(T, 0, 0.6)
 
 
 if SMOOTH:
@@ -315,6 +432,10 @@ if SMOOTH:
     pad = pad[:N]
     arp *= (0.85 + 0.15 * drive) * outro
     pad *= outro
+    if PERC:
+        # Percussion only: no bass, chords or melody, and the beat carries it.
+        bass, pad, arp = np.zeros(N), np.zeros(N), np.zeros(N)
+        drums = perc_bed(T, drive, outro) * (2.4 if STYLE == 'beats-minimal' else 1.6)
 else:
     K, CL = kick(), clap()
     nbeats = int(cues['duration'] / BEAT)
@@ -464,7 +585,7 @@ fade = np.clip(1 - (tt - fade_from) / 1.9, 0, 1) ** 1.5 * (tt >= fade_from) + (t
 # The UI sounds alone (--sfx-only) keep the level they have in the full mix,
 # so a cut with its music muted still sounds like the same film.
 level = np.max(np.abs(np.tanh((full * fade)[: int(cues['duration'] * SR)] * 1.1))) / 0.89
-mix = (ui if sfx_only else full) * fade
+mix = (ui if sfx_only else music * 0.8 if music_only else full) * fade
 mix = mix[: int(cues['duration'] * SR)]
 mix = np.tanh(mix * 1.1)
 mix /= level
@@ -476,7 +597,7 @@ side = (reverb(arp, 1.8, 0.35) * (0.0 if sfx_only else 0.05))[: len(mix)]
 stereo[:, 0] += np.concatenate([side[w:], np.zeros(w)])
 stereo[:, 1] += side
 pcm = (np.clip(stereo, -1, 1) * 32767).astype('<i2')
-out = HERE / 'out' / (('sfx' if sfx_only else 'soundtrack') + SUFFIX + '.wav')
+out = HERE / 'out' / (('sfx' if sfx_only else 'music' if music_only else 'soundtrack') + SUFFIX + '.wav')
 with wave.open(str(out), 'wb') as f:
     f.setnchannels(2)
     f.setsampwidth(2)

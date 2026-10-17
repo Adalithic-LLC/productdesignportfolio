@@ -72,3 +72,25 @@ turns the voice on; both apply to the preview and to Download, which copies
 the cut's video and swaps in the matching track (or bakes it into a
 background export). With music muted and no voice, `sfxAssetId` (the UI
 sounds alone) is used. The viewer's last voice pick is saved to `picks/voice`.
+
+## Stems and volumes (v25 on)
+
+A version with `stems` is mixed in Cut Room itself, at the viewer's Music and
+Voice volumes (the sliders button by the voice picker), with the music ducked
+under the voice exactly as the pre-mixes do; the mix plays through the normal
+audio element and Download encodes the same mix. Stems are page files too:
+
+```json
+"stems": {
+  "music": { "cut": "stems/v25/music-cut.mp4", "mellow": "…", "bright": "…", "beats-house": "…" },
+  "sfx": "vo/v25/sfx.mp4",
+  "voices": { "leda": "stems/v25/voice-leda.mp4" }
+}
+```
+
+Make them with `soundtrack.py --music-only` per style (the bed alone, at its
+in-mix level; music + `--sfx-only` sums back to the full mix within -50 dB)
+and the placed voice wav `out/vo-<film>-<voice>.wav` from `voiceover.py mix`,
+each encoded to AAC. Music options that exist only as stems (the
+percussion-only `beats-*` styles) are listed in `soundtracks` with
+`"stemOnly": true`.
