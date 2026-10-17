@@ -455,20 +455,24 @@ for at in cues['swipes']:
 bass = fft_filter(bass, hi=900)
 pad = fft_filter(pad, hi=3500)
 music = drums + bass * duck + pad + reverb(arp, 1.8, 0.35) + reverb(fx, 2.6, 0.3)
-mix = (ui * 1.0) if sfx_only else (music * 0.8 + ui)
+full = music * 0.8 + ui
 
 # Fade out with the picture.
 fade_from = cues['duration'] - 0.6
 tt = t_(N)
-mix *= np.clip(1 - (tt - fade_from) / 1.9, 0, 1) ** 1.5 * (tt >= fade_from) + (tt < fade_from)
+fade = np.clip(1 - (tt - fade_from) / 1.9, 0, 1) ** 1.5 * (tt >= fade_from) + (tt < fade_from)
+# The UI sounds alone (--sfx-only) keep the level they have in the full mix,
+# so a cut with its music muted still sounds like the same film.
+level = np.max(np.abs(np.tanh((full * fade)[: int(cues['duration'] * SR)] * 1.1))) / 0.89
+mix = (ui if sfx_only else full) * fade
 mix = mix[: int(cues['duration'] * SR)]
 mix = np.tanh(mix * 1.1)
-mix /= np.max(np.abs(mix)) / 0.89
+mix /= level
 
 stereo = np.stack([mix, mix], axis=1)
 # A touch of width: the arp and fx a few ms apart between channels.
 w = int(0.008 * SR)
-side = (reverb(arp, 1.8, 0.35) * 0.05)[: len(mix)]
+side = (reverb(arp, 1.8, 0.35) * (0.0 if sfx_only else 0.05))[: len(mix)]
 stereo[:, 0] += np.concatenate([side[w:], np.zeros(w)])
 stereo[:, 1] += side
 pcm = (np.clip(stereo, -1, 1) * 32767).astype('<i2')

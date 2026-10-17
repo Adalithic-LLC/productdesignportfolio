@@ -20,7 +20,8 @@ Per line, mix:
     most 1.3x; past that the report says to re-synthesize it faster);
   * writes out/vo-<film>-<voice>.wav (the voice alone) and, for every
     soundtrack wav present (Original, Mellow, Bright), a mix with the music
-    ducked about 7 dB under speech, as both .wav and AAC .mp4;
+    ducked about 9 dB under speech, plus `-none` (no music: the voice over
+    the UI sounds of soundtrack.py --sfx-only), as both .wav and AAC .mp4;
   * writes out/vo-<film>-<voice>.report.json: each line's timing and fit.
 """
 import json
@@ -57,7 +58,7 @@ def cues():
 
 def read_wav(path):
     """Any wav (via ffmpeg, so any rate/format) as mono float at SR."""
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True, check=True).stdout
+    raw = subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-i', str(path), '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True, check=True).stdout
     return np.frombuffer(raw, dtype='<f4').astype(np.float64)
 
 
@@ -77,22 +78,27 @@ def stretch(x, tempo):
     with tempfile.TemporaryDirectory() as d:
         a, b = Path(d) / 'a.wav', Path(d) / 'b.wav'
         write_wav(a, x)
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(a), '-af', f'rubberband=tempo={tempo:.5f}:formant=preserved', str(b)], check=True)
+        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', str(a), '-af', f'rubberband=tempo={tempo:.5f}:formant=preserved', str(b)], check=True)
         return read_wav(b)
 
 
 def trim(x, words=None):
-    """Drop leading/trailing silence (below -45 dBFS, 10 ms windows); word
-    timings shift with the leading cut."""
+    """Drop leading/trailing silence, breaths and decay: speech starts where
+    the clip first comes within 26 dB of its own peak, which skips the
+    inhale TTS voices often take first (10 ms windows, 60 ms kept before) and ends after its last window within 40 dB (60 ms kept).
+    Word timings shift with the leading cut."""
     win = int(0.01 * SR)
     n = len(x) // win
     if n == 0:
         return x, words or [], 0.0
     rms = np.sqrt((x[: n * win].reshape(n, win) ** 2).mean(1))
-    on = np.where(rms > 10 ** (-45 / 20))[0]
-    if len(on) == 0:
+    floor = 10 ** (-45 / 20)
+    start_on = np.where(rms > max(floor, rms.max() * 10 ** (-26 / 20)))[0]
+    end_on = np.where(rms > max(floor, rms.max() * 10 ** (-40 / 20)))[0]
+    if len(start_on) == 0:
         return x[:0], [], 0.0
-    i0, i1 = max(0, on[0] - 1) * win, min(n, on[-1] + 3) * win
+    i0 = max(0, start_on[0] - 6) * win
+    i1 = min(n, end_on[-1] + 6) * win
     cut = i0 / SR
     w = [{**k, 'start': k['start'] - cut, 'end': k['end'] - cut} for k in (words or [])]
     return x[i0:i1], w, cut
@@ -192,7 +198,7 @@ def main():
         wj = src / f"{line['key']}.words.json"
         x, words, _ = trim(read_wav(clip), json.loads(wj.read_text()) if wj.exists() else None)
         x, warped = warp(x, words, line)
-        x = level(x)
+        x = level(x, -11.5)
         slot = line['until'] - line['at'] - MARGIN
         dur = len(x) / SR
         fit = 1.0
@@ -214,20 +220,22 @@ def main():
                        'resynthesize_faster': dur / slot > MAX_FIT})
 
     write_wav(OUT / f'vo{SUFFIX}-{VOICE}.wav', vo)
-    duck = 1 - 0.55 * envelope(vo)  # about -7 dB under speech
+    duck = 1 - 0.65 * envelope(vo)  # about -9 dB under speech
     mixes = []
-    for style in ('', '-mellow', '-bright'):
-        track = OUT / f'soundtrack{SUFFIX}{style}.wav'
+    # '-none' is the music muted: the voice over the UI sounds alone
+    # (soundtrack.py --sfx-only), which need no ducking.
+    for style in ('', '-mellow', '-bright', '-none'):
+        track = OUT / (f'sfx{SUFFIX}.wav' if style == '-none' else f'soundtrack{SUFFIX}{style}.wav')
         if not track.exists():
             continue
         m = read_track(track)[:N]
         m = np.pad(m, ((0, N - len(m)), (0, 0)))
-        out = m * duck[:, None] + vo[:, None] * 0.9
+        out = m * (1.0 if style == '-none' else duck[:, None]) + vo[:, None]
         out = np.tanh(out * 1.05)
         out /= max(1.0, np.abs(out).max() / 0.95)
         name = f'soundtrack{SUFFIX}{style}-vo-{VOICE}'
         write_wav(OUT / f'{name}.wav', out.reshape(-1), channels=out.shape[1])
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(OUT / f'{name}.wav'), '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', str(OUT / f'{name}.mp4')], check=True)
+        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', str(OUT / f'{name}.wav'), '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', str(OUT / f'{name}.mp4')], check=True)
         mixes.append(name)
 
     (OUT / f'vo{SUFFIX}-{VOICE}.report.json').write_text(json.dumps(report, indent=2, ensure_ascii=False))

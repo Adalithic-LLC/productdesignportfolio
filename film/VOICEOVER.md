@@ -29,8 +29,23 @@ picker for any version whose doc has a `voices` list.
   A `<key>.words.json` beside a clip (word start/end times) makes the mix warp
   each chunk to land as it is revealed.
 
+### With the Chirp TTS connector (how the current voices were made)
+
+The connector's `synthesize_dialogue` voices every line in one call. Send the
+script's lines in order, one voice, `pause_ms: 1600`, then split the take at
+those pauses into per-line clips:
+
+    python3 film/vo_split.py --film learn --portrait --voice Kore <mp3 URL>
+
+A line that comes out too long for its window (the mix report says
+`RESYNTHESIZE FASTER`, or a fit above about 1.2x) is better re-voiced than
+stretched: for the reel's single words, drop the trailing comma ("Spanish."
+reads shorter than "Spanish,") and use `speaking_rate` 1.1-1.3, then
+`vo_split.py ... --keys lang-2,lang-3 <mp3 URL>` replaces just those clips.
+
 The soundtrack wavs must be current (rendered with the cut), so run the usual
-`soundtrack.py` for pop, mellow and bright first. The 9:16 and 16:9 cuts share
+`soundtrack.py` for pop, mellow and bright first, plus `--sfx-only` (the UI
+sounds alone, at their in-mix level) for the music-muted mixes. The 9:16 and 16:9 cuts share
 timing, so one set of mixes serves both.
 
 ## Cut Room
@@ -39,11 +54,14 @@ Upload the three mixes as assets and add to the version doc (both aspects):
 
 ```json
 "voices": [
-  { "id": "kore", "label": "Kore", "tracks": { "cut": "<pop mix id>", "mellow": "<mellow mix id>", "bright": "<bright mix id>" } }
-]
+  { "id": "kore", "label": "Kore · F", "tracks": { "cut": "<pop mix id>", "mellow": "<mellow mix id>", "bright": "<bright mix id>", "none": "<no-music mix id>" } }
+],
+"sfxAssetId": "<sfx-only id>"
 ```
 
-`tracks` is keyed by the music option (`cut` = Original). Picking a voice plays
-its mix with the picked music; Download copies the cut's video and swaps in
-that mix (or bakes it into a background export). The viewer's last pick is
-saved to `picks/voice`.
+`tracks` is keyed by the music option (`cut` = Original, `none` = music
+muted). In Cut Room the speaker button mutes the music and the mic button
+turns the voice on; both apply to the preview and to Download, which copies
+the cut's video and swaps in the matching track (or bakes it into a
+background export). With music muted and no voice, `sfxAssetId` (the UI
+sounds alone) is used. The viewer's last voice pick is saved to `picks/voice`.
