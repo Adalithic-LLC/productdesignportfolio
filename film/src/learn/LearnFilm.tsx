@@ -497,16 +497,17 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
         </div>
         <div
           className="absolute flex justify-center"
-          style={{ opacity: 1 - span(local, LOGO_AT - 0.35, LOGO_AT + 0.15, (x) => x), left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy + 10, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
+          style={{ opacity: 1 - span(local, LOGO_AT - 0.35, LOGO_AT + 0.15, (x) => x), left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 19, fontFamily: DISPLAY, fontWeight: 600, fontSize: 46, lineHeight: '58px', letterSpacing: '-0.015em', color: 'rgba(255,255,255,0.86)' }}
         >
           {/* Left-aligned, as the film's other lines, in a block centered at its widest. */}
           <div>
-            <div style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</div>
             <div className="whitespace-nowrap">
-              <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>{' '}
-              <span className="inline-block" style={line(END_CHUNK_AT[2])}>
-                {END_CHUNKS[2]} <Reel met={met} local={local} />
-              </span>
+              <span className="inline-block" style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</span>{' '}
+              <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>
+            </div>
+            <div style={line(END_CHUNK_AT[2])}>{END_CHUNKS[2]}</div>
+            <div className="whitespace-nowrap" style={line(END_CHUNK_AT[3])}>
+              {END_CHUNKS[3]} <Reel met={met} local={local} />
             </div>
           </div>
         </div>

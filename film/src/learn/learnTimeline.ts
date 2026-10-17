@@ -201,9 +201,9 @@ export const STUDY_ROWS_DATA = [
 
 // ── 3. The end card ──
 export const ENDING = WORLD_OUT + D.endFade;
-/** The end card's line, in chunks: the first on its own line, the other two
-    (then the reel) on the second. */
-export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
+/** The end card's line, in chunks: the first two share a line, then one
+    line each for the third and for the last (with the reel). */
+export const END_CHUNKS = ['Type,', 'make mistakes,', 'get corrections,', 'and learn'];
 export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.endLead + i * D.endChunk);
 /** Every language Reword offers (Arcatext/Data/LanguageData.swift on main,
     the top-level names with their parentheticals dropped). */
