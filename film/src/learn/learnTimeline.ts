@@ -51,7 +51,7 @@ export const D = {
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
   kbWait1: 1.5, // the first bubble shows alone before the keyboard comes up
-  kbWait: 1.0, // and the second
+  kbWait: 1.5, // and the second
   bubbleOut: 0.45, // a narration bubble fades away completely before typing starts
   kbSlide: 0.35, // the keyboard slides up
   pan: 1.0, // the camera moves between the chat and the field
