@@ -26,8 +26,7 @@ import {
   NOTE_IN,
   NOTE_OUT,
   LANGS,
-  LANG_LANDS,
-  LANG_ROLL,
+  langPos,
   LINE2_A,
   LINE2_A_TIMES,
   LINE2_B,
@@ -470,8 +469,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
 /** The end card's reel of languages, rolling up in place at the line's end.
     Its box is as wide as the longest language, so the line never moves. */
 function Reel({ met, local }: { met: Metrics; local: number }) {
-  let p = 0;
-  for (let i = 1; i < LANG_LANDS.length; i++) p += clamp01(easeInOutCubic((local - (LANG_LANDS[i] - LANG_ROLL)) / LANG_ROLL));
+  const p = langPos(local);
   const w = Math.max(...met.langW);
   const lineH = 58;
   return (

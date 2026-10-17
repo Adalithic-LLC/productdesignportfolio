@@ -14,6 +14,8 @@
  * in iOS points; heights are measured up from the keyboard's bottom edge.
  */
 
+import { clamp01, easeInOutCubic } from '../ease';
+
 export const FRAME = { w: 1080, h: 1920 };
 /** The platforms' safe area for a 9:16 ad (as the chat film's portrait cut). */
 export const STAGE = { cx: 500, cy: 800, w: 860 };
@@ -60,13 +62,15 @@ export const D = {
   noteFade: 0.5, // the phone fades out for the study-guide line, and back
   noteChunk: 0.75, // between the study-guide line's chunks
   noteHold: 1.6, // the full study-guide line holds
-  endChunk: 0.75, // between the end card's chunks
-  studyPause: 0.5, // the open Study Guide is seen still, then
+  endChunk: 1.0, // between the end card's chunks
+  langHold: 0.75, // each of the first three languages holds
+  langFlick: 1.5, // then a flick spins through the rest and coasts onto the last
+  studyPause: 2.0, // the open Study Guide is seen still, then
   studyFlick: 1.3, // flicked: a fast scroll that coasts to a stop
-  studyRead: 1.2, // and the entries it lands on are read
+  studyRead: 1.0, // and the entries it lands on are read
   sentHold: 1.8, // the sent message holds
   endFade: 0.5, // the phone fades into the end card
-  splash: 2.7, // the app's splash plays before the end card's line
+  splash: 2.0, // the app's splash plays before the end card's line
   finalHold: 1.8, // the finished card holds on “a language.”
 };
 
@@ -199,14 +203,31 @@ export const ENDING = WORLD_OUT + D.endFade;
 export const END_CHUNKS = ['Your safety net to explore,', 'make mistakes,', 'and learn'];
 export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.splash + i * D.endChunk);
 export const LANGS = ['Spanish', 'Japanese', 'Mandarin', 'French', 'Korean', 'Portuguese', 'German', 'Arabic', 'a language.'];
-/** When each language is up, from the card's start: the first lands as the
-    line settles, and every language holds long enough to read as the reel
-    scrolls through them all, easing in to land on "a language.". */
-export const LANG_GAPS = [0.7, 0.6, 0.55, 0.5, 0.5, 0.55, 0.6, 0.75];
-export const LANG_LANDS: number[] = [END_CHUNK_AT[END_CHUNK_AT.length - 1] + 0.6];
-for (const g of LANG_GAPS) LANG_LANDS.push(LANG_LANDS[LANG_LANDS.length - 1] + g);
+/** The reel: the first three languages land one by one and hold, then a flick
+    spins through the rest and coasts to a stop on "a language.". Times are
+    from the card's start. */
+export const LANG_SHOWN = 3;
 export const LANG_ROLL = 0.24;
-export const DURATION = Math.ceil((ENDING + LANG_LANDS[LANG_LANDS.length - 1] + D.finalHold) * 2) / 2;
+export const LANG_LANDS: number[] = [END_CHUNK_AT[END_CHUNK_AT.length - 1] + 0.6];
+for (let i = 1; i < LANG_SHOWN; i++) LANG_LANDS.push(LANG_LANDS[i - 1] + D.langHold + LANG_ROLL);
+export const LANG_FLICK_AT = LANG_LANDS[LANG_SHOWN - 1] + D.langHold;
+export const LANG_END = LANG_FLICK_AT + D.langFlick;
+const flickEase = (x: number) => 1 - Math.pow(1 - x, 4);
+/** Where the reel stands, in languages (fractional while it moves). */
+export function langPos(local: number) {
+  let p = 0;
+  for (let i = 1; i < LANG_SHOWN; i++) p += clamp01(easeInOutCubic((local - (LANG_LANDS[i] - LANG_ROLL)) / LANG_ROLL));
+  return p + (LANGS.length - LANG_SHOWN) * flickEase(clamp01((local - LANG_FLICK_AT) / D.langFlick));
+}
+/** When the reel passes each language after the first, for the soundtrack's ticks. */
+const LANG_PASS = LANGS.slice(1).map((_, k) => {
+  const n = k + 1;
+  if (n < LANG_SHOWN) return LANG_LANDS[n] - LANG_ROLL / 2;
+  const f = (n - (LANG_SHOWN - 1)) / (LANGS.length - LANG_SHOWN);
+  return LANG_FLICK_AT + (1 - Math.pow(1 - f, 1 / 4)) * D.langFlick;
+});
+
+export const DURATION = Math.ceil((ENDING + LANG_END + D.finalHold) * 2) / 2;
 
 export function scenes() {
   // Inline timings for the Cut Room, as the chat film gives them: {text}
@@ -253,15 +274,14 @@ export function scenes() {
     inline('end-logo', 'before the line (the logo plays)', D.splash, ENDING),
     ...END_CHUNKS.flatMap((x, i) =>
       i < END_CHUNKS.length - 1 ? [{ text: x }, inline(`end-${i}`, `after “${x}”`, D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
-    ...LANGS.flatMap((w, i) =>
-      i < LANGS.length - 1
-        ? [
-            { word: w },
-            inline(`lang-each-${i}`, `on “${w}”`, LANG_GAPS[i] - LANG_ROLL, ENDING + LANG_LANDS[i], 'hold', 'Hold'),
-            inline(`lang-roll-${i}`, `from “${w}” to “${LANGS[i + 1]}”`, LANG_ROLL, ENDING + LANG_LANDS[i + 1] - LANG_ROLL, 'duration', 'Scroll'),
-          ]
-        : [{ word: w }]),
-    inline('final-hold', `on “${LANGS[LANGS.length - 1]}”`, D.finalHold, ENDING + LANG_LANDS[LANG_LANDS.length - 1], 'hold', 'Hold'),
+    ...LANGS.slice(0, LANG_SHOWN).flatMap((w, i) => [
+      { word: w },
+      inline(`lang-each-${i}`, `on “${w}”`, D.langHold, ENDING + LANG_LANDS[i], 'hold', 'Hold'),
+      ...(i < LANG_SHOWN - 1 ? [inline(`lang-roll-${i}`, `from “${w}” to “${LANGS[i + 1]}”`, LANG_ROLL, ENDING + LANG_LANDS[i + 1] - LANG_ROLL, 'duration', 'Scroll')] : []),
+    ]),
+    inline('lang-flick', 'through the rest', D.langFlick, ENDING + LANG_FLICK_AT, 'duration', 'Flick'),
+    ...LANGS.slice(LANG_SHOWN).map((w) => ({ word: w })),
+    inline('final-hold', `on “${LANGS[LANGS.length - 1]}”`, D.finalHold, ENDING + LANG_END, 'hold', 'Hold'),
   ];
   const noteFlow = [
     inline('note-in', 'the phone fades out', D.noteFade, NOTE_IN, 'duration', 'Fade'),
@@ -312,7 +332,7 @@ export function cues() {
     sends: [SEND_AT],
     swipes: [],
     words: [...LINE2_LANDS, ...CHUNK_AT, ...NOTE_AT],
-    ticks: LANG_LANDS.slice(1).map((x) => ENDING + x),
+    ticks: LANG_PASS.map((x) => ENDING + x),
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
     titles: [[0, WORLD_IN]],
     phones: [WORLD_IN],
