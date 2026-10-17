@@ -23,8 +23,8 @@ picker for any version whose doc has a `voices` list.
 - `python3 film/voiceover.py mix --film learn --portrait --voice Kore` lays the
   clips on the film's clock (trimmed so speech starts on `at`, fitted inside
   `until`), and mixes them over every soundtrack wav present, with the music
-  ducked about 7 dB under the voice:
-  `out/soundtrack-learn-portrait[-mellow|-bright]-vo-Kore.mp4`, plus
+  ducked about 9 dB under the voice (and `-none`, the voice over the UI sounds alone):
+  `out/soundtrack-learn-portrait[-mellow|-bright|-none]-vo-Kore.mp4`, plus
   `out/vo-learn-portrait-Kore.report.json` (each line's fit and any overrun).
   A `<key>.words.json` beside a clip (word start/end times) makes the mix warp
   each chunk to land as it is revealed.
@@ -50,7 +50,7 @@ timing, so one set of mixes serves both.
 
 ## Cut Room
 
-Upload the three mixes as assets and add to the version doc (both aspects):
+Upload the four mixes (and the UI-sounds track) as assets and add to the version doc (both aspects):
 
 ```json
 "voices": [
