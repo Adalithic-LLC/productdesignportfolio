@@ -5,6 +5,7 @@
 //   node film/render.mjs --workers 4              the same, split across 4 browsers
 //   --film chat                                   the chat film instead: out/frames-chat.mp4, cues-chat.json
 //   --alpha                                       transparent background: out/frames-…-alpha.webm (VP9 + alpha)
+//   --cues-only                                   just write the cue sheet (out/cues….json), no frames
 //
 // Needs the film dev server: npx vite --config film/vite.config.ts
 import { chromium } from 'playwright';
@@ -36,6 +37,17 @@ const [VW, VH] = portrait ? [1080, 1920] : [1920, 1080];
 const cuesFile = path.join(out, `cues${suffix}.json`);
 const fps = Number(flag('--fps') ?? 60);
 const workers = Number(flag('--workers') ?? 1);
+
+if (args.includes('--cues-only')) {
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const pg = await b.newPage({ viewport: { width: VW, height: VH } });
+  await pg.goto(url);
+  await pg.waitForFunction(() => window.__cues);
+  fs.writeFileSync(cuesFile, JSON.stringify(await pg.evaluate(() => window.__cues), null, 2));
+  await b.close();
+  console.log('wrote', cuesFile);
+  process.exit(0);
+}
 
 if (workers > 1) {
   // Split the frame range, render each part in its own process, then join the

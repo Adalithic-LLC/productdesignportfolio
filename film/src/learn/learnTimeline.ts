@@ -264,6 +264,28 @@ for (const [i, t] of LANG_PASS_ALL.entries()) {
 export const LOGO_AT = LANG_END + D.finalHold;
 export const DURATION = Math.ceil((ENDING + LOGO_AT + D.logoLen + D.endHold) * 2) / 2;
 
+// ── Voiceover ──
+/** One spoken line of the optional voiceover. It starts exactly when its text
+    appears (`at`) and must be finished by `until` (the next line, or its text
+    leaving). `marks` are when each chunk of it is revealed, so a voice with
+    word timings can be warped to land each chunk as it appears. Built from
+    the constants above, so a copy or timing change carries into the script. */
+export type VoiceLine = { key: string; text: string; at: number; until: number; marks: { text: string; at: number }[] };
+const spoken = (x: string) => x.replace(/\.\.\.$|…$/, '').trim();
+const BUBBLE_LINES = BUBBLES.filter((b) => b.who === 'them');
+const LINE2_A_AT = LINE2_A_TIMES[0];
+export const VOICE_LINES: VoiceLine[] = [
+  { key: 'headline', text: CHUNKS.join(' '), at: CHUNK_AT[0], until: TITLE1_OUT, marks: CHUNKS.map((x, i) => ({ text: x, at: CHUNK_AT[i] })) },
+  { key: 'line2-a', text: `${LINE2_A.trim()} ${LINE2_SLOT[0]},`, at: LINE2_A_AT, until: LINE2_LANDS[1] - D.slotRoll / 2, marks: [{ text: LINE2_A.trim(), at: LINE2_A_AT }, { text: LINE2_SLOT[0], at: LINE2_SLOT_TIMES[0] }] },
+  ...LINE2_SLOT.slice(1, -1).map((x, k) => ({ key: `line2-slot-${k + 1}`, text: `${x},`, at: LINE2_LANDS[k + 1] - D.slotRoll / 2, until: LINE2_LANDS[k + 2] - D.slotRoll / 2, marks: [{ text: x, at: LINE2_LANDS[k + 1] - D.slotRoll / 2 }] })),
+  { key: 'line2-b', text: `${LINE2_SLOT[LINE2_SLOT.length - 1]}, ${LINE2_B.trim()}`, at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2, until: LINE2_OUT + D.titleOut, marks: [{ text: LINE2_SLOT[LINE2_SLOT.length - 1], at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2 }, { text: LINE2_B.trim(), at: LINE2_B_TIMES[0] }] },
+  ...BUBBLE_LINES.map((b, i) => ({ key: `bubble-${i + 1}`, text: spoken(b.text), at: b.at, until: (b.hide ?? b.at + 2) + D.bubbleOut, marks: [{ text: spoken(b.text), at: b.at }] })),
+  { key: 'note', text: NOTE_CHUNKS.join(' ').replace('If you miss a word we', 'If you miss a word, we'), at: NOTE_AT[0], until: NOTE_OUT + D.noteFade, marks: NOTE_CHUNKS.map((x, i) => ({ text: x, at: NOTE_AT[i] })) },
+  { key: 'end', text: `${END_CHUNKS.join(' ')} ${LANGS[0]},`, at: ENDING + END_CHUNK_AT[0], until: ENDING + LANG_LANDS[1] - LANG_ROLL / 2, marks: [...END_CHUNKS.map((x, i) => ({ text: x, at: ENDING + END_CHUNK_AT[i] })), { text: LANGS[0], at: ENDING + LANG_LANDS[0] }] },
+  ...LANGS.slice(1, LANG_SHOWN).map((x, k) => ({ key: `lang-${k + 2}`, text: `${x},`, at: ENDING + LANG_LANDS[k + 1] - LANG_ROLL / 2, until: ENDING + (k + 2 < LANG_SHOWN ? LANG_LANDS[k + 2] - LANG_ROLL / 2 : LANG_FLICK_AT + 0.3), marks: [{ text: x, at: ENDING + LANG_LANDS[k + 1] - LANG_ROLL / 2 }] })),
+  { key: 'lang-last', text: LANGS[LANGS.length - 1], at: ENDING + LANG_END, until: ENDING + LOGO_AT, marks: [{ text: LANGS[LANGS.length - 1], at: ENDING + LANG_END }] },
+];
+
 export function scenes() {
   // Inline timings for the Cut Room, as the chat film gives them: {text}
   // runs (`typed`, with `wordTimes`, when they type out letter by letter, so a
@@ -376,5 +398,6 @@ export function cues() {
     opening: [0, 0],
     closing: ENDING + LOGO_AT,
     studyFlick: null,
+    voice: VOICE_LINES,
   };
 }
