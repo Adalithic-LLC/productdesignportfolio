@@ -145,11 +145,11 @@ def saw_note(freq, dur, bright=12, a=0.005, d=None, rel=0.04):
     return y * e
 
 
-def pluck(freq, dur=0.6):
+def pluck(freq, dur=0.6, a=0.002):
     n = int(dur * SR)
     tt = t_(n)
     y = np.sin(2 * np.pi * freq * tt) + 0.45 * np.sin(4 * np.pi * freq * tt) * np.exp(-tt / 0.05) + 0.25 * np.sin(6 * np.pi * freq * tt) * np.exp(-tt / 0.03)
-    return y * env(n, 0.002, 0.2)
+    return y * env(n, a, 0.2)
 
 
 def bell(freq, dur=1.6):
@@ -262,13 +262,19 @@ if SMOOTH:
     # Pulse: soft closed hats on the off-beats only, no kick or clap.
     hats = np.zeros(N)
     nbeats = int(cues['duration'] / BEAT) + 1
+    def shaker():
+        # A shaker, not a hat: it fades in over a few ms, so it never ticks.
+        n = int(0.09 * SR)
+        tt = t_(n)
+        e = np.sin(np.pi / 2 * np.clip(tt / 0.012, 0, 1)) ** 2 * np.exp(-np.maximum(tt - 0.012, 0) / 0.03)
+        e[-int(0.02 * SR):] *= np.linspace(1, 0, int(0.02 * SR))
+        return fft_filter(rng.standard_normal(n), lo=4500, hi=9000) * e * 0.5
     for b in range(nbeats):
         t = b * BEAT
-        place(hats, hat(), t + BEAT / 2, 1.0)
+        place(hats, shaker(), t + BEAT / 2 - 0.012, 1.0)
         if STYLE != 'mellow':
-            place(hats, hat(), t + BEAT / 4, 0.35)
-            place(hats, hat(), t + 3 * BEAT / 4, 0.35)
-    hats = fft_filter(hats, hi=11000)
+            place(hats, shaker(), t + BEAT / 4 - 0.012, 0.4)
+            place(hats, shaker(), t + 3 * BEAT / 4 - 0.012, 0.4)
     drums = hats * (0.18 + 0.22 * drive) * outro * (0.6 if STYLE == 'mellow' else 1.0)
     # Bass: one continuous oscillator that glides between roots, so a note
     # change is never a fresh attack (each attack was a low thump).
@@ -300,12 +306,12 @@ if SMOOTH:
             for off, idxs in [(0, [0, 1, 2, 3]), (1.5 * BEAT, [2, 3]), (2.5 * BEAT, [1, 2]), (3.5 * BEAT, [3])]:
                 for idx in idxs:
                     place(arp, keys(mtof(tones[idx] + 12), 1.4), t0 + off, 0.2 * 0.55 * 0.6)
-                    place(arp, pluck(mtof(tones[idx])), t0 + off, 0.2 * 0.55 * 0.4)
+                    place(arp, pluck(mtof(tones[idx]), a=0.006), t0 + off, 0.2 * 0.55 * 0.4)
         else:
             pattern = ([0, 1, 2, 3, 2, 1, 2, 3] if not phrase_b else [3, 2, 1, 2, 0, 1, 2, 1]) * 2
             lift = 24 if STYLE == 'bright' and phrase_b else 12
             for k, idx in enumerate(pattern):
-                place(arp, pluck(mtof(tones[idx] + lift)), t0 + k * BEAT / 4, 0.2)
+                place(arp, pluck(mtof(tones[idx] + lift), a=0.006), t0 + k * BEAT / 4, 0.2)
     pad = pad[:N]
     arp *= (0.85 + 0.15 * drive) * outro
     pad *= outro
@@ -419,8 +425,13 @@ else:
 
 # UI sounds.
 for k in cues['keys']:
-    click = fft_filter(key_click(), lo=900) if SMOOTH else key_click()
-    place(ui, click, k['t'], 0.16 if k['space'] else 0.2)
+    if SMOOTH:  # a soft, rounded tap: eased in, no sharp edge, no thump
+        n = int(0.03 * SR)
+        tt = t_(n)
+        click = fft_filter(rng.standard_normal(n), lo=1200, hi=5000) * np.sin(np.pi / 2 * np.clip(tt / 0.0015, 0, 1)) * np.exp(-tt / 0.004)
+        place(ui, click, k['t'], 0.08 if k['space'] else 0.1)
+    else:
+        place(ui, key_click(), k['t'], 0.16 if k['space'] else 0.2)
 for at in cues['taps']:
     if SMOOTH:  # a light tick; the low thock read as a bass pop
         place(ui, fft_filter(key_click(), lo=1200), at, 0.25)
