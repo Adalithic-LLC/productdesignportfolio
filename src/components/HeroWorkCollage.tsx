@@ -13,9 +13,9 @@ const BASE = import.meta.env.BASE_URL;
 
 /**
  * The admin tool is the real prototype -- the same self-contained page the
- * Arcatext case study embeds, in the palette matching the portfolio's theme:
- * daylight on light, the tool's own dark "midnight" on dark (the same pairing
- * AdminToolShowcase uses). The iframe is laid out at the tool's full desktop
+ * Arcatext case study embeds, in the tool's own light or dark (its default,
+ * neutral palette) to match the portfolio's theme, pinned with ?scheme= as
+ * AdminToolShowcase does. The iframe is laid out at the tool's full desktop
  * width and scaled to whatever the tile is given, with a ResizeObserver keeping
  * the two in step, since that factor is a ratio CSS cannot work out on its own;
  * at the tile's own width the tool's responsive layout would collapse to a
@@ -30,7 +30,8 @@ const TOOL = {
 
 export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const toolTheme = useTheme().resolvedTheme === 'dark' ? 'midnight' : 'daylight';
+  /* The tool's own light or dark, pinned to the portfolio's theme. */
+  const scheme = useTheme().resolvedTheme === 'dark' ? 'dark' : 'light';
   const [scale, setScale] = useState(0);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export function AdminToolTile({ onSelect }: { onSelect: () => void }) {
       className="relative w-full overflow-hidden rounded-xl bg-white transition-transform dark:bg-neutral-900 duration-300 hover:rotate-0 sm:rounded-2xl"
     >
       <iframe
-        src={`${TOOL.src}?theme=${toolTheme}`}
+        src={`${TOOL.src}?scheme=${scheme}`}
         title={TOOL.alt}
         tabIndex={-1}
         aria-hidden

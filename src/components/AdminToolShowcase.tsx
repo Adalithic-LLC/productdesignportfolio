@@ -164,12 +164,12 @@ export function AdminToolShowcase() {
   };
   useEffect(() => () => stopAnim(), []);
 
-  // Follow the portfolio's theme: dark → the tool's "midnight" (blue-accented
-  // dark) palette, light → "daylight". Passed via ?theme=; the tool seeds this
-  // before booting. The user can still switch themes inside the modal.
+  // Follow the portfolio's theme with the tool's own light and dark (its
+  // default, neutral palette), pinned via ?scheme= rather than left to the OS.
+  // The user can still pick one of its named themes inside the modal.
   const { resolvedTheme } = useTheme();
   const toolSrc = useMemo(
-    () => `${TOOL_SRC}?theme=${resolvedTheme === 'dark' ? 'midnight' : 'daylight'}`,
+    () => `${TOOL_SRC}?scheme=${resolvedTheme === 'dark' ? 'dark' : 'light'}`,
     [resolvedTheme]
   );
 

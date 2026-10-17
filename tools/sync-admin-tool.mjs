@@ -100,6 +100,19 @@ async function main() {
       .replace(/<link[^>]*fonts\.(?:googleapis|gstatic)\.com[^>]*>\s*/gi, '')
       // Default the demo scores on so the showcase always has data.
       .replace('DEMO = false', 'DEMO = true');
+    // The tool's own light/dark (the neutral default palette) follows the OS
+    // through prefers-color-scheme, which the portfolio cannot set for an
+    // iframe. Copy the dark palette onto a class, so ?scheme=dark|light (see
+    // the stub) can pin either one to the portfolio's theme.
+    const darkBlock = /@media \(prefers-color-scheme: dark\) \{\s*:root \{([^}]*)\}\s*\}/;
+    if (!darkBlock.test(out)) throw new Error('tool CSS changed: dark palette block not found');
+    out = out.replace(
+      darkBlock,
+      (_, vars) =>
+        `@media (prefers-color-scheme: dark) {\n    :root:not(.scheme-light) {${vars}}\n  }\n` +
+        `  :root.scheme-dark {${vars}}\n` +
+        `  :root.scheme-dark { color-scheme: dark; }\n  :root.scheme-light { color-scheme: light; }`
+    );
     // Inject the network stub as the very first thing in <head>.
     out = out.replace(/<head>/i, `<head>\n${stub}`);
 
@@ -125,8 +138,16 @@ function buildStub(seed) {
   // light). Seed localStorage BEFORE the tool's initTheme() runs so the tool
   // boots in the matching theme. The in-tool theme picker still works after —
   // the user can change the theme inside the interactive demo.
+  // ?scheme=dark|light pins the tool's default (neutral) palette to the
+  // portfolio's theme instead of the OS, and resets any named theme an
+  // earlier visit left in storage (the tool shares the portfolio's origin).
   try {
     var qp = (location.search.match(/[?&]theme=([^&]+)/) || [])[1];
+    var qs = (location.search.match(/[?&]scheme=(light|dark)/) || [])[1];
+    if (qs) {
+      document.documentElement.classList.add('scheme-' + qs);
+      if (!qp) localStorage.setItem('rekeys.theme', 'system');
+    }
     if (qp) localStorage.setItem('rekeys.theme', decodeURIComponent(qp));
   } catch (e) {}
   var SEED = ${JSON.stringify(seed)};
