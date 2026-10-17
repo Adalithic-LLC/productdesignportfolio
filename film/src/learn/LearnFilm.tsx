@@ -342,9 +342,9 @@ function TypedLine({ t, met }: { t: number; met: Metrics }) {
         {t >= LINE2_SLOT_TIMES[0] && <br />}
         {t >= LINE2_SLOT_TIMES[0] &&
           (reelStarted ? (
-            <span className="relative inline-block overflow-hidden align-top" style={{ width: w, height: lineH, color: ACCENT }}>
+            <span className="relative inline-block overflow-hidden align-top" style={{ width: w, height: lineH + 2 * REEL_PAD * LINE2_SIZE, margin: `${-REEL_PAD * LINE2_SIZE}px 0`, color: ACCENT }}>
               {LINE2_SLOT.map((s, i) => (
-                <span key={s} className="absolute left-0 top-0 whitespace-nowrap" style={{ transform: `translateY(${(i - p) * lineH}px)`, opacity: 1 - Math.min(1, Math.abs(i - p)) * 0.7 }}>
+                <span key={s} className="absolute left-0 whitespace-nowrap" style={{ top: REEL_PAD * LINE2_SIZE, transform: `translateY(${(i - p) * (lineH + 2 * REEL_PAD * LINE2_SIZE)}px)`, opacity: 1 - Math.min(1, Math.abs(i - p)) * 0.7 }}>
                   {s}
                 </span>
               ))}
@@ -500,16 +500,22 @@ function World({ met, t }: { met: Metrics; t: number }) {
 
 // ── The end card ──
 
+/** Room a reel's clipping box keeps above and below its line, in em, so
+    descenders (g, p, y) and accents are never cut by the box's edge; the box's
+    negative margins keep the line itself where it was. */
+const REEL_PAD = 0.3;
+
 /** The end card's reel of languages, rolling up in place at the line's end.
     Its box is as wide as the longest language, so the line never moves. */
 function Reel({ met, local }: { met: Metrics; local: number }) {
   const p = langPos(local);
   const w = Math.max(...met.langW);
   const lineH = 58;
+  const pad = REEL_PAD * 46;
   return (
-    <span className="relative inline-block overflow-hidden text-left align-top" style={{ width: w, height: lineH, color: ACCENT }}>
+    <span className="relative inline-block overflow-hidden text-left align-top" style={{ width: w, height: lineH + 2 * pad, margin: `${-pad}px 0`, color: ACCENT }}>
       {LANGS.map((s, i) => (
-        <span key={s} className="absolute left-0 top-0 whitespace-nowrap" style={{ transform: `translateY(${(i - p) * lineH}px)`, opacity: 1 - Math.min(1, Math.abs(i - p)) * 0.7 }}>
+        <span key={s} className="absolute left-0 whitespace-nowrap" style={{ top: pad, transform: `translateY(${(i - p) * (lineH + 2 * pad)}px)`, opacity: 1 - Math.min(1, Math.abs(i - p)) * 0.7 }}>
           {s}
         </span>
       ))}
