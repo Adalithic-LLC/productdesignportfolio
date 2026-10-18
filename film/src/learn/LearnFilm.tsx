@@ -202,7 +202,7 @@ const CARET_LEAD = 0.6;
     bottom) and how close, at time t. */
 function resolve(v: View, met: Metrics, t: number) {
   const g = geometry(met, t);
-  const visW = STAGE.w / v.scale;
+  const visW = 'scale' in v ? STAGE.w / v.scale : STAGE.w;
   const bubbleAt = (i: number) => {
     const p = g.placed.find((x) => x.i === i);
     const b = met.bubbles[i];
@@ -232,6 +232,13 @@ function resolve(v: View, met: Metrics, t: number) {
       let sum = 0;
       for (let j = 0; j < 12; j++) sum += at(t - (0.5 * j) / 12);
       return { x: sum / 12, h: g.block + 25, s: v.scale };
+    }
+    case 'typing': {
+      // Just wide enough for the text box and a margin; centred on the box's
+      // height once typing ends, so a new line never moves the shot.
+      const M = 22;
+      const end = geometry(met, v.until);
+      return { x: FIELD_TEXT_X + FIELD_TEXT_W / 2, h: g.block + 8 + end.fieldH / 2, s: STAGE.w / (FIELD_TEXT_W + 2 * M) };
     }
     case 'button':
       return { x: v.which === 'reword' ? Math.min(310, COL - 4 - visW / 2) : Math.max(36.5, 4 + visW / 2), h: g.block - 33, s: v.scale };

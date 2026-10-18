@@ -113,6 +113,8 @@ export const BUBBLES: Bubble[] = [];
 export type View =
   | { kind: 'bubble'; i: number; scale: number }
   | { kind: 'caret'; scale: number }
+  /** The whole text box, held still while it fills (`until`: typing ends). */
+  | { kind: 'typing'; until: number }
   | { kind: 'button'; which: 'reword' | 'study'; scale: number }
   | { kind: 'field'; scale: number }
   | { kind: 'bubbleField'; i: number; scale: number }
@@ -152,9 +154,12 @@ c = move(c, D.pan, { kind: 'bubble', i: 1, scale: 3.2 });
 BUBBLES.push({ text: 'Or something you don’t know...', who: 'them', at: c - 0.3 });
 KB.push([c - 0.3 + D.kbWait, true]);
 c = Math.max(c + D.readBubble, c - 0.3 + D.kbWait + D.kbSlide + 0.45);
-c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
+// The longer half is typed with the whole text box in frame, so the camera
+// holds still instead of panning after the caret and across the line break.
+const ADD_START = c + D.pan;
+const ADD_TIMES = typeTimes(FIELD_ADD, ADD_START + D.bubbleOut + 0.1, 0.065, 13);
+c = move(c, D.pan, { kind: 'typing', until: ADD_TIMES[ADD_TIMES.length - 1] });
 BUBBLES[1].hide = c;
-const ADD_TIMES = typeTimes(FIELD_ADD, c + D.bubbleOut + 0.1, 0.065, 13);
 c = ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 c = move(c, D.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
 export const REWORD_TAP = c + D.tapAfter;
