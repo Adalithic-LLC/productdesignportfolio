@@ -63,7 +63,7 @@ export const D = {
   titleOut: 0.5, // it fades away
   slotHold: 0.9, // each app in the headline's reel holds
   slotRoll: 0.32, // and rolls to the next
-  line2Hold: 1.5, // the typed line holds once done
+  line2Hold: 2.2, // the typed line holds once done
   line2Out: 0.4, // then fades away
   worldIn: 0.6, // the phone fades in
   readBubble: 1.6, // a narration bubble is read
@@ -105,7 +105,7 @@ export const CHUNK_AT = CHUNKS.map((_, i) => D.titleStart + i * D.chunk);
 export const TITLE1_OUT = CHUNK_AT[CHUNK_AT.length - 1] + 0.5 + D.titleHold;
 
 export const LINE2_A = 'By turning your chats in ';
-export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'any messaging app'];
+export const LINE2_SLOT = ['WhatsApp', 'Instagram', 'AI', 'really...any messaging app'];
 export const LINE2_B = ' into a learning system.';
 const L2_START = TITLE1_OUT + D.titleOut + 0.2;
 export const LINE2_A_TIMES = typeTimes(LINE2_A, L2_START, 0.04, 3);
