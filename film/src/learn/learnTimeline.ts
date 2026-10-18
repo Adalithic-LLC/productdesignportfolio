@@ -297,7 +297,7 @@ export const REWORD_START = c;
 /** Arcatext 02: a headline comes in just before the Reword tap, the phone
     set beside it (as for Check and the Study Guide); the Spanish lands and is
     sent at once, a quick send before Check. */
-export const HEAD = AVATARS ? 'Translate, then send it.' : '';
+export const HEAD = AVATARS ? 'Reword, then send it.' : '';
 let rwTap: number;
 let rwSwap: number;
 let quickTap = Infinity;

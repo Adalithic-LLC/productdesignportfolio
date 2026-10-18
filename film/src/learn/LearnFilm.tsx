@@ -439,12 +439,13 @@ function HeadCard({ t }: { t: number }) {
   const place = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 420 } : { left: 150, width: 720, top: FRAME.h / 2 };
   const k = span(t, HEAD_AT, HEAD_AT + 0.55, easeOutCubic);
   const out = span(t, HEAD_OUT, HEAD_OUT + 0.4, (x) => x);
-  const [a, b] = HEAD.split('Translate');
+  // The first word (the action) in blue.
+  const first = HEAD.split(/[ ,]/)[0];
+  const b = HEAD.slice(first.length);
   return (
     <div className="absolute" style={{ ...place, transform: `translateY(calc(-50% + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 76, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>
-        {a}
-        <span style={{ color: ACCENT }}>Translate</span>
+        <span style={{ color: ACCENT }}>{first}</span>
         {b}
       </div>
     </div>
