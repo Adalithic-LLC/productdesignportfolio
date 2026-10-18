@@ -26,7 +26,7 @@ voice = opt('--voice')
 src = args[-1]
 if not voice or src.startswith('--') or src == opt('--keys'):
     sys.exit(__doc__)
-vo.SUFFIX = ('' if opt('--film', 'learn') == 'main' else f"-{opt('--film', 'learn')}") + ('-portrait' if '--portrait' in args else '')
+vo.SUFFIX = ('' if opt('--film', 'learn') == 'main' else f"-{opt('--film', 'learn')}") + (f"-{opt('--cut')}" if opt('--cut') else '') + ('-portrait' if '--portrait' in args else '')
 lines = vo.cues()['voice']
 if opt('--keys'):
     want = opt('--keys').split(',')

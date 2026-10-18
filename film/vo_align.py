@@ -30,10 +30,13 @@ args = sys.argv[1:]
 opt = lambda k, d=None: args[args.index(k) + 1] if k in args else d
 voice = opt('--voice')
 src = args[-1]
-if not voice or src.startswith('--'):
+if not voice or src.startswith('--') or src == opt('--keys'):
     sys.exit(__doc__)
-vo.SUFFIX = ('' if opt('--film', 'learn') == 'main' else f"-{opt('--film', 'learn')}") + ('-portrait' if '--portrait' in args else '')
+vo.SUFFIX = ('' if opt('--film', 'learn') == 'main' else f"-{opt('--film', 'learn')}") + (f"-{opt('--cut')}" if opt('--cut') else '') + ('-portrait' if '--portrait' in args else '')
 lines = vo.cues()['voice']
+if opt('--keys'):  # a take of just these lines, in order
+    want = opt('--keys').split(',')
+    lines = [l for k in want for l in lines if l['key'] == k]
 norm = lambda w: re.sub(r"[^a-z0-9]", '', w.lower().replace('’', "'"))
 
 

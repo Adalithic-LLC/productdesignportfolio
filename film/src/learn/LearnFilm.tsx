@@ -6,6 +6,7 @@ import { StudyPanel, VIEW_H } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo from '../SplashLogo';
+import { AV_SIZE, AvatarOpener, TextBlock } from './Opener';
 import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../ease';
 import {
   BUBBLES,
@@ -40,6 +41,9 @@ import {
   STAGE,
   CAM_K,
   OPENING,
+  AVATARS,
+  AV_TEXT,
+  BLOCK_LINES,
   TYPE_ZOOM,
   START_VIEW,
   STUDY_GROW,
@@ -91,6 +95,8 @@ type Metrics = {
   /** The typed line's reel words, at its size. */
   slotW: number[];
   langW: number[];
+  /** Arcatext 02's typed line: the width of each typed prefix. */
+  avW: number[];
 };
 
 function measure(root: HTMLElement): Metrics {
@@ -133,8 +139,11 @@ function measure(root: HTMLElement): Metrics {
   const slotW = LINE2_SLOT.map((x) => ((word.textContent = x), word.offsetWidth));
   Object.assign(word.style, { fontSize: '46px', fontWeight: '600', letterSpacing: '-0.015em' });
   const langW = LANGS.map((x) => ((word.textContent = x), word.offsetWidth));
+  Object.assign(word.style, { fontSize: `${AV_SIZE}px`, fontWeight: '700', letterSpacing: '-0.02em', whiteSpace: 'pre' });
+  const avW = [...AV_TEXT].map((_, k) => ((word.textContent = AV_TEXT.slice(0, k)), word.getBoundingClientRect().width));
+  avW.push(((word.textContent = AV_TEXT), word.getBoundingClientRect().width));
   word.remove();
-  return { bubbles, caretX, caretLine, esLines, slotW, langW };
+  return { bubbles, caretX, caretLine, esLines, slotW, langW, avW };
 }
 
 // ── The phone world's geometry, from the keyboard's bottom edge up ──
@@ -633,6 +642,7 @@ export default function LearnFilm() {
           document.fonts.load('17px Inter', FIELD_EN + FIELD_ES),
           document.fonts.load("700 62px 'Inter Display'", LINE2_A + LINE2_SLOT.join('')),
           document.fonts.load("600 46px 'Inter Display'", END_CHUNKS.join('') + LANGS.join('')),
+          document.fonts.load(`700 ${AV_SIZE}px 'Inter Display'`, AV_TEXT + BLOCK_LINES.join('')),
           document.fonts.load("14px 'Noto Sans'", 'Study Guide entries'),
           document.fonts.load("700 32px 'Noto Sans'", 'Arcatext'),
         ]),
@@ -675,6 +685,12 @@ export default function LearnFilm() {
         <>
           <Headline t={t} />
           <TypedLine t={t} met={met} />
+        </>
+      )}
+      {met && AVATARS && t < WORLD_IN && (
+        <>
+          <AvatarOpener t={t} widths={met.avW} />
+          <TextBlock t={t} />
         </>
       )}
       {met && t >= WORLD_IN && t < ENDING && <World met={met} t={t} />}

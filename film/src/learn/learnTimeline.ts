@@ -27,9 +27,14 @@ export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
 export const STAGE = PORTRAIT ? { cx: 500, cy: 800, w: 860 } : { cx: 960, cy: 540, w: 860 };
 /** Landscape has about half the room under the framing point, so its camera
     pulls back by this much on every shot. */
-/** `?cut=noopen` (Arcatext 02): no opening titles; the film starts on the
-    phone, and everything after keeps its order and spacing. */
-export const OPENING = params.get('cut') !== 'noopen';
+/** The opening: Arcatext 01's headline titles (the default), none at all
+    (`?cut=noopen`: the film starts on the phone), or Arcatext 02's avatar
+    cloud and text block (`?cut=a02`). Everything after keeps its order and
+    spacing. */
+const CUT = params.get('cut');
+export const OPEN_KIND: 'titles' | 'none' | 'avatars' = CUT === 'noopen' ? 'none' : CUT === 'a02' ? 'avatars' : 'titles';
+export const OPENING = OPEN_KIND === 'titles';
+export const AVATARS = OPEN_KIND === 'avatars';
 export const CAM_K = PORTRAIT ? 1 : +(params.get('camk') || 0.72);
 export const FPS = 60;
 export const BPM = 120;
@@ -86,6 +91,12 @@ export const D = {
   logoLen: 2.3, // the logo animates and types "Arcatext"
   endHold: 1.5, // the finished card (line, logo and name) holds
   finalHold: 1.5, // the finished card holds on “a language.”
+  avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
+  avHold: 1.5, // “You text a lot of people” holds in the cloud
+  avCollapse: 1.0, // the cloud and the line collapse back into the point
+  blockLine1: 4.4, // the text block's first line is read
+  blockLine2: 1.4, // then “But make it...”
+  blockHold: 4.3, // the last line is read and the block holds
 };
 
 // ── 1. Titles ──
@@ -105,8 +116,29 @@ for (let i = 1; i < LINE2_SLOT.length; i++) LINE2_LANDS.push(LINE2_LANDS[i - 1] 
 export const LINE2_B_TIMES = typeTimes(LINE2_B, LINE2_LANDS[LINE2_LANDS.length - 1] + 0.35, 0.04, 9);
 export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
 
+// ── 1b. Arcatext 02's opening: the avatar cloud, then the text block ──
+/** A point appears and bursts into a slow, turning cloud of contact avatars;
+    the line types out in a clearing it makes for itself; then everything
+    collapses back into the point. */
+export const AV_POINT = 0.15;
+export const AV_BURST = 0.6;
+export const AV_TEXT = 'You text a lot of people';
+export const AV_TYPE_TIMES = typeTimes(AV_TEXT, AV_BURST + 1.3, 0.062, 17);
+export const AV_COLLAPSE = AV_TYPE_TIMES[AV_TYPE_TIMES.length - 1] + D.avHold;
+/** Everything is back in the point; it winks out at AV_END. */
+export const AV_GONE = AV_COLLAPSE + D.avCollapse;
+export const AV_END = AV_GONE + 0.35;
+export const BLOCK_LINES = [
+  'Let’s use those chats and create a language learning system.',
+  'But make it...',
+  'Practical and self-guided, with some support & insights.',
+];
+export const BLOCK_AT = [AV_END + 0.3];
+BLOCK_AT.push(BLOCK_AT[0] + D.blockLine1, BLOCK_AT[0] + D.blockLine1 + D.blockLine2);
+export const BLOCK_OUT = BLOCK_AT[2] + D.blockHold;
+
 // ── 2. The phone ──
-export const WORLD_IN = OPENING ? LINE2_OUT + 0.2 : 0.2;
+export const WORLD_IN = OPENING ? LINE2_OUT + 0.2 : AVATARS ? BLOCK_OUT + D.titleOut + 0.2 : 0.2;
 /** `hide`: when a narration bubble fades away on its own (typing starts). */
 export type Bubble = { text: string; who: 'them' | 'me'; at: number; hide?: number };
 export const BUBBLES: Bubble[] = [];
@@ -289,8 +321,18 @@ const OPENING_LINES: VoiceLine[] = [
   ...LINE2_SLOT.slice(1, -1).map((x, k) => ({ key: `line2-slot-${k + 1}`, text: `${x},`, at: LINE2_LANDS[k + 1] - D.slotRoll / 2, until: LINE2_LANDS[k + 2] - D.slotRoll / 2, marks: [{ text: x, at: LINE2_LANDS[k + 1] - D.slotRoll / 2 }] })),
   { key: 'line2-b', text: `${LINE2_SLOT[LINE2_SLOT.length - 1]}, ${LINE2_B.trim()}`, at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2, until: LINE2_OUT + D.titleOut, marks: [{ text: LINE2_SLOT[LINE2_SLOT.length - 1], at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2 }, { text: LINE2_B.trim(), at: LINE2_B_TIMES[0] }] },
 ];
+const AVATAR_LINES: VoiceLine[] = [
+  { key: 'you-text', text: `${AV_TEXT}.`, at: AV_TYPE_TIMES[0], until: AV_GONE, marks: [{ text: AV_TEXT, at: AV_TYPE_TIMES[0] }] },
+  ...BLOCK_LINES.map((x, i) => ({
+    key: `block-${i + 1}`,
+    text: spoken(x).replace(' & ', ' and '),
+    at: BLOCK_AT[i],
+    until: i < 2 ? BLOCK_AT[i + 1] : BLOCK_OUT + D.titleOut,
+    marks: [{ text: spoken(x), at: BLOCK_AT[i] }],
+  })),
+];
 export const VOICE_LINES: VoiceLine[] = [
-  ...(OPENING ? OPENING_LINES : []),
+  ...(OPENING ? OPENING_LINES : AVATARS ? AVATAR_LINES : []),
   ...BUBBLE_LINES.map((b, i) => ({ key: `bubble-${i + 1}`, text: spoken(b.text), at: b.at, until: (b.hide ?? b.at + 2) + D.bubbleOut, marks: [{ text: spoken(b.text), at: b.at }] })),
   { key: 'note', text: NOTE_CHUNKS.join(' ').replace('If you miss a word we', 'If you miss a word, we'), at: NOTE_AT[0], until: NOTE_OUT + D.noteFade, marks: NOTE_CHUNKS.map((x, i) => ({ text: x, at: NOTE_AT[i] })) },
   { key: 'end', text: `${END_CHUNKS.join(' ')} ${LANGS[0]},`, at: ENDING + END_CHUNK_AT[0], until: ENDING + LANG_LANDS[1] - LANG_ROLL / 2, marks: [...END_CHUNKS.map((x, i) => ({ text: x, at: ENDING + END_CHUNK_AT[i] })), { text: LANGS[0], at: ENDING + LANG_LANDS[0] }] },
@@ -367,8 +409,25 @@ export function scenes() {
     { id: 'title2', name: 'Typed: By turning your chats in [apps] into a learning system.', start: TITLE1_OUT,
       texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }], flows: [line2Flow] },
   ];
+  const avatars = [
+    { id: 'avatars', name: `Avatars: ${AV_TEXT}`, start: 0,
+      texts: [{ key: 'avtext', label: 'Typed line', text: AV_TEXT }],
+      flows: [[
+        inline('av-burst', 'the burst', D.avBurst, AV_BURST, 'duration', 'Burst'),
+        typed(AV_TEXT, AV_TYPE_TIMES),
+        inline('av-hold', 'the line holds', D.avHold, AV_TYPE_TIMES[AV_TYPE_TIMES.length - 1], 'hold', 'Hold'),
+        inline('av-collapse', 'the collapse', D.avCollapse, AV_COLLAPSE, 'duration', 'Collapse'),
+      ]] },
+    { id: 'block', name: `Text: ${BLOCK_LINES[0]}`, start: AV_END,
+      texts: [{ key: 'block', label: 'Text block', text: BLOCK_LINES.join(' / ') }],
+      flows: [[
+        { text: BLOCK_LINES[0] }, inline('block-1', 'after the first line', D.blockLine1, BLOCK_AT[0]),
+        { text: BLOCK_LINES[1] }, inline('block-2', `after “${BLOCK_LINES[1]}”`, D.blockLine2, BLOCK_AT[1]),
+        { text: BLOCK_LINES[2] }, inline('block-hold', 'the block holds', D.blockHold, BLOCK_AT[2], 'hold', 'Hold'),
+      ]] },
+  ];
   const list = [
-    ...(OPENING ? titles : []),
+    ...(OPENING ? titles : AVATARS ? avatars : []),
     ...BUBBLES.map((b, i) => ({
       id: `b${i + 1}`,
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
@@ -398,6 +457,7 @@ export function cues() {
     keys: [
       ...FIELD.times.map((t, i) => ({ t, space: FIELD_EN[i] === ' ' })),
       ...(OPENING ? [...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES] : []).map((t) => ({ t, space: true })),
+      ...(AVATARS ? AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })) : []),
     ],
     taps: [REWORD_TAP, SEND_TAP],
     reword: REWORD_SWAP,
@@ -405,10 +465,10 @@ export function cues() {
     send: SEND_AT,
     sends: [SEND_AT],
     swipes: [],
-    words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : []), ...NOTE_AT],
+    words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : AVATARS ? BLOCK_AT : []), ...NOTE_AT],
     ticks: LANG_PASS.map((x) => ENDING + x),
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
-    titles: OPENING ? [[0, WORLD_IN]] : [],
+    titles: OPENING || AVATARS ? [[0, WORLD_IN]] : [],
     phones: [WORLD_IN],
     opening: [0, 0],
     closing: ENDING + LOGO_AT,
