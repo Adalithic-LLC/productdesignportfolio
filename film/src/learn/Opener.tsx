@@ -277,7 +277,6 @@ export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
   const swell = t < AV_BURST ? lerp(1, 1.5, clamp01((t - AV_POINT - 0.2) / (AV_BURST - AV_POINT - 0.2))) : 1;
   const pointO = t < AV_GONE - 0.3 ? pIn * (1 - pBurst) : pBack * (1 - pOut);
   const pointS = (t < AV_GONE - 0.3 ? 16 * pIn * swell * (1 + pBurst * 1.5) : 18 * (1 + 0.6 * (1 - pBack))) * (1 - pOut);
-  const ring = clamp01((t - AV_BURST) / 0.8);
 
   const n = countAt(AV_TYPE_TIMES, t);
   const typing = n > 0 && n < AV_TEXT.length;
@@ -329,22 +328,7 @@ export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
         </div>
       )}
       {front.map(face)}
-      {/* The burst's shock ring and the point itself. */}
-      {ring > 0 && ring < 1 && (
-        <div
-          className="absolute rounded-full"
-          style={{
-            left: 0,
-            top: 0,
-            width: easeOutCubic(ring) * 1100,
-            height: easeOutCubic(ring) * 1100,
-            transform: 'translate(-50%, -50%)',
-            border: `${3 * (1 - ring) + 1}px solid rgba(160,190,255,0.9)`,
-            boxShadow: '0 0 40px rgba(110,150,255,0.35), inset 0 0 40px rgba(110,150,255,0.25)',
-            opacity: (1 - ring) * 0.7,
-          }}
-        />
-      )}
+      {/* The point itself. */}
       {pointO > 0 && pointS > 0.5 && (
         <div
           className="absolute rounded-full"
