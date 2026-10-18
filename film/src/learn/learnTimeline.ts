@@ -27,6 +27,9 @@ export const FRAME = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
 export const STAGE = PORTRAIT ? { cx: 500, cy: 800, w: 860 } : { cx: 960, cy: 540, w: 860 };
 /** Landscape has about half the room under the framing point, so its camera
     pulls back by this much on every shot. */
+/** `?cut=noopen` (Arcatext 02): no opening titles; the film starts on the
+    phone, and everything after keeps its order and spacing. */
+export const OPENING = params.get('cut') !== 'noopen';
 export const CAM_K = PORTRAIT ? 1 : +(params.get('camk') || 0.72);
 export const FPS = 60;
 export const BPM = 120;
@@ -103,7 +106,7 @@ export const LINE2_B_TIMES = typeTimes(LINE2_B, LINE2_LANDS[LINE2_LANDS.length -
 export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
 
 // ── 2. The phone ──
-export const WORLD_IN = LINE2_OUT + 0.2;
+export const WORLD_IN = OPENING ? LINE2_OUT + 0.2 : 0.2;
 /** `hide`: when a narration bubble fades away on its own (typing starts). */
 export type Bubble = { text: string; who: 'them' | 'me'; at: number; hide?: number };
 export const BUBBLES: Bubble[] = [];
@@ -280,11 +283,14 @@ export type VoiceLine = { key: string; text: string; at: number; until: number; 
 const spoken = (x: string) => x.replace(/\.\.\.$|…$/, '').trim();
 const BUBBLE_LINES = BUBBLES.filter((b) => b.who === 'them');
 const LINE2_A_AT = LINE2_A_TIMES[0];
-export const VOICE_LINES: VoiceLine[] = [
+const OPENING_LINES: VoiceLine[] = [
   { key: 'headline', text: CHUNKS.join(' '), at: CHUNK_AT[0], until: TITLE1_OUT, marks: CHUNKS.map((x, i) => ({ text: x, at: CHUNK_AT[i] })) },
   { key: 'line2-a', text: `${LINE2_A.trim()} ${LINE2_SLOT[0]},`, at: LINE2_A_AT, until: LINE2_LANDS[1] - D.slotRoll / 2, marks: [{ text: LINE2_A.trim(), at: LINE2_A_AT }, { text: LINE2_SLOT[0], at: LINE2_SLOT_TIMES[0] }] },
   ...LINE2_SLOT.slice(1, -1).map((x, k) => ({ key: `line2-slot-${k + 1}`, text: `${x},`, at: LINE2_LANDS[k + 1] - D.slotRoll / 2, until: LINE2_LANDS[k + 2] - D.slotRoll / 2, marks: [{ text: x, at: LINE2_LANDS[k + 1] - D.slotRoll / 2 }] })),
   { key: 'line2-b', text: `${LINE2_SLOT[LINE2_SLOT.length - 1]}, ${LINE2_B.trim()}`, at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2, until: LINE2_OUT + D.titleOut, marks: [{ text: LINE2_SLOT[LINE2_SLOT.length - 1], at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2 }, { text: LINE2_B.trim(), at: LINE2_B_TIMES[0] }] },
+];
+export const VOICE_LINES: VoiceLine[] = [
+  ...(OPENING ? OPENING_LINES : []),
   ...BUBBLE_LINES.map((b, i) => ({ key: `bubble-${i + 1}`, text: spoken(b.text), at: b.at, until: (b.hide ?? b.at + 2) + D.bubbleOut, marks: [{ text: spoken(b.text), at: b.at }] })),
   { key: 'note', text: NOTE_CHUNKS.join(' ').replace('If you miss a word we', 'If you miss a word, we'), at: NOTE_AT[0], until: NOTE_OUT + D.noteFade, marks: NOTE_CHUNKS.map((x, i) => ({ text: x, at: NOTE_AT[i] })) },
   { key: 'end', text: `${END_CHUNKS.join(' ')} ${LANGS[0]},`, at: ENDING + END_CHUNK_AT[0], until: ENDING + LANG_LANDS[1] - LANG_ROLL / 2, marks: [...END_CHUNKS.map((x, i) => ({ text: x, at: ENDING + END_CHUNK_AT[i] })), { text: LANGS[0], at: ENDING + LANG_LANDS[0] }] },
@@ -355,11 +361,14 @@ export function scenes() {
     inline('note-hold', 'the full line holds', D.noteHold, NOTE_AT[NOTE_AT.length - 1] + 0.5, 'hold', 'Hold'),
     inline('note-out', 'the line fades out', D.noteFade, NOTE_OUT, 'duration', 'Fade'),
   ];
-  const list = [
+  const titles = [
     { id: 'title1', name: 'Headline: How can texting become self-guided…', start: 0,
       texts: [{ key: 'headline', label: 'Headline', text: CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [headlineFlow] },
     { id: 'title2', name: 'Typed: By turning your chats in [apps] into a learning system.', start: TITLE1_OUT,
       texts: [{ key: 'line2', label: 'Typed line', text: `${LINE2_A}[${LINE2_SLOT.join(' / ')}]${LINE2_B}` }], flows: [line2Flow] },
+  ];
+  const list = [
+    ...(OPENING ? titles : []),
     ...BUBBLES.map((b, i) => ({
       id: `b${i + 1}`,
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
@@ -388,7 +397,7 @@ export function cues() {
     bpm: BPM,
     keys: [
       ...FIELD.times.map((t, i) => ({ t, space: FIELD_EN[i] === ' ' })),
-      ...[...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES].map((t) => ({ t, space: true })),
+      ...(OPENING ? [...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES] : []).map((t) => ({ t, space: true })),
     ],
     taps: [REWORD_TAP, SEND_TAP],
     reword: REWORD_SWAP,
@@ -396,10 +405,10 @@ export function cues() {
     send: SEND_AT,
     sends: [SEND_AT],
     swipes: [],
-    words: [...LINE2_LANDS, ...CHUNK_AT, ...NOTE_AT],
+    words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : []), ...NOTE_AT],
     ticks: LANG_PASS.map((x) => ENDING + x),
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
-    titles: [[0, WORLD_IN]],
+    titles: OPENING ? [[0, WORLD_IN]] : [],
     phones: [WORLD_IN],
     opening: [0, 0],
     closing: ENDING + LOGO_AT,

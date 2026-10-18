@@ -11,6 +11,7 @@ so each chunk is spoken as it is revealed.
 
     python3 film/voiceover.py script --film learn            # print the lines
     python3 film/voiceover.py mix --film learn --voice Kore   # lay out + mix
+    ... --cut noopen --voice-only                            # a cut's voice stem only
 
 Per line, mix:
   * trims the clip's leading and trailing silence, so speech starts on `at`;
@@ -41,7 +42,10 @@ cmd = args[0] if args else 'script'
 opt = lambda k, d=None: args[args.index(k) + 1] if k in args else d
 FILM = opt('--film', 'learn')
 VOICE = opt('--voice')
-SUFFIX = ('' if FILM == 'main' else f'-{FILM}') + ('-portrait' if '--portrait' in args else '')
+SUFFIX = ('' if FILM == 'main' else f'-{FILM}') + (f"-{opt('--cut')}" if opt('--cut') else '') + ('-portrait' if '--portrait' in args else '')
+# --voice-only: just the placed voice (out/vo<suffix>-<voice>.wav, the stem
+# Cut Room mixes from), no pre-mixes over the soundtracks.
+VOICE_ONLY = '--voice-only' in args
 MARGIN = 0.08  # seconds of air kept before `until`
 MAX_FIT = 1.3  # fastest a whole line may be sped up
 
@@ -224,7 +228,7 @@ def main():
     mixes = []
     # '-none' is the music muted: the voice over the UI sounds alone
     # (soundtrack.py --sfx-only), which need no ducking.
-    for style in ('', '-mellow', '-bright', '-none'):
+    for style in () if VOICE_ONLY else ('', '-mellow', '-bright', '-none'):
         track = OUT / (f'sfx{SUFFIX}.wav' if style == '-none' else f'soundtrack{SUFFIX}{style}.wav')
         if not track.exists():
             continue

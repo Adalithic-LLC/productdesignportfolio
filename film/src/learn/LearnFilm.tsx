@@ -39,6 +39,7 @@ import {
   D,
   STAGE,
   CAM_K,
+  OPENING,
   TYPE_ZOOM,
   START_VIEW,
   STUDY_GROW,
@@ -670,7 +671,7 @@ export default function LearnFilm() {
   return (
     <div ref={rootRef} className={`relative overflow-hidden ${CLEAR ? '' : 'bg-black'}`} style={{ width: W, height: H }}>
       {!CLEAR && <Glow />}
-      {met && t < WORLD_IN + 1 && (
+      {met && OPENING && t < WORLD_IN + 1 && (
         <>
           <Headline t={t} />
           <TypedLine t={t} met={met} />
