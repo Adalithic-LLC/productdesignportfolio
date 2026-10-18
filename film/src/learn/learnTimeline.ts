@@ -190,7 +190,8 @@ export const TYPE_ZOOM = 3.6;
 /** The one message typed in the field: what you know, then what you want to
     learn, reworded to Spanish and sent. */
 export const FIELD_KNOW = 'Hola como estas';
-export const FIELD_ADD = ', how was your weekend?';
+/** Arcatext 02 already said "finde semaña", so it asks just ", how was it?". */
+export const FIELD_ADD = AVATARS ? ', how was it?' : ', how was your weekend?';
 /** Arcatext 02 adds a middle step: something you want to try, typed as a
     learner would (with a pause before the word you are unsure of). */
 export const FIELD_TRY = AVATARS ? ' finde semaña' : '';
