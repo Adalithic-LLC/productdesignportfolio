@@ -123,7 +123,25 @@ export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
 export const AV_POINT = 0.15;
 export const AV_BURST = 0.6;
 export const AV_TEXT = 'Have you tried texting to learn a language?';
-export const AV_TYPE_TIMES = typeTimes(AV_TEXT, AV_BURST + 1.3, 0.062, 17);
+/** The typed line keeps pace with its voiceover: when each word is spoken
+    (seconds after speech starts), read from the Enceladus take, plus its end.
+    Each word types out across its own span; the space lands just before the
+    next word. */
+const AV_WORD_AT = [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
+function spokenTimes(text: string, start: number, wordAt: number[]) {
+  const out: number[] = [];
+  const words = text.split(' ');
+  words.forEach((w, i) => {
+    const a = start + wordAt[i];
+    const b = start + (wordAt[i + 1] ?? wordAt[i] + 0.4) - 0.04;
+    [...w].forEach((_, k) => out.push(a + ((b - a) * k) / Math.max(1, w.length)));
+    if (i < words.length - 1) out.push(start + wordAt[i + 1] - 0.02);
+  });
+  return out;
+}
+export const AV_TYPE_TIMES = AV_WORD_AT.length === AV_TEXT.split(' ').length + 1
+  ? spokenTimes(AV_TEXT, AV_BURST + 1.3, AV_WORD_AT)
+  : typeTimes(AV_TEXT, AV_BURST + 1.3, 0.062, 17);
 export const AV_COLLAPSE = AV_TYPE_TIMES[AV_TYPE_TIMES.length - 1] + D.avHold;
 /** Everything is back in the point; it winks out at AV_END. */
 export const AV_GONE = AV_COLLAPSE + D.avCollapse;
