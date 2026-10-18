@@ -65,9 +65,14 @@ const PASTELS: [string, string][] = [
 ];
 /** Arcatext's own avatar set (generated for the film): men and women of
     every background, pre-cut into iOS-style circles on a pastel gradient. */
-const FACES: string[] = Object.entries(import.meta.glob('./avatars/*.webp', { eager: true, import: 'default' }))
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([, url]) => url as string);
+const FACE_FILES = Object.entries(import.meta.glob('./avatars/*.webp', { eager: true, import: 'default' })).sort(([a], [b]) =>
+  a.localeCompare(b),
+);
+const FACES: string[] = FACE_FILES.map(([, url]) => url as string);
+/** The faces in five equal skin-tone groups (file suffix -t1 deepest ... -t5
+    lightest, measured from the artwork), so the cloud can deal them evenly. */
+const BY_TONE: string[][] = [[], [], [], [], []];
+for (const [path, url] of FACE_FILES) BY_TONE[Math.min(4, Math.max(0, +(/-t(\d)\.webp$/.exec(path)?.[1] ?? 3) - 1))].push(url as string);
 /** Resolves once every face is decoded, so no frame is drawn with one missing. */
 export function preloadAvatars(): Promise<void> {
   return Promise.all(
@@ -96,9 +101,19 @@ const AVATARS_N = PORTRAIT ? 140 : 160;
 const AVATARS: Avatar[] = (() => {
   const rnd = mulberry32(20261018);
   const out: Avatar[] = [];
-  // Faces are dealt from a shuffled deck, so each appears before any repeats.
-  const deck = FACES.map((f, k) => [f, rnd(), k] as const).sort((p, q) => p[1] - q[1]);
-  FACES.splice(0, FACES.length, ...deck.map((d) => d[0]));
+  // Faces are dealt round-robin across the skin-tone groups (in a fresh
+  // random order each round), so every shade is equally present and
+  // neighbouring avatars, which sit next to each other on the spiral, vary.
+  const shuffle = <T,>(xs: T[]) => xs.map((x) => [x, rnd()] as const).sort((p, q) => p[1] - q[1]).map((p) => p[0]);
+  const groups = BY_TONE.filter((g) => g.length).map((g) => shuffle(g));
+  const used = groups.map(() => 0);
+  const SEQ: string[] = [];
+  while (SEQ.length < AVATARS_N) {
+    for (const gi of shuffle(groups.map((_, k) => k))) {
+      SEQ.push(groups[gi][used[gi] % groups[gi].length]);
+      used[gi]++;
+    }
+  }
   let faceAt = 0;
   for (let i = 0; i < AVATARS_N; i++) {
     // Directions spread evenly over the sphere (a jittered golden spiral),
@@ -113,7 +128,7 @@ const AVATARS: Avatar[] = (() => {
       kind === 'mono' || kind === 'person' ? GREY : kind === 'tint' ? TINTS[Math.floor(rnd() * TINTS.length)] : PASTELS[0];
     const label =
       kind === 'face'
-        ? FACES[faceAt++ % FACES.length]
+        ? SEQ[faceAt++ % SEQ.length]
         : LETTERS[Math.floor(rnd() * LETTERS.length)] + (rnd() < 0.8 ? LETTERS[Math.floor(rnd() * LETTERS.length)] : '');
     out.push({
       dir: [ring * Math.cos(phi), y, ring * Math.sin(phi)],
