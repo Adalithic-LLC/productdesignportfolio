@@ -102,17 +102,21 @@ export const D = {
   kbWaitTry: 2.0, // Arcatext 02: “Something you want to try...” shows alone before the keyboard comes up
   type1Len: 0, // Arcatext 02: the whole “Hola como estas” step, when set (0: natural pace)
   tryLen: 0, // and the “finde semaña” step
+  readTry: 1.6, // “Something you want to try...” is read
+  kbWait3: 2.0, // “Or something you don’t know...” shows alone before the keyboard comes up
+  addLen: 0, // Arcatext 02: the whole “, how was it?” step, when set (0: natural pace)
+  rewordLen: 0, // Arcatext 02: the whole Reword step, glide to tap to the Spanish read, when set
 };
 /** Arcatext 02's own retimes (Cut Room notes on its cut); 01 keeps the above. */
-if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
+if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, readTry: 1.5, kbWait3: 1.0, addLen: 2.0, rewordLen: 2.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
 
 /** Times for `text` typed so its step lasts `len` from `step`: typing starts
     `lead` in (the bubble fading, the camera moving) and the step ends `tail`
     after the last key plus the half second the next bubble's scene starts
     early. The natural rhythm is kept, scaled to fit. */
-function fitTimes(text: string, step: number, len: number, seed: number, pauses: Record<number, number> = {}, lead = 0.45, tail = 0.3) {
+function fitTimes(text: string, step: number, len: number, seed: number, pauses: Record<number, number> = {}, lead = 0.45, tail = 0.3, early = 0.5) {
   const raw = typeTimes(text, 0, 0.075, seed, pauses);
-  const span = Math.max(0.3, len - lead - tail - 0.5);
+  const span = Math.max(0.3, len - lead - tail - early);
   const k = span / raw[raw.length - 1];
   return { times: raw.map((x) => step + lead + x * k), end: step + lead + span + tail };
 }
@@ -232,18 +236,18 @@ c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 if (D.type1Len) ({ times: KNOW_TIMES, end: c } = fitTimes(FIELD_KNOW, TYPE1_START, D.type1Len, 11));
 /** Back up to the chat for a narration bubble (the keyboard goes down with
     it, then comes back up); returns its index. */
-const askBubble = (text: string, key: string, wait = D.kbWait) => {
+const askBubble = (text: string, key: string, wait = D.kbWait, read = D.readBubble) => {
   KB.push([c, false]);
   c = move(c, D.pan, { kind: 'bubble', i: BUBBLES.length, scale: 3.2 });
   BUBBLES.push({ text, who: 'them', at: c - 0.3, key, wait });
   KB.push([c - 0.3 + wait, true]);
-  c = Math.max(c + D.readBubble, c - 0.3 + wait + D.kbSlide + 0.45);
+  c = Math.max(c + read, c - 0.3 + wait + D.kbSlide + 0.45);
   return BUBBLES.length - 1;
 };
 let TRY_TIMES: number[] = [];
 export let TRY_START = 0;
 if (FIELD_TRY) {
-  const i = askBubble('Something you want to try...', 'bubble-try', D.kbWaitTry);
+  const i = askBubble('Something you want to try...', 'bubble-try', D.kbWaitTry, D.readTry);
   TRY_START = c;
   c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
   BUBBLES[i].hide = c;
@@ -256,22 +260,29 @@ if (FIELD_TRY) {
     ({ times: TRY_TIMES, end: c } = fitTimes(FIELD_TRY, TRY_START, D.tryLen, 7, unsure));
   }
 }
-const DONT_KNOW = askBubble('Or something you don’t know...', 'bubble-2');
+const DONT_KNOW = askBubble('Or something you don’t know...', 'bubble-2', D.kbWait3);
 export const TYPE2_START = c;
 // The longer half is typed with the whole text box in frame, so the camera
 // holds still instead of panning after the caret and across the line break.
 const ADD_START = c + D.pan;
-const ADD_TIMES = typeTimes(FIELD_ADD, ADD_START + D.bubbleOut + 0.1, 0.065, 13);
+let ADD_TIMES = typeTimes(FIELD_ADD, ADD_START + D.bubbleOut + 0.1, 0.065, 13);
+// A short step (Arcatext 02): typing starts while the camera settles, and the
+// bubble fades as the camera leaves it.
+const addFit = D.addLen ? fitTimes(FIELD_ADD, c, D.addLen, 13, {}, 0.55, 0.3, 0) : null;
+if (addFit) ADD_TIMES = addFit.times;
 c = move(c, D.pan, { kind: 'typing', until: ADD_TIMES[ADD_TIMES.length - 1] });
-BUBBLES[DONT_KNOW].hide = c;
-c = ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
+BUBBLES[DONT_KNOW].hide = addFit ? TYPE2_START : c;
+c = addFit ? addFit.end : ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 export const REWORD_START = c;
-c = move(c, D.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
-export const REWORD_TAP = c + D.tapAfter;
-// The camera pulls back to the field first; the reword plays once it is there.
-move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
-export const REWORD_SWAP = REWORD_TAP + 0.1 + D.glide + 0.05;
-c = REWORD_SWAP + D.readEs;
+// A short Reword (Arcatext 02): a quicker glide and tap, and the Spanish lands
+// while the camera pulls back rather than after.
+const RW = D.rewordLen ? { glide: 0.5, tap: 0.25, back: 0.6, swap: 0.15 } : { glide: D.glide, tap: D.tapAfter, back: D.glide, swap: 0.1 + D.glide + 0.05 };
+c = move(c, RW.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
+export const REWORD_TAP = c + RW.tap;
+// The camera pulls back to the field; the reword plays once it is there.
+move(REWORD_TAP + 0.1, RW.back, { kind: 'field', scale: 2.2 });
+export const REWORD_SWAP = REWORD_TAP + RW.swap;
+c = D.rewordLen ? REWORD_START + D.rewordLen : REWORD_SWAP + D.readEs;
 /** Arcatext 02, before sending: the Check page, set beside its text cards
     as the Study Guide is later. The chat, field and bottom row fade, the
     keyboard opens into Check (already loaded) with the reverse translation
