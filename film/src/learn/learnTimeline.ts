@@ -97,9 +97,9 @@ export const D = {
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
   avHold: 1.5, // “You text a lot of people” holds in the cloud
   avCollapse: 1.0, // the cloud and the line collapse back into the point
-  blockLine1: 5.0, // the first text card is read, fades, and the next comes in
+  blockLine1: 4.6, // the first text card is read, fades, and the next comes in
   blockLine2: 4.6, // and the one after (when there are more)
-  blockHold: 5.5, // the last card is read and holds
+  blockHold: 6.0, // the last card is read and holds
   kbWaitTry: 2.0, // Arcatext 02: “Something you want to try...” shows alone before the keyboard comes up
   type1Len: 0, // Arcatext 02: the whole “Hola como estas” step, when set (0: natural pace)
   tryLen: 0, // and the “finde semaña” step
@@ -171,8 +171,8 @@ export const AV_GONE = AV_COLLAPSE + D.avCollapse;
 export const AV_END = AV_GONE + 0.35;
 /** Text cards, one at a time: each fades out before the next comes in. */
 export const BLOCK_LINES = [
-  'It’s a great method, and now you can learn more from each message.',
-  'Arcatext has contextual translations, synonyms, and a study guide built from your chats.',
+  'You could be learning more from each message.',
+  'Arcatext adds contextual translations, synonyms, and a study guide built from your chats.',
 ];
 /** A card fades out over this, ending just before the next one starts. */
 export const BLOCK_FADE = 0.5;

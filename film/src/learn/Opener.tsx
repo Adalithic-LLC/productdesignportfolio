@@ -350,7 +350,7 @@ export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
 
 // ── The text block ──
 
-const BLOCK_ACCENT = ['learn more from each message', 'contextual translations, synonyms, and a study guide'];
+const BLOCK_ACCENT = ['learning more from each message', 'contextual translations, synonyms, and a study guide'];
 
 export function TextBlock({ t }: { t: number }) {
   if (t < BLOCK_AT[0] - 0.05 || t > BLOCK_OUT + D.titleOut) return null;
