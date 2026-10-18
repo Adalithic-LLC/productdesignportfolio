@@ -195,7 +195,11 @@ def main():
     vo = np.zeros(N)
     report = []
     for line in c['voice']:
-        clip = src / f"{line['key']}.wav"
+        # A cut can carry its own take of a shared line (key@cut.wav), e.g. a
+        # quicker word where that cut's hold is shorter.
+        clip = src / f"{line['key']}@{opt('--cut')}.wav"
+        if not opt('--cut') or not clip.exists():
+            clip = src / f"{line['key']}.wav"
         if not clip.exists():
             report.append({'key': line['key'], 'missing': True})
             continue

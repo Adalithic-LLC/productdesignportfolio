@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { ArrowUp, Plus } from 'lucide-react';
 import { AX } from '@/lib/arcatextTheme';
-import { StudyPanel, VIEW_H } from '@/components/ArcatextViews';
+import { CheckPanel, StudyPanel, VIEW_H, type CheckData } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo from '../SplashLogo';
@@ -40,6 +40,11 @@ import {
   D,
   STAGE,
   CAM_K,
+  CHECK,
+  CHECK_AT,
+  CHECK_CARDS,
+  CHECK_IN,
+  CHECK_OUT,
   NOTE_WITH_STUDY,
   PORTRAIT,
   OPENING,
@@ -198,13 +203,20 @@ function kbLevel(t: number) {
 
 /** Arcatext 02: how far the chat, field and bottom row have faded away for
     the line and the Study Guide (0 = all there, 1 = gone). */
-const soloLevel = (t: number) => (NOTE_WITH_STUDY ? span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) : 0);
+const soloLevel = (t: number) =>
+  Math.max(
+    NOTE_WITH_STUDY ? span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) : 0,
+    CHECK ? span(t, CHECK_IN, CHECK_IN + D.noteFade, (x) => x) * (1 - span(t, CHECK_OUT, CHECK_OUT + D.noteFade, (x) => x)) : 0,
+  );
+/** Arcatext 02: how far the Check view has opened over the keyboard. */
+const checkLevel = (t: number) =>
+  CHECK ? easeInOutCubic(clamp01((t - CHECK_IN - 0.15) / STUDY_GROW)) * (1 - easeInOutCubic(clamp01((t - CHECK_OUT) / STUDY_GROW))) : 0;
 /** Where the Study Guide sits beside the line: its centre's offset from the
     framing point, in frame pixels. */
 const STUDY_NOTE_OFF = PORTRAIT ? { x: 0, y: 330 } : { x: 400, y: 0 };
 
 function geometry(met: Metrics, t: number) {
-  const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
+  const grow = Math.max(easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW)), checkLevel(t));
   const kb = kbLevel(t);
   const block = lerp(HOME_H, lerp(KEYS_H, VIEW_H, grow) + GLOBE_H, kb);
   // The field's height eases over a quarter second when its line count
@@ -397,6 +409,65 @@ function Note({ t }: { t: number }) {
   );
 }
 
+/** Arcatext 02: the two lines over the Check view, one after the other. */
+function CheckCards({ t }: { t: number }) {
+  if (!CHECK || t < CHECK_AT[0] || t > CHECK_OUT + D.noteFade) return null;
+  const place = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 420 } : { left: 150, width: 720, top: FRAME.h / 2 };
+  const accent = ['check', 'synonyms'];
+  return (
+    <>
+      {CHECK_CARDS.map((c, i) => {
+        const k = span(t, CHECK_AT[i], CHECK_AT[i] + 0.55, easeOutCubic);
+        const outAt = i === 0 ? CHECK_AT[1] - 0.45 : CHECK_OUT;
+        const out = span(t, outAt, outAt + (i === 0 ? 0.4 : D.noteFade), (x) => x);
+        if (k <= 0 || out >= 1) return null;
+        const [a, b] = c.split(accent[i]);
+        return (
+          <div key={i} className="absolute" style={{ ...place, transform: `translateY(calc(-50% + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
+            <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 76, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>
+              {a}
+              <span style={{ color: ACCENT }}>{accent[i]}</span>
+              {b}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+const CHECK_VIEW: CheckData = {
+  reverse: 'Hi, how are you? How was your weekend?',
+  reword: FIELD_ES,
+  original: FIELD_EN,
+  synonyms: [
+    'Hola, ¿qué tal estás? ¿Cómo te fue el fin de semana?',
+    '¡Hola! ¿Cómo andas? ¿Qué tal el finde?',
+    'Hola, ¿cómo te va? ¿Cómo pasaste el fin de semana?',
+  ],
+  homograph: { word: '', meanings: [] },
+};
+
+/** The Check view, already loaded: the reverse translation lights up with
+    the first line, and the view scrolls to the synonyms with the second. */
+function CheckView({ t }: { t: number }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const synRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const sc = scrollRef.current;
+    const syn = synRef.current;
+    if (!sc || !syn) return;
+    sc.scrollTop = easeInOutCubic(clamp01((t - CHECK_AT[1]) / 1.0)) * (syn.offsetTop - 8);
+    const box = sc.querySelector('[data-tour="reverse"]')?.parentElement?.parentElement as HTMLElement | null;
+    if (box) {
+      const h = span(t, CHECK_AT[0] + 0.4, CHECK_AT[0] + 0.8, (x) => x) * (1 - span(t, CHECK_AT[1], CHECK_AT[1] + 0.4, (x) => x));
+      box.style.background = h > 0 ? `color-mix(in srgb, ${AX.accent} ${h * 24}%, transparent)` : '';
+      box.style.boxShadow = `inset 0 0 0 ${1 + h}px ${h > 0 ? `color-mix(in srgb, ${AX.accent} ${h * 100}%, ${AX.cardStroke})` : AX.cardStroke}`;
+    }
+  });
+  return <CheckPanel state={{ opening: false, reverse: 'done', synonyms: 'done', homographs: 'idle' }} data={CHECK_VIEW} scrollRef={scrollRef} synRef={synRef} />;
+}
+
 const countAt = (times: number[], t: number) => {
   let n = 0;
   while (n < times.length && times[n] <= t) n++;
@@ -580,6 +651,11 @@ function World({ met, t }: { met: Metrics; t: number }) {
               <Keyboard s={{ t, text: sent ? '' : FIELD_EN.slice(0, typedCount(t)), keyDown: null, pressed, rewordLoading: false }} />
             </div>
           )}
+          {CHECK && t >= CHECK_IN && t < CHECK_OUT + STUDY_GROW && (
+            <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: checkLevel(t) }}>
+              <CheckView t={t} />
+            </div>
+          )}
           {t >= STUDY_OPEN && (
             <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: g.grow }}>
               <StudyPanel stage="rows" rows={STUDY_ROWS_DATA} total={18} scroll={studyScroll(t)} />
@@ -741,6 +817,7 @@ export default function LearnFilm() {
       )}
       {met && t >= WORLD_IN && t < ENDING && <World met={met} t={t} />}
       <Note t={t} />
+      <CheckCards t={t} />
       {met && t >= WORLD_OUT && <Ending t={t} met={met} />}
     </div>
   );

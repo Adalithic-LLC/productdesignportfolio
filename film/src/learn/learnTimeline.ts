@@ -91,13 +91,31 @@ export const D = {
   logoLen: 2.3, // the logo animates and types "Arcatext"
   endHold: 1.5, // the finished card (line, logo and name) holds
   finalHold: 1.5, // the finished card holds on “a language.”
+  checkCard1: 4.4, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
+  checkCard2: 4.2, // the second card is read while Check scrolls to the synonyms
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
   avHold: 1.5, // “You text a lot of people” holds in the cloud
   avCollapse: 1.0, // the cloud and the line collapse back into the point
   blockLine1: 4.6, // the first text card is read, fades, and the next comes in
   blockLine2: 4.6, // and the one after (when there are more)
   blockHold: 5.0, // the last card is read and holds
+  kbWaitTry: 2.0, // Arcatext 02: “Something you want to try...” shows alone before the keyboard comes up
+  type1Len: 0, // Arcatext 02: the whole “Hola como estas” step, when set (0: natural pace)
+  tryLen: 0, // and the “finde semaña” step
 };
+/** Arcatext 02's own retimes (Cut Room notes on its cut); 01 keeps the above. */
+if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.25, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
+
+/** Times for `text` typed so its step lasts `len` from `step`: typing starts
+    `lead` in (the bubble fading, the camera moving) and the step ends `tail`
+    after the last key plus the half second the next bubble's scene starts
+    early. The natural rhythm is kept, scaled to fit. */
+function fitTimes(text: string, step: number, len: number, seed: number, pauses: Record<number, number> = {}, lead = 0.45, tail = 0.3) {
+  const raw = typeTimes(text, 0, 0.075, seed, pauses);
+  const span = Math.max(0.3, len - lead - tail - 0.5);
+  const k = span / raw[raw.length - 1];
+  return { times: raw.map((x) => step + lead + x * k), end: step + lead + span + tail };
+}
 
 // ── 1. Titles ──
 export const CHUNKS = ['How can texting', 'become', 'self-guided', 'language learning?'];
@@ -148,7 +166,7 @@ export const AV_GONE = AV_COLLAPSE + D.avCollapse;
 export const AV_END = AV_GONE + 0.35;
 /** Text cards, one at a time: each fades out before the next comes in. */
 export const BLOCK_LINES = [
-  'It’s great practice, but you could learn more from each text.',
+  'It’s great practice, but you could learn more from each message.',
   'Let’s add contextual translations, synonyms, and a study guide built from your chats.',
 ];
 /** A card fades out over this, ending just before the next one starts. */
@@ -161,7 +179,7 @@ export const BLOCK_OUT = BLOCK_AT[BLOCK_AT.length - 1] + D.blockHold;
 // ── 2. The phone ──
 export const WORLD_IN = OPENING ? LINE2_OUT + 0.2 : AVATARS ? BLOCK_OUT + D.titleOut + 0.2 : 0.2;
 /** `hide`: when a narration bubble fades away on its own (typing starts). */
-export type Bubble = { text: string; who: 'them' | 'me'; at: number; hide?: number; key?: string };
+export type Bubble = { text: string; who: 'them' | 'me'; at: number; hide?: number; key?: string; wait?: number };
 export const BUBBLES: Bubble[] = [];
 
 /** Camera framings: a target point (x across the 402pt column, h up from the
@@ -209,27 +227,34 @@ c += D.kbWait1;
 BUBBLES[0].hide = c;
 export const TYPE1_START = c;
 c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
-const KNOW_TIMES = typeTimes(FIELD_KNOW, Math.max(c, BUBBLES[0].hide + D.bubbleOut) + 0.1, 0.075, 11);
+let KNOW_TIMES = typeTimes(FIELD_KNOW, Math.max(c, BUBBLES[0].hide + D.bubbleOut) + 0.1, 0.075, 11);
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
+if (D.type1Len) ({ times: KNOW_TIMES, end: c } = fitTimes(FIELD_KNOW, TYPE1_START, D.type1Len, 11));
 /** Back up to the chat for a narration bubble (the keyboard goes down with
     it, then comes back up); returns its index. */
-const askBubble = (text: string, key: string) => {
+const askBubble = (text: string, key: string, wait = D.kbWait) => {
   KB.push([c, false]);
   c = move(c, D.pan, { kind: 'bubble', i: BUBBLES.length, scale: 3.2 });
-  BUBBLES.push({ text, who: 'them', at: c - 0.3, key });
-  KB.push([c - 0.3 + D.kbWait, true]);
-  c = Math.max(c + D.readBubble, c - 0.3 + D.kbWait + D.kbSlide + 0.45);
+  BUBBLES.push({ text, who: 'them', at: c - 0.3, key, wait });
+  KB.push([c - 0.3 + wait, true]);
+  c = Math.max(c + D.readBubble, c - 0.3 + wait + D.kbSlide + 0.45);
   return BUBBLES.length - 1;
 };
 let TRY_TIMES: number[] = [];
 export let TRY_START = 0;
 if (FIELD_TRY) {
-  const i = askBubble('Something you want to try...', 'bubble-try');
+  const i = askBubble('Something you want to try...', 'bubble-try', D.kbWaitTry);
   TRY_START = c;
   c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
   BUBBLES[i].hide = c;
-  TRY_TIMES = typeTimes(FIELD_TRY, c + D.bubbleOut + 0.1, 0.085, 7, { [FIELD_TRY.indexOf('semaña') - 1]: 0.35 });
+  const unsure = { [FIELD_TRY.indexOf('semaña') - 1]: 0.35 };
+  TRY_TIMES = typeTimes(FIELD_TRY, c + D.bubbleOut + 0.1, 0.085, 7, unsure);
   c = TRY_TIMES[TRY_TIMES.length - 1] + D.afterType + 0.2;
+  if (D.tryLen) {
+    // A short step: the bubble fades as the camera leaves it.
+    BUBBLES[i].hide = TRY_START;
+    ({ times: TRY_TIMES, end: c } = fitTimes(FIELD_TRY, TRY_START, D.tryLen, 7, unsure));
+  }
 }
 const DONT_KNOW = askBubble('Or something you don’t know...', 'bubble-2');
 export const TYPE2_START = c;
@@ -247,6 +272,20 @@ export const REWORD_TAP = c + D.tapAfter;
 move(REWORD_TAP + 0.1, D.glide, { kind: 'field', scale: 2.2 });
 export const REWORD_SWAP = REWORD_TAP + 0.1 + D.glide + 0.05;
 c = REWORD_SWAP + D.readEs;
+/** Arcatext 02, before sending: the Check page, set beside its text cards
+    as the Study Guide is later. The chat, field and bottom row fade, the
+    keyboard opens into Check (already loaded) with the reverse translation
+    lit; when the second card starts, Check scrolls to the synonyms. Then the
+    phone comes back to the field and sends. */
+export const CHECK = AVATARS;
+export const CHECK_CARDS = ['Ever wonder what a translator gave you? Now you can check.', 'And while you’re here see synonyms of your message.'];
+export const CHECK_IN = c;
+export const CHECK_AT = [c + 0.5, c + 0.5 + D.checkCard1];
+export const CHECK_OUT = CHECK ? CHECK_AT[1] + D.checkCard2 : c;
+if (CHECK) {
+  move(CHECK_IN, 0.9, { kind: 'studyNote', scale: 1.9 });
+  c = move(CHECK_OUT, 0.9, { kind: 'field', scale: 2.2 }) + 0.3;
+}
 // Send the Spanish from where the camera already is, on the field.
 export const SEND_TAP = c + 0.35;
 export const SEND_AT = SEND_TAP + 0.17;
@@ -372,6 +411,15 @@ const OPENING_LINES: VoiceLine[] = [
   ...LINE2_SLOT.slice(1, -1).map((x, k) => ({ key: `line2-slot-${k + 1}`, text: `${x},`, at: LINE2_LANDS[k + 1] - D.slotRoll / 2, until: LINE2_LANDS[k + 2] - D.slotRoll / 2, marks: [{ text: x, at: LINE2_LANDS[k + 1] - D.slotRoll / 2 }] })),
   { key: 'line2-b', text: `${LINE2_SLOT[LINE2_SLOT.length - 1]}, ${LINE2_B.trim()}`, at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2, until: LINE2_OUT + D.titleOut, marks: [{ text: LINE2_SLOT[LINE2_SLOT.length - 1], at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2 }, { text: LINE2_B.trim(), at: LINE2_B_TIMES[0] }] },
 ];
+const CHECK_LINES: VoiceLine[] = CHECK
+  ? CHECK_CARDS.map((x, i) => ({
+      key: `check-${i + 1}`,
+      text: x.replace('you’re here see', 'you’re here, see'),
+      at: CHECK_AT[i],
+      until: i === 0 ? CHECK_AT[1] - 0.6 : CHECK_OUT,
+      marks: [{ text: x, at: CHECK_AT[i] }],
+    }))
+  : [];
 const AVATAR_LINES: VoiceLine[] = [
   { key: 'you-text', text: /[.?!]$/.test(AV_TEXT) ? AV_TEXT : `${AV_TEXT}.`, at: AV_TYPE_TIMES[0], until: AV_GONE, marks: [{ text: AV_TEXT, at: AV_TYPE_TIMES[0] }] },
   ...BLOCK_LINES.map((x, i) => ({
@@ -385,6 +433,7 @@ const AVATAR_LINES: VoiceLine[] = [
 export const VOICE_LINES: VoiceLine[] = [
   ...(OPENING ? OPENING_LINES : AVATARS ? AVATAR_LINES : []),
   ...BUBBLE_LINES.map((b, i) => ({ key: b.key ?? `bubble-${i + 1}`, text: spoken(b.text), at: b.at, until: (b.hide ?? b.at + 2) + D.bubbleOut, marks: [{ text: spoken(b.text), at: b.at }] })),
+  ...CHECK_LINES,
   { key: 'note', text: NOTE_CHUNKS.join(' ').replace('If you miss a word we', 'If you miss a word, we'), at: NOTE_AT[0], until: NOTE_OUT + D.noteFade, marks: NOTE_CHUNKS.map((x, i) => ({ text: x, at: NOTE_AT[i] })) },
   { key: 'end', text: `${END_CHUNKS.join(' ')} ${LANGS[0]},`, at: ENDING + END_CHUNK_AT[0], until: ENDING + LANG_LANDS[1] - LANG_ROLL / 2, marks: [...END_CHUNKS.map((x, i) => ({ text: x, at: ENDING + END_CHUNK_AT[i] })), { text: LANGS[0], at: ENDING + LANG_LANDS[0] }] },
   ...LANGS.slice(1, LANG_SHOWN).map((x, k) => ({ key: `lang-${k + 2}`, text: `${x},`, at: ENDING + LANG_LANDS[k + 1] - LANG_ROLL / 2, until: ENDING + (k + 2 < LANG_SHOWN ? LANG_LANDS[k + 2] - LANG_ROLL / 2 : LANG_FLICK_AT + 0.3), marks: [{ text: x, at: ENDING + LANG_LANDS[k + 1] - LANG_ROLL / 2 }] })),
@@ -487,7 +536,7 @@ export function scenes() {
       name: b.who === 'me' ? `Send: ${b.text}` : `${i + 1}. ${b.text}`,
       start: i === 0 ? WORLD_IN : b.who === 'me' ? SEND_TAP - 0.35 : b.at - 0.2,
       texts: [{ key: `b${i + 1}`, label: b.who === 'me' ? 'Sent message' : 'Left bubble', text: b.text }],
-      ...(b.who === 'them' ? { flows: [[{ text: b.text }, inline(i === 0 ? 'kb-wait' : `kb-wait-${i + 1}`, 'before the keyboard comes up', i === 0 ? D.kbWait1 : D.kbWait, b.at)]] } : {}),
+      ...(b.who === 'them' ? { flows: [[{ text: b.text }, inline(i === 0 ? 'kb-wait' : `kb-wait-${i + 1}`, 'before the keyboard comes up', b.wait ?? (i === 0 ? D.kbWait1 : D.kbWait), b.at)]] } : {}),
     })),
     { id: 'type1', name: `Type: ${FIELD_KNOW}`, start: TYPE1_START, texts: [{ key: 'know', label: 'Typed message', text: FIELD_KNOW }], flows: [[typed(FIELD_KNOW, KNOW_TIMES)]] },
     ...(FIELD_TRY
@@ -495,6 +544,11 @@ export function scenes() {
       : []),
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: TYPE2_START, texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
     { id: 'reword', name: 'Reword to Spanish', start: REWORD_START, texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
+    ...(CHECK
+      ? [{ id: 'check', name: `Check: ${CHECK_CARDS[0]}`, start: CHECK_IN,
+          texts: [{ key: 'check', label: 'Text cards', text: CHECK_CARDS.join(' / ') }],
+          flows: [[{ text: CHECK_CARDS[0] }, inline('check-1', 'the first card', D.checkCard1, CHECK_AT[0]), { text: CHECK_CARDS[1] }, inline('check-2', 'the second card (synonyms)', D.checkCard2, CHECK_AT[1])]] }]
+      : []),
     { id: 'note', name: 'Text: If you miss a word, we add it to your study guide.', start: NOTE_IN,
       texts: [{ key: 'note', label: 'Text', text: NOTE_CHUNKS.map((x) => `[${x}]`).join(' ') }], flows: [noteFlow] },
     { id: 'study', name: 'The Study Guide, open', start: NOTE_WITH_STUDY ? NOTE_DONE : NOTE_OUT + D.noteFade, texts: [],
@@ -522,7 +576,7 @@ export function cues() {
     send: SEND_AT,
     sends: [SEND_AT],
     swipes: [],
-    words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : AVATARS ? BLOCK_AT : []), ...NOTE_AT],
+    words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : AVATARS ? BLOCK_AT : []), ...(CHECK ? CHECK_AT : []), ...NOTE_AT],
     ticks: LANG_PASS.map((x) => ENDING + x),
     pops: BUBBLES.map((b) => ({ t: b.at, who: b.who })),
     titles: OPENING || AVATARS ? [[0, WORLD_IN]] : [],
