@@ -413,7 +413,7 @@ function Note({ t }: { t: number }) {
 function CheckCards({ t }: { t: number }) {
   if (!CHECK || t < CHECK_AT[0] || t > CHECK_OUT + D.noteFade) return null;
   const place = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 420 } : { left: 150, width: 720, top: FRAME.h / 2 };
-  const accent = ['check', 'synonyms'];
+  const accent = ['reverse translation', 'synonyms'];
   return (
     <>
       {CHECK_CARDS.map((c, i) => {

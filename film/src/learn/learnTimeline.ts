@@ -91,7 +91,7 @@ export const D = {
   logoLen: 2.3, // the logo animates and types "Arcatext"
   endHold: 1.5, // the finished card (line, logo and name) holds
   finalHold: 1.5, // the finished card holds on “a language.”
-  checkCard1: 4.4, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
+  checkCard1: 7.6, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
   checkCard2: 4.2, // the second card is read while Check scrolls to the synonyms
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
   avHold: 1.5, // “You text a lot of people” holds in the cloud
@@ -104,7 +104,7 @@ export const D = {
   tryLen: 0, // and the “finde semaña” step
 };
 /** Arcatext 02's own retimes (Cut Room notes on its cut); 01 keeps the above. */
-if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.25, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
+if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
 
 /** Times for `text` typed so its step lasts `len` from `step`: typing starts
     `lead` in (the bubble fading, the camera moving) and the step ends `tail`
@@ -278,7 +278,7 @@ c = REWORD_SWAP + D.readEs;
     lit; when the second card starts, Check scrolls to the synonyms. Then the
     phone comes back to the field and sends. */
 export const CHECK = AVATARS;
-export const CHECK_CARDS = ['Ever wonder what a translator gave you? Now you can check.', 'And while you’re here see synonyms of your message.'];
+export const CHECK_CARDS = ['Ever wonder if the translation is really what you wanted to say? Now you can check with a reverse translation.', 'And while you’re here see synonyms of your message.'];
 export const CHECK_IN = c;
 export const CHECK_AT = [c + 0.5, c + 0.5 + D.checkCard1];
 export const CHECK_OUT = CHECK ? CHECK_AT[1] + D.checkCard2 : c;
