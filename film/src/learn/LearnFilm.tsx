@@ -40,6 +40,8 @@ import {
   D,
   STAGE,
   CAM_K,
+  NOTE_WITH_STUDY,
+  PORTRAIT,
   OPENING,
   AVATARS,
   AV_TEXT,
@@ -194,6 +196,13 @@ function kbLevel(t: number) {
   return v;
 }
 
+/** Arcatext 02: how far the chat, field and bottom row have faded away for
+    the line and the Study Guide (0 = all there, 1 = gone). */
+const soloLevel = (t: number) => (NOTE_WITH_STUDY ? span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) : 0);
+/** Where the Study Guide sits beside the line: its centre's offset from the
+    framing point, in frame pixels. */
+const STUDY_NOTE_OFF = PORTRAIT ? { x: 0, y: 330 } : { x: 400, y: 0 };
+
 function geometry(met: Metrics, t: number) {
   const grow = easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW));
   const kb = kbLevel(t);
@@ -283,6 +292,13 @@ function resolve(v: View, met: Metrics, t: number) {
     }
     case 'study':
       return { x: COL / 2, h: g.fieldTop / 2 + 10, s: v.scale };
+    case 'studyNote': {
+      // The open panel (the bottom row folded away), its centre set off from
+      // the framing point so the line has the rest of the frame.
+      const se = v.scale * CAM_K;
+      const centre = (lerp(KEYS_H, VIEW_H, g.grow) + GLOBE_H * (1 - soloLevel(t))) / 2;
+      return { x: COL / 2 - STUDY_NOTE_OFF.x / se, h: centre + STUDY_NOTE_OFF.y / se, s: v.scale };
+    }
     case 'whole': {
       const s = Math.min(v.scale, 1250 / (g.convTop + 30));
       return { x: COL / 2, h: g.convTop / 2, s };
@@ -348,11 +364,14 @@ function Headline({ t }: { t: number }) {
 function Note({ t }: { t: number }) {
   if (t < NOTE_IN || t > NOTE_OUT + D.noteFade) return null;
   const out = span(t, NOTE_OUT, NOTE_OUT + D.noteFade, (x) => x);
+  // Arcatext 02 sets the line above (9:16) or beside (16:9) the Study Guide.
+  const place = !NOTE_WITH_STUDY
+    ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy }
+    : PORTRAIT
+      ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 420 }
+      : { left: 150, width: 720, top: FRAME.h / 2 };
   return (
-    <div
-      className="absolute"
-      style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}
-    >
+    <div className="absolute" style={{ ...place, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}>
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 76, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>
         {NOTE_CHUNKS.map((c, i) => {
           const k = span(t, NOTE_AT[i], NOTE_AT[i] + 0.55, easeOutCubic);
@@ -513,7 +532,8 @@ function World({ met, t }: { met: Metrics; t: number }) {
   const g = geometry(met, t);
   const c0 = camera(met, t);
   const cam = { ...c0, s: c0.s * CAM_K };
-  const away = span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) * (1 - span(t, NOTE_OUT + D.noteFade, NOTE_OUT + 2 * D.noteFade, (x) => x));
+  const away = NOTE_WITH_STUDY ? 0 : span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) * (1 - span(t, NOTE_OUT + D.noteFade, NOTE_OUT + 2 * D.noteFade, (x) => x));
+  const solo = soloLevel(t);
   const fade = span(t, WORLD_IN, WORLD_IN + D.worldIn, (x) => x) * (1 - span(t, WORLD_OUT, ENDING, (x) => x)) * (1 - away);
   if (fade <= 0 && t > WORLD_IN + D.worldIn) return null;
   const pressed = t >= FIELD.rewordTap && t < FIELD.rewordTap + 0.22 ? 'reword' : t >= STUDY_TAP && t < STUDY_OPEN ? 'study' : null;
@@ -535,7 +555,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
             style={{
               bottom: g.convBottom + bottom,
               ...(m.who === 'me' ? { right: SIDE } : { left: SIDE }),
-              opacity: (m.who === 'me' ? 1 : claim) * (1 - out),
+              opacity: (m.who === 'me' ? 1 : claim) * (1 - out) * (1 - solo),
               transform: `translateY(${rise - out * 10}px) scale(${pop})`,
               transformOrigin: m.who === 'me' ? '100% 100%' : '0 100%',
               filter: out > 0 ? `blur(${out * 4}px)` : undefined,
@@ -545,9 +565,11 @@ function World({ met, t }: { met: Metrics; t: number }) {
           </div>
         );
       })}
-      <div className="absolute left-0" style={{ width: COL, bottom: g.block + 8 }}>
-        <Field t={t} />
-      </div>
+      {solo < 1 && (
+        <div className="absolute left-0" style={{ width: COL, bottom: g.block + 8, opacity: 1 - solo }}>
+          <Field t={t} />
+        </div>
+      )}
       <div
         className="absolute bottom-0 left-0 overflow-hidden rounded-[26px] ring-1 ring-white/10"
         style={{ width: COL, opacity: g.kb, transform: `translateY(${(1 - g.kb) * (KEYS_H + GLOBE_H)}px)` }}
@@ -564,7 +586,10 @@ function World({ met, t }: { met: Metrics; t: number }) {
             </div>
           )}
         </div>
-        <GlobeRow padTop={lerp(17, 22, g.grow)} />
+        {/* Folded away (Arcatext 02) so the Study Guide stands alone. */}
+        <div className="overflow-hidden" style={solo > 0 ? { height: GLOBE_H * (1 - solo), opacity: 1 - solo } : undefined}>
+          <GlobeRow padTop={lerp(17, 22, g.grow)} />
+        </div>
       </div>
     </div>
   );
