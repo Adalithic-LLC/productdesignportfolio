@@ -240,6 +240,8 @@ export interface ArcatextContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
+    /** The line under the name at the top of the project page. */
+    tagline?: string;
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -390,6 +392,8 @@ export interface ConversantContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
+    /** The line under the name at the top of the project page. */
+    tagline?: string;
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -541,6 +545,8 @@ export interface UsaaContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
+    /** The line under the name at the top of the project page. */
+    tagline?: string;
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -651,6 +657,8 @@ export interface MemberHomeContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
+    /** The line under the name at the top of the project page. */
+    tagline?: string;
     subtitle: string;
     typeTags: string[];
     roleLabel: string;

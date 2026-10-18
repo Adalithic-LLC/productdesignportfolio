@@ -185,6 +185,13 @@ export default function Arcatext() {
             </h1>
             <TryItOut />
           </div>
+
+          {/* What it is, in four words, under the name. */}
+          <Editable
+            as="p"
+            path="arcatext.hero.tagline"
+            className="mt-5 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-foreground text-balance"
+          />
         </div>
       </section>
 
