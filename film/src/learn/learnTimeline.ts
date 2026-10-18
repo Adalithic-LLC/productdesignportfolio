@@ -91,7 +91,7 @@ export const D = {
   logoLen: 2.3, // the logo animates and types "Arcatext"
   endHold: 1.5, // the finished card (line, logo and name) holds
   finalHold: 1.5, // the finished card holds on “a language.”
-  checkCard1: 7.6, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
+  checkCard1: 5.0, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
   checkCard2: 4.2, // the second card is read while Check scrolls to the synonyms
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
   avHold: 1.5, // “You text a lot of people” holds in the cloud
@@ -297,22 +297,26 @@ c = D.rewordLen ? REWORD_START + D.rewordLen : REWORD_SWAP + D.readEs;
 /** Arcatext 02, before sending: the Check page, set beside its text cards
     as the Study Guide is later. The chat, field and bottom row fade, the
     keyboard opens into Check (already loaded) with the reverse translation
-    lit; when the second card starts, Check scrolls to the synonyms. Then the
-    phone comes back to the field and sends. */
+    lit; when the second card starts, Check scrolls to the synonyms. The
+    message is never sent: Check hands straight over to the Study Guide. */
 export const CHECK = AVATARS;
-export const CHECK_CARDS = ['Ever wonder if the translation is really what you wanted to say? Now you can check with a reverse translation.', 'And while you’re here see synonyms of your message.'];
+export const CHECK_CARDS = ['A reverse translation lets you check if it’s what you actually wanted to say.', 'And while you’re here, get synonyms of your message.'];
 export const CHECK_IN = c;
 export const CHECK_AT = [c + 0.5, c + 0.5 + D.checkCard1];
 export const CHECK_OUT = CHECK ? CHECK_AT[1] + D.checkCard2 : c;
+/** Whether the message is sent (Arcatext 01); 02 cut the send. */
+export const SEND = !CHECK;
 if (CHECK) {
   move(CHECK_IN, 0.9, { kind: 'studyNote', scale: 1.9 });
-  c = move(CHECK_OUT, 0.9, { kind: 'field', scale: 2.2 }) + 0.3;
+  c = SEND ? move(CHECK_OUT, 0.9, { kind: 'field', scale: 2.2 }) + 0.3 : CHECK_OUT;
 }
 // Send the Spanish from where the camera already is, on the field.
-export const SEND_TAP = c + 0.35;
-export const SEND_AT = SEND_TAP + 0.17;
-BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
-c = SEND_AT + D.sentHold;
+export const SEND_TAP = SEND ? c + 0.35 : Infinity;
+export const SEND_AT = SEND ? SEND_TAP + 0.17 : Infinity;
+if (SEND) {
+  BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
+  c = SEND_AT + D.sentHold;
+}
 // The study-guide line: the phone fades away and the line comes in chunk by
 // chunk, as the headline does; the camera waits on Study for the phone's return.
 export const NOTE_IN = c;
@@ -592,11 +596,11 @@ export function cues() {
       ...(OPENING ? [...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES] : []).map((t) => ({ t, space: true })),
       ...(AVATARS ? AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })) : []),
     ],
-    taps: [REWORD_TAP, SEND_TAP],
+    taps: SEND ? [REWORD_TAP, SEND_TAP] : [REWORD_TAP],
     reword: REWORD_SWAP,
     reveal: null,
-    send: SEND_AT,
-    sends: [SEND_AT],
+    send: SEND ? SEND_AT : null,
+    sends: SEND ? [SEND_AT] : [],
     swipes: [],
     words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : AVATARS ? BLOCK_AT : []), ...(CHECK ? CHECK_AT : []), ...NOTE_AT],
     ticks: LANG_PASS.map((x) => ENDING + x),

@@ -6,6 +6,7 @@ import { CheckPanel, StudyPanel, VIEW_H, type CheckData } from '@/components/Arc
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo from '../SplashLogo';
+import obArrow from './ob-arrow.png';
 import { AV_SIZE, AV_TEXT_STYLE, AvatarOpener, TextBlock, preloadAvatars, type Box } from './Opener';
 import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../ease';
 import {
@@ -45,6 +46,7 @@ import {
   CHECK_CARDS,
   CHECK_IN,
   CHECK_OUT,
+  SEND,
   NOTE_WITH_STUDY,
   PORTRAIT,
   OPENING,
@@ -206,17 +208,24 @@ function kbLevel(t: number) {
 const soloLevel = (t: number) =>
   Math.max(
     NOTE_WITH_STUDY ? span(t, NOTE_IN, NOTE_IN + D.noteFade, (x) => x) : 0,
-    CHECK ? span(t, CHECK_IN, CHECK_IN + D.noteFade, (x) => x) * (1 - span(t, CHECK_OUT, CHECK_OUT + D.noteFade, (x) => x)) : 0,
+    CHECK ? span(t, CHECK_IN, CHECK_IN + D.noteFade, (x) => x) * (SEND ? 1 - span(t, CHECK_OUT, CHECK_OUT + D.noteFade, (x) => x) : 1) : 0,
   );
 /** Arcatext 02: how far the Check view has opened over the keyboard. */
 const checkLevel = (t: number) =>
-  CHECK ? easeInOutCubic(clamp01((t - CHECK_IN - 0.15) / STUDY_GROW)) * (1 - easeInOutCubic(clamp01((t - CHECK_OUT) / STUDY_GROW))) : 0;
+  CHECK ? easeInOutCubic(clamp01((t - CHECK_IN - 0.15) / STUDY_GROW)) * (1 - easeInOutCubic(clamp01((t - CHECK_OUT) / (SEND ? STUDY_GROW : 0.3)))) : 0;
+/** How far the keyboard has opened into a view. With no send between them,
+    Check hands straight to the Study Guide and the view stays open. */
+const viewGrow = (t: number) =>
+  Math.max(
+    easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW)),
+    CHECK && !SEND && t >= CHECK_IN + 0.15 + STUDY_GROW && t < STUDY_OPEN + STUDY_GROW ? 1 : checkLevel(t),
+  );
 /** Where the Study Guide sits beside the line: its centre's offset from the
     framing point, in frame pixels. */
 const STUDY_NOTE_OFF = PORTRAIT ? { x: 0, y: 330 } : { x: 400, y: 0 };
 
 function geometry(met: Metrics, t: number) {
-  const grow = Math.max(easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW)), checkLevel(t));
+  const grow = viewGrow(t);
   const kb = kbLevel(t);
   const block = lerp(HOME_H, lerp(KEYS_H, VIEW_H, grow) + GLOBE_H, kb);
   // The field's height eases over a quarter second when its line count
@@ -453,24 +462,86 @@ const CHECK_VIEW: CheckData = {
   homograph: { word: '', meanings: [] },
 };
 
+/** The app's onboarding pointer (OB_Arrow, 44pt, pointing left), as
+    PointerArrow animates it: it springs in from 60pt to the right (response
+    0.5, damping 0.6), then nudges toward its target twice (6pt, then 3pt). */
+const ARROW = 44;
+function arrowMotion(t: number, at: number) {
+  const u = t - at;
+  if (u <= 0) return { x: 60, o: 0 };
+  const w = (2 * Math.PI) / 0.5;
+  const z = 0.6;
+  const wd = w * Math.sqrt(1 - z * z);
+  const k = 1 - Math.exp(-z * w * u) * (Math.cos(wd * u) + ((z * w) / wd) * Math.sin(wd * u));
+  let nudge = 0;
+  let b = u - 0.5;
+  for (const amp of [6, 3]) {
+    if (b >= 0 && b < 0.2) nudge = -amp * easeInOutCubic(b / 0.2);
+    else if (b >= 0.2 && b < 0.42) nudge = -amp * (1 - easeInOutCubic((b - 0.2) / 0.22));
+    b -= 0.42;
+  }
+  return { x: 60 * (1 - k) + nudge, o: clamp01(k) };
+}
+/** When each arrow comes in: on the reverse translation with the first card,
+    on Synonyms once the scroll to them has settled. */
+const ARROW_AT = [CHECK_AT[0] + 0.3, CHECK_AT[1] + 1.1];
+
 /** The Check view, already loaded: the reverse translation lights up with
-    the first line, and the view scrolls to the synonyms with the second. */
+    the first line, and the view scrolls to the synonyms with the second. The
+    onboarding arrow points at each. */
 function CheckView({ t }: { t: number }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const synRef = useRef<HTMLDivElement>(null);
+  const a1 = useRef<HTMLImageElement>(null);
+  const a2 = useRef<HTMLImageElement>(null);
   useLayoutEffect(() => {
+    const root = rootRef.current;
     const sc = scrollRef.current;
     const syn = synRef.current;
-    if (!sc || !syn) return;
+    if (!root || !sc || !syn) return;
     sc.scrollTop = easeInOutCubic(clamp01((t - CHECK_AT[1]) / 1.0)) * (syn.offsetTop - 8);
-    const box = sc.querySelector('[data-tour="reverse"]')?.parentElement?.parentElement as HTMLElement | null;
+    const rev = sc.querySelector('[data-tour="reverse"]') as HTMLElement | null;
+    // The text wraps short of the arrow, as the app leaves it room.
+    if (rev) rev.style.paddingRight = `${ARROW}px`;
+    const box = rev?.parentElement?.parentElement as HTMLElement | null;
     if (box) {
       const h = span(t, CHECK_AT[0] + 0.4, CHECK_AT[0] + 0.8, (x) => x) * (1 - span(t, CHECK_AT[1], CHECK_AT[1] + 0.4, (x) => x));
       box.style.background = h > 0 ? `color-mix(in srgb, ${AX.accent} ${h * 24}%, transparent)` : '';
       box.style.boxShadow = `inset 0 0 0 ${1 + h}px ${h > 0 ? `color-mix(in srgb, ${AX.accent} ${h * 100}%, ${AX.cardStroke})` : AX.cardStroke}`;
     }
+    // Positions in the panel's own points (the world's scale is outside it).
+    const r0 = root.getBoundingClientRect();
+    const k = root.offsetWidth / r0.width;
+    const place = (el: HTMLImageElement | null, tipX: number, tipY: number, m: { x: number; o: number }, o: number) => {
+      if (!el) return;
+      el.style.left = `${tipX + m.x}px`;
+      el.style.top = `${tipY - ARROW * 0.667}px`;
+      el.style.opacity = String(m.o * o);
+    };
+    if (box) {
+      const b = box.getBoundingClientRect();
+      // Inside the box's trailing edge, 8pt in, its tip at the box's middle.
+      const right = (b.right - r0.left) * k - 8;
+      place(a1.current, right - ARROW, ((b.top + b.bottom) / 2 - r0.top) * k, arrowMotion(t, ARROW_AT[0]), 1 - span(t, CHECK_AT[1], CHECK_AT[1] + 0.25, (x) => x));
+    }
+    const label = syn.firstElementChild as HTMLElement | null;
+    if (label) {
+      // Just after the SYNONYMS label's text, its tip on the label's middle.
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      const lr = range.getBoundingClientRect();
+      place(a2.current, (lr.right - r0.left) * k + 8, ((lr.top + lr.bottom) / 2 - r0.top) * k, arrowMotion(t, ARROW_AT[1]), 1);
+    }
   });
-  return <CheckPanel state={{ opening: false, reverse: 'done', synonyms: 'done', homographs: 'idle' }} data={CHECK_VIEW} scrollRef={scrollRef} synRef={synRef} />;
+  return (
+    <div ref={rootRef} className="relative">
+      <CheckPanel state={{ opening: false, reverse: 'done', synonyms: 'done', homographs: 'idle' }} data={CHECK_VIEW} scrollRef={scrollRef} synRef={synRef} />
+      {[a1, a2].map((r, i) => (
+        <img key={i} ref={r} src={obArrow} alt="" className="pointer-events-none absolute" style={{ width: ARROW, height: ARROW, maxWidth: 'none', opacity: 0 }} />
+      ))}
+    </div>
+  );
 }
 
 const countAt = (times: number[], t: number) => {
@@ -662,7 +733,7 @@ function World({ met, t }: { met: Metrics; t: number }) {
             </div>
           )}
           {t >= STUDY_OPEN && (
-            <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: g.grow }}>
+            <div className="absolute inset-x-0 top-0 [&_*]:!transition-none [&_*]:!animate-none" style={{ opacity: easeInOutCubic(clamp01((t - STUDY_OPEN) / STUDY_GROW)) }}>
               <StudyPanel stage="rows" rows={STUDY_ROWS_DATA} total={18} scroll={studyScroll(t)} />
             </div>
           )}
