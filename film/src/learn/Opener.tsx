@@ -108,7 +108,7 @@ const AVATARS: Avatar[] = (() => {
     const phi = i * 2.399963 + rnd() * 0.5;
     const roll = rnd();
     // Mostly faces, with some iOS monograms and placeholders among them, as a real contact list has.
-    const kind = roll < 0.64 && FACES.length ? 'face' : roll < 0.8 ? 'mono' : roll < 0.92 ? 'tint' : 'person';
+    const kind = roll < 0.74 && FACES.length ? 'face' : roll < 0.86 ? 'mono' : roll < 0.94 ? 'tint' : 'person';
     const grad =
       kind === 'mono' || kind === 'person' ? GREY : kind === 'tint' ? TINTS[Math.floor(rnd() * TINTS.length)] : PASTELS[0];
     const label =
@@ -134,7 +134,7 @@ function Face({ a, px }: { a: Avatar; px: number }) {
   const bg = `linear-gradient(180deg, ${a.grad[0]}, ${a.grad[1]})`;
   const base = { width: px, height: px, borderRadius: '50%', background: bg, overflow: 'hidden' as const };
   if (a.kind === 'face') {
-    return <img src={a.label} width={px} height={px} alt="" style={{ display: 'block', width: px, height: px, borderRadius: '50%' }} />;
+    return <img src={a.label} width={px} height={px} alt="" style={{ display: 'block', width: px, height: px, maxWidth: 'none', borderRadius: '50%' }} />;
   }
   if (a.kind === 'person') {
     // The iOS placeholder: a white head and shoulders on grey.
@@ -193,9 +193,9 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
   const ax = (w / 2 + PAD_X) * shrink;
   const ay = ((AV_SIZE * 1.15) / 2 + PAD_Y) * shrink;
 
-  type Placed = { a: Avatar; x: number; y: number; z: number; px: number; o: number; depth: number };
+  type Placed = { k: number; a: Avatar; x: number; y: number; z: number; px: number; o: number; depth: number };
   const placed: Placed[] = [];
-  for (const a of AVATARS) {
+  for (const [k, a] of AVATARS.entries()) {
     // A fast burst that settles into slow motion, then a slow drift outward.
     const e = 1 - Math.pow(1 - clamp01((since - a.delay) / D.avBurst), 4);
     const c = easeInCubic(clamp01((t - AV_COLLAPSE - a.delay * 0.5) / (D.avCollapse - 0.08)));
@@ -226,7 +226,7 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
     const depth = clamp01((z / R + 1) / 2);
     // Depth reads as dimmer and softer, not see-through, so overlaps stay clean.
     const o = clamp01(e * 4) * (1 - clamp01((c - 0.8) / 0.2));
-    placed.push({ a, x: sx, y: sy, z, px, o, depth });
+    placed.push({ k, a, x: sx, y: sy, z, px, o, depth });
   }
   placed.sort((p, q) => p.z - q.z);
 
@@ -247,9 +247,9 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
   const textScale = shrink;
   const textO = 1 - easeInCubic(clamp01((t - AV_COLLAPSE - 0.2) / (D.avCollapse - 0.2)));
 
-  const face = (p: Placed, i: number) => (
+  const face = (p: Placed) => (
     <div
-      key={i}
+      key={p.k}
       className="absolute"
       style={{
         left: 0,
@@ -290,7 +290,7 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
           <span style={{ display: 'inline-block', width: 5, height: AV_SIZE * 0.9, marginLeft: 4, verticalAlign: '-0.1em', background: ACCENT, borderRadius: 2, opacity: caretOn && n < AV_TEXT.length + 1 ? 1 : 0 }} />
         </div>
       )}
-      {front.map((p, i) => face(p, i + behind.length))}
+      {front.map(face)}
       {/* The burst's shock ring and the point itself. */}
       {ring > 0 && ring < 1 && (
         <div
