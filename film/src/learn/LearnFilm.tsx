@@ -39,6 +39,7 @@ import {
   D,
   STAGE,
   CAM_K,
+  TYPE_ZOOM,
   START_VIEW,
   STUDY_GROW,
   STUDY_OPEN,
@@ -234,11 +235,13 @@ function resolve(v: View, met: Metrics, t: number) {
       return { x: sum / 12, h: g.block + 25, s: v.scale };
     }
     case 'typing': {
-      // Just wide enough for the text box and a margin; centred on the box's
-      // height once typing ends, so a new line never moves the shot.
+      // As close as the usual typing shot, but no closer than fits the text
+      // box and a margin across the frame (16:9 has room; 9:16 pulls back),
+      // centred on the box's height once typing ends, so it never moves.
       const M = 22;
       const end = geometry(met, v.until);
-      return { x: FIELD_TEXT_X + FIELD_TEXT_W / 2, h: g.block + 8 + end.fieldH / 2, s: STAGE.w / (FIELD_TEXT_W + 2 * M) };
+      const s = Math.min(TYPE_ZOOM, STAGE.w / CAM_K / (FIELD_TEXT_W + 2 * M));
+      return { x: FIELD_TEXT_X + FIELD_TEXT_W / 2, h: g.block + 8 + end.fieldH / 2, s };
     }
     case 'button':
       return { x: v.which === 'reword' ? Math.min(310, COL - 4 - visW / 2) : Math.max(36.5, 4 + visW / 2), h: g.block - 33, s: v.scale };
