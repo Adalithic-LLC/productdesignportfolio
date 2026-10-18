@@ -6,7 +6,7 @@ import { StudyPanel, VIEW_H } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo from '../SplashLogo';
-import { AV_SIZE, AvatarOpener, TextBlock } from './Opener';
+import { AV_SIZE, AvatarOpener, TextBlock, preloadAvatars } from './Opener';
 import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../ease';
 import {
   BUBBLES,
@@ -648,6 +648,7 @@ export default function LearnFilm() {
         ]),
       )
       .then(() => document.fonts.ready)
+      .then(() => (AVATARS ? preloadAvatars() : undefined))
       .then(() => {
         if (!live || !rootRef.current) return;
         const m = measure(rootRef.current);

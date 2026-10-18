@@ -26,7 +26,6 @@ import {
 
 const DISPLAY = "'Inter Display', Inter, system-ui, sans-serif";
 const ROUNDED = "'SF Pro Rounded', Inter, system-ui, sans-serif";
-const EMOJI = "'Noto Color Emoji', 'Apple Color Emoji', sans-serif";
 const ACCENT = '#7FA2FF';
 const easeInCubic = (k: number) => k * k * k;
 /** The typed line's size; Metrics carries its measured prefix widths. */
@@ -64,7 +63,21 @@ const PASTELS: [string, string][] = [
   ['#D3F5DA', '#99E2A8'],
   ['#FFD6E2', '#FFA9C2'],
 ];
-const EMOJIS = ['😀', '😎', '🥳', '😍', '🤓', '😂', '🙂', '🤩', '😊', '🦊', '🐶', '🐱', '👩', '🧑', '👨', '👵', '🧔', '👩‍🦰'];
+/** Arcatext's own avatar set (generated for the film): men and women of
+    every background, pre-cut into iOS-style circles on a pastel gradient. */
+const FACES: string[] = Object.entries(import.meta.glob('./avatars/*.webp', { eager: true, import: 'default' }))
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, url]) => url as string);
+/** Resolves once every face is decoded, so no frame is drawn with one missing. */
+export function preloadAvatars(): Promise<void> {
+  return Promise.all(
+    FACES.map((src) => {
+      const im = new Image();
+      im.src = src;
+      return im.decode().catch(() => undefined);
+    }),
+  ).then(() => undefined);
+}
 const LETTERS = 'ABCDEFGHIJKLMNOPRSTVWY';
 
 type Avatar = {
@@ -74,7 +87,7 @@ type Avatar = {
   delay: number;
   bob: number;
   phase: number;
-  kind: 'mono' | 'tint' | 'person' | 'emoji';
+  kind: 'mono' | 'tint' | 'person' | 'face';
   grad: [string, string];
   label: string;
 };
@@ -83,6 +96,10 @@ const AVATARS_N = PORTRAIT ? 140 : 160;
 const AVATARS: Avatar[] = (() => {
   const rnd = mulberry32(20261018);
   const out: Avatar[] = [];
+  // Faces are dealt from a shuffled deck, so each appears before any repeats.
+  const deck = FACES.map((f, k) => [f, rnd(), k] as const).sort((p, q) => p[1] - q[1]);
+  FACES.splice(0, FACES.length, ...deck.map((d) => d[0]));
+  let faceAt = 0;
   for (let i = 0; i < AVATARS_N; i++) {
     // Directions spread evenly over the sphere (a jittered golden spiral),
     // radii through the shell's depth, so it reads as a full round cloud.
@@ -90,12 +107,13 @@ const AVATARS: Avatar[] = (() => {
     const ring = Math.sqrt(Math.max(0, 1 - y * y));
     const phi = i * 2.399963 + rnd() * 0.5;
     const roll = rnd();
-    const kind = roll < 0.42 ? 'mono' : roll < 0.7 ? 'tint' : roll < 0.84 ? 'person' : 'emoji';
+    // Mostly faces, with some iOS monograms and placeholders among them, as a real contact list has.
+    const kind = roll < 0.64 && FACES.length ? 'face' : roll < 0.8 ? 'mono' : roll < 0.92 ? 'tint' : 'person';
     const grad =
-      kind === 'mono' || kind === 'person' ? GREY : kind === 'tint' ? TINTS[Math.floor(rnd() * TINTS.length)] : PASTELS[Math.floor(rnd() * PASTELS.length)];
+      kind === 'mono' || kind === 'person' ? GREY : kind === 'tint' ? TINTS[Math.floor(rnd() * TINTS.length)] : PASTELS[0];
     const label =
-      kind === 'emoji'
-        ? EMOJIS[Math.floor(rnd() * EMOJIS.length)]
+      kind === 'face'
+        ? FACES[faceAt++ % FACES.length]
         : LETTERS[Math.floor(rnd() * LETTERS.length)] + (rnd() < 0.8 ? LETTERS[Math.floor(rnd() * LETTERS.length)] : '');
     out.push({
       dir: [ring * Math.cos(phi), y, ring * Math.sin(phi)],
@@ -115,6 +133,9 @@ const AVATARS: Avatar[] = (() => {
 function Face({ a, px }: { a: Avatar; px: number }) {
   const bg = `linear-gradient(180deg, ${a.grad[0]}, ${a.grad[1]})`;
   const base = { width: px, height: px, borderRadius: '50%', background: bg, overflow: 'hidden' as const };
+  if (a.kind === 'face') {
+    return <img src={a.label} width={px} height={px} alt="" style={{ display: 'block', width: px, height: px, borderRadius: '50%' }} />;
+  }
   if (a.kind === 'person') {
     // The iOS placeholder: a white head and shoulders on grey.
     return (
@@ -128,13 +149,7 @@ function Face({ a, px }: { a: Avatar; px: number }) {
   }
   return (
     <div style={{ ...base, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span
-        style={
-          a.kind === 'emoji'
-            ? { fontFamily: EMOJI, fontSize: px * 0.6, lineHeight: 1 }
-            : { fontFamily: ROUNDED, fontWeight: 600, fontSize: px * (a.label.length > 1 ? 0.4 : 0.46), color: '#fff', letterSpacing: '0.01em', lineHeight: 1 }
-        }
-      >
+      <span style={{ fontFamily: ROUNDED, fontWeight: 600, fontSize: px * (a.label.length > 1 ? 0.4 : 0.46), color: '#fff', letterSpacing: '0.01em', lineHeight: 1 }}>
         {a.label}
       </span>
     </div>
