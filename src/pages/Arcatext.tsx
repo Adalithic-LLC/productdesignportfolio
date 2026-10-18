@@ -174,37 +174,16 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* The name, the way into the prototype beside it, and the facts
-              of the work. What the product is, and what it was to build it,
-              are the page's job rather than its header's: the keyboards run
-              directly underneath, and the account of the role reads better in
-              "What is Arcatext?" than beside a title. */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-14">
-            {/* The project's name, and beside it the way into the interactive
-                prototype. */}
-            <div className="flex items-center gap-5 sm:gap-7">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
-                <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
-              </h1>
-              <TryItOut />
-            </div>
-
-            <div className="mt-10 lg:mt-0">
-              <dl className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <Editable as="dt" path="arcatext.hero.roleLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-                  <Editable as="dd" path="arcatext.hero.roleValue" className="text-sm text-foreground/90" />
-                </div>
-                <div>
-                  <Editable as="dt" path="arcatext.hero.platformLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-                  <Editable as="dd" path="arcatext.hero.platformValue" className="text-sm text-foreground/90" />
-                </div>
-                <div>
-                  <Editable as="dt" path="arcatext.hero.surfaceLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
-                  <Editable as="dd" path="arcatext.hero.surfaceValue" className="text-sm text-foreground/90" />
-                </div>
-              </dl>
-            </div>
+          {/* The name, and the way into the prototype beside it. Nothing
+              else: what the product is, the keyboards running directly
+              underneath say better than a sentence can, and the facts of the
+              work now sit with the product-type card in "What is Arcatext?",
+              where the account of the project is. */}
+          <div className="flex items-center gap-5 sm:gap-7">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
+              <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
+            </h1>
+            <TryItOut />
           </div>
         </div>
       </section>
@@ -274,6 +253,26 @@ export default function Arcatext() {
                   })}
                 </ItemGroup>
               </div>
+
+              {/* Role · platform · surface, under the card rather than beside
+                  the page's title: they are facts about the work, and this is
+                  where the work is being described. Stacked, because this
+                  column is a third of the page's width -- three across here
+                  would be two words a line. */}
+              <dl className="mt-6 space-y-6 border-t border-border/40 pt-6">
+                <div>
+                  <Editable as="dt" path="arcatext.hero.roleLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.roleValue" className="text-sm text-foreground/90" />
+                </div>
+                <div>
+                  <Editable as="dt" path="arcatext.hero.platformLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.platformValue" className="text-sm text-foreground/90" />
+                </div>
+                <div>
+                  <Editable as="dt" path="arcatext.hero.surfaceLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
+                  <Editable as="dd" path="arcatext.hero.surfaceValue" className="text-sm text-foreground/90" />
+                </div>
+              </dl>
             </aside>
           </div>
 
