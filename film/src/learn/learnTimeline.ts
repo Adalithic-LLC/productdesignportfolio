@@ -170,8 +170,8 @@ export const AV_GONE = AV_COLLAPSE + D.avCollapse;
 export const AV_END = AV_GONE + 0.35;
 /** Text cards, one at a time: each fades out before the next comes in. */
 export const BLOCK_LINES = [
-  'It’s great practice, but you could learn more from each message.',
-  'Let’s add contextual translations, synonyms, and a study guide built from your chats.',
+  'Now, you can learn more from each message.',
+  'With contextual translations, synonyms, and a study guide built from your chats.',
 ];
 /** A card fades out over this, ending just before the next one starts. */
 export const BLOCK_FADE = 0.5;
