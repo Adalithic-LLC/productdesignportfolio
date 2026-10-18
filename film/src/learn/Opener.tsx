@@ -17,6 +17,7 @@ import {
   AV_TYPE_TIMES,
   BLOCK_AT,
   BLOCK_LINES,
+  BLOCK_FADE,
   BLOCK_OUT,
   D,
   FRAME,
@@ -28,8 +29,22 @@ const DISPLAY = "'Inter Display', Inter, system-ui, sans-serif";
 const ROUNDED = "'SF Pro Rounded', Inter, system-ui, sans-serif";
 const ACCENT = '#7FA2FF';
 const easeInCubic = (k: number) => k * k * k;
-/** The typed line's size; Metrics carries its measured prefix widths. */
+/** The typed line: its size and the width it wraps in. It is laid out whole
+    (the untyped rest invisible), so it never reflows as it types; Metrics
+    carries the box around each typed prefix. */
 export const AV_SIZE = 76;
+export const AV_BOX_W = PORTRAIT ? 860 : 1100;
+export const AV_TEXT_STYLE = {
+  width: AV_BOX_W,
+  fontFamily: DISPLAY,
+  fontWeight: 700,
+  fontSize: AV_SIZE,
+  lineHeight: 1.15,
+  letterSpacing: '-0.02em',
+  textAlign: 'center',
+  textWrap: 'balance',
+  whiteSpace: 'normal',
+} as const;
 
 // ── The avatars ──
 
@@ -187,7 +202,10 @@ const BASE = PORTRAIT ? 92 : 88;
 const PAD_X = 34;
 const PAD_Y = 30;
 
-export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
+/** [left, right, top, bottom] of the typed text, from the line box's centre. */
+export type Box = [number, number, number, number];
+
+export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
   if (t >= AV_END) return null;
   const cx = STAGE.cx;
   const cy = PORTRAIT ? STAGE.cy : FRAME.h / 2;
@@ -198,15 +216,19 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
   const pitch = -0.3 + 0.06 * Math.sin(0.35 * t);
   const [cyw, syw, cp, sp] = [Math.cos(yaw), Math.sin(yaw), Math.cos(pitch), Math.sin(pitch)];
 
-  // The clearing: an ellipse around the typed line, sized to what is typed
+  // The clearing: an ellipse around the typed text, sized to what is typed
   // a moment ahead, so the room opens just before each letter needs it.
-  const width = (tt: number) => widths[countAt(AV_TYPE_TIMES, tt)] ?? 0;
-  let w = 0;
-  for (let j = 0; j < 8; j++) w += width(t + 0.1 - (0.24 * j) / 8) / 8;
+  const box = [0, 0, 0, 0];
+  for (let j = 0; j < 8; j++) {
+    const b = boxes[countAt(AV_TYPE_TIMES, t + 0.1 - (0.24 * j) / 8)] ?? boxes[0];
+    for (let q = 0; q < 4; q++) box[q] += b[q] / 8;
+  }
   const open = easeOutCubic(clamp01((t - (AV_TYPE_TIMES[0] - 0.45)) / 0.5));
   const shrink = 1 - easeInCubic(cAll);
-  const ax = (w / 2 + PAD_X) * shrink;
-  const ay = ((AV_SIZE * 1.15) / 2 + PAD_Y) * shrink;
+  const ecx = ((box[0] + box[1]) / 2) * shrink;
+  const ecy = ((box[2] + box[3]) / 2) * shrink;
+  const ax = ((box[1] - box[0]) / 2 + PAD_X) * shrink;
+  const ay = ((box[3] - box[2]) / 2 + PAD_Y) * shrink;
 
   type Placed = { k: number; a: Avatar; x: number; y: number; z: number; px: number; o: number; depth: number };
   const placed: Placed[] = [];
@@ -228,14 +250,15 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
     if (open > 0 && ax > 0) {
       const ex = ax + px * 0.5;
       const ey = ay + px * 0.5;
-      const d = Math.hypot(sx / ex, sy / ey);
+      const [qx, qy] = [sx - ecx, sy - ecy];
+      const d = Math.hypot(qx / ex, qy / ey);
       const d2 = Math.sqrt(d * d + open * open);
       if (d > 1e-4) {
-        sx *= d2 / d;
-        sy *= d2 / d;
+        sx = ecx + qx * (d2 / d);
+        sy = ecy + qy * (d2 / d);
       } else {
-        sx = Math.cos(a.phase) * ex * d2;
-        sy = Math.sin(a.phase) * ey * d2;
+        sx = ecx + Math.cos(a.phase) * ex * d2;
+        sy = ecy + Math.sin(a.phase) * ey * d2;
       }
     }
     const depth = clamp01((z / R + 1) / 2);
@@ -286,23 +309,23 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
       {/* The typed line, centred, with its caret. */}
       {t >= AV_TYPE_TIMES[0] - 0.4 && textO > 0 && (
         <div
-          className="absolute whitespace-pre"
+          className="absolute"
           style={{
+            ...AV_TEXT_STYLE,
             left: 0,
             top: 0,
             transform: `translate(-50%, -50%) scale(${textScale})`,
-            fontFamily: DISPLAY,
-            fontWeight: 700,
-            fontSize: AV_SIZE,
-            lineHeight: 1.15,
-            letterSpacing: '-0.02em',
             color: '#fff',
             opacity: textO,
             textShadow: '0 2px 24px rgba(0,0,0,0.6)',
           }}
         >
           {AV_TEXT.slice(0, n)}
-          <span style={{ display: 'inline-block', width: 5, height: AV_SIZE * 0.9, marginLeft: 4, verticalAlign: '-0.1em', background: ACCENT, borderRadius: 2, opacity: caretOn && n < AV_TEXT.length + 1 ? 1 : 0 }} />
+          {/* The caret takes no room, so the line never shifts under it. */}
+          <span style={{ position: 'relative', display: 'inline-block', width: 0, height: '1em', verticalAlign: '-0.12em' }}>
+            <span style={{ position: 'absolute', left: 3, top: '0.05em', width: 5, height: '0.9em', background: ACCENT, borderRadius: 2, opacity: caretOn ? 1 : 0 }} />
+          </span>
+          <span style={{ color: 'transparent', textShadow: 'none' }}>{AV_TEXT.slice(n)}</span>
         </div>
       )}
       {front.map(face)}
@@ -343,39 +366,47 @@ export function AvatarOpener({ t, widths }: { t: number; widths: number[] }) {
 
 // ── The text block ──
 
-const BLOCK_ACCENT = ['language learning system', 'Practical and self-guided,'];
+const BLOCK_ACCENT = ['learn more from each text', 'contextual translations, synonyms, and a study guide'];
 
 export function TextBlock({ t }: { t: number }) {
   if (t < BLOCK_AT[0] - 0.05 || t > BLOCK_OUT + D.titleOut) return null;
-  const out = span(t, BLOCK_OUT, BLOCK_OUT + D.titleOut, (x) => x);
+  const last = BLOCK_LINES.length - 1;
+  const re = new RegExp(`(${BLOCK_ACCENT.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
   return (
-    <div
-      className="absolute"
-      style={{ left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: PORTRAIT ? STAGE.cy : FRAME.h / 2, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 34, fontFamily: DISPLAY, fontWeight: 700, fontSize: 66, lineHeight: 1.1, letterSpacing: '-0.02em', textWrap: 'balance' }}>
-        {BLOCK_LINES.map((line, i) => {
-          const k = span(t, BLOCK_AT[i], BLOCK_AT[i] + 0.6, easeOutCubic);
-          const re = new RegExp(`(${BLOCK_ACCENT.map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
-          return (
-            <div
-              key={i}
-              style={{
-                opacity: k,
-                transform: `translateY(${(1 - k) * 24}px)`,
-                filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined,
-                color: i === 1 ? 'rgba(235,235,245,0.6)' : '#fff',
-              }}
-            >
-              {line.split(re).map((x, j) => {
-                // Hyphenated words never break at the hyphen.
-                const body = x.split(/(\S+-\S+)/).map((y, m) => (/-/.test(y) ? <span key={m} style={{ whiteSpace: 'nowrap' }}>{y}</span> : y));
-                return BLOCK_ACCENT.includes(x) ? <span key={j} style={{ color: ACCENT }}>{body}</span> : <span key={j}>{body}</span>;
-              })}
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <>
+      {BLOCK_LINES.map((line, i) => {
+        // Each card comes in on its own and leaves before the next arrives.
+        const k = span(t, BLOCK_AT[i], BLOCK_AT[i] + 0.6, easeOutCubic);
+        const out = i < last ? span(t, BLOCK_AT[i + 1] - BLOCK_FADE - 0.1, BLOCK_AT[i + 1] - 0.1, (x) => x) : span(t, BLOCK_OUT, BLOCK_OUT + D.titleOut, (x) => x);
+        if (k <= 0 || out >= 1) return null;
+        return (
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              left: STAGE.cx - STAGE.w / 2,
+              width: STAGE.w,
+              top: PORTRAIT ? STAGE.cy : FRAME.h / 2,
+              transform: `translateY(calc(-50% + ${(1 - k) * 24 - out * 30}px))`,
+              opacity: k * (1 - out),
+              filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined,
+              fontFamily: DISPLAY,
+              fontWeight: 700,
+              fontSize: 72,
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              textWrap: 'balance',
+              color: '#fff',
+            }}
+          >
+            {line.split(re).map((x, j) => {
+              // Hyphenated words never break at the hyphen.
+              const body = x.split(/(\S+-\S+)/).map((y, m) => (/-/.test(y) ? <span key={m} style={{ whiteSpace: 'nowrap' }}>{y}</span> : y));
+              return BLOCK_ACCENT.includes(x) ? <span key={j} style={{ color: ACCENT }}>{body}</span> : <span key={j}>{body}</span>;
+            })}
+          </div>
+        );
+      })}
+    </>
   );
 }

@@ -94,9 +94,9 @@ export const D = {
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
   avHold: 1.5, // “You text a lot of people” holds in the cloud
   avCollapse: 1.0, // the cloud and the line collapse back into the point
-  blockLine1: 4.4, // the text block's first line is read
-  blockLine2: 1.4, // then “But make it...”
-  blockHold: 4.3, // the last line is read and the block holds
+  blockLine1: 4.6, // the first text card is read, fades, and the next comes in
+  blockLine2: 4.6, // and the one after (when there are more)
+  blockHold: 5.0, // the last card is read and holds
 };
 
 // ── 1. Titles ──
@@ -122,20 +122,23 @@ export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
     collapses back into the point. */
 export const AV_POINT = 0.15;
 export const AV_BURST = 0.6;
-export const AV_TEXT = 'You text a lot of people';
+export const AV_TEXT = 'Have you tried texting to learn a language?';
 export const AV_TYPE_TIMES = typeTimes(AV_TEXT, AV_BURST + 1.3, 0.062, 17);
 export const AV_COLLAPSE = AV_TYPE_TIMES[AV_TYPE_TIMES.length - 1] + D.avHold;
 /** Everything is back in the point; it winks out at AV_END. */
 export const AV_GONE = AV_COLLAPSE + D.avCollapse;
 export const AV_END = AV_GONE + 0.35;
+/** Text cards, one at a time: each fades out before the next comes in. */
 export const BLOCK_LINES = [
-  'Let’s use those chats and create a language learning system.',
-  'But make it...',
-  'Practical and self-guided, with some support & insights.',
+  'It’s great practice, but you could learn more from each text.',
+  'Let’s add contextual translations, synonyms, and a study guide built from your chats.',
 ];
-export const BLOCK_AT = [AV_END + 0.3];
-BLOCK_AT.push(BLOCK_AT[0] + D.blockLine1, BLOCK_AT[0] + D.blockLine1 + D.blockLine2);
-export const BLOCK_OUT = BLOCK_AT[2] + D.blockHold;
+/** A card fades out over this, ending just before the next one starts. */
+export const BLOCK_FADE = 0.5;
+const BLOCK_GAPS = [D.blockLine1, D.blockLine2];
+/** When each line of the block comes in (any number of lines). */
+export const BLOCK_AT = BLOCK_LINES.map((_, i) => AV_END + 0.3 + BLOCK_GAPS.slice(0, i).reduce((a, b) => a + b, 0));
+export const BLOCK_OUT = BLOCK_AT[BLOCK_AT.length - 1] + D.blockHold;
 
 // ── 2. The phone ──
 export const WORLD_IN = OPENING ? LINE2_OUT + 0.2 : AVATARS ? BLOCK_OUT + D.titleOut + 0.2 : 0.2;
@@ -322,12 +325,12 @@ const OPENING_LINES: VoiceLine[] = [
   { key: 'line2-b', text: `${LINE2_SLOT[LINE2_SLOT.length - 1]}, ${LINE2_B.trim()}`, at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2, until: LINE2_OUT + D.titleOut, marks: [{ text: LINE2_SLOT[LINE2_SLOT.length - 1], at: LINE2_LANDS[LINE2_LANDS.length - 1] - D.slotRoll / 2 }, { text: LINE2_B.trim(), at: LINE2_B_TIMES[0] }] },
 ];
 const AVATAR_LINES: VoiceLine[] = [
-  { key: 'you-text', text: `${AV_TEXT}.`, at: AV_TYPE_TIMES[0], until: AV_GONE, marks: [{ text: AV_TEXT, at: AV_TYPE_TIMES[0] }] },
+  { key: 'you-text', text: /[.?!]$/.test(AV_TEXT) ? AV_TEXT : `${AV_TEXT}.`, at: AV_TYPE_TIMES[0], until: AV_GONE, marks: [{ text: AV_TEXT, at: AV_TYPE_TIMES[0] }] },
   ...BLOCK_LINES.map((x, i) => ({
     key: `block-${i + 1}`,
     text: spoken(x).replace(' & ', ' and '),
     at: BLOCK_AT[i],
-    until: i < 2 ? BLOCK_AT[i + 1] : BLOCK_OUT + D.titleOut,
+    until: i < BLOCK_LINES.length - 1 ? BLOCK_AT[i + 1] - BLOCK_FADE - 0.1 : BLOCK_OUT + D.titleOut,
     marks: [{ text: spoken(x), at: BLOCK_AT[i] }],
   })),
 ];
@@ -420,11 +423,14 @@ export function scenes() {
       ]] },
     { id: 'block', name: `Text: ${BLOCK_LINES[0]}`, start: AV_END,
       texts: [{ key: 'block', label: 'Text block', text: BLOCK_LINES.join(' / ') }],
-      flows: [[
-        { text: BLOCK_LINES[0] }, inline('block-1', 'after the first line', D.blockLine1, BLOCK_AT[0]),
-        { text: BLOCK_LINES[1] }, inline('block-2', `after “${BLOCK_LINES[1]}”`, D.blockLine2, BLOCK_AT[1]),
-        { text: BLOCK_LINES[2] }, inline('block-hold', 'the block holds', D.blockHold, BLOCK_AT[2], 'hold', 'Hold'),
-      ]] },
+      flows: [
+        BLOCK_LINES.flatMap((x, i) => [
+          { text: x },
+          i < BLOCK_LINES.length - 1
+            ? inline(`block-${i + 1}`, `after “${x}”`, BLOCK_GAPS[i], BLOCK_AT[i])
+            : inline('block-hold', 'the block holds', D.blockHold, BLOCK_AT[i], 'hold', 'Hold'),
+        ]),
+      ] },
   ];
   const list = [
     ...(OPENING ? titles : AVATARS ? avatars : []),

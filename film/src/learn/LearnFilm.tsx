@@ -6,7 +6,7 @@ import { StudyPanel, VIEW_H } from '@/components/ArcatextViews';
 import { Keyboard, GlobeRow, Touch } from '../Phone';
 import { Glow, syncAnimations } from '../Film';
 import SplashLogo from '../SplashLogo';
-import { AV_SIZE, AvatarOpener, TextBlock, preloadAvatars } from './Opener';
+import { AV_SIZE, AV_TEXT_STYLE, AvatarOpener, TextBlock, preloadAvatars, type Box } from './Opener';
 import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../ease';
 import {
   BUBBLES,
@@ -95,8 +95,8 @@ type Metrics = {
   /** The typed line's reel words, at its size. */
   slotW: number[];
   langW: number[];
-  /** Arcatext 02's typed line: the width of each typed prefix. */
-  avW: number[];
+  /** Arcatext 02's typed line: the box around each typed prefix. */
+  avBox: Box[];
 };
 
 function measure(root: HTMLElement): Metrics {
@@ -139,11 +139,31 @@ function measure(root: HTMLElement): Metrics {
   const slotW = LINE2_SLOT.map((x) => ((word.textContent = x), word.offsetWidth));
   Object.assign(word.style, { fontSize: '46px', fontWeight: '600', letterSpacing: '-0.015em' });
   const langW = LANGS.map((x) => ((word.textContent = x), word.offsetWidth));
-  Object.assign(word.style, { fontSize: `${AV_SIZE}px`, fontWeight: '700', letterSpacing: '-0.02em', whiteSpace: 'pre' });
-  const avW = [...AV_TEXT].map((_, k) => ((word.textContent = AV_TEXT.slice(0, k)), word.getBoundingClientRect().width));
-  avW.push(((word.textContent = AV_TEXT), word.getBoundingClientRect().width));
   word.remove();
-  return { bubbles, caretX, caretLine, esLines, slotW, langW, avW };
+  // The typed line laid out whole, as the film draws it; each prefix's box
+  // grows by its last character's rect.
+  const av = probe({});
+  Object.assign(av.style, { ...AV_TEXT_STYLE, width: `${AV_TEXT_STYLE.width}px`, fontSize: `${AV_SIZE}px`, fontWeight: '700' });
+  av.textContent = AV_TEXT;
+  const ab = av.getBoundingClientRect();
+  const [mx, my] = [ab.left + ab.width / 2, ab.top + ab.height / 2];
+  const charBox = (i: number) => {
+    const r = document.createRange();
+    r.setStart(av.firstChild!, i);
+    r.setEnd(av.firstChild!, i + 1);
+    const rects = r.getClientRects();
+    const x = rects[rects.length - 1];
+    return [x.left - mx, x.right - mx, x.top - my, x.bottom - my] as Box;
+  };
+  const first = charBox(0);
+  const avBox: Box[] = [[first[0], first[0], first[2], first[3]]];
+  for (let i = 0; i < AV_TEXT.length; i++) {
+    const p = avBox[i];
+    const c = charBox(i);
+    avBox.push(AV_TEXT[i] === ' ' ? p : [Math.min(p[0], c[0]), Math.max(p[1], c[1]), Math.min(p[2], c[2]), Math.max(p[3], c[3])]);
+  }
+  av.remove();
+  return { bubbles, caretX, caretLine, esLines, slotW, langW, avBox };
 }
 
 // ── The phone world's geometry, from the keyboard's bottom edge up ──
@@ -690,7 +710,7 @@ export default function LearnFilm() {
       )}
       {met && AVATARS && t < WORLD_IN && (
         <>
-          <AvatarOpener t={t} widths={met.avW} />
+          <AvatarOpener t={t} boxes={met.avBox} />
           <TextBlock t={t} />
         </>
       )}
