@@ -247,11 +247,14 @@ c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 if (D.type1Len) ({ times: KNOW_TIMES, end: c } = fitTimes(FIELD_KNOW, TYPE1_START, D.type1Len, 11));
 /** Back up to the chat for a narration bubble (the keyboard goes down with
     it, then comes back up); returns its index. */
+/** Arcatext 02 keeps the keyboard up through the whole exchange once it is
+    up: the later bubbles appear above the field without it going down. */
+const KEEP_KB = AVATARS;
 const askBubble = (text: string, key: string, wait = D.kbWait, read = D.readBubble) => {
-  KB.push([c, false]);
+  if (!KEEP_KB) KB.push([c, false]);
   c = camMove(c, D.pan, { kind: 'bubble', i: BUBBLES.length, scale: 3.2 });
   BUBBLES.push({ text, who: 'them', at: c - 0.3, key, wait });
-  KB.push([c - 0.3 + wait, true]);
+  if (!KEEP_KB) KB.push([c - 0.3 + wait, true]);
   c = Math.max(c + read, c - 0.3 + wait + D.kbSlide + 0.45);
   return BUBBLES.length - 1;
 };
