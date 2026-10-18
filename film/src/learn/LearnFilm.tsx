@@ -793,11 +793,25 @@ function Ending({ t, met }: { t: number; met: Metrics }) {
         >
           {/* Left-aligned, as the film's other lines, in a block centered at its widest. */}
           <div>
-            <div className="whitespace-nowrap">
-              <span className="inline-block" style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</span>{' '}
-              <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>
-            </div>
-            <div style={line(END_CHUNK_AT[2])}>{END_CHUNKS[2]}</div>
+            {/* A long first chunk (Arcatext 02) takes the first line alone;
+                the next two share the second. */}
+            {END_CHUNKS[0].length > 12 ? (
+              <>
+                <div className="whitespace-nowrap" style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</div>
+                <div className="whitespace-nowrap">
+                  <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>{' '}
+                  <span className="inline-block" style={line(END_CHUNK_AT[2])}>{END_CHUNKS[2]}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="whitespace-nowrap">
+                  <span className="inline-block" style={line(END_CHUNK_AT[0])}>{END_CHUNKS[0]}</span>{' '}
+                  <span className="inline-block" style={line(END_CHUNK_AT[1])}>{END_CHUNKS[1]}</span>
+                </div>
+                <div style={line(END_CHUNK_AT[2])}>{END_CHUNKS[2]}</div>
+              </>
+            )}
             <div className="whitespace-nowrap" style={line(END_CHUNK_AT[3])}>
               {END_CHUNKS[3]} <Reel met={met} local={local} />
             </div>

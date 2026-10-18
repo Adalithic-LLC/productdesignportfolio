@@ -80,6 +80,7 @@ export const D = {
   noteChunk: 0.75, // between the study-guide line's chunks
   noteHold: 1.6, // the full study-guide line holds
   endChunk: 1.0, // between the end card's chunks
+  endChunk0: 1.0, // after its first chunk (Arcatext 02's is a longer line)
   langHold: 0.5, // each of the first three languages holds
   langFlick: 1.5, // then a flick spins through the rest and coasts onto the last
   studyPause: 2.0, // the open Study Guide is seen still, then
@@ -108,7 +109,7 @@ export const D = {
   rewordLen: 0, // Arcatext 02: the whole Reword step, glide to tap to the Spanish read, when set
 };
 /** Arcatext 02's own retimes (Cut Room notes on its cut); 01 keeps the above. */
-if (AVATARS) Object.assign(D, { kbWait1: 1.5, kbWaitTry: 1.0, readTry: 1.5, kbWait3: 1.0, addLen: 2.0, rewordLen: 2.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
+if (AVATARS) Object.assign(D, { endChunk0: 2.4, kbWait1: 1.5, kbWaitTry: 1.0, readTry: 1.5, kbWait3: 1.0, addLen: 2.0, rewordLen: 2.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
 
 /** Times for `text` typed so its step lasts `len` from `step`: typing starts
     `lead` in (the bubble fading, the camera moving) and the step ends `tail`
@@ -372,8 +373,8 @@ export const STUDY_ROWS_DATA = [
 export const ENDING = WORLD_OUT + D.endFade;
 /** The end card's line, in chunks: the first two share a line, then one
     line each for the third and for the last (with the reel). */
-export const END_CHUNKS = ['Type,', 'make mistakes,', 'get corrections,', 'and learn'];
-export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.endLead + i * D.endChunk);
+export const END_CHUNKS = [AVATARS ? 'Use Arcatext to chat in any app,' : 'Type,', 'make mistakes,', 'get corrections,', 'and learn'];
+export const END_CHUNK_AT = END_CHUNKS.map((_, i) => D.endLead + (i ? D.endChunk0 + (i - 1) * D.endChunk : 0));
 /** Every language Reword offers (Arcatext/Data/LanguageData.swift on main,
     the top-level names with their parentheticals dropped). */
 const REWORD_LANGS = [
@@ -513,7 +514,7 @@ export function scenes() {
   const endFlow = [
     inline('end-lead', 'before the line', D.endLead, ENDING),
     ...END_CHUNKS.flatMap((x, i) =>
-      i < END_CHUNKS.length - 1 ? [{ text: x }, inline(`end-${i}`, `after “${x}”`, D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
+      i < END_CHUNKS.length - 1 ? [{ text: x }, inline(i === 0 ? 'end-0' : `end-${i}`, `after “${x}”`, i === 0 ? D.endChunk0 : D.endChunk, ENDING + END_CHUNK_AT[i])] : [{ text: x }]),
     ...LANGS.slice(0, LANG_SHOWN).flatMap((w, i) => [
       { word: w },
       inline(`lang-each-${i}`, `on “${w}”`, D.langHold, ENDING + LANG_LANDS[i], 'hold', 'Hold'),
