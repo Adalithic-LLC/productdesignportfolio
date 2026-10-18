@@ -107,6 +107,9 @@ export const D = {
   kbWait3: 2.0, // “Or something you don’t know...” shows alone before the keyboard comes up
   addLen: 0, // Arcatext 02: the whole “, how was it?” step, when set (0: natural pace)
   rewordLen: 0, // Arcatext 02: the whole Reword step, glide to tap to the Spanish read, when set
+  headLead: 1.6, // Arcatext 02: “Translate, then send it.” is read before the Reword tap
+  headRead: 0.9, // the Spanish is seen before the send
+  headSent: 0.8, // the sent message holds before Check
 };
 /** Arcatext 02's own retimes (Cut Room notes on its cut); 01 keeps the above. */
 if (AVATARS) Object.assign(D, { endChunk0: 2.4, kbWait1: 1.5, kbWaitTry: 1.0, readTry: 1.5, kbWait3: 1.0, addLen: 2.0, rewordLen: 2.0, type1Len: 2.0, tryLen: 2.0, langHold: 0.5, langFlick: 1.0, finalHold: 1.0, endHold: 1.0 });
@@ -200,6 +203,8 @@ export type View =
   | { kind: 'study'; scale: number }
   /** The open Study Guide alone, set below (9:16) or beside (16:9) the note. */
   | { kind: 'studyNote'; scale: number }
+  /** The field and keyboard, set beside a headline as the Study Guide is. */
+  | { kind: 'fieldNote'; scale: number }
   | { kind: 'whole'; scale: number }
   /** One still shot (Arcatext 02's bubbles and typing): `h` up from the
       keyboard's bottom edge, scaled so `span` points of height and the whole
@@ -289,15 +294,34 @@ c = camMove(c, D.pan, { kind: 'typing', until: ADD_TIMES[ADD_TIMES.length - 1] }
 BUBBLES[DONT_KNOW].hide = addFit ? TYPE2_START : c;
 c = addFit ? addFit.end : ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 export const REWORD_START = c;
-// A short Reword (Arcatext 02): a quicker glide and tap, and the Spanish lands
-// while the camera pulls back rather than after.
-const RW = D.rewordLen ? { glide: 0.5, tap: 0.25, back: 0.6, swap: 0.15 } : { glide: D.glide, tap: D.tapAfter, back: D.glide, swap: 0.1 + D.glide + 0.05 };
-c = move(c, RW.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
-export const REWORD_TAP = c + RW.tap;
-// The camera pulls back to the field; the reword plays once it is there.
-move(REWORD_TAP + 0.1, RW.back, { kind: 'field', scale: 2.2 });
-export const REWORD_SWAP = REWORD_TAP + RW.swap;
-c = D.rewordLen ? REWORD_START + D.rewordLen : REWORD_SWAP + D.readEs;
+/** Arcatext 02: a headline comes in just before the Reword tap, the phone
+    set beside it (as for Check and the Study Guide); the Spanish lands and is
+    sent at once, a quick send before Check. */
+export const HEAD = AVATARS ? 'Translate, then send it.' : '';
+let rwTap: number;
+let rwSwap: number;
+let quickTap = Infinity;
+if (HEAD) {
+  move(c, 0.9, { kind: 'fieldNote', scale: 1.9 });
+  rwTap = c + D.headLead;
+  rwSwap = rwTap + 0.15;
+  quickTap = rwSwap + D.headRead;
+  c = quickTap + 0.17 + D.headSent;
+} else {
+  // A short Reword: a quicker glide and tap, and the Spanish lands while the
+  // camera pulls back rather than after.
+  const RW = D.rewordLen ? { glide: 0.5, tap: 0.25, back: 0.6, swap: 0.15 } : { glide: D.glide, tap: D.tapAfter, back: D.glide, swap: 0.1 + D.glide + 0.05 };
+  c = move(c, RW.glide, { kind: 'button', which: 'reword', scale: TYPE_ZOOM });
+  rwTap = c + RW.tap;
+  // The camera pulls back to the field; the reword plays once it is there.
+  move(rwTap + 0.1, RW.back, { kind: 'field', scale: 2.2 });
+  rwSwap = rwTap + RW.swap;
+  c = D.rewordLen ? REWORD_START + D.rewordLen : rwSwap + D.readEs;
+}
+export const REWORD_TAP = rwTap;
+export const REWORD_SWAP = rwSwap;
+export const HEAD_AT = REWORD_START + 0.3;
+export const HEAD_OUT = c;
 /** Arcatext 02, before sending: the Check page, set beside its text cards
     as the Study Guide is later. The chat, field and bottom row fade, the
     keyboard opens into Check (already loaded) with the reverse translation
@@ -314,9 +338,11 @@ if (CHECK) {
   move(CHECK_IN, 0.9, { kind: 'studyNote', scale: 1.9 });
   c = SEND ? move(CHECK_OUT, 0.9, { kind: 'field', scale: 2.2 }) + 0.3 : CHECK_OUT;
 }
-// Send the Spanish from where the camera already is, on the field.
-export const SEND_TAP = SEND ? c + 0.35 : Infinity;
-export const SEND_AT = SEND ? SEND_TAP + 0.17 : Infinity;
+// Send the Spanish from where the camera already is, on the field (or, in
+// Arcatext 02, the quick send under the headline).
+export const SEND_TAP = HEAD ? quickTap : SEND ? c + 0.35 : Infinity;
+export const SEND_AT = SEND_TAP + 0.17;
+if (HEAD) BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
 if (SEND) {
   BUBBLES.push({ text: FIELD_ES, who: 'me', at: SEND_AT });
   c = SEND_AT + D.sentHold;
@@ -463,6 +489,7 @@ const AVATAR_LINES: VoiceLine[] = [
 export const VOICE_LINES: VoiceLine[] = [
   ...(OPENING ? OPENING_LINES : AVATARS ? AVATAR_LINES : []),
   ...BUBBLE_LINES.map((b, i) => ({ key: b.key ?? `bubble-${i + 1}`, text: spoken(b.text), at: b.at, until: (b.hide ?? b.at + 2) + D.bubbleOut, marks: [{ text: spoken(b.text), at: b.at }] })),
+  ...(HEAD ? [{ key: 'head', text: HEAD, at: HEAD_AT, until: HEAD_OUT + 0.3, marks: [{ text: HEAD, at: HEAD_AT }] }] : []),
   ...CHECK_LINES,
   { key: 'note', text: NOTE_CHUNKS.join(' ').replace('If you miss a word we', 'If you miss a word, we'), at: NOTE_AT[0], until: NOTE_OUT + D.noteFade, marks: NOTE_CHUNKS.map((x, i) => ({ text: x, at: NOTE_AT[i] })) },
   { key: 'end', text: `${END_CHUNKS.join(' ')} ${LANGS[0]},`, at: ENDING + END_CHUNK_AT[0], until: ENDING + LANG_LANDS[1] - LANG_ROLL / 2, marks: [...END_CHUNKS.map((x, i) => ({ text: x, at: ENDING + END_CHUNK_AT[i] })), { text: LANGS[0], at: ENDING + LANG_LANDS[0] }] },
@@ -573,7 +600,7 @@ export function scenes() {
       ? [{ id: 'typeTry', name: `Type: …${FIELD_TRY}`, start: TRY_START, texts: [{ key: 'try', label: 'Typed (try)', text: FIELD_TRY.trim() }], flows: [[typed(FIELD_TRY, TRY_TIMES)]] }]
       : []),
     { id: 'type2', name: `Type: …${FIELD_ADD}`, start: TYPE2_START, texts: [{ key: 'add', label: 'Typed (added)', text: FIELD_ADD }], flows: [[typed(FIELD_ADD, ADD_TIMES)]] },
-    { id: 'reword', name: 'Reword to Spanish', start: REWORD_START, texts: [{ key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
+    { id: 'reword', name: HEAD ? `Text: ${HEAD}` : 'Reword to Spanish', start: REWORD_START, texts: [...(HEAD ? [{ key: 'head', label: 'Headline', text: HEAD }] : []), { key: 'es', label: 'Reworded (Spanish)', text: FIELD_ES }] },
     ...(CHECK
       ? [{ id: 'check', name: `Check: ${CHECK_CARDS[0]}`, start: CHECK_IN,
           texts: [{ key: 'check', label: 'Text cards', text: CHECK_CARDS.join(' / ') }],
@@ -600,11 +627,11 @@ export function cues() {
       ...(OPENING ? [...LINE2_A_TIMES, ...LINE2_SLOT_TIMES, ...LINE2_B_TIMES] : []).map((t) => ({ t, space: true })),
       ...(AVATARS ? AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })) : []),
     ],
-    taps: SEND ? [REWORD_TAP, SEND_TAP] : [REWORD_TAP],
+    taps: Number.isFinite(SEND_TAP) ? [REWORD_TAP, SEND_TAP] : [REWORD_TAP],
     reword: REWORD_SWAP,
     reveal: null,
-    send: SEND ? SEND_AT : null,
-    sends: SEND ? [SEND_AT] : [],
+    send: Number.isFinite(SEND_AT) ? SEND_AT : null,
+    sends: Number.isFinite(SEND_AT) ? [SEND_AT] : [],
     swipes: [],
     words: [...(OPENING ? [...LINE2_LANDS, ...CHUNK_AT] : AVATARS ? BLOCK_AT : []), ...(CHECK ? CHECK_AT : []), ...NOTE_AT],
     ticks: LANG_PASS.map((x) => ENDING + x),

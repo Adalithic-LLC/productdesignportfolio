@@ -46,6 +46,9 @@ import {
   CHECK_CARDS,
   CHECK_IN,
   CHECK_OUT,
+  HEAD,
+  HEAD_AT,
+  HEAD_OUT,
   SEND,
   NOTE_WITH_STUDY,
   PORTRAIT,
@@ -325,6 +328,13 @@ function resolve(v: View, met: Metrics, t: number) {
       const centre = (lerp(KEYS_H, VIEW_H, g.grow) + GLOBE_H * (1 - soloLevel(t))) / 2;
       return { x: COL / 2 - STUDY_NOTE_OFF.x / se, h: centre + STUDY_NOTE_OFF.y / se, s: v.scale };
     }
+    case 'fieldNote': {
+      // The field, the keyboard and room for the sent message above them,
+      // set off from the framing point as the Study Guide is.
+      const se = v.scale * CAM_K;
+      const centre = (KEYS_H + GLOBE_H + 140) / 2;
+      return { x: COL / 2 - STUDY_NOTE_OFF.x / se, h: centre + STUDY_NOTE_OFF.y / se, s: v.scale };
+    }
     case 'whole': {
       const s = Math.min(v.scale, 1250 / (g.convTop + 30));
       return { x: COL / 2, h: g.convTop / 2, s };
@@ -418,6 +428,24 @@ function Note({ t }: { t: number }) {
             </span>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/** Arcatext 02: the headline over the Reword and the quick send. */
+function HeadCard({ t }: { t: number }) {
+  if (!HEAD || t < HEAD_AT || t > HEAD_OUT + 0.45) return null;
+  const place = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 420 } : { left: 150, width: 720, top: FRAME.h / 2 };
+  const k = span(t, HEAD_AT, HEAD_AT + 0.55, easeOutCubic);
+  const out = span(t, HEAD_OUT, HEAD_OUT + 0.4, (x) => x);
+  const [a, b] = HEAD.split('Translate');
+  return (
+    <div className="absolute" style={{ ...place, transform: `translateY(calc(-50% + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
+      <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 76, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>
+        {a}
+        <span style={{ color: ACCENT }}>Translate</span>
+        {b}
       </div>
     </div>
   );
@@ -908,6 +936,7 @@ export default function LearnFilm() {
       {met && t >= WORLD_IN && t < ENDING && <World met={met} t={t} />}
       <Note t={t} />
       <CheckCards t={t} />
+      <HeadCard t={t} />
       {met && t >= WORLD_OUT && <Ending t={t} met={met} />}
     </div>
   );
