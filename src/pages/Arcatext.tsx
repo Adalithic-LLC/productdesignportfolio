@@ -165,7 +165,7 @@ export default function Arcatext() {
       {/* The page header: what this is, whose it is, and the facts of it.
           First on the page, because everything under it -- the case studies
           and the keyboards -- is the product itself. */}
-      <section className="relative pt-28 pb-12 sm:pt-32 sm:pb-16 overflow-hidden">
+      <section className="relative pt-28 pb-10 sm:pt-32 sm:pb-12 overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-60"
           style={{
@@ -174,64 +174,23 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Above the grid rather than above the title inside it. The role
-              column spans both of the grid's rows and so starts level with
-              whatever begins row one -- put the eyebrow there and the prose
-              would align to it instead of to the title. */}
-          <Editable
-            as="h2"
-            path="arcatext.hero.eyebrow"
-            className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-          />
-
-          {/* Two rows: the title has row 1 of the left column to itself and the
-              subtitle follows in row 2, while the role column spans both so it
-              starts level with the title. Doing it with rows rather than a
-              fixed offset keeps them aligned as the title resizes.
-
-              Row 1 is sized to the title and row 2 takes the rest. Left to
-              auto/auto, the taller spanning role column has its excess height
-              shared between the two rows, which pads row 1 and drops the
-              subtitle well clear of the title; giving row 2 the free space
-              sends all of it there instead. */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-14">
-            {/* Row 1, left: the project's name, and beside it the way into
-                the interactive prototype. */}
-            <div className="mb-6 flex items-center gap-5 sm:gap-7 lg:col-start-1 lg:row-start-1">
+          {/* The name, the way into the prototype beside it, and the facts
+              of the work. What the product is, and what it was to build it,
+              are the page's job rather than its header's: the keyboards run
+              directly underneath, and the account of the role reads better in
+              "What is Arcatext?" than beside a title. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-14">
+            {/* The project's name, and beside it the way into the interactive
+                prototype. */}
+            <div className="flex items-center gap-5 sm:gap-7">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
                 <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
               </h1>
               <TryItOut />
             </div>
 
-            {/* Row 2, left: what the product is. */}
-            <div className="lg:col-start-1 lg:row-start-2">
-              <Editable
-                as="p"
-                path="arcatext.hero.subtitle"
-                multiline
-                className="text-xl sm:text-2xl text-foreground/80 leading-snug mb-10 text-balance"
-              />
-
-              <div className="flex flex-wrap gap-2">
-                {arc.hero.typeTags.map((_, i) => (
-                  <Editable
-                    key={i}
-                    as="span"
-                    path={`arcatext.hero.typeTags.${i}`}
-                    className="px-3 py-1.5 text-xs font-medium rounded-full bg-card border border-border/50 text-foreground/80"
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Row 2, right: whose work it is, then the at-a-glance facts. */}
-            <div className="mt-12 lg:mt-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-              <Prose>
-                <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
-              </Prose>
-
-              <dl className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-border/40 pt-8">
+            <div className="mt-10 lg:mt-0">
+              <dl className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <Editable as="dt" path="arcatext.hero.roleLabel" className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 block" />
                   <Editable as="dd" path="arcatext.hero.roleValue" className="text-sm text-foreground/90" />
@@ -255,7 +214,10 @@ export default function Arcatext() {
       {/* The case studies, under the header and above the keyboards: folded
           into one card by the section nav until someone asks for them, then
           flown out into this row. See ArcatextCaseStudies. */}
-      <section className="pb-6 sm:pb-8">
+      {/* No padding of its own: closed, this has to take no room at all, or
+          the keyboards would sit a gap below the header rather than under it.
+          The spacing the open row needs is inside the part that collapses. */}
+      <section>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Below 1600px the rail does not exist, so the card that holds them
               sits here instead -- and is what they fly from. */}
@@ -269,7 +231,7 @@ export default function Arcatext() {
       {/* The keyboard in motion: a phone per view in a sideways row. It breaks
           out to the full window width so the row can run to the right edge,
           and starts on the page's content column (see ArcatextDemoRow). */}
-      <section className="pt-4 pb-12 sm:pt-6 sm:pb-16">
+      <section className="pb-12 sm:pb-16">
         <div className="mx-[calc(50%-50vw)]">
           <ArcatextDemoRow />
         </div>
@@ -287,6 +249,10 @@ export default function Arcatext() {
             <div className="lg:col-span-7 reveal">
               <Prose>
                 <Paragraphs base="arcatext.overview.intro" items={arc.overview.intro} />
+                {/* Whose work it was, which used to sit beside the title. It
+                    is an account of the project, so it belongs with the rest
+                    of the account rather than in the page header. */}
+                <Paragraphs base="arcatext.overview.role" items={arc.overview.role} />
               </Prose>
             </div>
 
@@ -311,13 +277,9 @@ export default function Arcatext() {
             </aside>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 mt-20">
-            <div className="reveal">
-              <Editable as="h3" path="arcatext.overview.originTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
-              <Prose>
-                <Paragraphs base="arcatext.overview.origin" items={arc.overview.origin} />
-              </Prose>
-            </div>
+          {/* One column now: "Origin & pivot" is gone, and a lone block in a
+              two-column grid would sit in half the width for no reason. */}
+          <div className="mt-20 max-w-3xl">
             <div className="reveal">
               <Editable as="h3" path="arcatext.overview.readingWritingTitle" className="text-xl sm:text-2xl font-semibold mb-4" />
               <Prose>

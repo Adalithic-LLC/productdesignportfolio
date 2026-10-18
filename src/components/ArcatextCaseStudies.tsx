@@ -219,7 +219,9 @@ export function CaseStudyRow({ items, open }: { items: CaseStudyItem[]; open: bo
       className={cn('overflow-hidden', !open && 'pointer-events-none')}
       style={{ maxHeight: 0 }}
     >
-      <div ref={row} className="flex flex-wrap gap-6 pb-2 pt-1">
+      {/* The row's own spacing lives in here, inside what collapses: the
+          section around it keeps none, so closed it takes no room at all. */}
+      <div ref={row} className="flex flex-wrap gap-6 pb-10 pt-2">
         {items.map(({ slug, index }, i) => (
           <a
             key={index}
