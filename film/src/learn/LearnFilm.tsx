@@ -298,6 +298,11 @@ function resolve(v: View, met: Metrics, t: number) {
       return { x: v.which === 'reword' ? Math.min(310, COL - 4 - visW / 2) : Math.max(36.5, 4 + visW / 2), h: g.block - 33, s: v.scale };
     case 'field':
       return { x: COL / 2, h: g.block + 8 + g.fieldH / 2, s: v.scale };
+    case 'fixed': {
+      // The whole row (plus, field, send) across the frame, and `span` points of height.
+      const se = Math.min((PORTRAIT ? 1000 : 1700) / COL, (PORTRAIT ? 1150 : 960) / v.span);
+      return { x: COL / 2, h: v.h, s: se / CAM_K };
+    }
     case 'bubbleField': {
       const p = bubbleAt(v.i);
       return { x: COL / 2, h: (g.block + 8 + g.fieldH / 2 + p.h) / 2, s: v.scale };

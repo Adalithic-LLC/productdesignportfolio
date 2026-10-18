@@ -199,14 +199,25 @@ export type View =
   | { kind: 'study'; scale: number }
   /** The open Study Guide alone, set below (9:16) or beside (16:9) the note. */
   | { kind: 'studyNote'; scale: number }
-  | { kind: 'whole'; scale: number };
-export const START_VIEW: View = { kind: 'bubble', i: 0, scale: 3.2 };
+  | { kind: 'whole'; scale: number }
+  /** One still shot (Arcatext 02's bubbles and typing): `h` up from the
+      keyboard's bottom edge, scaled so `span` points of height and the whole
+      text field fit. */
+  | { kind: 'fixed'; h: number; span: number };
+/** Arcatext 02 holds one still shot from the first bubble until the Reword
+    tap: the whole field, the bubbles above it and the keyboard, with no zooms
+    or pans while the keyboard goes down and up. */
+export const HOLD_CAM = AVATARS;
+export const START_VIEW: View = HOLD_CAM ? { kind: 'fixed', h: 225, span: 450 } : { kind: 'bubble', i: 0, scale: 3.2 };
 /** Camera moves: [start, end, to]. */
 export const CAMERA: [number, number, View][] = [];
 const move = (at: number, dur: number, to: View) => {
   CAMERA.push([at, at + dur, to]);
   return at + dur;
 };
+/** A move in the bubbles-and-typing stretch: Arcatext 02 keeps its still
+    shot, so only the time passes. */
+const camMove = (at: number, dur: number, to: View) => (HOLD_CAM ? at + dur : move(at, dur, to));
 export const TYPE_ZOOM = 3.6;
 
 /** The one message typed in the field: what you know, then what you want to
@@ -230,7 +241,7 @@ export const KB: [number, boolean][] = [[c + D.kbWait1, true]];
 c += D.kbWait1;
 BUBBLES[0].hide = c;
 export const TYPE1_START = c;
-c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
+c = camMove(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
 let KNOW_TIMES = typeTimes(FIELD_KNOW, Math.max(c, BUBBLES[0].hide + D.bubbleOut) + 0.1, 0.075, 11);
 c = KNOW_TIMES[KNOW_TIMES.length - 1] + D.afterType + 0.2;
 if (D.type1Len) ({ times: KNOW_TIMES, end: c } = fitTimes(FIELD_KNOW, TYPE1_START, D.type1Len, 11));
@@ -238,7 +249,7 @@ if (D.type1Len) ({ times: KNOW_TIMES, end: c } = fitTimes(FIELD_KNOW, TYPE1_STAR
     it, then comes back up); returns its index. */
 const askBubble = (text: string, key: string, wait = D.kbWait, read = D.readBubble) => {
   KB.push([c, false]);
-  c = move(c, D.pan, { kind: 'bubble', i: BUBBLES.length, scale: 3.2 });
+  c = camMove(c, D.pan, { kind: 'bubble', i: BUBBLES.length, scale: 3.2 });
   BUBBLES.push({ text, who: 'them', at: c - 0.3, key, wait });
   KB.push([c - 0.3 + wait, true]);
   c = Math.max(c + read, c - 0.3 + wait + D.kbSlide + 0.45);
@@ -249,7 +260,7 @@ export let TRY_START = 0;
 if (FIELD_TRY) {
   const i = askBubble('Something you want to try...', 'bubble-try', D.kbWaitTry, D.readTry);
   TRY_START = c;
-  c = move(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
+  c = camMove(c, D.pan, { kind: 'caret', scale: TYPE_ZOOM });
   BUBBLES[i].hide = c;
   const unsure = { [FIELD_TRY.indexOf('semaña') - 1]: 0.35 };
   TRY_TIMES = typeTimes(FIELD_TRY, c + D.bubbleOut + 0.1, 0.085, 7, unsure);
@@ -270,7 +281,7 @@ let ADD_TIMES = typeTimes(FIELD_ADD, ADD_START + D.bubbleOut + 0.1, 0.065, 13);
 // bubble fades as the camera leaves it.
 const addFit = D.addLen ? fitTimes(FIELD_ADD, c, D.addLen, 13, {}, 0.55, 0.3, 0) : null;
 if (addFit) ADD_TIMES = addFit.times;
-c = move(c, D.pan, { kind: 'typing', until: ADD_TIMES[ADD_TIMES.length - 1] });
+c = camMove(c, D.pan, { kind: 'typing', until: ADD_TIMES[ADD_TIMES.length - 1] });
 BUBBLES[DONT_KNOW].hide = addFit ? TYPE2_START : c;
 c = addFit ? addFit.end : ADD_TIMES[ADD_TIMES.length - 1] + D.afterType;
 export const REWORD_START = c;
