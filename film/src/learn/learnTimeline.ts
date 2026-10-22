@@ -32,7 +32,10 @@ export const STAGE = PORTRAIT ? { cx: 500, cy: 800, w: 860 } : { cx: 960, cy: 54
     cloud and text block (`?cut=a02`). Everything after keeps its order and
     spacing. */
 const CUT = params.get('cut');
-export const OPEN_KIND: 'titles' | 'none' | 'avatars' = CUT === 'noopen' ? 'none' : CUT === 'a02' ? 'avatars' : 'titles';
+/** Arcatext 03 (`?cut=a03`) reuses Arcatext 02's avatar-cloud opener with its
+    own question, then plays its own film (a03/). */
+export const A03 = CUT === 'a03';
+export const OPEN_KIND: 'titles' | 'none' | 'avatars' = CUT === 'noopen' ? 'none' : CUT === 'a02' || A03 ? 'avatars' : 'titles';
 export const OPENING = OPEN_KIND === 'titles';
 export const AVATARS = OPEN_KIND === 'avatars';
 export const CAM_K = PORTRAIT ? 1 : +(params.get('camk') || 0.72);
@@ -148,12 +151,14 @@ export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
     collapses back into the point. */
 export const AV_POINT = 0.15;
 export const AV_BURST = 0.6;
-export const AV_TEXT = 'Have you tried texting to learn a language?';
+export const AV_TEXT = A03 ? 'What if you only needed 1000 words to communicate with all these people?' : 'Have you tried texting to learn a language?';
 /** The typed line keeps pace with its voiceover: when each word is spoken
     (seconds after speech starts), read from the Enceladus take, plus its end.
     Each word types out across its own span; the space lands just before the
     next word. */
-const AV_WORD_AT = [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
+const AV_WORD_AT = A03
+  ? [0, 0.62, 0.74, 0.9, 1.44, 1.84, 3.14, 3.66, 4.06, 4.44, 4.76, 5.18, 5.42, 5.7]
+  : [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
 function spokenTimes(text: string, start: number, wordAt: number[]) {
   const out: number[] = [];
   const words = text.split(' ');
