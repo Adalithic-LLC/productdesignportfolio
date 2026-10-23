@@ -61,13 +61,9 @@ swap("['thumbF', '24K'], ['thumbDownF', 'Dislike'], ['commentF', '406']", "['thu
 // The 16:9 player is held to the same fitted height as the tall one (--fit-h,
 // set by the portfolio layer below); embedded, it is left to the width.
 swap('.screen { position: relative; background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%;', '.screen { position: relative; background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; width: min(100%, calc(var(--fit-h, 9999px) * 16 / 9)); margin-inline: auto;');
-// The timeline's head: the hint goes; a fold button and, folded, a mini scrub
-// bar take its place.
-swap(`<div class="tl-head">
-        <span class="hint">Click or drag to scrub · drag a block's right edge on <b>Retime</b> to propose a new length</span>
-      </div>`, `<div class="tl-head"><span class="tl-name">Timeline</span><div class="tl-mini" id="tlMini" role="slider" tabindex="0" aria-label="Playhead" aria-valuemin="0"><div class="tl-mini-track"><i id="tlMiniFill"></i></div><b id="tlMiniKnob"></b></div><button class="ib tl-fold" id="tlFold" type="button" aria-expanded="true" aria-label="Collapse the timeline" title="Collapse the timeline"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.3 5.6 8 10.3l4.7-4.7 1.1 1.1L8 12.5 2.2 6.7z"/></svg></button></div>`);
-// The layer below scrubs through the page's own seek, so the audio follows.
-swap('  function seek(t) {\n', '  window.__cutroomSeek = (t) => seek(t);\n  window.__cutroomDur = () => duration();\n  function seek(t) {\n');
+// The timeline's head: the scrub hint gives way to a plain label (the Cut
+// Room's own fold button and folded scrub bar stay).
+swap(`<span class="hint">Click or drag to scrub · drag a block's right edge on <b>Retime</b> to propose a new length</span>`, `<span class="tl-name">Timeline</span>`);
 // The connection badge.
 swap("setLive('on', 'Live');", "setLive('on', 'Demo');");
 
@@ -145,34 +141,21 @@ const shim = `<script>
 </script>`;
 
 const layer = `<style>
-/* Portfolio layer (tools/cut-room/build.mjs): the timeline folds to a mini scrub bar. */
-.timeline .tl-head { min-height: 36px; padding: 4px 6px 4px 12px; gap: 10px; flex-wrap: nowrap; }
+/* Portfolio layer (tools/cut-room/build.mjs). */
 .tl-name { margin-right: auto; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
-.tl-mini { display: none; position: relative; flex: 1; height: 28px; margin: 0 6px; cursor: pointer; touch-action: none; outline: none; }
-.tl-mini-track { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); border-radius: 99px; background: var(--line-2); overflow: hidden; }
-#tlMiniFill { display: block; height: 100%; width: 0; background: var(--accent); }
-#tlMiniKnob { position: absolute; top: 50%; left: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--accent-soft), 0 1px 3px rgba(0, 0, 0, 0.5); transition: transform 0.12s; }
-.tl-mini:hover #tlMiniKnob, .tl-mini.drag #tlMiniKnob, .tl-mini:focus-visible #tlMiniKnob { transform: scale(1.25); }
-.tl-mini:focus-visible .tl-mini-track { box-shadow: 0 0 0 2px var(--accent-2); }
-.tl-fold svg { transition: transform 0.2s; }
-.timeline.folded .tl-head { border-bottom: 0; }
-.timeline.folded .tl-body, .timeline.folded .tl-name { display: none; }
-.timeline.folded .tl-mini { display: block; }
-.timeline.folded .tl-fold svg { transform: rotate(180deg); }
+.timeline.folded .tl-name { display: none; }
 @media (min-width: 1021px) { .side { max-height: calc(var(--win-h, 100vh) - 28px); } }
 </style>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const v = $('v'), tl = document.querySelector('.timeline'), mini = $('tlMini'), fold = $('tlFold');
-  const fill = $('tlMiniFill'), knob = $('tlMiniKnob');
+  const tl = document.querySelector('.timeline');
   const root = document.documentElement;
   const EMBED = new URLSearchParams(location.search).has('embed');
-  const KEY = 'arcatext-cut-room-demo.folded';
 
   // On its own page, the player shrinks until the controls and the timeline
   // fit in the window. Measured, not assumed: the page is zoomed, and the
-  // timeline is taller open than folded.
+  // timeline is taller open than folded (its fold button is the Cut Room's own).
   const probe = document.createElement('div');
   probe.style.cssText = 'position:absolute;visibility:hidden;height:100px;width:1px;top:0;left:0';
   document.body.appendChild(probe);
@@ -200,54 +183,6 @@ const layer = `<style>
   new ResizeObserver(queueFit).observe(document.querySelector('.stage') || document.body);
   new MutationObserver(queueFit).observe($('screen'), { attributes: true, attributeFilter: ['class'] });
 
-  const setFold = (on) => {
-    tl.classList.toggle('folded', on);
-    const label = on ? 'Expand the timeline' : 'Collapse the timeline';
-    fold.setAttribute('aria-expanded', String(!on));
-    fold.setAttribute('aria-label', label);
-    fold.title = label;
-    try { localStorage.setItem(KEY, on ? '1' : ''); } catch {}
-    queueFit();
-    window.dispatchEvent(new Event('resize'));
-  };
-  fold.onclick = () => setFold(!tl.classList.contains('folded'));
-  let start = false;
-  try { start = localStorage.getItem(KEY) === '1'; } catch {}
-  setFold(start);
-
-  // The mini scrub bar: drag (or click) anywhere on it; arrows step a second.
-  const dur = () => (window.__cutroomDur && window.__cutroomDur()) || v.duration || 0;
-  const seek = (t) => (window.__cutroomSeek ? window.__cutroomSeek(t) : (v.currentTime = t));
-  const tAt = (x) => { const r = mini.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * dur(); };
-  mini.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    mini.setPointerCapture(e.pointerId); mini.classList.add('drag');
-    const was = !v.paused; v.pause();
-    seek(tAt(e.clientX));
-    const move = (ev) => seek(tAt(ev.clientX));
-    const up = () => {
-      mini.classList.remove('drag');
-      mini.removeEventListener('pointermove', move); mini.removeEventListener('pointerup', up); mini.removeEventListener('pointercancel', up);
-      if (was) v.play();
-    };
-    mini.addEventListener('pointermove', move); mini.addEventListener('pointerup', up); mini.addEventListener('pointercancel', up);
-  });
-  mini.addEventListener('keydown', (e) => {
-    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    if (!step) return;
-    e.preventDefault(); e.stopPropagation();
-    seek(Math.max(0, Math.min(dur(), v.currentTime + step * (e.shiftKey ? 5 : 1))));
-  });
-  const draw = () => {
-    const d = dur(), k = d ? Math.min(1, v.currentTime / d) : 0;
-    fill.style.width = k * 100 + '%';
-    knob.style.left = k * 100 + '%';
-    mini.setAttribute('aria-valuemax', d.toFixed(1));
-    mini.setAttribute('aria-valuenow', v.currentTime.toFixed(1));
-    mini.setAttribute('aria-valuetext', Math.floor(v.currentTime / 60) + ':' + String(Math.floor(v.currentTime % 60)).padStart(2, '0'));
-    requestAnimationFrame(draw);
-  };
-  draw();
   queueFit();
 })();
 </script>`;

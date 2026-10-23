@@ -254,6 +254,19 @@
   .timeline { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
   .tl-head { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
   .tl-head .hint { margin-right: auto; }
+  /* Folded, the timeline is one scrub bar: the rows hide, the playhead stays draggable. */
+  .timeline .tl-head { flex-wrap: nowrap; padding: 4px 6px 4px 10px; min-height: 36px; }
+  .tl-mini { display: none; position: relative; flex: 1; height: 28px; margin: 0 6px 0 2px; cursor: pointer; touch-action: none; outline: none; }
+  .tl-mini-track { position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); border-radius: 99px; background: var(--line-2); overflow: hidden; }
+  .tl-mini-track i { display: block; height: 100%; width: 0; background: var(--accent); }
+  .tl-mini b { position: absolute; top: 50%; left: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--accent-soft), 0 1px 3px rgba(0, 0, 0, 0.5); transition: transform 0.12s; }
+  .tl-mini:hover b, .tl-mini.drag b, .tl-mini:focus-visible b { transform: scale(1.25); }
+  .tl-mini:focus-visible .tl-mini-track { box-shadow: 0 0 0 2px var(--accent-2); }
+  .tl-fold svg { transition: transform 0.2s; }
+  .timeline.folded .tl-head { border-bottom: 0; }
+  .timeline.folded .tl-body, .timeline.folded .tl-head .hint { display: none; }
+  .timeline.folded .tl-mini { display: block; }
+  .timeline.folded .tl-fold svg { transform: rotate(180deg); }
   .tl-body { display: grid; grid-template-columns: 70px minmax(0, 1fr); }
   .tl-labels { border-right: 1px solid var(--line); }
   .tl-labels div { height: var(--h); display: flex; align-items: center; padding: 0 10px; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--line); }
@@ -494,6 +507,8 @@
     <div class="timeline">
       <div class="tl-head">
         <span class="hint">Click or drag to scrub · drag a block's right edge on <b>Retime</b> to propose a new length</span>
+        <div class="tl-mini" id="tlMini" role="slider" tabindex="0" aria-label="Playhead" aria-valuemin="0"><div class="tl-mini-track"><i id="tlMiniFill"></i></div><b id="tlMiniKnob"></b></div>
+        <button class="ib tl-fold" id="tlFold" type="button" aria-expanded="true" aria-label="Collapse the timeline" title="Collapse the timeline"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.3 5.6 8 10.3l4.7-4.7 1.1 1.1L8 12.5 2.2 6.7z"/></svg></button>
       </div>
       <div class="tl-body">
         <div class="tl-labels"><div class="l-ruler">Time</div><div class="l-scenes">Scenes</div><div class="l-retime">Retime</div><div class="l-marks">Changes</div></div>
@@ -724,6 +739,55 @@
       target.addEventListener('pointercancel', up);
     });
   });
+
+  // ---------- the folded timeline ----------
+  // The fold button hides the scene, retime and change rows and leaves one
+  // scrub bar with a draggable playhead. Remembered per browser.
+  function setFold(on) {
+    const tl = document.querySelector('.timeline');
+    tl.classList.toggle('folded', on);
+    const label = on ? 'Expand the timeline' : 'Collapse the timeline';
+    $('tlFold').setAttribute('aria-expanded', String(!on));
+    $('tlFold').setAttribute('aria-label', label);
+    $('tlFold').title = label;
+    store.set('cutroom.tlFolded', on ? '1' : '');
+    if (!on) layout();
+  }
+  $('tlFold').onclick = () => setFold(!document.querySelector('.timeline').classList.contains('folded'));
+  setFold(store.get('cutroom.tlFolded') === '1');
+  {
+    const mini = $('tlMini');
+    const tAt = (x) => { const r = mini.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * duration(); };
+    mini.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      mini.setPointerCapture(e.pointerId); mini.classList.add('drag');
+      const wasPlaying = !v.paused; v.pause();
+      seek(tAt(e.clientX));
+      const move = (ev) => seek(tAt(ev.clientX));
+      const up = () => {
+        mini.classList.remove('drag');
+        mini.removeEventListener('pointermove', move); mini.removeEventListener('pointerup', up); mini.removeEventListener('pointercancel', up);
+        if (wasPlaying) v.play();
+      };
+      mini.addEventListener('pointermove', move); mini.addEventListener('pointerup', up); mini.addEventListener('pointercancel', up);
+    });
+    mini.addEventListener('keydown', (e) => {
+      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      e.preventDefault(); e.stopPropagation();
+      seek(v.currentTime + step * (e.shiftKey ? 5 : 1));
+    });
+    const drawMini = () => {
+      const d = duration(), k = d ? Math.min(1, v.currentTime / d) : 0;
+      $('tlMiniFill').style.width = k * 100 + '%';
+      $('tlMiniKnob').style.left = k * 100 + '%';
+      mini.setAttribute('aria-valuemax', d.toFixed(1));
+      mini.setAttribute('aria-valuenow', v.currentTime.toFixed(1));
+      mini.setAttribute('aria-valuetext', fmt(v.currentTime));
+      requestAnimationFrame(drawMini);
+    };
+    drawMini();
+  }
 
   // ---------- retime dragging ----------
   $('retimeRow').addEventListener('pointerdown', (e) => {
