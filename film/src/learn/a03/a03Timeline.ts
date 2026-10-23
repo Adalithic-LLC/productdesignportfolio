@@ -16,9 +16,9 @@ export { PORTRAIT, FRAME };
 export const D3 = {
   appIn: 0.3, // the phone follows the cloud
   lead: 0.25, // a line's card comes in this long before its voice
-  challenge: 4.0, // (3.4 s spoken) "with unstructured chats and writing challenges with partners."
+  challenge: 4.3, // "complete co-writing challenges with partners.": a paragraph typed by two people
   community: 3.0, // "chat with real people from the community," (2.2 s): Active, zoom, tap
-  freedom: 9.6, // "Now, imagine breaking out of the mold…" (8.3 s spoken), the keyboard hops
+  freedom: 8.2, // "Learn in your own way, using…" (5.6 s spoken), the keyboard hops
   progress: 4.7, // "No matter how you learn, we measure your progress…" (3.8 s), the rings fill and the camera flies through one
 };
 
@@ -45,11 +45,11 @@ const line = (key: string, text: string, accent: string, dur: number): Line => {
 export const COMMUNITY = line('a3-community', 'Chat with real people from the community', 'real people', D3.community);
 /** The phone rises in with the community. */
 export const PHONE_IN = COMMUNITY.at;
-export const CHALLENGE = line('a3-challenge', 'With unstructured chats and writing challenges with partners', 'writing challenges', D3.challenge);
-/** The long line is shown as two cards; the second comes in on "using" (4.3 s into the voice). */
+export const CHALLENGE = line('a3-challenge', 'Complete co-writing challenges with partners', 'co-writing challenges', D3.challenge);
+/** The long line is shown as two cards; the second comes in on "using" (2.4 s into the voice). */
 export const FREEDOM_AT = c;
-export const FREEDOM_A = line('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way,', 'your own way', 4.45);
-export const FREEDOM_B = line('a3-freedom-b', 'using the most powerful AI keyboard inside any messaging app.', 'most powerful AI keyboard', D3.freedom - 4.45);
+export const FREEDOM_A = line('a3-freedom', 'Learn in your own way,', 'your own way', 2.56);
+export const FREEDOM_B = line('a3-freedom-b', 'using the most powerful AI keyboard inside any messaging app.', 'most powerful AI keyboard', D3.freedom - 2.56);
 export const PROGRESS = line('a3-progress', 'No matter how you learn, we measure your progress the whole time.', 'measure your progress', D3.progress);
 export const CARDS = [COMMUNITY, CHALLENGE, FREEDOM_A, FREEDOM_B, PROGRESS];
 
@@ -64,15 +64,15 @@ export type HopApp = (typeof HOP_APPS)[number];
     aside from `push` and the next one takes the centre, and the keyboard
     lands in app i+1 at `land`. */
 export const HOPS = [
-  { lift: 1.2, push: 1.6, land: 2.5 },
-  { lift: 3.9, push: 4.25, land: 5.15 },
-  { lift: 6.6, push: 6.95, land: 7.85 },
+  { lift: 0.9, push: 1.25, land: 2.1 },
+  { lift: 3.25, push: 3.55, land: 4.4 },
+  { lift: 5.6, push: 5.9, land: 6.75 },
 ].map((h) => ({ lift: FREEDOM_AT + h.lift, push: FREEDOM_AT + h.push, land: FREEDOM_AT + h.land }));
 export const HOP = { liftLen: 0.5, pushLen: 0.75, fall: 0.4 };
 /** What gets typed in each messaging app once the keyboard lands, and sent. */
 export const HOP_TYPED = ['¡Sí! ¿Vamos juntos?', '¡Qué foto tan bonita!', '¡Perfecto, a las 5!'];
 const typeTimes = (text: string, start: number, per: number) => [...text].map((_, i) => start + i * per);
-export const HOP_TYPE_TIMES = HOP_TYPED.map((x, i) => typeTimes(x, HOPS[i].land + 0.2, 0.048));
+export const HOP_TYPE_TIMES = HOP_TYPED.map((x, i) => typeTimes(x, HOPS[i].land + 0.15, 0.04));
 export const HOP_SENDS = HOP_TYPE_TIMES.map((x) => x[x.length - 1] + 0.12);
 
 /** Community: close in on the Active list from the start, and scroll down it. */
@@ -80,14 +80,32 @@ export const LIST_SCROLL = { from: 0.45, to: D3.community - 0.1, by: 330 };
 /** The partner chat opens, the phone dissolves, and the exchange plays as
     bubbles; the phone forms again just before Freedom. Times are absolute
     except firstAt and out, which are from CHALLENGE.at. */
+/** The co-written paragraph: you and your partner take turns, each typing
+    in their own highlight (seconds from CHALLENGE.at). */
+const COWRITE_PER = 0.026;
+export const COWRITE = (() => {
+  const parts: { who: 'me' | 'them'; text: string }[] = [
+    { who: 'me', text: 'El sábado fuimos al mercado. ' },
+    { who: 'them', text: 'Compramos fruta y pan fresco. ' },
+    { who: 'me', text: '¡Después cocinamos juntos!' },
+  ];
+  let at = 1.05;
+  const segs = parts.map((p) => {
+    const seg = { ...p, at, times: [...p.text].map((_, i) => at + i * COWRITE_PER) };
+    at += p.text.length * COWRITE_PER + 0.12;
+    return seg;
+  });
+  return { cardAt: 0.9, segs };
+})();
+
 export const PARTNER = {
   dissolve: CHALLENGE.at + 0.2,
   gone: CHALLENGE.at + 0.7,
   firstAt: 0.55,
-  /** When each line of the exchange arrives (them, me). */
-  lineAt: [0.55, 1.7],
+  /** When the partner's challenge arrives. */
+  lineAt: [0.55],
   out: D3.challenge - 0.45,
-  back: FREEDOM_AT - 0.3,
+  back: FREEDOM_AT - 0.15,
 };
 
 /** The Telegram phone steps back and the rings come up on their own. */
@@ -102,13 +120,16 @@ export const RINGS_LEN = 2.2;
 export const END_AT = c;
 /** The road line, then the logo; the logo's name types on "Arcatext" (3.8 s into the take). */
 export const ROAD = 'The road to 1000 words.';
+export const ROAD2 = 'And beyond.';
+/** "And beyond." comes in as it's spoken (3.45 s into the voice). */
+export const ROAD2_AT = END_AT + 0.2 + 3.35;
 /** The road line fades as "words" ends; the logo starts only once it's gone,
-    and plays 1.5x fast so "Arcatext" types as it's spoken. */
-export const ROAD_OUT = END_AT + 2.9;
+    and plays 2x fast so "Arcatext" types as it's spoken. */
+export const ROAD_OUT = END_AT + 0.2 + 4.2;
 export const LOGO_AT = ROAD_OUT + 0.25;
-export const LOGO_SPEED = 1.5;
-/** The end card runs 5.3 s (to the frame): the line, the logo, a short hold once the name has typed. */
-export const END_LEN = 5.3;
+export const LOGO_SPEED = 2;
+/** The end card (to the frame): the two lines, the logo, a short hold once the name has typed. */
+export const END_LEN = 6.5;
 export const DURATION = Math.round((END_AT + END_LEN) * 60) / 60;
 
 // ── Voice ──
@@ -117,10 +138,10 @@ const voiceLine = (key: string, text: string, at: number, until: number): VoiceL
 export const VOICE_LINES: VoiceLine[] = [
   voiceLine('a3-q', AV_TEXT.replace('1000', 'one thousand'), AV_VOICE_AT, AV_GONE),
   voiceLine('a3-community', 'chat with real people from the community,', COMMUNITY.at + D3.lead, CHALLENGE.at),
-  voiceLine('a3-challenge', 'with unstructured chats and writing challenges with partners.', CHALLENGE.at + D3.lead, FREEDOM_AT),
-  voiceLine('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way, using the most powerful AI keyboard inside any messaging app.', FREEDOM_AT + D3.lead, PROGRESS.at),
+  voiceLine('a3-challenge', 'complete co-writing challenges with partners.', CHALLENGE.at + D3.lead, FREEDOM_AT),
+  voiceLine('a3-freedom', 'Learn in your own way, using the most powerful AI keyboard inside any messaging app.', FREEDOM_AT + D3.lead, PROGRESS.at),
   voiceLine('a3-progress', 'No matter how you learn, we measure your progress the whole time.', PROGRESS.at + D3.lead, END_AT),
-  voiceLine('a3-road', 'The road to one thousand words. Arcatext.', END_AT + 0.2, DURATION - 0.5),
+  voiceLine('a3-road', 'The road to one thousand words. And beyond. Arcatext.', END_AT + 0.2, DURATION - 0.5),
 ];
 
 // ── The Cut Room's scenes ──
@@ -131,7 +152,7 @@ export function scenes() {
     ...[COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
     scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }]),
     scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }]),
-    scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: ROAD }]),
+    scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: `${ROAD}\n${ROAD2}` }]),
   ];
   return list.map((s, i) => ({ flows: [] as unknown[], delays: [], ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
@@ -144,12 +165,13 @@ export function cues() {
     keys: [
       ...AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })),
       ...HOP_TYPE_TIMES.flatMap((times, k) => times.map((t, i) => ({ t, space: HOP_TYPED[k][i] === ' ' }))),
+      ...COWRITE.segs.flatMap((s) => s.times.map((t, i) => ({ t: CHALLENGE.at + t, space: s.text[i] === ' ' }))),
     ],
     taps: HOPS.map((h) => h.land).sort((a, b) => a - b),
     reword: null,
     reveal: null,
     send: null,
-    sends: [CHALLENGE.at + PARTNER.lineAt[1], ...HOP_SENDS],
+    sends: HOP_SENDS,
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),

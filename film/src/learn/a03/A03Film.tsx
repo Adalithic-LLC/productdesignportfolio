@@ -11,7 +11,7 @@ import { Keyboard, GlobeRow } from '../../Phone';
 import { Glow, syncAnimations } from '../../Film';
 import SplashLogo from '../../SplashLogo';
 import { AV_SIZE, AV_TEXT_STYLE, AvatarOpener, preloadAvatars, type Box } from '../Opener';
-import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../../ease';
+import { clamp01, easeInOutCubic, easeOutBack, easeOutCubic, lerp, span } from '../../ease';
 import { AV_END, AV_TEXT, STAGE } from '../learnTimeline';
 import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
@@ -23,7 +23,6 @@ import {
   DURATION,
   END_AT,
   FRAME,
-  FREEDOM_AT,
   HOP,
   HOP_APPS,
   HOP_SENDS,
@@ -35,12 +34,15 @@ import {
   ROAD_OUT,
   PORTRAIT,
   PHONE_AWAY,
+  COWRITE,
   PARTNER,
   PHONE_IN,
   LIST_SCROLL,
   RINGS_AT,
   RINGS_LEN,
   ROAD,
+  ROAD2,
+  ROAD2_AT,
   cues,
   type Line,
 } from './a03Timeline';
@@ -96,11 +98,15 @@ function accentParts(text: string, accent: string) {
   if (i < 0) return text;
   return (
     <>
-      {text.slice(0, i)}
-      <span style={{ color: ACCENT }}>{accent}</span>
-      {text.slice(i + accent.length)}
+      {noHyphenBreak(text.slice(0, i))}
+      <span style={{ color: ACCENT }}>{noHyphenBreak(accent)}</span>
+      {noHyphenBreak(text.slice(i + accent.length))}
     </>
   );
+}
+/** Keeps hyphenated words ("co-writing") whole across line breaks. */
+function noHyphenBreak(s: string) {
+  return s.split(/(\S+-\S+)/).map((x, j) => (/\S-\S/.test(x) ? <span key={j} style={{ whiteSpace: 'nowrap' }}>{x}</span> : x));
 }
 
 const CARD_PLACE = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 430 } : { left: 150, width: 720, top: FRAME.h / 2 };
@@ -119,6 +125,7 @@ function Card({ l, t }: { l: Line; t: number }) {
 function Ending({ t }: { t: number }) {
   const local = t - END_AT;
   const k = span(local, 0.15, 0.75, easeOutCubic);
+  const k2 = span(t, ROAD2_AT, ROAD2_AT + 0.5, easeOutCubic);
   const lineOut = span(t, ROAD_OUT, LOGO_AT, (x) => x);
   const fade = span(t, DURATION - 0.6, DURATION, (x) => x);
   const cy = PORTRAIT ? STAGE.cy + 60 : H / 2;
@@ -129,8 +136,10 @@ function Ending({ t }: { t: number }) {
       </div>
       {lineOut < 1 && (
         <div className="absolute flex justify-center" style={{ left: STAGE.cx - 500, width: 1000, top: cy, transform: `translateY(calc(-50% + ${(1 - k) * 18}px))`, opacity: k * (1 - lineOut), filter: k < 1 ? `blur(${(1 - k) * 8}px)` : undefined }}>
-          <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 62 : 76, letterSpacing: '-0.02em', color: '#fff' }}>
-            {accentParts(ROAD, '1000 words')}
+          {/* Both lines are laid out from the start, so the first never moves when the second comes in. */}
+          <div className="whitespace-nowrap text-center" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 62 : 76, lineHeight: 1.2, letterSpacing: '-0.02em', color: '#fff' }}>
+            <div>{accentParts(ROAD, '1000 words')}</div>
+            <div style={{ opacity: k2, transform: `translateY(${(1 - k2) * 14}px)`, filter: k2 < 1 ? `blur(${(1 - k2) * 8}px)` : undefined }}>{ROAD2}</div>
           </div>
         </div>
       )}
@@ -175,11 +184,57 @@ type Line3 = { me?: boolean; text: string; at: number };
 /** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
 const PARTNER_CHAT: Line3[] = [
   { text: 'Reto de escritura: describe tu fin de semana.', at: PARTNER.lineAt[0] },
-  { me: true, text: 'El sábado fui al mercado con mi hermana.', at: PARTNER.lineAt[1] },
 ];
 
+/** The paragraph two people write together: each part typed in its writer's
+    highlight, with a named cursor. The whole paragraph is laid out from the
+    start (untyped letters invisible), so nothing moves as it types. */
+const WRITERS = { me: { name: 'You', color: '#4F7FFF' }, them: { name: 'Sunny Heron', color: '#F5A524' } };
+function CoWrite({ t }: { t: number }) {
+  const l = t - CHALLENGE.at;
+  if (l > PARTNER.out + 0.45) return null;
+  const k = easeOutCubic(clamp01((l - COWRITE.cardAt) / 0.4));
+  const fade = span(l, PARTNER.out, PARTNER.out + 0.4, (x) => x);
+  const active = [...COWRITE.segs].reverse().find((s) => l >= s.at - 0.15);
+  return (
+    <div
+      style={{
+        padding: PORTRAIT ? '34px 40px' : '30px 36px',
+        borderRadius: 40,
+        background: '#1C1C1E',
+        boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
+        fontFamily: NOTO,
+        fontSize: PORTRAIT ? 44 : 40,
+        lineHeight: 1.5,
+        color: '#fff',
+        opacity: k * (1 - fade),
+        transform: `translateY(${(1 - k) * 30}px)`,
+      }}
+    >
+      {COWRITE.segs.map((s, i) => {
+        let n = 0;
+        while (n < s.times.length && s.times[n] <= l) n++;
+        const w = WRITERS[s.who];
+        const cursor = active === s;
+        return (
+          <span key={i}>
+            <span style={{ background: n > 0 ? `${w.color}40` : undefined, borderRadius: 8, boxShadow: n > 0 ? `0 0 0 4px ${w.color}40` : undefined }}>{s.text.slice(0, n)}</span>
+            {cursor && (
+              <span style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 1, top: '0.08em', width: 4, height: '1.2em', background: w.color, borderRadius: 2 }} />
+                <span style={{ position: 'absolute', left: 1, bottom: '1.15em', whiteSpace: 'nowrap', padding: '2px 12px', borderRadius: 10, background: w.color, color: '#0B0B0D', fontSize: '0.5em', fontWeight: 600, lineHeight: 1.4 }}>{w.name}</span>
+              </span>
+            )}
+            <span style={{ color: 'transparent' }}>{s.text.slice(n)}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 /** A chat as bubbles alone. `dotsAt` shows the other side typing until the next line. */
-function BubbleShot({ t, at, lines, out, mine, dotsAt, bottom = BUB.bottom }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number; bottom?: number }) {
+function BubbleShot({ t, at, lines, out, mine, dotsAt, bottom = BUB.bottom, children }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number; bottom?: number; children?: ReactNode }) {
   const l = t - at;
   if (l < lines[0].at || l > out + 0.45) return null;
   const k = (a: number, len = 0.4) => easeOutCubic(clamp01((l - a) / len));
@@ -196,6 +251,7 @@ function BubbleShot({ t, at, lines, out, mine, dotsAt, bottom = BUB.bottom }: { 
           </Bubble>
         );
       })}
+      {children}
       {dots && (
         <Bubble k={k(dotsAt!, 0.25)}>
           <span style={{ letterSpacing: '0.15em' }}>
@@ -304,10 +360,10 @@ function phonePose(i: number, t: number) {
 /** The keyboard's state in phone i: docked (1), out (0), plus the app's dock level. */
 function kbIn(i: number, t: number) {
   if (i === 0) {
-    if (t < FREEDOM_AT) return 0;
-    const up = easeOutCubic(clamp01((t - FREEDOM_AT - 0.1) / 0.4));
+    if (t < PARTNER.back) return 0;
+    // Already up when the phone forms again for Freedom.
     const lift = easeOutCubic(clamp01((t - HOPS[0].lift) / HOP.liftLen));
-    return up * (1 - lift);
+    return 1 - lift;
   }
   if (i > 3) return 0;
   const land = HOPS[i - 1];
@@ -319,7 +375,7 @@ function kbIn(i: number, t: number) {
 
 /** Is the keyboard drawn inside phone i (rather than flying)? */
 function kbDocked(i: number, t: number) {
-  if (i === 0) return t >= FREEDOM_AT && t < HOPS[0].lift;
+  if (i === 0) return t >= PARTNER.back && t < HOPS[0].lift;
   if (i > 3) return false;
   return t >= HOPS[i - 1].land && (i === 3 || t < HOPS[i].lift);
 }
@@ -398,6 +454,7 @@ function Phones({ t }: { t: number }) {
             <Device>
               <PhoneScreen i={i} t={t} />
             </Device>
+            {i <= 3 && <LauncherIcon app={HOP_APPS[i]} k={iconIn(i, t)} />}
           </div>
         );
       })}
@@ -426,6 +483,82 @@ function Rings({ t }: { t: number }) {
   return (
     <div className="dark absolute left-0 top-0" style={{ width: RINGS_GRID.w, transformOrigin: `${L.x}px ${L.y}px`, transform: `translate(${x - L.x}px, ${y - L.y}px) scale(${RINGS_SCALE * z})` }}>
       <RingsGrid k={clamp01((t - RINGS_AT) / RINGS_LEN)} appear={appear} zoom={u} />
+    </div>
+  );
+}
+
+/** When each phone's launcher icon pops in: the Arcatext app's as it forms
+    again for Freedom, each messaging app's as it settles in the centre. */
+function iconIn(i: number, t: number) {
+  const at = i === 0 ? PARTNER.back + 0.2 : PHONES[i].in + HOP.pushLen - 0.1;
+  return easeOutBack(clamp01((t - at) / 0.4));
+}
+
+/** An iOS home-screen icon in its dark appearance, to the phone's left. */
+const ICON = 150;
+function LauncherIcon({ app, k }: { app: (typeof HOP_APPS)[number]; k: number }) {
+  if (k <= 0) return null;
+  const size = ICON / PH.s;
+  const glyph: Record<typeof app, ReactNode> = {
+    arcatext: (
+      <svg viewBox="0 0 31 50" width="38%" height="62%" fill="#7BA2FF">
+        <rect x={0} y={0} width={12} height={5} />
+        <rect x={19} y={0} width={12} height={5} />
+        <rect x={12} y={5} width={7} height={40} />
+        <rect x={0} y={45} width={12} height={5} />
+        <rect x={19} y={45} width={12} height={5} />
+      </svg>
+    ),
+    whatsapp: (
+      <svg viewBox="0 0 100 100" width="66%" height="66%">
+        <path d="M50 12a38 38 0 0 0-32.6 57.5L12 88l19.1-5.2A38 38 0 1 0 50 12z" fill="none" stroke="#25D366" strokeWidth={7} strokeLinejoin="round" />
+        <path d="M37 32c-2 0-4 2-4.5 4.5-.8 5 2.5 12 8.5 18s13 9.3 18 8.5c2.5-.5 4.5-2.5 4.5-4.5l-.6-3.2c-.2-.9-1-1.5-1.9-1.6l-6.5-.9c-.8-.1-1.6.3-2 1l-1.5 2.4c-4.5-2-8.2-5.7-10.2-10.2l2.4-1.5c.7-.4 1.1-1.2 1-2l-.9-6.5c-.1-.9-.7-1.7-1.6-1.9L40.2 32.6c-1-.4-2.1-.6-3.2-.6z" fill="#25D366" />
+      </svg>
+    ),
+    instagram: (
+      <svg viewBox="0 0 100 100" width="64%" height="64%">
+        <defs>
+          <linearGradient id="igd" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="#FEDA75" />
+            <stop offset="0.3" stopColor="#FA7E1E" />
+            <stop offset="0.6" stopColor="#D62976" />
+            <stop offset="1" stopColor="#4F5BD5" />
+          </linearGradient>
+        </defs>
+        <rect x={8} y={8} width={84} height={84} rx={24} fill="none" stroke="url(#igd)" strokeWidth={8} />
+        <circle cx={50} cy={50} r={19} fill="none" stroke="url(#igd)" strokeWidth={8} />
+        <circle cx={73} cy={27} r={5.5} fill="url(#igd)" />
+      </svg>
+    ),
+    // "Any messaging app": an infinity sign rather than a third brand.
+    telegram: (
+      <svg viewBox="0 0 100 100" width="70%" height="70%">
+        <defs>
+          <linearGradient id="infd" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#7BA2FF" />
+            <stop offset="1" stopColor="#B78CFF" />
+          </linearGradient>
+        </defs>
+        <path d="M50 50c-8-10-14-16-22-16a16 16 0 0 0 0 32c8 0 14-6 22-16s14-16 22-16a16 16 0 0 1 0 32c-8 0-14-6-22-16z" fill="none" stroke="url(#infd)" strokeWidth={8.5} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  };
+  return (
+    <div
+      className="absolute grid place-items-center"
+      style={{
+        left: -size - 26,
+        top: OUTER_H / 2 - size / 2,
+        width: size,
+        height: size,
+        borderRadius: size * 0.2237,
+        background: 'linear-gradient(180deg,#2C2C2E 0%,#121214 100%)',
+        boxShadow: '0 12px 30px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.08)',
+        transform: `scale(${k})`,
+        opacity: Math.min(1, k * 1.5),
+      }}
+    >
+      {glyph[app]}
     </div>
   );
 }
@@ -487,7 +620,7 @@ export default function A03Film() {
         [...document.fonts].some((f) => f.family.replace(/["']/g, '') === 'Inter') || performance.now() - t0 > 8000 ? resolve() : setTimeout(check, 50);
       check();
     });
-    const allText = CARDS.map((c) => c.text).join('') + ROAD;
+    const allText = CARDS.map((c) => c.text).join('') + ROAD + ROAD2;
     interRegistered
       .then(() =>
         Promise.all([
@@ -536,7 +669,9 @@ export default function A03Film() {
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}
-      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" bottom={PORTRAIT ? 1110 : 700} />
+      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" bottom={PORTRAIT ? 1250 : 820}>
+        <CoWrite t={t} />
+      </BubbleShot>
       <Phones t={t} />
       <FlyingKeyboard t={t} />
       <Rings t={t} />
