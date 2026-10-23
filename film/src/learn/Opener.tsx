@@ -205,7 +205,7 @@ const PAD_Y = 30;
 /** [left, right, top, bottom] of the typed text, from the line box's centre. */
 export type Box = [number, number, number, number];
 
-export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
+export function AvatarOpener({ t, boxes, caret = true }: { t: number; boxes: Box[]; caret?: boolean }) {
   if (t >= AV_END) return null;
   const cx = STAGE.cx;
   const cy = PORTRAIT ? STAGE.cy : FRAME.h / 2;
@@ -280,7 +280,7 @@ export function AvatarOpener({ t, boxes }: { t: number; boxes: Box[] }) {
 
   const n = countAt(AV_TYPE_TIMES, t);
   const typing = n > 0 && n < AV_TEXT.length;
-  const caretOn = t >= AV_TYPE_TIMES[0] - 0.4 && (typing || Math.floor((t - AV_TYPE_TIMES[0]) * 1.9) % 2 === 0);
+  const caretOn = caret && t >= AV_TYPE_TIMES[0] - 0.4 && (typing || Math.floor((t - AV_TYPE_TIMES[0]) * 1.9) % 2 === 0);
   const textScale = shrink;
   const textO = 1 - easeInCubic(clamp01((t - AV_COLLAPSE - 0.2) / (D.avCollapse - 0.2)));
 

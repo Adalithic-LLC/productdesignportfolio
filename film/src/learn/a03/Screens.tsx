@@ -64,7 +64,7 @@ function Segmented({ items, sel }: { items: string[]; sel: number }) {
         style={{ top: 2, bottom: 2, left: `calc(${(sel / items.length) * 100}% + 2px)`, width: `calc(${100 / items.length}% - 4px)`, background: '#636366', boxShadow: '0 3px 8px rgba(0,0,0,0.18)' }}
       />
       {items.map((x, i) => (
-        <div key={x} className="relative flex flex-1 items-center justify-center" style={{ fontFamily: SF, fontSize: 13.5, fontWeight: i === sel ? 600 : 500, color: '#fff' }}>
+        <div key={x} className="relative flex flex-1 items-center justify-center" style={{ fontFamily: SF, fontSize: 13.5, fontWeight: i === Math.round(sel) ? 600 : 500, color: '#fff' }}>
           {x}
         </div>
       ))}
@@ -237,7 +237,8 @@ type Msg = { me?: boolean; text: string; time: string; at: number; tr?: { at: nu
 const THREAD: Msg[] = [
   { text: '¡Hola! ¿Qué tal tu semana?', time: '10:38 AM', at: -1 },
   { me: true, text: '¡Hola! Muy bien, gracias. Esta semana empecé a cocinar recetas mexicanas.', time: '10:39 AM', at: -1, original: true },
-  { text: '¡Qué buena idea! ¿Cuál es tu plato favorito hasta ahora?', time: '10:41 AM', at: 0.3, tr: { at: 0.95, text: 'What a great idea! What’s your favourite dish so far?' } },
+  { text: '¡Qué buena idea! ¿Cuál es tu plato favorito hasta ahora?', time: '10:41 AM', at: 0.45, tr: { at: 1.2, text: 'What a great idea! What’s your favourite dish so far?' } },
+  { me: true, text: 'Los tacos al pastor, ¡sin duda!', time: '10:42 AM', at: 2.3 },
 ];
 export const PARTNER_POPS = THREAD.filter((m) => m.at >= 0).map((m) => m.at);
 
@@ -339,7 +340,7 @@ const PILL = {
   Cancel: { fg: '#FF8A80', bg: 'rgba(179,38,30,0.35)' },
 };
 
-function Pill({ kind, pressed }: { kind: keyof typeof PILL; pressed?: boolean }) {
+function Pill({ kind, pressed }: { kind: keyof typeof PILL | 'Open' | 'Request'; pressed?: boolean }) {
   return (
     <div className="relative flex items-center rounded-full px-[14px]" style={{ minHeight: 34, color: PILL[kind].fg, background: PILL[kind].bg, fontFamily: NOTO, fontWeight: 600, fontSize: 13, transform: pressed ? 'scale(0.94)' : undefined }}>
       {pressed && <span className="absolute -inset-2 rounded-full bg-white/25" />}
@@ -348,65 +349,124 @@ function Pill({ kind, pressed }: { kind: keyof typeof PILL; pressed?: boolean })
   );
 }
 
-export function CommunityScreen({ local, tapAt, openAt }: { local: number; tapAt: number; openAt: number }) {
-  const pressed = local >= tapAt - 0.08 && local < tapAt + 0.12;
-  const openPressed = local >= openAt - 0.08 && local < openAt + 0.2;
-  const requested = local >= tapAt + 0.12;
+type Convo = { name: string; online: boolean; seen: string; unread?: number; sent: number; recv: number };
+const CONVOS: Convo[] = [
+  { name: 'Sunny Heron', online: true, seen: 'Online', unread: 2, sent: 14, recv: 11 },
+  { name: 'Curious Otter', online: true, seen: 'Online', sent: 3, recv: 2 },
+  { name: 'Bright Orchid', online: false, seen: 'Last seen 2 hr. ago', sent: 27, recv: 25 },
+  { name: 'Wise Falcon 42', online: false, seen: 'Last seen 5 min. ago', sent: 8, recv: 9 },
+];
+/** The first chat card's centre on the Active page, in screen points (for the zoom). */
+export const ACTIVE_CARD_CENTER = { x: 201, y: 314 };
+
+function Notice() {
+  return (
+    <div className="flex items-start gap-2 rounded-[10px] px-3 py-2" style={{ background: 'rgba(107,83,0,0.45)', color: '#FFE7A3' }}>
+      <Users size={14} strokeWidth={2.6} className="mt-[3px] shrink-0" />
+      <div className="flex-1" style={{ fontWeight: 500, fontSize: 13, lineHeight: '19px' }}>
+        These are anonymous chats with real people.
+      </div>
+      <X size={13} strokeWidth={3} className="mt-[3px]" />
+    </div>
+  );
+}
+
+function Presence({ online, seen }: { online: boolean; seen: string }) {
+  return (
+    <div className="flex items-center gap-[5px]" style={{ fontSize: 12, color: SECONDARY }}>
+      <span className="h-2 w-2 rounded-full" style={{ background: online ? GREEN : '#48484A' }} />
+      {seen}
+    </div>
+  );
+}
+
+/** Chat tab: starts on Find, the Active segment is tapped at `activeAt`, and
+    the first chat card is tapped at `cardTapAt` (seconds from `local` 0). */
+export function CommunityScreen({ local, activeAt, cardTapAt }: { local: number; activeAt: number; cardTapAt: number }) {
+  const page = easeInOutCubic(clamp01((local - activeAt - 0.05) / 0.35));
+  const segPressed = local >= activeAt - 0.08 && local < activeAt + 0.1;
+  const cardPressed = local >= cardTapAt - 0.08 && local < cardTapAt + 0.25;
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: PAGE, fontFamily: NOTO }}>
       <StatusBar />
       <PageTitleBar title="Chat" profile />
       <div className="shrink-0" style={{ height: 24 }} />
-      <div className="shrink-0 px-5 pb-3">
-        <Segmented items={['Active', 'Find', 'Requests (1)']} sel={1} />
+      <div className="relative shrink-0 px-5 pb-3">
+        <Segmented items={['Active', 'Find', 'Requests (1)']} sel={1 - page} />
+        {segPressed && <span className="absolute rounded-full bg-white/25" style={{ left: 40, top: -6, width: 70, height: 48 }} />}
       </div>
-      <div className="flex flex-col gap-3 px-5">
-        <div className="flex gap-2">
-          {[
-            [<Globe key="g" size={15} strokeWidth={2.2} />, 'Spanish'],
-            [<ChartNoAxesColumn key="c" size={15} strokeWidth={2.6} />, 'Any level'],
-          ].map(([icon, label], i) => (
-            <div key={i} className="flex items-center gap-[6px] rounded-[18px] px-3" style={{ minHeight: 36, background: CARD, fontWeight: 500, fontSize: 14, color: '#fff' }}>
-              {icon}
-              {label}
-              <ChevronDown size={13} strokeWidth={2.8} />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        {/* Find */}
+        <div className="absolute inset-0 flex flex-col gap-3 px-5" style={{ transform: `translateX(${page * 402}px)` }}>
+          <div className="flex gap-2">
+            {[
+              [<Globe key="g" size={15} strokeWidth={2.2} />, 'Spanish'],
+              [<ChartNoAxesColumn key="c" size={15} strokeWidth={2.6} />, 'Any level'],
+            ].map(([icon, label], i) => (
+              <div key={i} className="flex items-center gap-[6px] rounded-[18px] px-3" style={{ minHeight: 34, background: CARD, fontWeight: 500, fontSize: 14, color: '#fff' }}>
+                {icon}
+                {label}
+                <ChevronDown size={13} strokeWidth={2.8} />
+              </div>
+            ))}
+          </div>
+          <Notice />
+          {MEMBERS.map((m, i) => {
+            const k = easeOutCubic(clamp01((local - 0.12 - i * 0.11) / 0.45));
+            return (
+              <div key={m.name} className="flex items-center gap-3 rounded-[14px] p-[14px]" style={{ background: CARD, opacity: k, transform: `translateY(${(1 - k) * 28}px)` }}>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>{m.name}</div>
+                  <Presence online={m.online} seen={m.seen} />
+                  <div className="flex items-start gap-[5px]" style={{ fontSize: 13, lineHeight: '18px', color: SECONDARY }}>
+                    <Globe size={13} strokeWidth={2.2} className="mt-[2px] shrink-0" />
+                    {m.langs}
+                  </div>
+                </div>
+                {m.pill === 'Requested' ? (
+                  <div className="flex flex-col items-end gap-2">
+                    <div style={{ fontWeight: 500, fontSize: 13, color: SECONDARY }}>Requested</div>
+                    <Pill kind="Cancel" />
+                  </div>
+                ) : (
+                  <Pill kind={m.pill} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Active */}
+        <div className="absolute inset-0 flex flex-col gap-3 px-5" style={{ transform: `translateX(${(page - 1) * 402}px)` }}>
+          <div className="flex gap-2">
+            {['All', 'Spanish'].map((x, i) => (
+              <div key={x} className="flex items-center rounded-full px-[14px]" style={{ minHeight: 34, background: i === 0 ? ACCENT : CARD, fontWeight: 500, fontSize: 14, color: '#fff' }}>
+                {x}
+              </div>
+            ))}
+          </div>
+          <Notice />
+          {CONVOS.map((c, i) => (
+            <div key={c.name} className="relative flex items-center gap-3 overflow-hidden rounded-[14px] p-[14px]" style={{ background: CARD, transform: i === 0 && cardPressed ? 'scale(0.98)' : undefined }}>
+              {i === 0 && cardPressed && <div className="absolute inset-0 bg-white/10" />}
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <div style={{ fontWeight: c.unread ? 700 : 600, fontSize: 16, color: '#fff' }}>{c.name}</div>
+                  {c.unread && (
+                    <div className="grid h-5 min-w-5 place-items-center rounded-full px-[7px]" style={{ background: ACCENT, color: '#fff', fontWeight: 700, fontSize: 12 }}>
+                      {c.unread}
+                    </div>
+                  )}
+                </div>
+                <Presence online={c.online} seen={c.seen} />
+                <div className="flex items-center gap-[5px]" style={{ fontSize: 13, lineHeight: '18px', color: SECONDARY }}>
+                  <Globe size={13} strokeWidth={2.2} className="shrink-0" />
+                  Spanish · {c.sent} sent · {c.recv} received
+                </div>
+              </div>
+              <div className="px-1" style={{ fontWeight: 600, fontSize: 14, color: ACCENT }}>Chat</div>
             </div>
           ))}
         </div>
-        <div className="flex items-start gap-2 rounded-[10px] px-3 py-2" style={{ background: 'rgba(107,83,0,0.45)', color: '#FFE7A3' }}>
-          <Users size={14} strokeWidth={2.6} className="mt-[3px] shrink-0" />
-          <div className="flex-1" style={{ fontWeight: 500, fontSize: 13, lineHeight: '19px' }}>
-            These are anonymous chats with real people.
-          </div>
-          <X size={13} strokeWidth={3} className="mt-[3px]" />
-        </div>
-        {MEMBERS.map((m, i) => {
-          const k = easeOutCubic(clamp01((local - 0.12 - i * 0.11) / 0.45));
-          const pill = i === 1 && requested ? 'Requested' : m.pill;
-          return (
-            <div key={m.name} className="flex items-center gap-3 rounded-[14px] p-[14px]" style={{ background: CARD, opacity: k, transform: `translateY(${(1 - k) * 28}px)` }}>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>{m.name}</div>
-                <div className="flex items-center gap-[5px]" style={{ fontSize: 12, color: SECONDARY }}>
-                  <span className="h-2 w-2 rounded-full" style={{ background: m.online ? GREEN : '#48484A' }} />
-                  {m.seen}
-                </div>
-                <div className="flex items-start gap-[5px]" style={{ fontSize: 13, lineHeight: '18px', color: SECONDARY }}>
-                  <Globe size={13} strokeWidth={2.2} className="mt-[2px] shrink-0" />
-                  {m.langs}
-                </div>
-              </div>
-              {pill === 'Requested' ? (
-                <div className="flex flex-col items-end gap-2">
-                  <div style={{ fontWeight: 500, fontSize: 13, color: SECONDARY }}>Requested</div>
-                  <Pill kind="Cancel" />
-                </div>
-              ) : (
-                <Pill kind={pill} pressed={(i === 1 && pressed) || (i === 0 && openPressed)} />
-              )}
-            </div>
-          );
-        })}
       </div>
       <TabBar sel={0} badge="1" />
     </div>
@@ -429,7 +489,7 @@ const RINGS: [string, number, number, number][] = [
 /** The hidden third row (Numbers, Interj.) still counts in the tracker. */
 const HIDDEN: [number, number] = [3, 10];
 
-function Ring({ label, total, used, pulse }: { label: string; total: number; used: number; pulse: number }) {
+function Ring({ label, total, used, pulse, textO = 1 }: { label: string; total: number; used: number; pulse: number; textO?: number }) {
   const n = Math.round(used);
   const done = n >= total;
   const r = 27;
@@ -442,11 +502,11 @@ function Ring({ label, total, used, pulse }: { label: string; total: number; use
           <circle r={r} fill="none" stroke="rgba(235,235,245,0.18)" strokeWidth={5} />
           <circle r={r} fill="none" stroke={done ? GREEN : ACCENT} strokeWidth={5} strokeLinecap="round" strokeDasharray={`${c * frac} ${c}`} transform="rotate(-90)" />
         </svg>
-        <div className="absolute inset-0 grid place-items-center" style={{ fontFamily: NOTO, fontWeight: 600, fontSize: 15, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
+        <div className="absolute inset-0 grid place-items-center" style={{ fontFamily: NOTO, fontWeight: 600, fontSize: 15, color: '#fff', fontVariantNumeric: 'tabular-nums', opacity: textO }}>
           {n}
         </div>
       </div>
-      <div style={{ fontFamily: NOTO, fontSize: 12, color: SECONDARY }}>{label}</div>
+      <div style={{ fontFamily: NOTO, fontSize: 12, color: SECONDARY, opacity: textO }}>{label}</div>
     </div>
   );
 }
@@ -479,8 +539,14 @@ function Badge({ pct }: { pct: number }) {
 
 const ringK = (k: number, i: number) => easeInOutCubic(clamp01(k * (1 + 7 * 0.06) - i * 0.06));
 
-/** The rings and their labels alone, filling at `k`; each pops in at `appear` (0..1) a little after the last. */
-export function RingsGrid({ k, appear }: { k: number; appear: number }) {
+/** Where the last ring (Conj., the one that completes) sits in the grid, in points. */
+export const RINGS_GRID = { w: 321, h: 166.6, last: { x: 283.9, y: 117.3 } };
+
+/** The rings and their labels alone, filling at `k`; each pops in at `appear`
+    (0..1) a little after the last. As `zoom` (0..1) rises, everything but the
+    last ring's circle fades. */
+export function RingsGrid({ k, appear, zoom = 0 }: { k: number; appear: number; zoom?: number }) {
+  const last = RINGS.length - 1;
   return (
     <div className="grid grid-cols-4 gap-x-2 gap-y-[14px]" style={{ width: 321 }}>
       {RINGS.map(([label, total, a, b], i) => {
@@ -489,8 +555,8 @@ export function RingsGrid({ k, appear }: { k: number; appear: number }) {
         const doneAt = done ? clamp01((ringK(k, i) - 0.97) / 0.03) : 0;
         const p = easeOutBack(clamp01(appear * 1.9 - i * 0.13));
         return (
-          <div key={label} style={{ opacity: clamp01(p * 1.5), transform: `scale(${0.6 + 0.4 * p})` }}>
-            <Ring label={label} total={total} used={v} pulse={done ? Math.sin(Math.PI * doneAt) : 0} />
+          <div key={label} style={{ opacity: clamp01(p * 1.5) * (i === last ? 1 : 1 - clamp01(zoom * 3)), transform: `scale(${0.6 + 0.4 * p})` }}>
+            <Ring label={label} total={total} used={v} pulse={done ? Math.sin(Math.PI * doneAt) : 0} textO={i === last ? 1 - clamp01(zoom * 4) : 1} />
           </div>
         );
       })}

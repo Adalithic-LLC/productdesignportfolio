@@ -15,10 +15,10 @@ import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../../ease';
 import { AV_END, AV_TEXT, STAGE } from '../learnTimeline';
 import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
-import { CommunityScreen, GuidedChatScreen, PartnerScreen, RingsGrid } from './Screens';
+import { ACTIVE_CARD_CENTER, CommunityScreen, NOTO, PartnerScreen, RINGS_GRID, RingsGrid } from './Screens';
 import {
-  APP_IN,
-  APP_OUT,
+  ACTIVE_TAP,
+  CARD_TAP,
   CARDS,
   CHALLENGE,
   CHAT,
@@ -35,10 +35,11 @@ import {
   HOPS,
   LOGO_AT,
   PORTRAIT,
-  OPEN_TAP,
   PHONE_AWAY,
   PRACTICE,
-  REQUEST_TAP,
+  PARTNER,
+  PHONE_IN,
+  ZOOM_AT,
   RINGS_AT,
   RINGS_LEN,
   ROAD,
@@ -56,6 +57,9 @@ const PH = PORTRAIT ? { cx: 540, cy: 1228, s: 1.42 } : { cx: 1390, cy: 548, s: 1
 /** How far a phone travels in from the right, and out to the left. */
 const ENTER_DX = PORTRAIT ? 900 : 800;
 const EXIT_DX = PORTRAIT ? 780 : 520;
+/** The close-up on the chat card: how much closer, and where the card lands in the frame. */
+const ZOOM = PORTRAIT ? { k: 1.6, x: 540, y: 1250 } : { k: 1.6, x: 1390, y: 560 };
+const BEZEL = 12;
 /** How high the keyboard jumps out of an app (frame px). */
 const LIFT = PORTRAIT ? 250 : 190;
 const KB_H = KB_DOCK_H;
@@ -153,6 +157,84 @@ function Ending({ t }: { t: number }) {
   );
 }
 
+// ── Practice: the exchange as chat bubbles alone ──
+
+const BUB = PORTRAIT ? { cx: 540, w: 860, bottom: 1560, font: 46, pad: '26px 36px', r: 48, gap: 22 } : { cx: 1390, w: 820, bottom: 820, font: 42, pad: '22px 32px', r: 44, gap: 18 };
+
+function Bubble({ k, me, rise, fill, children }: { k: number; me?: boolean; rise?: boolean; fill?: string; children: ReactNode }) {
+  if (k <= 0) return null;
+  return (
+    <div style={{ display: 'grid', gridTemplateRows: `${Math.min(1, k * 1.5)}fr` }}>
+      <div className={`flex min-h-0 ${me ? 'justify-end' : 'justify-start'}`}>
+        <div
+          style={{
+            maxWidth: '80%',
+            padding: BUB.pad,
+            borderRadius: BUB.r,
+            background: me ? fill ?? '#2D63E6' : '#2C2C2E',
+            color: '#fff',
+            fontFamily: NOTO,
+            fontSize: BUB.font,
+            lineHeight: 1.3,
+            opacity: Math.min(1, k * 1.6),
+            transform: rise ? `translateY(${(1 - k) * 160}px) scale(${0.85 + 0.15 * k})` : `translateY(${(1 - k) * 30}px) scale(${0.9 + 0.1 * k})`,
+            transformOrigin: me ? '100% 100%' : '0% 100%',
+            boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type Line3 = { me?: boolean; text: string; at: number };
+/** Practice: the guided chat's exchange. Times from PRACTICE.at. */
+const PRACTICE_CHAT: Line3[] = [
+  { text: '¿Me ayudas a lavar los platos?', at: CHAT.askAt },
+  { me: true, text: 'Sí, voy ahora.', at: CHAT.sendAt },
+  { text: 'Genial, te espero en la cocina.', at: CHAT.answerAt },
+];
+/** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
+const PARTNER_CHAT: Line3[] = [
+  { text: '¡Hola! ¿Hacemos un reto de escritura?', at: PARTNER.lineAt[0] },
+  { me: true, text: '¡Sí! ¿Cuál es el reto?', at: PARTNER.lineAt[1] },
+  { text: 'Describe tu fin de semana en tres frases.', at: PARTNER.lineAt[2] },
+  { me: true, text: 'El sábado fui al mercado con mi hermana.', at: PARTNER.lineAt[3] },
+];
+
+/** A chat as bubbles alone. `dotsAt` shows the other side typing until the next line. */
+function BubbleShot({ t, at, lines, out, mine, dotsAt }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number }) {
+  const l = t - at;
+  if (l < lines[0].at || l > out + 0.45) return null;
+  const k = (a: number, len = 0.4) => easeOutCubic(clamp01((l - a) / len));
+  const fade = span(l, out, out + 0.4, (x) => x);
+  const next = dotsAt !== undefined ? lines.find((x) => x.at > dotsAt) : undefined;
+  const dots = next && l >= dotsAt! && l < next.at;
+  return (
+    <div className="absolute flex flex-col justify-end" style={{ left: BUB.cx - BUB.w / 2, width: BUB.w, bottom: H - BUB.bottom, gap: BUB.gap, opacity: 1 - fade, transform: `translateY(${-fade * 40}px)` }}>
+      {lines.map((x, i) => {
+        const before = dots && next === x;
+        return (
+          <Bubble key={i} k={before ? 0 : k(x.at, x.me ? 0.45 : 0.4)} me={x.me} rise={x.me} fill={x.me ? mine : undefined}>
+            {x.text}
+          </Bubble>
+        );
+      })}
+      {dots && (
+        <Bubble k={k(dotsAt!, 0.25)}>
+          <span style={{ letterSpacing: '0.15em' }}>
+            {[0, 1, 2].map((i) => (
+              <span key={i} style={{ opacity: 0.35 + 0.65 * Math.max(0, Math.sin((l - dotsAt!) * 9 - i * 0.9)) }}>•</span>
+            ))}
+          </span>
+        </Bubble>
+      )}
+    </div>
+  );
+}
+
 // ── The phones ──
 
 /** An app screen's navigation: each screen from its start, pushed in or popped back to. */
@@ -207,7 +289,7 @@ const typedAt = (text: string, times: number[], t: number) => {
 
 /** Each phone: when it comes in and how, and when it leaves. */
 const PHONES: { in: number; rise: boolean; out: number; exit: 'push' | 'away' }[] = [
-  { in: APP_IN, rise: true, out: HOPS[0].push, exit: 'push' },
+  { in: PHONE_IN, rise: true, out: HOPS[0].push, exit: 'push' },
   { in: HOPS[0].push, rise: false, out: HOPS[1].push, exit: 'push' },
   { in: HOPS[1].push, rise: false, out: HOPS[2].push, exit: 'push' },
   { in: HOPS[2].push, rise: false, out: PHONE_AWAY, exit: 'away' },
@@ -272,8 +354,7 @@ function PhoneScreen({ i, t }: { i: number; t: number }) {
   const dock = kbIn(i, t);
   if (i === 0) {
     const nav: Nav = [
-      { at: APP_IN, how: 'push', draw: (l) => <GuidedChatScreen local={l - (PRACTICE.at - APP_IN)} plan={CHAT} /> },
-      { at: COMMUNITY.at, how: 'pop', draw: (l) => <CommunityScreen local={l} tapAt={REQUEST_TAP - COMMUNITY.at} openAt={OPEN_TAP - COMMUNITY.at} /> },
+      { at: PHONE_IN, how: 'push', draw: (l) => <CommunityScreen local={l - (COMMUNITY.at - PHONE_IN)} activeAt={ACTIVE_TAP - COMMUNITY.at} cardTapAt={CARD_TAP - COMMUNITY.at} /> },
       // The partner chat stays on through Freedom, when the keyboard comes up in it.
       { at: CHALLENGE.at, how: 'push', draw: (l) => <PartnerScreen local={l} dock={dock} /> },
     ];
@@ -309,13 +390,27 @@ function Phones({ t }: { t: number }) {
     <>
       {PHONES.map((p, i) => {
         if (t < p.in || t > p.out + (p.exit === 'away' ? AWAY_LEN : HOP.pushLen)) return null;
-        const { dx, dy, s, o } = phonePose(i, t);
-        const sc = PH.s * s;
+        const { dx, dy, s, o: o0 } = phonePose(i, t);
+        // The first phone dissolves into the partner chat's bubbles, and forms again for the keyboard.
+        const o = i === 0 ? o0 * (1 - span(t, PARTNER.dissolve, PARTNER.gone, (x) => x) + span(t, PARTNER.back, PARTNER.back + 0.45, (x) => x)) : o0;
+        let sc = PH.s * s;
+        let x = PH.cx + dx - (OUTER_W / 2) * sc;
+        let y = PH.cy + dy - (OUTER_H / 2) * sc;
+        if (i === 0) {
+          // Closes in on the chat card, and back out as the chat opens.
+          const z = easeInOutCubic(clamp01((t - ZOOM_AT) / 0.7)) * (t < PARTNER.gone ? 1 : 0);
+          if (z > 0) {
+            const s1 = sc * ZOOM.k;
+            x = lerp(x, ZOOM.x - (BEZEL + ACTIVE_CARD_CENTER.x) * s1, z);
+            y = lerp(y, ZOOM.y - (BEZEL + ACTIVE_CARD_CENTER.y) * s1, z);
+            sc = lerp(sc, s1, z);
+          }
+        }
         return (
           <div
             key={i}
             className="absolute left-0 top-0"
-            style={{ transform: `translate(${PH.cx + dx - (OUTER_W / 2) * sc}px, ${PH.cy + dy - (OUTER_H / 2) * sc}px) scale(${sc})`, transformOrigin: '0 0', opacity: o, zIndex: i }}
+            style={{ transform: `translate(${x}px, ${y}px) scale(${sc})`, transformOrigin: '0 0', opacity: o, zIndex: i }}
           >
             <Device>
               <PhoneScreen i={i} t={t} />
@@ -329,14 +424,25 @@ function Phones({ t }: { t: number }) {
 
 /** The progress rings on their own, where the phone was. */
 const RINGS_SCALE = PORTRAIT ? 2.55 : 1.9;
-const RINGS_C = PORTRAIT ? { x: STAGE.cx, y: 1160 } : { x: PH.cx, y: PH.cy };
+const RINGS_C = PORTRAIT ? { x: 540, y: 880 } : { x: PH.cx, y: PH.cy };
+/** After the rings fill, the camera closes in on the ring that completed and
+    flies through it into "Well… you can." */
+const RING_ZOOM = { from: RINGS_AT + RINGS_LEN + 0.3, to: YOUCAN.at + 0.4, k: 50 };
 function Rings({ t }: { t: number }) {
-  if (t < PHONE_AWAY + 0.15 || t > APP_OUT + 0.5) return null;
+  if (t < PHONE_AWAY + 0.15 || t > RING_ZOOM.to) return null;
   const appear = clamp01((t - PHONE_AWAY - 0.2) / 0.9);
-  const out = span(t, APP_OUT, APP_OUT + 0.45, (x) => x);
+  const u = clamp01((t - RING_ZOOM.from) / (RING_ZOOM.to - RING_ZOOM.from));
+  const move = easeInOutCubic(clamp01(u / 0.45));
+  const z = Math.exp(Math.log(RING_ZOOM.k) * u ** 3);
+  const L = RINGS_GRID.last;
+  // The last ring's centre in the frame: from its place in the grid to the frame's centre.
+  const x0 = RINGS_C.x + (L.x - RINGS_GRID.w / 2) * RINGS_SCALE;
+  const y0 = RINGS_C.y + (L.y - RINGS_GRID.h / 2) * RINGS_SCALE;
+  const x = lerp(x0, W / 2, move);
+  const y = lerp(y0, PORTRAIT ? 960 : H / 2, move);
   return (
-    <div className="dark absolute left-0 top-0" style={{ transform: `translate(${RINGS_C.x}px, ${RINGS_C.y + out * 40}px) translate(-50%, -50%) scale(${RINGS_SCALE})`, opacity: 1 - out }}>
-      <RingsGrid k={clamp01((t - RINGS_AT) / RINGS_LEN)} appear={appear} />
+    <div className="dark absolute left-0 top-0" style={{ width: RINGS_GRID.w, transformOrigin: `${L.x}px ${L.y}px`, transform: `translate(${x - L.x}px, ${y - L.y}px) scale(${RINGS_SCALE * z})` }}>
+      <RingsGrid k={clamp01((t - RINGS_AT) / RINGS_LEN)} appear={appear} zoom={u} />
     </div>
   );
 }
@@ -443,10 +549,12 @@ export default function A03Film() {
   return (
     <div ref={rootRef} className="relative overflow-hidden bg-black" style={{ width: W, height: H }}>
       <Glow />
-      {avBox && t < AV_END && <AvatarOpener t={t} boxes={avBox} />}
+      {avBox && t < AV_END && <AvatarOpener t={t} boxes={avBox} caret={false} />}
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}
+      <BubbleShot t={t} at={PRACTICE.at} lines={PRACTICE_CHAT} out={CHAT.out} mine="#2D63E6" dotsAt={CHAT.dotsAt} />
+      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" />
       <Phones t={t} />
       <FlyingKeyboard t={t} />
       <Rings t={t} />
