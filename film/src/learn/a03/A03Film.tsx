@@ -10,14 +10,17 @@ import { flushSync } from 'react-dom';
 import { Keyboard, GlobeRow } from '../../Phone';
 import { Glow, syncAnimations } from '../../Film';
 import SplashLogo from '../../SplashLogo';
-import { AV_SIZE, AV_TEXT_STYLE, AvatarOpener, preloadAvatars, type Box } from '../Opener';
+import { AV_SIZE, AV_TEXT_STYLE, preloadAvatars, type Box } from '../Opener';
+import { A03Opener } from './A03Opener';
 import { clamp01, easeInOutCubic, easeOutBack, easeOutCubic, lerp, span } from '../../ease';
-import { AV_END, AV_TEXT, STAGE } from '../learnTimeline';
+import { AV_TEXT, STAGE } from '../learnTimeline';
 import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
 import { ACTIVE_CARD_CENTER, CommunityScreen, NOTO, PartnerScreen, RINGS_GRID, RingsGrid } from './Screens';
 import {
   CARDS,
+  LINE2,
+  OP_END,
   FREEDOM_A,
   FREEDOM_B,
   CHALLENGE,
@@ -67,11 +70,11 @@ const KB_H = KB_DOCK_H;
 
 // ── Measuring the opener's typed line (as LearnFilm) ──
 
-function measureAvBox(root: HTMLElement): Box[] {
+function measureAvBox(root: HTMLElement, text: string): Box[] {
   const av = document.createElement('div');
   Object.assign(av.style, { position: 'absolute', left: '-10000px', top: '0', visibility: 'hidden', ...AV_TEXT_STYLE, width: `${AV_TEXT_STYLE.width}px`, fontSize: `${AV_SIZE}px`, fontWeight: '700' });
   root.appendChild(av);
-  av.textContent = AV_TEXT;
+  av.textContent = text;
   const ab = av.getBoundingClientRect();
   const [mx, my] = [ab.left + ab.width / 2, ab.top + ab.height / 2];
   const charBox = (i: number) => {
@@ -84,10 +87,10 @@ function measureAvBox(root: HTMLElement): Box[] {
   };
   const first = charBox(0);
   const boxes: Box[] = [[first[0], first[0], first[2], first[3]]];
-  for (let i = 0; i < AV_TEXT.length; i++) {
+  for (let i = 0; i < text.length; i++) {
     const p = boxes[i];
     const c = charBox(i);
-    boxes.push(AV_TEXT[i] === ' ' ? p : [Math.min(p[0], c[0]), Math.max(p[1], c[1]), Math.min(p[2], c[2]), Math.max(p[3], c[3])]);
+    boxes.push(text[i] === ' ' ? p : [Math.min(p[0], c[0]), Math.max(p[1], c[1]), Math.min(p[2], c[2]), Math.max(p[3], c[3])]);
   }
   av.remove();
   return boxes;
@@ -555,7 +558,7 @@ export default function A03Film() {
   const params = new URLSearchParams(location.search);
   const still = params.get('t');
   const [t, setT] = useState(still ? parseFloat(still) : 0);
-  const [avBox, setAvBox] = useState<Box[] | null>(null);
+  const [avBox, setAvBox] = useState<[Box[], Box[]] | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -570,7 +573,7 @@ export default function A03Film() {
     interRegistered
       .then(() =>
         Promise.all([
-          document.fonts.load(`700 ${AV_SIZE}px 'Inter Display'`, AV_TEXT + allText),
+          document.fonts.load(`700 ${AV_SIZE}px 'Inter Display'`, AV_TEXT + LINE2 + allText),
           document.fonts.load('17px Inter', HOP_TYPED.join('') + '9:41'),
           document.fonts.load('600 17px Inter', '9:41'),
           ...[400, 500, 600, 700].map((w) => document.fonts.load(`${w} 16px 'Noto Sans'`, 'Word progress Sunny Heron Arcatext 1,000')),
@@ -580,7 +583,7 @@ export default function A03Film() {
       .then(() => preloadAvatars())
       .then(() => {
         if (!live || !rootRef.current) return;
-        const b = measureAvBox(rootRef.current);
+        const b: [Box[], Box[]] = [measureAvBox(rootRef.current, AV_TEXT), measureAvBox(rootRef.current, LINE2)];
         flushSync(() => setAvBox(b));
         resolveReady();
       });
@@ -611,7 +614,7 @@ export default function A03Film() {
   return (
     <div ref={rootRef} className="relative overflow-hidden bg-black" style={{ width: W, height: H }}>
       <Glow />
-      {avBox && t < AV_END && <AvatarOpener t={t} boxes={avBox} caret={false} />}
+      {avBox && t < OP_END && <A03Opener t={t} boxes={avBox[0]} boxes2={avBox[1]} />}
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}

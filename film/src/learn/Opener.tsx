@@ -48,7 +48,7 @@ export const AV_TEXT_STYLE = {
 
 // ── The avatars ──
 
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   return () => {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
@@ -80,13 +80,13 @@ const PASTELS: [string, string][] = [
 ];
 /** Arcatext's own avatar set (generated for the film): men and women of
     every background, pre-cut into iOS-style circles on a pastel gradient. */
-const FACE_FILES = Object.entries(import.meta.glob('./avatars/*.webp', { eager: true, import: 'default' })).sort(([a], [b]) =>
+export const FACE_FILES = Object.entries(import.meta.glob('./avatars/*.webp', { eager: true, import: 'default' })).sort(([a], [b]) =>
   a.localeCompare(b),
 );
-const FACES: string[] = FACE_FILES.map(([, url]) => url as string);
+export const FACES: string[] = FACE_FILES.map(([, url]) => url as string);
 /** The faces in five equal skin-tone groups (file suffix -t1 deepest ... -t5
     lightest, measured from the artwork), so the cloud can deal them evenly. */
-const BY_TONE: string[][] = [[], [], [], [], []];
+export const BY_TONE: string[][] = [[], [], [], [], []];
 for (const [path, url] of FACE_FILES) BY_TONE[Math.min(4, Math.max(0, +(/-t(\d)\.webp$/.exec(path)?.[1] ?? 3) - 1))].push(url as string);
 /** Resolves once every face is decoded, so no frame is drawn with one missing. */
 export function preloadAvatars(): Promise<void> {

@@ -8,7 +8,7 @@
  * Every time is in seconds from the film's start; each shot is as long as its
  * voiced line (Gemini Enceladus) plus a little air.
  */
-import { AV_TEXT, AV_TYPE_TIMES, AV_GONE, AV_VOICE_AT, BPM, FRAME, PORTRAIT } from '../learnTimeline';
+import { AV_TEXT, AV_TYPE_TIMES, AV_VOICE_AT, BPM, FRAME, PORTRAIT } from '../learnTimeline';
 
 export { PORTRAIT, FRAME };
 
@@ -33,7 +33,71 @@ export type Line = {
   out: number;
 };
 
-let c = AV_GONE + 0.05;
+// ── The opener ──
+// The cloud bursts and the question types (Arcatext 02's opener, faces only);
+// it clears, and the second line types in three spoken parts. After
+// "collaborative," five pairs snap together; after "individual," they drift
+// apart; after "measurable." the ten become progress rings that fill and
+// turn green. Then everything collapses into the point.
+
+/** The question's last letter; it holds, then clears. */
+export const Q_END = AV_TYPE_TIMES[AV_TYPE_TIMES.length - 1];
+export const Q_OUT = Q_END + 0.3;
+export const Q_OUT_LEN = 0.35;
+export const LINE2 = 'Arcatext makes the journey collaborative, individual, and measurable.';
+/** The three spoken parts of the second line: the clip, the text each types,
+    and how long its speech runs (read from the clips' waveforms). The mixer
+    trims each clip so speech starts 0.06 s after its `at`. */
+const PARTS = [
+  { key: 'a3-j1', text: 'Arcatext makes the journey collaborative,', spoken: 'Arcatext makes the journey collaborative,', speech: 2.32 },
+  { key: 'a3-j2', text: ' individual,', spoken: 'individual,', speech: 0.75 },
+  { key: 'a3-j3', text: ' and measurable.', spoken: 'and measurable.', speech: 0.73 },
+];
+/** The pauses after each part, while the avatars act it out. */
+export const D_OP = {
+  pair: 1.1, // after "collaborative,": five pairs snap together into pills
+  split: 1.1, // after "individual,": the pairs drift apart
+  ringsIn: 0.4, // after "measurable.": the ten faces turn into rings
+  ringsHold: 0.55, // the last ring has turned green; everything holds
+  collapse: 0.6, // the cloud, the rings and the line fall into the point
+};
+const J1_AT = Q_OUT + Q_OUT_LEN + 0.1;
+export const PAIR_AT = J1_AT + 0.06 + PARTS[0].speech;
+const J2_AT = PAIR_AT + D_OP.pair - 0.06;
+export const SPLIT_AT = J2_AT + 0.06 + PARTS[1].speech;
+const J3_AT = SPLIT_AT + D_OP.split - 0.06;
+export const RING_AT = J3_AT + 0.06 + PARTS[2].speech;
+export const PART_AT = [J1_AT, J2_AT, J3_AT];
+/** When each letter of the second line types: an even rate through each
+    part's speech; a part's leading space lands just before its first word. */
+export const LINE2_TIMES: number[] = PARTS.flatMap((p, k) => {
+  const s = PART_AT[k] + 0.06;
+  const body = p.text.trimStart();
+  const lead = p.text.length - body.length;
+  return [
+    ...Array.from({ length: lead }, () => s - 0.03),
+    ...[...body].map((_, i) => s + (i * (p.speech - 0.1)) / Math.max(1, body.length - 1)),
+  ];
+});
+/** The rings: each fills to its own number at its own pace, and turns green
+    when full. The numbers are dealt out of order across the ten. */
+export const RING_MAX = [35, 10, 50, 20, 45, 15, 55, 30, 25, 40];
+export const RING_FILL = RING_MAX.map((_, j) => {
+  const at = RING_AT + D_OP.ringsIn + [0, 0.12, 0.05, 0.2, 0.08, 0.16, 0.02, 0.22, 0.1, 0.14][j];
+  const len = [1.5, 1.15, 1.9, 1.3, 1.75, 1.2, 2.0, 1.45, 1.35, 1.6][j];
+  return { at, len, done: at + len };
+});
+export const RINGS_DONE = Math.max(...RING_FILL.map((r) => r.done));
+export const OP_COLLAPSE = RINGS_DONE + D_OP.ringsHold;
+/** Everything is back in the point; it winks out at OP_END. */
+export const OP_GONE = OP_COLLAPSE + D_OP.collapse;
+export const OP_END = OP_GONE + 0.35;
+/** When each pair's two faces meet (a little apart from pair to pair). */
+export const PAIR_DELAY = [0, 0.07, 0.13, 0.04, 0.1];
+export const PAIR_SNAP = 0.62; // from PAIR_AT: the approach ends and the snap begins
+export const PAIR_HIT = 0.9; // from PAIR_AT: the faces touch
+
+let c = OP_GONE + 0.05;
 export const APP_IN = c;
 c += D3.appIn;
 
@@ -136,7 +200,8 @@ export const DURATION = Math.round((END_AT + END_LEN) * 60) / 60;
 export type VoiceLine = { key: string; text: string; at: number; until: number; marks: { text: string; at: number }[] };
 const voiceLine = (key: string, text: string, at: number, until: number): VoiceLine => ({ key, text, at, until, marks: [{ text, at }] });
 export const VOICE_LINES: VoiceLine[] = [
-  voiceLine('a3-q', AV_TEXT.replace('1000', 'one thousand'), AV_VOICE_AT, AV_GONE),
+  voiceLine('a3-q', AV_TEXT.replace('1000', 'one thousand'), AV_VOICE_AT, J1_AT),
+  ...PARTS.map((p, k) => voiceLine(p.key, p.spoken, PART_AT[k], k < 2 ? PART_AT[k + 1] : OP_GONE)),
   voiceLine('a3-community', 'chat with real people from the community,', COMMUNITY.at + D3.lead, CHALLENGE.at),
   voiceLine('a3-challenge', 'complete co-writing challenges with partners.', CHALLENGE.at + D3.lead, FREEDOM_AT),
   voiceLine('a3-freedom', 'Learn in your own way, using the most powerful AI keyboard inside any messaging app.', FREEDOM_AT + D3.lead, PROGRESS.at),
@@ -148,7 +213,10 @@ export const VOICE_LINES: VoiceLine[] = [
 const scene = (id: string, name: string, start: number, texts: { key: string; label: string; text: string }[] = []) => ({ id, name, start, texts });
 export function scenes() {
   const list = [
-    scene('avatars', `Avatars: ${AV_TEXT}`, 0, [{ key: 'q', label: 'Typed line', text: AV_TEXT }]),
+    scene('avatars', `Avatars: ${AV_TEXT}`, 0, [
+      { key: 'q', label: 'Typed line', text: AV_TEXT },
+      { key: 'line2', label: 'Second line', text: LINE2 },
+    ]),
     ...[COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
     scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }]),
     scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }]),
@@ -164,6 +232,7 @@ export function cues() {
     bpm: BPM,
     keys: [
       ...AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })),
+      ...LINE2_TIMES.map((t, i) => ({ t, space: LINE2[i] === ' ' })),
       ...HOP_TYPE_TIMES.flatMap((times, k) => times.map((t, i) => ({ t, space: HOP_TYPED[k][i] === ' ' }))),
       ...COWRITE.segs.flatMap((s) => s.times.map((t, i) => ({ t: CHALLENGE.at + t, space: s.text[i] === ' ' }))),
     ],
@@ -175,7 +244,11 @@ export function cues() {
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
-    pops: [],
+    // The pairs meeting, then each ring turning green.
+    pops: [
+      ...PAIR_DELAY.map((d) => ({ t: PAIR_AT + PAIR_HIT + d, who: 'them' })),
+      ...RING_FILL.map((r) => ({ t: r.done, who: 'me' })),
+    ].sort((a, b) => a.t - b.t),
     titles: [[0, APP_IN]],
     phones: [PHONE_IN],
     opening: [0, 0],
