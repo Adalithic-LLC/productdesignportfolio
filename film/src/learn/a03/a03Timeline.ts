@@ -21,7 +21,6 @@ export const D3 = {
   community: 3.0, // "chat with real people from the community," (2.2 s): Active, zoom, tap
   freedom: 9.6, // "Now, imagine breaking out of the mold…" (8.3 s spoken), the keyboard hops
   progress: 4.7, // "No matter how you learn, we measure your progress…" (3.8 s), the rings fill and the camera flies through one
-  endHold: 1.6, // the finished closer holds
 };
 
 export type Line = {
@@ -113,7 +112,9 @@ export const END_AT = c;
 /** The road line, then the logo; the logo's name types on "Arcatext" (3.8 s into the take). */
 export const ROAD = 'The road to 1000 words.';
 export const LOGO_AT = END_AT + 0.2 + 3.82 - 1.55;
-export const DURATION = Math.ceil((LOGO_AT + 3.0 + D3.endHold) * 2) / 2;
+/** The end card runs 5.5 s (to the frame): the line, the logo, a brief hold. */
+export const END_LEN = 5.5;
+export const DURATION = Math.round((END_AT + END_LEN) * 60) / 60;
 
 // ── Voice ──
 export type VoiceLine = { key: string; text: string; at: number; until: number; marks: { text: string; at: number }[] };
