@@ -2304,6 +2304,22 @@
         }
       ]
     },
+    "ads": {
+      "eyebrow": "LAUNCH ADS",
+      "titleLead": "Made for the",
+      "titleHighlight": "Shorts feed",
+      "description": "Two 9:16 spots, built in code from the app’s own screens and rendered frame by frame, with the voiceover and music timed to every cut. Shown here under the YouTube Shorts interface they were framed for. Tap a phone for sound.",
+      "cards": [
+        {
+          "eyebrow": "Arcatext 02 · 1:02",
+          "body": "Opens on a cloud of contacts: “Have you tried texting to learn a language?” Then the keyboard rewords a message, checks it with a reverse translation, and adds the words you missed to a study guide."
+        },
+        {
+          "eyebrow": "Arcatext 03 · 0:42",
+          "body": "“You only need 1000 words.” Faces pair up, split, and turn into progress rings; then the app: chatting with the community, co-writing with a partner, the keyboard in any messaging app, and progress that fills on the road to 1000 words."
+        }
+      ]
+    },
     "caseStudy": {
       "eyebrow": "ARCATEXT CASE STUDY",
       "back": "Back to Arcatext",
