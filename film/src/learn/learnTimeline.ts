@@ -151,13 +151,13 @@ export const LINE2_OUT = LINE2_B_TIMES[LINE2_B_TIMES.length - 1] + D.line2Hold;
     collapses back into the point. */
 export const AV_POINT = 0.15;
 export const AV_BURST = 0.6;
-export const AV_TEXT = A03 ? 'What if you only needed 1000 words to communicate with all these people?' : 'Have you tried texting to learn a language?';
+export const AV_TEXT = A03 ? 'You only need 1000 words to communicate in a new language.' : 'Have you tried texting to learn a language?';
 /** The typed line keeps pace with its voiceover: when each word is spoken
     (seconds after speech starts), read from the Enceladus take, plus its end.
     Each word types out across its own span; the space lands just before the
     next word. */
 const AV_WORD_AT = A03
-  ? [0, 0.62, 0.74, 0.9, 1.44, 1.84, 3.14, 3.66, 4.06, 4.44, 4.76, 5.18, 5.42, 5.7]
+  ? [0, 0.48, 0.76, 1.04, 1.94, 2.34, 2.6, 3.02, 3.22, 3.42, 3.54, 3.9]
   : [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
 function spokenTimes(text: string, start: number, wordAt: number[]) {
   const out: number[] = [];

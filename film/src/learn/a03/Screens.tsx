@@ -7,7 +7,7 @@
  * screen came on.
  */
 import type { ReactNode } from 'react';
-import { ChartNoAxesColumn, ChevronDown, ChevronLeft, ChevronRight, CircleEllipsis, CircleUserRound, Globe, House, Leaf, MessagesSquare, Search, Users, X } from 'lucide-react';
+import { AudioLines, ChartNoAxesColumn, ChevronDown, ChevronLeft, ChevronRight, CircleEllipsis, CircleUserRound, Globe, House, Leaf, MessagesSquare, Search, Users, Volume2, X } from 'lucide-react';
 import { clamp01, easeInOutCubic, easeOutBack, easeOutCubic, lerp } from '../../ease';
 import { HomeBar, StatusBar } from './Device';
 import { KB_DOCK_H } from './MessagingApps';
@@ -348,8 +348,9 @@ function Pill({ kind, pressed }: { kind: keyof typeof PILL; pressed?: boolean })
   );
 }
 
-export function CommunityScreen({ local, tapAt }: { local: number; tapAt: number }) {
+export function CommunityScreen({ local, tapAt, openAt }: { local: number; tapAt: number; openAt: number }) {
   const pressed = local >= tapAt - 0.08 && local < tapAt + 0.12;
+  const openPressed = local >= openAt - 0.08 && local < openAt + 0.2;
   const requested = local >= tapAt + 0.12;
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: PAGE, fontFamily: NOTO }}>
@@ -401,7 +402,7 @@ export function CommunityScreen({ local, tapAt }: { local: number; tapAt: number
                   <Pill kind="Cancel" />
                 </div>
               ) : (
-                <Pill kind={pill} pressed={i === 1 && pressed} />
+                <Pill kind={pill} pressed={(i === 1 && pressed) || (i === 0 && openPressed)} />
               )}
             </div>
           );
@@ -476,10 +477,30 @@ function Badge({ pct }: { pct: number }) {
   );
 }
 
+const ringK = (k: number, i: number) => easeInOutCubic(clamp01(k * (1 + 7 * 0.06) - i * 0.06));
+
+/** The rings and their labels alone, filling at `k`; each pops in at `appear` (0..1) a little after the last. */
+export function RingsGrid({ k, appear }: { k: number; appear: number }) {
+  return (
+    <div className="grid grid-cols-4 gap-x-2 gap-y-[14px]" style={{ width: 321 }}>
+      {RINGS.map(([label, total, a, b], i) => {
+        const v = lerp(a, b, ringK(k, i));
+        const done = Math.round(v) >= total;
+        const doneAt = done ? clamp01((ringK(k, i) - 0.97) / 0.03) : 0;
+        const p = easeOutBack(clamp01(appear * 1.9 - i * 0.13));
+        return (
+          <div key={label} style={{ opacity: clamp01(p * 1.5), transform: `scale(${0.6 + 0.4 * p})` }}>
+            <Ring label={label} total={total} used={v} pulse={done ? Math.sin(Math.PI * doneAt) : 0} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** The rings at `k` (0 = before, 1 = after), each starting a little after the last. */
 export function PracticeScreen({ k }: { k: number }) {
-  const ringK = (i: number) => easeInOutCubic(clamp01((k * (1 + 7 * 0.06) - i * 0.06)));
-  const vals = RINGS.map(([, , a, b], i) => lerp(a, b, ringK(i)));
+  const vals = RINGS.map(([, , a, b], i) => lerp(a, b, ringK(k, i)));
   const used = vals.reduce((s, v) => s + Math.round(v), 0) + Math.round(lerp(HIDDEN[0], HIDDEN[1], k));
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: PAGE, fontFamily: NOTO }}>
@@ -497,7 +518,7 @@ export function PracticeScreen({ k }: { k: number }) {
               {RINGS.map(([label, total], i) => {
                 const done = Math.round(vals[i]) >= total;
                 // A pulse when a ring completes.
-                const doneAt = done ? clamp01((ringK(i) - 0.97) / 0.03) : 0;
+                const doneAt = done ? clamp01((ringK(k, i) - 0.97) / 0.03) : 0;
                 return <Ring key={label} label={label} total={total} used={vals[i]} pulse={done ? Math.sin(Math.PI * doneAt) : 0} />;
               })}
             </div>
@@ -530,6 +551,143 @@ export function PracticeScreen({ k }: { k: number }) {
         </div>
       </div>
       <TabBar sel={1} />
+    </div>
+  );
+}
+
+// ── 5. Practice: a guided chat (ChatScreen) ────────────────────────────────
+
+type ChatPlan = { reply: string; typeAt: number; per: number; sendAt: number; dotsAt: number; answerAt: number; cardsAt: number };
+
+function Appear({ k, children }: { k: number; children: ReactNode }) {
+  if (k <= 0) return null;
+  return (
+    <div style={{ display: 'grid', gridTemplateRows: `${Math.min(1, k * 1.4)}fr` }}>
+      <div className="min-h-0" style={{ opacity: k, transform: `translateY(${(1 - k) * 14}px)` }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function BotRow({ text }: { text: string }) {
+  return (
+    <div className="flex items-start pr-10">
+      <div className="flex items-start gap-2 rounded-[16px] p-[10px]" style={{ background: GROUPED, color: '#fff', fontSize: 16, lineHeight: '22px' }}>
+        {text}
+        <ChevronDown size={14} color={SECONDARY} strokeWidth={2.8} className="mt-[4px] shrink-0" />
+      </div>
+      <div className="grid h-11 w-11 shrink-0 place-items-center">
+        <Volume2 size={19} color={ACCENT} strokeWidth={2.4} />
+      </div>
+    </div>
+  );
+}
+
+function UserRow({ text }: { text: string }) {
+  return (
+    <div className="flex items-start justify-end pl-10">
+      <div className="grid h-11 w-11 shrink-0 place-items-center">
+        <Volume2 size={19} color={ACCENT} strokeWidth={2.4} />
+      </div>
+      <div className="flex items-start gap-2 rounded-[16px] p-[10px]" style={{ background: '#2D63E6', color: '#fff', fontSize: 16, lineHeight: '22px' }}>
+        {text}
+        <ChevronDown size={14} color="rgba(255,255,255,0.85)" strokeWidth={2.8} className="mt-[4px] shrink-0" />
+      </div>
+    </div>
+  );
+}
+
+/** "Mom wants help with the dishes": the learner types one of the suggested
+    replies and sends it, and Arcatext answers. `local` is seconds from the
+    shot's start; the plan's times are from there too. */
+export function GuidedChatScreen({ local, plan }: { local: number; plan: ChatPlan }) {
+  const n = Math.max(0, Math.min(plan.reply.length, Math.floor((local - plan.typeAt) / plan.per) + 1));
+  const sent = local >= plan.sendAt;
+  const typed = sent ? '' : plan.reply.slice(0, n);
+  const sentK = easeOutCubic(clamp01((local - plan.sendAt) / 0.35));
+  const dots = local >= plan.dotsAt && local < plan.answerAt;
+  const answerK = easeOutCubic(clamp01((local - plan.answerAt) / 0.35));
+  const cards = easeInOutCubic(clamp01((local - plan.cardsAt) / 0.35));
+  const pct = sent ? 40 : 20;
+  const pressed = local >= plan.sendAt - 0.1 && local < plan.sendAt + 0.08;
+  const card = (reply: string, meaning: string, o: number, x: number) => (
+    <div className="absolute inset-0 rounded-[12px] p-3" style={{ background: CARD, opacity: o, transform: `translateX(${x}px)` }}>
+      <div style={{ fontWeight: 500, fontSize: 15, color: ACCENT }}>{reply}</div>
+      <div style={{ fontSize: 12, color: 'rgba(123,162,255,0.7)', marginTop: 2 }}>{meaning}</div>
+    </div>
+  );
+  return (
+    <div className="absolute inset-0 flex flex-col" style={{ background: '#000', fontFamily: NOTO }}>
+      <StatusBar />
+      <div className="flex shrink-0 items-center gap-2 pl-1" style={{ height: 50 }}>
+        <div className="grid h-11 w-11 shrink-0 place-items-center">
+          <ChevronLeft size={24} color={ACCENT} strokeWidth={2.6} />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="truncate" style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Mom wants help with the dishes</div>
+          <div style={{ fontSize: 12, color: SECONDARY }}>A1</div>
+        </div>
+        <div className="grid h-11 w-9 shrink-0 place-items-center">
+          <AudioLines size={20} color={ACCENT} strokeWidth={2.4} />
+        </div>
+        <div className="grid h-11 w-9 shrink-0 place-items-center">
+          <ChartNoAxesColumn size={20} color={ACCENT} strokeWidth={2.6} />
+        </div>
+        <div className="mr-4 shrink-0">
+          <Badge pct={pct} />
+        </div>
+      </div>
+      <div className="shrink-0" style={{ height: 0.5, background: HAIR }} />
+      <div className="flex min-h-0 flex-1 flex-col justify-end gap-2 overflow-hidden p-3">
+        <BotRow text="Hola, ¿dónde estás?" />
+        <UserRow text="Estoy en mi cuarto." />
+        <BotRow text="¿Me ayudas a lavar los platos?" />
+        <Appear k={sentK}>
+          <UserRow text={plan.reply} />
+        </Appear>
+        {dots && (
+          <div className="self-start rounded-[16px] px-[14px] py-2" style={{ background: GROUPED, color: SECONDARY, fontFamily: SF, fontWeight: 700, fontSize: 18, lineHeight: '20px' }}>
+            {[0, 1, 2].map((i) => (
+              <span key={i} style={{ opacity: 0.35 + 0.65 * Math.max(0, Math.sin((local - plan.dotsAt) * 9 - i * 0.9)) }}>•</span>
+            ))}
+          </div>
+        )}
+        <Appear k={answerK}>
+          <BotRow text="Genial, te espero en la cocina." />
+        </Appear>
+      </div>
+      <div className="flex shrink-0 flex-col gap-2 px-3 pb-[42px] pt-2">
+        <div className="flex items-center">
+          <div className="grid h-11 w-9 place-items-center">
+            <ChevronLeft size={20} color={ACCENT} strokeWidth={2.6} style={{ opacity: 0.35 }} />
+          </div>
+          <div className="relative min-w-0 flex-1 overflow-hidden" style={{ height: 62 }}>
+            {card('Sí, voy ahora.', 'Yes, I’m coming now.', 1 - cards, -40 * cards)}
+            {cards > 0 && card('Ya voy para allá.', 'I’m heading there now.', cards, 40 * (1 - cards))}
+          </div>
+          <div className="grid h-11 w-11 place-items-center">
+            <Volume2 size={19} color={ACCENT} strokeWidth={2.4} />
+          </div>
+          <div className="grid h-11 w-9 place-items-center">
+            <ChevronRight size={20} color={ACCENT} strokeWidth={2.6} />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center rounded-full px-3" style={{ height: 38, background: GROUPED, fontSize: 16, color: typed ? '#fff' : PLACEHOLDER }}>
+            {typed || 'Type a reply'}
+            {typed && <span className="ml-[1px] inline-block h-[18px] w-[2px] rounded-full" style={{ background: ACCENT }} />}
+          </div>
+          <div className="relative grid h-11 w-11 place-items-center">
+            {pressed && <span className="absolute inset-0 rounded-full bg-white/20" />}
+            <svg width={30} height={30} viewBox="0 0 30 30" style={{ transform: pressed ? 'scale(0.9)' : undefined }}>
+              <circle cx={15} cy={15} r={15} fill={typed ? ACCENT : 'rgba(235,235,245,0.3)'} />
+              <path d="M15 22V9M9.8 14.2L15 9l5.2 5.2" stroke="#000" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <HomeBar />
     </div>
   );
 }

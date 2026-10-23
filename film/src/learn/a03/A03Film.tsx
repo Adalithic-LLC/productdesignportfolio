@@ -15,12 +15,13 @@ import { clamp01, easeInOutCubic, easeOutCubic, lerp, span } from '../../ease';
 import { AV_END, AV_TEXT, STAGE } from '../learnTimeline';
 import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
-import { CommunityScreen, PartnerScreen, PracticeScreen, WordListScreen } from './Screens';
+import { CommunityScreen, GuidedChatScreen, PartnerScreen, RingsGrid } from './Screens';
 import {
   APP_IN,
   APP_OUT,
   CARDS,
   CHALLENGE,
+  CHAT,
   COMMUNITY,
   DURATION,
   END_AT,
@@ -34,7 +35,9 @@ import {
   HOPS,
   LOGO_AT,
   PORTRAIT,
-  PROGRESS_PUSH,
+  OPEN_TAP,
+  PHONE_AWAY,
+  PRACTICE,
   REQUEST_TAP,
   RINGS_AT,
   RINGS_LEN,
@@ -119,8 +122,8 @@ function YouCan({ t }: { t: number }) {
   if (a <= 0 || out >= 1) return null;
   const piece = (k: number) => ({ display: 'inline-block', opacity: k, transform: `translateY(${(1 - k) * 26}px)`, filter: k < 1 ? `blur(${(1 - k) * 12}px)` : undefined });
   return (
-    <div className="absolute flex justify-center" style={{ left: 0, width: W, top: PORTRAIT ? STAGE.cy + 60 : H / 2, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}>
-      <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 132 : 140, letterSpacing: '-0.03em', color: '#fff' }}>
+    <div className="absolute flex justify-center" style={{ left: STAGE.cx - 500, width: 1000, top: PORTRAIT ? STAGE.cy + 60 : H / 2, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}>
+      <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 96 : 116, letterSpacing: '-0.03em', color: '#fff' }}>
         <span style={piece(a)}>Well…</span> <span style={{ ...piece(b), color: ACCENT }}>you can.</span>
       </div>
     </div>
@@ -135,12 +138,12 @@ function Ending({ t }: { t: number }) {
   const cy = PORTRAIT ? STAGE.cy + 60 : H / 2;
   return (
     <div className="absolute inset-0">
-      <div className="absolute grid place-items-center" style={{ left: W / 2 - 300, width: 600, top: cy - 150, height: 300 }}>
+      <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: cy - 150, height: 300 }}>
         {t >= LOGO_AT && <SplashLogo s={t - LOGO_AT} scale={2.2} keepBlue />}
       </div>
       {lineOut < 1 && (
-        <div className="absolute flex justify-center" style={{ left: 0, width: W, top: cy, transform: `translateY(calc(-50% + ${(1 - k) * 18}px))`, opacity: k * (1 - lineOut), filter: k < 1 ? `blur(${(1 - k) * 8}px)` : undefined }}>
-          <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 84 : 92, letterSpacing: '-0.025em', color: '#fff' }}>
+        <div className="absolute flex justify-center" style={{ left: STAGE.cx - 500, width: 1000, top: cy, transform: `translateY(calc(-50% + ${(1 - k) * 18}px))`, opacity: k * (1 - lineOut), filter: k < 1 ? `blur(${(1 - k) * 8}px)` : undefined }}>
+          <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 62 : 76, letterSpacing: '-0.02em', color: '#fff' }}>
             {accentParts(ROAD, '1000 words')}
           </div>
         </div>
@@ -203,13 +206,13 @@ const typedAt = (text: string, times: number[], t: number) => {
 };
 
 /** Each phone: when it comes in and how, and when it leaves. */
-const PHONES = [
-  { in: APP_IN, rise: true, out: HOPS[0].push, drop: false },
-  { in: HOPS[0].push, rise: false, out: HOPS[1].push, drop: false },
-  { in: HOPS[1].push, rise: false, out: HOPS[2].push, drop: false },
-  { in: HOPS[2].push, rise: false, out: PROGRESS_PUSH, drop: false },
-  { in: PROGRESS_PUSH, rise: false, out: APP_OUT, drop: true },
+const PHONES: { in: number; rise: boolean; out: number; exit: 'push' | 'away' }[] = [
+  { in: APP_IN, rise: true, out: HOPS[0].push, exit: 'push' },
+  { in: HOPS[0].push, rise: false, out: HOPS[1].push, exit: 'push' },
+  { in: HOPS[1].push, rise: false, out: HOPS[2].push, exit: 'push' },
+  { in: HOPS[2].push, rise: false, out: PHONE_AWAY, exit: 'away' },
 ];
+const AWAY_LEN = 0.55;
 
 function phonePose(i: number, t: number) {
   const p = PHONES[i];
@@ -225,9 +228,10 @@ function phonePose(i: number, t: number) {
     const k = easeInOutCubic(clamp01((t - p.in) / HOP.pushLen));
     dx += (1 - k) * ENTER_DX;
   }
-  if (p.drop) {
-    const k = clamp01((t - p.out) / 0.55);
-    dy += k * k * 760;
+  if (p.exit === 'away') {
+    // Steps back into the glow, with no swipe, as the rings come up.
+    const k = easeInOutCubic(clamp01((t - p.out) / AWAY_LEN));
+    s *= 1 - 0.14 * k;
     o *= 1 - k;
   } else {
     const k = easeInOutCubic(clamp01((t - p.out) / HOP.pushLen));
@@ -268,10 +272,10 @@ function PhoneScreen({ i, t }: { i: number; t: number }) {
   const dock = kbIn(i, t);
   if (i === 0) {
     const nav: Nav = [
-      { at: APP_IN, how: 'push', draw: (l) => <WordListScreen local={l} /> },
-      { at: CHALLENGE.at, how: 'push', draw: (l) => <PartnerScreen local={l} /> },
-      { at: COMMUNITY.at, how: 'pop', draw: (l) => <CommunityScreen local={l} tapAt={REQUEST_TAP - COMMUNITY.at} /> },
-      { at: FREEDOM_AT, how: 'push', draw: () => <PartnerScreen local={9} dock={dock} /> },
+      { at: APP_IN, how: 'push', draw: (l) => <GuidedChatScreen local={l - (PRACTICE.at - APP_IN)} plan={CHAT} /> },
+      { at: COMMUNITY.at, how: 'pop', draw: (l) => <CommunityScreen local={l} tapAt={REQUEST_TAP - COMMUNITY.at} openAt={OPEN_TAP - COMMUNITY.at} /> },
+      // The partner chat stays on through Freedom, when the keyboard comes up in it.
+      { at: CHALLENGE.at, how: 'push', draw: (l) => <PartnerScreen local={l} dock={dock} /> },
     ];
     return (
       <>
@@ -284,7 +288,6 @@ function PhoneScreen({ i, t }: { i: number; t: number }) {
       </>
     );
   }
-  if (i === 4) return <PracticeScreen k={clamp01((t - RINGS_AT) / RINGS_LEN)} />;
   const h = i - 1;
   const app = HOP_APPS[i] as 'whatsapp' | 'instagram' | 'telegram';
   const sentK = easeOutCubic(clamp01((t - HOP_SENDS[h]) / 0.3));
@@ -305,7 +308,7 @@ function Phones({ t }: { t: number }) {
   return (
     <>
       {PHONES.map((p, i) => {
-        if (t < p.in || t > p.out + (p.drop ? 0.55 : HOP.pushLen)) return null;
+        if (t < p.in || t > p.out + (p.exit === 'away' ? AWAY_LEN : HOP.pushLen)) return null;
         const { dx, dy, s, o } = phonePose(i, t);
         const sc = PH.s * s;
         return (
@@ -321,6 +324,20 @@ function Phones({ t }: { t: number }) {
         );
       })}
     </>
+  );
+}
+
+/** The progress rings on their own, where the phone was. */
+const RINGS_SCALE = PORTRAIT ? 2.55 : 1.9;
+const RINGS_C = PORTRAIT ? { x: STAGE.cx, y: 1160 } : { x: PH.cx, y: PH.cy };
+function Rings({ t }: { t: number }) {
+  if (t < PHONE_AWAY + 0.15 || t > APP_OUT + 0.5) return null;
+  const appear = clamp01((t - PHONE_AWAY - 0.2) / 0.9);
+  const out = span(t, APP_OUT, APP_OUT + 0.45, (x) => x);
+  return (
+    <div className="dark absolute left-0 top-0" style={{ transform: `translate(${RINGS_C.x}px, ${RINGS_C.y + out * 40}px) translate(-50%, -50%) scale(${RINGS_SCALE})`, opacity: 1 - out }}>
+      <RingsGrid k={clamp01((t - RINGS_AT) / RINGS_LEN)} appear={appear} />
+    </div>
   );
 }
 
@@ -432,6 +449,7 @@ export default function A03Film() {
       ))}
       <Phones t={t} />
       <FlyingKeyboard t={t} />
+      <Rings t={t} />
       <YouCan t={t} />
       {t >= END_AT - 0.1 && <Ending t={t} />}
     </div>
