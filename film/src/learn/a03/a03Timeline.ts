@@ -91,8 +91,8 @@ export const PARTNER = {
   dissolve: CHALLENGE.at + 0.2,
   gone: CHALLENGE.at + 0.7,
   firstAt: 0.55,
-  /** When each line of the exchange arrives (them, me, them, me). */
-  lineAt: [0.55, 1.4, 2.3, 3.15],
+  /** When each line of the exchange arrives (them, me). */
+  lineAt: [0.55, 1.7],
   out: D3.challenge - 0.45,
   back: FREEDOM_AT - 0.3,
 };
@@ -158,11 +158,11 @@ export function cues() {
     reword: null,
     reveal: null,
     send: null,
-    sends: [CHAT_SEND, CHALLENGE.at + PARTNER.lineAt[1], CHALLENGE.at + PARTNER.lineAt[3], ...HOP_SENDS],
+    sends: [CHAT_SEND, CHALLENGE.at + PARTNER.lineAt[1], ...HOP_SENDS],
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), YOUCAN.at, END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
-    pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[2], who: 'them' }],
+    pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }],
     titles: [[0, APP_IN]],
     phones: [PHONE_IN],
     opening: [0, 0],

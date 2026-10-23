@@ -196,10 +196,8 @@ const PRACTICE_CHAT: Line3[] = [
 ];
 /** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
 const PARTNER_CHAT: Line3[] = [
-  { text: '¡Hola! ¿Hacemos un reto de escritura?', at: PARTNER.lineAt[0] },
-  { me: true, text: '¡Sí! ¿Cuál es el reto?', at: PARTNER.lineAt[1] },
-  { text: 'Describe tu fin de semana en tres frases.', at: PARTNER.lineAt[2] },
-  { me: true, text: 'El sábado fui al mercado con mi hermana.', at: PARTNER.lineAt[3] },
+  { text: 'Reto de escritura: describe tu fin de semana.', at: PARTNER.lineAt[0] },
+  { me: true, text: 'El sábado fui al mercado con mi hermana.', at: PARTNER.lineAt[1] },
 ];
 
 /** A chat as bubbles alone. `dotsAt` shows the other side typing until the next line. */
@@ -552,7 +550,7 @@ export default function A03Film() {
         <Card key={l.key} l={l} t={t} />
       ))}
       <BubbleShot t={t} at={PRACTICE.at} lines={PRACTICE_CHAT} out={CHAT.out} mine="#2D63E6" bottom={PORTRAIT ? 1110 : 700} />
-      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" />
+      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" bottom={PORTRAIT ? 1110 : 700} />
       <Phones t={t} />
       <FlyingKeyboard t={t} />
       <Rings t={t} />
