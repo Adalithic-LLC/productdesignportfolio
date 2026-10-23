@@ -18,6 +18,8 @@ import { KB_DOCK_H, MessagingApp } from './MessagingApps';
 import { ACTIVE_CARD_CENTER, CommunityScreen, NOTO, PartnerScreen, RINGS_GRID, RingsGrid } from './Screens';
 import {
   CARDS,
+  FREEDOM_A,
+  FREEDOM_B,
   CHALLENGE,
   COMMUNITY,
   DURATION,
@@ -109,14 +111,21 @@ function noHyphenBreak(s: string) {
   return s.split(/(\S+-\S+)/).map((x, j) => (/\S-\S/.test(x) ? <span key={j} style={{ whiteSpace: 'nowrap' }}>{x}</span> : x));
 }
 
+/** In 9:16 the Freedom lines hang just under the top safe zone (TikTok,
+    Reels and Shorts cover the top 7.8%) so the phone can rise and show
+    more of the keyboard. */
+const FREE_TOP = PORTRAIT ? 190 : null;
+/** How far the phones rise for Freedom (9:16 only). */
+const FREE_DY = PORTRAIT ? -110 : 0;
 const CARD_PLACE = PORTRAIT ? { left: STAGE.cx - STAGE.w / 2, width: STAGE.w, top: STAGE.cy - 430 } : { left: 150, width: 720, top: FRAME.h / 2 };
 
 function Card({ l, t }: { l: Line; t: number }) {
   const k = span(t, l.at, l.at + 0.55, easeOutCubic);
   const out = span(t, l.out - 0.45, l.out - 0.05, (x) => x);
   if (k <= 0 || out >= 1) return null;
+  const free = FREE_TOP !== null && (l === FREEDOM_A || l === FREEDOM_B);
   return (
-    <div className="absolute" style={{ ...CARD_PLACE, transform: `translateY(calc(-50% + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
+    <div className="absolute" style={{ ...CARD_PLACE, ...(free ? { top: FREE_TOP! } : {}), transform: `translateY(calc(${free ? '0%' : '-50%'} + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 74 : 72, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>{accentParts(l.text, l.accent)}</div>
     </div>
   );
@@ -370,7 +379,8 @@ function Phones({ t }: { t: number }) {
         const o = i === 0 ? o0 * (1 - span(t, PARTNER.dissolve, PARTNER.gone, (x) => x) + span(t, PARTNER.back, PARTNER.back + 0.45, (x) => x)) : o0;
         let sc = PH.s * s;
         let x = PH.cx + dx - (OUTER_W / 2) * sc;
-        let y = PH.cy + dy - (OUTER_H / 2) * sc;
+        // Every phone sits higher for Freedom; the first only once it is gone from the challenge.
+        let y = PH.cy + dy + (i > 0 || t >= PARTNER.gone ? FREE_DY : 0) - (OUTER_H / 2) * sc;
         if (i === 0) {
           // Close in on the chat list from the start; back to normal while it's gone.
           const z = t < PARTNER.gone ? 1 : 0;
@@ -506,7 +516,7 @@ function FlyingKeyboard({ t }: { t: number }) {
   const { lift, land } = HOPS[h];
   const s = PH.s;
   // The docked keyboard's centre on the centred phone.
-  const dockY = PH.cy - (OUTER_H / 2) * s + 12 * s + (874 - KB_H / 2) * s;
+  const dockY = PH.cy + FREE_DY - (OUTER_H / 2) * s + 12 * s + (874 - KB_H / 2) * s;
   const up = easeOutCubic(clamp01((t - lift) / HOP.liftLen));
   const fall = clamp01((t - (land - HOP.fall)) / HOP.fall);
   const air = 1 - fall * fall;
