@@ -320,10 +320,15 @@ export function AvatarOpener({ t, boxes, caret = true }: { t: number; boxes: Box
           }}
         >
           {AV_TEXT.slice(0, n)}
-          {/* The caret takes no room, so the line never shifts under it. */}
-          <span style={{ position: 'relative', display: 'inline-block', width: 0, height: '1em', verticalAlign: '-0.12em' }}>
-            <span style={{ position: 'absolute', left: 3, top: '0.05em', width: 5, height: '0.9em', background: ACCENT, borderRadius: 2, opacity: caretOn ? 1 : 0 }} />
-          </span>
+          {/* The caret takes no room, so the line never shifts under it.
+              Without a caret nothing at all sits between the typed and
+              untyped letters, so no word can break there: every letter
+              keeps the place the whole line gives it. */}
+          {caret && (
+            <span style={{ position: 'relative', display: 'inline-block', width: 0, height: '1em', verticalAlign: '-0.12em' }}>
+              <span style={{ position: 'absolute', left: 3, top: '0.05em', width: 5, height: '0.9em', background: ACCENT, borderRadius: 2, opacity: caretOn ? 1 : 0 }} />
+            </span>
+          )}
           <span style={{ color: 'transparent', textShadow: 'none' }}>{AV_TEXT.slice(n)}</span>
         </div>
       )}
