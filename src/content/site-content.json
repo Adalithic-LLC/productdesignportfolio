@@ -1819,13 +1819,37 @@
             "style": "h2",
             "text": "What It Is"
           },
-          "Arcatext Cut Room is the interface I use to produce Arcatext’s marketing videos with Claude Code. Each ad is a film built in code from the app’s own screens and rendered frame by frame, with an AI voiceover and an original score. Every render is published to the Cut Room as a new version, in 9:16 and 16:9, with its music, voice and sound-effect stems.",
+          "Arcatext Cut Room enables rapid iteration of marketing videos, direct and precise control over Claude Code.\n\nEach ad is a film built in code from the app’s own screens and rendered frame by frame, with an Google Gemini voiceover and an original soundtrack. Every video is published in 9:16 and 16:9, standard phone aspect ratios.",
           "Reviewing a cut, I leave notes pinned to a moment and a scene, preview it under the Reels, TikTok or YouTube Shorts interface, and send the notes to Claude Code. It makes the change, re-renders, publishes the next version and replies in the thread. The two ads below came out of that loop."
         ],
-        "whyItMattered": [],
-        "problem": [],
-        "constraints": [],
-        "keyDecision": [],
+        "whyItMattered": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "WHY IT MATTERS"
+          }
+        ],
+        "problem": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "The challenge"
+          }
+        ],
+        "constraints": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Key constraints"
+          }
+        ],
+        "keyDecision": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Exploration & key decisions"
+          }
+        ],
         "solution": [
           {
             "type": "heading",
@@ -1834,9 +1858,27 @@
           },
           "A working copy of the Cut Room, with Arcatext 02 loaded. Play it, switch between the 9:16 and 16:9 cuts, frame it on a phone under the Reels, TikTok or YouTube Shorts interface, set the music and voice levels, and leave a note at any moment. Your notes stay in your browser."
         ],
-        "tradeoff": [],
-        "validation": [],
-        "impact": [],
+        "tradeoff": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Tradeoffs & risks"
+          }
+        ],
+        "validation": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Validation / outcome"
+          }
+        ],
+        "impact": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Impact on the larger product"
+          }
+        ],
         "figures": {
           "whatItIs": {
             "src": "",
