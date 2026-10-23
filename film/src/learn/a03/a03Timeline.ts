@@ -8,7 +8,7 @@
  * Every time is in seconds from the film's start; each shot is as long as its
  * voiced line (Gemini Enceladus) plus a little air.
  */
-import { AV_TEXT, AV_TYPE_TIMES, AV_VOICE_AT, BPM, FRAME, PORTRAIT } from '../learnTimeline';
+import { AV_BURST, AV_TEXT, AV_TYPE_TIMES, AV_VOICE_AT, BPM, D, FRAME, PORTRAIT } from '../learnTimeline';
 
 export { PORTRAIT, FRAME };
 
@@ -210,19 +210,94 @@ export const VOICE_LINES: VoiceLine[] = [
 ];
 
 // ── The Cut Room's scenes ──
-const scene = (id: string, name: string, start: number, texts: { key: string; label: string; text: string }[] = []) => ({ id, name, start, texts });
+type FlowPart = { text: string; typed?: boolean; wordTimes?: number[] } | { key: string; kind: string; name: string; label: string; value: number; at: number };
+const scene = (id: string, name: string, start: number, texts: { key: string; label: string; text: string }[] = [], flows: FlowPart[][] = []) => ({ id, name, start, texts, flows });
+const r2 = (x: number) => Math.round(x * 100) / 100;
+const r3 = (x: number) => Math.round(x * 1000) / 1000;
+/** A timing the Cut Room's Scene timing tab shows inline, where it happens. */
+const inline = (key: string, label: string, value: number, at: number, kind = 'delay', name = 'Delay'): FlowPart => ({ key, kind, name, label, value: r2(value), at: r3(at) });
+/** Typed text whose characters land at times[offset…]; each word's end is where a delay can go. */
+const typed = (text: string, times: number[], offset = 0): FlowPart => {
+  const ends: number[] = [];
+  const re = /\S+/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) ends.push(m.index + m[0].length - 1);
+  return { text, typed: true, wordTimes: ends.slice(0, -1).map((e) => r3((times[offset + e] ?? 0) + 0.03)) };
+};
+const said = (t: string) => `after “${t.trim()}”`;
+
+/** The Cut Room's scenes, each with its text and its timings inline. */
 export function scenes() {
+  const [p1, p2, p3] = PARTS.map((p) => p.text);
+  const coTimes = (s: (typeof COWRITE.segs)[number]) => s.times.map((t) => CHALLENGE.at + t);
   const list = [
     scene('avatars', `Avatars: ${AV_TEXT}`, 0, [
       { key: 'q', label: 'Typed line', text: AV_TEXT },
       { key: 'line2', label: 'Second line', text: LINE2 },
+    ], [
+      [
+        inline('av-burst', 'the burst', D.avBurst, AV_BURST, 'duration', 'Burst'),
+        typed(AV_TEXT, AV_TYPE_TIMES),
+        inline('q-hold', 'the question holds', Q_OUT - Q_END, Q_END, 'hold', 'Hold'),
+        inline('q-clear', 'the question clears', Q_OUT_LEN, Q_OUT, 'duration', 'Clear'),
+      ],
+      [
+        typed(p1, LINE2_TIMES, 0),
+        inline('pairs', `${said(p1)}: five pairs snap together`, D_OP.pair, PAIR_AT, 'duration', 'Pairs'),
+        typed(p2, LINE2_TIMES, p1.length),
+        inline('split', `${said(p2)}: the pairs drift apart`, D_OP.split, SPLIT_AT, 'duration', 'Split'),
+        typed(p3, LINE2_TIMES, p1.length + p2.length),
+        inline('rings-in', `${said(p3)}: the ten faces turn into rings`, D_OP.ringsIn, RING_AT, 'duration', 'Rings'),
+        inline('rings-fill', 'the rings count up and turn green', RINGS_DONE - (RING_AT + D_OP.ringsIn), RING_AT + D_OP.ringsIn, 'duration', 'Fill'),
+        inline('rings-hold', 'the green rings hold', D_OP.ringsHold, RINGS_DONE, 'hold', 'Hold'),
+        inline('op-collapse', 'the collapse', D_OP.collapse, OP_COLLAPSE, 'duration', 'Collapse'),
+      ],
     ]),
-    ...[COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
-    scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }]),
-    scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }]),
-    scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: `${ROAD}\n${ROAD2}` }]),
+    scene('community', `Text: ${COMMUNITY.text}`, COMMUNITY.at, [{ key: COMMUNITY.key, label: 'Text', text: COMMUNITY.text }], [
+      [{ text: COMMUNITY.text }, inline('community-hold', 'the community list scrolls', D3.community, COMMUNITY.at, 'hold', 'Hold')],
+    ]),
+    scene('challenge', `Text: ${CHALLENGE.text}`, CHALLENGE.at, [{ key: CHALLENGE.key, label: 'Text', text: CHALLENGE.text }], [
+      [{ text: CHALLENGE.text }],
+      [
+        inline('cowrite-lead', 'before the paragraph', COWRITE.segs[0].at, CHALLENGE.at),
+        ...COWRITE.segs.flatMap((sg, i) => [
+          typed(sg.text, coTimes(sg)),
+          ...(i < COWRITE.segs.length - 1 ? [inline(`cowrite-turn-${i}`, `${said(sg.text)}: the other writer takes over`, COWRITE.segs[i + 1].at - (sg.times[sg.times.length - 1] ?? sg.at), CHALLENGE.at + (sg.times[sg.times.length - 1] ?? sg.at))] : []),
+        ]),
+        inline('challenge-hold', 'the challenge scene', D3.challenge, CHALLENGE.at, 'hold', 'Hold'),
+      ],
+    ]),
+    scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }], [
+      [
+        { text: FREEDOM_A.text },
+        inline('freedom-a', said(FREEDOM_A.text), FREEDOM_A.out - FREEDOM_A.at, FREEDOM_A.at),
+        { text: FREEDOM_B.text },
+        inline('freedom-hold', 'the keyboard hops through three apps', FREEDOM_B.out - FREEDOM_B.at, FREEDOM_B.at, 'hold', 'Hold'),
+      ],
+      ...HOP_TYPED.map((m, h) => [
+        inline(`hop-${h}`, `before typing in app ${h + 1}`, HOP_TYPE_TIMES[h][0] - HOPS[h].land, HOPS[h].land),
+        typed(m, HOP_TYPE_TIMES[h]),
+      ]),
+    ]),
+    scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }], [
+      [
+        { text: PROGRESS.text },
+        inline('rings-at', 'before the rings fill', RINGS_AT - PROGRESS.at, PROGRESS.at),
+        inline('rings-len', 'the rings fill', RINGS_LEN, RINGS_AT, 'duration', 'Fill'),
+        inline('progress-hold', 'the progress scene', D3.progress, PROGRESS.at, 'hold', 'Hold'),
+      ],
+    ]),
+    scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: `${ROAD}\n${ROAD2}` }], [
+      [
+        { text: ROAD },
+        inline('road2', said(ROAD), ROAD2_AT - (END_AT + 0.15), END_AT + 0.15),
+        { text: ROAD2 },
+        inline('road-out', 'before the logo', LOGO_AT - ROAD2_AT, ROAD2_AT),
+        inline('logo-hold', 'the logo holds', DURATION - LOGO_AT, LOGO_AT, 'hold', 'Hold'),
+      ],
+    ]),
   ];
-  return list.map((s, i) => ({ flows: [] as unknown[], delays: [], ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
+  return list.map((s, i) => ({ delays: [], ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
 }
 
 export function cues() {
