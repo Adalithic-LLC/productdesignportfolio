@@ -27,10 +27,19 @@ export default function CutRoomEmbed() {
     const watch = () => {
       const doc = el.contentDocument;
       if (!doc?.body) return;
-      const fit = () => setHeight(Math.ceil(doc.documentElement.scrollHeight));
+      // The layout's own bottom, not the document's scroll height: a document
+      // is never shorter than its frame, so that could only ever grow.
+      const fit = () => {
+        const lay = doc.querySelector('.layout');
+        if (!lay) return;
+        const pad = parseFloat(doc.defaultView?.getComputedStyle(doc.body).paddingBottom || '0') || 0;
+        setHeight(Math.ceil(lay.getBoundingClientRect().bottom + pad));
+      };
       ro?.disconnect();
       ro = new ResizeObserver(fit);
       ro.observe(doc.body);
+      const lay = doc.querySelector('.layout');
+      if (lay) ro.observe(lay);
       fit();
     };
     el.addEventListener('load', watch);

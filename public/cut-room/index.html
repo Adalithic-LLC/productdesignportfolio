@@ -73,7 +73,8 @@
   else document.documentElement.style.zoom = '1.1';
   // The first cut opens on the avatar cloud, not its black first frame.
   window.__CUTROOM_START = 4.2;
-  window.claude = { use: async (name) => NS[name] || null };
+  // Fixed in place, so nothing loaded later can swap in a runtime that talks to Claude.
+  Object.defineProperty(window, 'claude', { value: Object.freeze({ use: async (name) => NS[name] || null }), writable: false, configurable: false });
 })();
 </script>
 </head>
@@ -1851,7 +1852,7 @@
     submitMsg('Sending to Claude…');
     let via = 'saved';
     try {
-      const can = comments ? await comments.canSendToClaude().catch(() => 'off') : 'off';
+      const can = 'off'; // portfolio copy: notes never leave the browser
       if (can === 'available') {
         // The list re-renders while sending, so find this card's live element again.
         const live = (anchorEl && anchorEl.isConnected && anchorEl)
@@ -2652,7 +2653,8 @@
 /* Portfolio layer (tools/cut-room/build.mjs). */
 .tl-name { margin-right: auto; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .timeline.folded .tl-name { display: none; }
-@media (min-width: 1021px) { .side { max-height: calc(var(--win-h, 100vh) - 28px); } }
+/* Side by side, the side panel ends where the player column does (its panes scroll). */
+@media (min-width: 1021px) { .side { max-height: min(calc(var(--win-h, 100vh) - 28px), var(--stage-h, 100vh)); } }
 </style>
 <script>
 (() => {
@@ -2670,10 +2672,16 @@
   let fitQueued = false;
   const fit = () => {
     fitQueued = false;
-    if (EMBED) return;
-    const scr = $('screen');
+    const scr = $('screen'), stage = document.querySelector('.stage');
     if (!scr || !tl) return;
     const k = probe.getBoundingClientRect().height / 100 || 1;
+    // The player column's height caps the side panel, here and embedded, so
+    // the page ends at the bottom of the timeline (folded or not).
+    if (stage) {
+      const sh = Math.ceil(stage.getBoundingClientRect().height / k);
+      if (Math.abs(sh - (parseFloat(root.style.getPropertyValue('--stage-h')) || 0)) >= 1) root.style.setProperty('--stage-h', sh + 'px');
+    }
+    if (EMBED) return;
     const r = scr.getBoundingClientRect(), b = tl.getBoundingClientRect();
     const other = b.bottom + window.scrollY - r.height;
     // What sits under the timeline: the body's bottom padding and the root's.

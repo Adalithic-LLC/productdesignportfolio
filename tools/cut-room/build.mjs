@@ -64,6 +64,10 @@ swap('.screen { position: relative; background: #000; border-radius: 10px; overf
 // The timeline's head: the scrub hint gives way to a plain label (the Cut
 // Room's own fold button and folded scrub bar stay).
 swap(`<span class="hint">Click or drag to scrub · drag a block's right edge on <b>Retime</b> to propose a new length</span>`, `<span class="tl-name">Timeline</span>`);
+// Never send anything to Claude from the portfolio: the submit path is cut
+// at its source, whatever runtime the page finds (the stand-in has no
+// comments capability either).
+swap("const can = comments ? await comments.canSendToClaude().catch(() => 'off') : 'off';", "const can = 'off'; // portfolio copy: notes never leave the browser");
 // The connection badge.
 swap("setLive('on', 'Live');", "setLive('on', 'Demo');");
 
@@ -136,7 +140,8 @@ const shim = `<script>
   else document.documentElement.style.zoom = '1.1';
   // The first cut opens on the avatar cloud, not its black first frame.
   window.__CUTROOM_START = 4.2;
-  window.claude = { use: async (name) => NS[name] || null };
+  // Fixed in place, so nothing loaded later can swap in a runtime that talks to Claude.
+  Object.defineProperty(window, 'claude', { value: Object.freeze({ use: async (name) => NS[name] || null }), writable: false, configurable: false });
 })();
 </script>`;
 
@@ -144,7 +149,8 @@ const layer = `<style>
 /* Portfolio layer (tools/cut-room/build.mjs). */
 .tl-name { margin-right: auto; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .timeline.folded .tl-name { display: none; }
-@media (min-width: 1021px) { .side { max-height: calc(var(--win-h, 100vh) - 28px); } }
+/* Side by side, the side panel ends where the player column does (its panes scroll). */
+@media (min-width: 1021px) { .side { max-height: min(calc(var(--win-h, 100vh) - 28px), var(--stage-h, 100vh)); } }
 </style>
 <script>
 (() => {
@@ -162,10 +168,16 @@ const layer = `<style>
   let fitQueued = false;
   const fit = () => {
     fitQueued = false;
-    if (EMBED) return;
-    const scr = $('screen');
+    const scr = $('screen'), stage = document.querySelector('.stage');
     if (!scr || !tl) return;
     const k = probe.getBoundingClientRect().height / 100 || 1;
+    // The player column's height caps the side panel, here and embedded, so
+    // the page ends at the bottom of the timeline (folded or not).
+    if (stage) {
+      const sh = Math.ceil(stage.getBoundingClientRect().height / k);
+      if (Math.abs(sh - (parseFloat(root.style.getPropertyValue('--stage-h')) || 0)) >= 1) root.style.setProperty('--stage-h', sh + 'px');
+    }
+    if (EMBED) return;
     const r = scr.getBoundingClientRect(), b = tl.getBoundingClientRect();
     const other = b.bottom + window.scrollY - r.height;
     // What sits under the timeline: the body's bottom padding and the root's.
