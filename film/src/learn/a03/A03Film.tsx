@@ -17,10 +17,8 @@ import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
 import { ACTIVE_CARD_CENTER, CommunityScreen, NOTO, PartnerScreen, RINGS_GRID, RingsGrid } from './Screens';
 import {
-  CARD_TAP,
   CARDS,
   CHALLENGE,
-  CHAT,
   COMMUNITY,
   DURATION,
   END_AT,
@@ -37,10 +35,9 @@ import {
   ROAD_OUT,
   PORTRAIT,
   PHONE_AWAY,
-  PRACTICE,
   PARTNER,
   PHONE_IN,
-  ZOOM_AT,
+  LIST_SCROLL,
   RINGS_AT,
   RINGS_LEN,
   ROAD,
@@ -175,11 +172,6 @@ function Bubble({ k, me, rise, fill, children }: { k: number; me?: boolean; rise
 }
 
 type Line3 = { me?: boolean; text: string; at: number };
-/** Practice: the guided chat's exchange. Times from PRACTICE.at. */
-const PRACTICE_CHAT: Line3[] = [
-  { text: '¿Me ayudas a lavar los platos?', at: CHAT.askAt },
-  { me: true, text: 'Sí, voy ahora.', at: CHAT.sendAt },
-];
 /** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
 const PARTNER_CHAT: Line3[] = [
   { text: 'Reto de escritura: describe tu fin de semana.', at: PARTNER.lineAt[0] },
@@ -336,9 +328,18 @@ function PhoneScreen({ i, t }: { i: number; t: number }) {
   const dock = kbIn(i, t);
   if (i === 0) {
     const nav: Nav = [
-      { at: PHONE_IN, how: 'push', draw: (l) => <CommunityScreen local={l - (COMMUNITY.at - PHONE_IN)} activeAt={-1} cardTapAt={CARD_TAP - COMMUNITY.at} /> },
-      // The partner chat stays on through Freedom, when the keyboard comes up in it.
-      { at: CHALLENGE.at, how: 'push', draw: (l) => <PartnerScreen local={l} dock={dock} /> },
+      {
+        at: PHONE_IN,
+        how: 'push',
+        draw: (l) => {
+          const local = l - (COMMUNITY.at - PHONE_IN);
+          const scroll = LIST_SCROLL.by * easeInOutCubic(clamp01((local - LIST_SCROLL.from) / (LIST_SCROLL.to - LIST_SCROLL.from)));
+          return <CommunityScreen local={local} activeAt={-1} cardTapAt={99} scroll={scroll} />;
+        },
+      },
+      // While the phone is gone (the partner chat's bubbles), it changes to the
+      // partner chat, which the keyboard comes up in for Freedom.
+      { at: PARTNER.gone, how: 'push', draw: () => <PartnerScreen local={9} dock={dock} /> },
     ];
     return (
       <>
@@ -379,12 +380,12 @@ function Phones({ t }: { t: number }) {
         let x = PH.cx + dx - (OUTER_W / 2) * sc;
         let y = PH.cy + dy - (OUTER_H / 2) * sc;
         if (i === 0) {
-          // Closes in on the chat card, and back out as the chat opens.
-          const z = easeInOutCubic(clamp01((t - ZOOM_AT) / 0.7)) * (t < PARTNER.gone ? 1 : 0);
+          // Close in on the chat list from the start; back to normal while it's gone.
+          const z = t < PARTNER.gone ? 1 : 0;
           if (z > 0) {
             const s1 = sc * ZOOM.k;
-            x = lerp(x, ZOOM.x - (BEZEL + ACTIVE_CARD_CENTER.x) * s1, z);
-            y = lerp(y, ZOOM.y - (BEZEL + ACTIVE_CARD_CENTER.y) * s1, z);
+            x = lerp(x, ZOOM.x - (BEZEL + ACTIVE_CARD_CENTER.x) * s1 + dx, z);
+            y = lerp(y, ZOOM.y - (BEZEL + ACTIVE_CARD_CENTER.y) * s1 + dy, z);
             sc = lerp(sc, s1, z);
           }
         }
@@ -535,7 +536,6 @@ export default function A03Film() {
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}
-      <BubbleShot t={t} at={PRACTICE.at} lines={PRACTICE_CHAT} out={CHAT.out} mine="#2D63E6" bottom={PORTRAIT ? 1110 : 700} />
       <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" bottom={PORTRAIT ? 1110 : 700} />
       <Phones t={t} />
       <FlyingKeyboard t={t} />

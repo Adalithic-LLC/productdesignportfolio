@@ -8,15 +8,14 @@
  * Every time is in seconds from the film's start; each shot is as long as its
  * voiced line (Gemini Enceladus) plus a little air.
  */
-import { AV_END, AV_TEXT, AV_TYPE_TIMES, AV_GONE, AV_VOICE_AT, BPM, FRAME, PORTRAIT } from '../learnTimeline';
+import { AV_TEXT, AV_TYPE_TIMES, AV_GONE, AV_VOICE_AT, BPM, FRAME, PORTRAIT } from '../learnTimeline';
 
 export { PORTRAIT, FRAME };
 
 /** Named durations, so the Cut Room can list them. */
 export const D3 = {
-  appIn: 0.3, // the chat bubbles follow the cloud
+  appIn: 0.3, // the phone follows the cloud
   lead: 0.25, // a line's card comes in this long before its voice
-  practice: 2.9, // "Practice the most common words," (1.9 s spoken)
   challenge: 4.0, // (3.4 s spoken) "with unstructured chats and writing challenges with partners."
   community: 3.0, // "chat with real people from the community," (2.2 s): Active, zoom, tap
   freedom: 9.6, // "Now, imagine breaking out of the mold…" (8.3 s spoken), the keyboard hops
@@ -34,7 +33,7 @@ export type Line = {
   out: number;
 };
 
-let c = AV_END + 0.1;
+let c = AV_GONE + 0.05;
 export const APP_IN = c;
 c += D3.appIn;
 
@@ -43,7 +42,6 @@ const line = (key: string, text: string, accent: string, dur: number): Line => {
   c += dur;
   return l;
 };
-export const PRACTICE = line('a3-practice', 'Practice the most common words', 'most common words', D3.practice);
 export const COMMUNITY = line('a3-community', 'Chat with real people from the community', 'real people', D3.community);
 /** The phone rises in with the community. */
 export const PHONE_IN = COMMUNITY.at;
@@ -53,7 +51,7 @@ export const FREEDOM_AT = c;
 export const FREEDOM_A = line('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way,', 'your own way', 4.45);
 export const FREEDOM_B = line('a3-freedom-b', 'using the most powerful AI keyboard inside any messaging app.', 'most powerful AI keyboard', D3.freedom - 4.45);
 export const PROGRESS = line('a3-progress', 'No matter how you learn, we measure your progress the whole time.', 'measure your progress', D3.progress);
-export const CARDS = [PRACTICE, COMMUNITY, CHALLENGE, FREEDOM_A, FREEDOM_B, PROGRESS];
+export const CARDS = [COMMUNITY, CHALLENGE, FREEDOM_A, FREEDOM_B, PROGRESS];
 
 /** The end of the app part: the rings fly-through hands over to the end card. */
 export const APP_OUT = c;
@@ -77,10 +75,8 @@ const typeTimes = (text: string, start: number, per: number) => [...text].map((_
 export const HOP_TYPE_TIMES = HOP_TYPED.map((x, i) => typeTimes(x, HOPS[i].land + 0.2, 0.048));
 export const HOP_SENDS = HOP_TYPE_TIMES.map((x) => x[x.length - 1] + 0.12);
 
-/** Community: the Active list, the camera closes in on Sunny Heron's chat
-    card, and the card is tapped into the partner chat. */
-export const ZOOM_AT = COMMUNITY.at + 1.0;
-export const CARD_TAP = CHALLENGE.at - 0.3;
+/** Community: close in on the Active list from the start, and scroll down it. */
+export const LIST_SCROLL = { from: 0.45, to: D3.community - 0.1, by: 330 };
 /** The partner chat opens, the phone dissolves, and the exchange plays as
     bubbles; the phone forms again just before Freedom. Times are absolute
     except firstAt and out, which are from CHALLENGE.at. */
@@ -94,11 +90,6 @@ export const PARTNER = {
   back: FREEDOM_AT - 0.3,
 };
 
-/** Practice: chat bubbles alone, no phone (seconds from PRACTICE.at). */
-export const CHAT = { askAt: 0.1, sendAt: 0.85, dotsAt: 1.25, answerAt: 1.95, out: D3.practice - 0.55 };
-export const CHAT_ASK = PRACTICE.at + CHAT.askAt;
-export const CHAT_SEND = PRACTICE.at + CHAT.sendAt;
-export const CHAT_ANSWER = PRACTICE.at + CHAT.answerAt;
 /** The Telegram phone steps back and the rings come up on their own. */
 export const PHONE_AWAY = PROGRESS.at;
 
@@ -125,7 +116,6 @@ export type VoiceLine = { key: string; text: string; at: number; until: number; 
 const voiceLine = (key: string, text: string, at: number, until: number): VoiceLine => ({ key, text, at, until, marks: [{ text, at }] });
 export const VOICE_LINES: VoiceLine[] = [
   voiceLine('a3-q', AV_TEXT.replace('1000', 'one thousand'), AV_VOICE_AT, AV_GONE),
-  voiceLine('a3-practice', 'Practice the most common words,', PRACTICE.at + D3.lead, COMMUNITY.at),
   voiceLine('a3-community', 'chat with real people from the community,', COMMUNITY.at + D3.lead, CHALLENGE.at),
   voiceLine('a3-challenge', 'with unstructured chats and writing challenges with partners.', CHALLENGE.at + D3.lead, FREEDOM_AT),
   voiceLine('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way, using the most powerful AI keyboard inside any messaging app.', FREEDOM_AT + D3.lead, PROGRESS.at),
@@ -138,7 +128,7 @@ const scene = (id: string, name: string, start: number, texts: { key: string; la
 export function scenes() {
   const list = [
     scene('avatars', `Avatars: ${AV_TEXT}`, 0, [{ key: 'q', label: 'Typed line', text: AV_TEXT }]),
-    ...[PRACTICE, COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
+    ...[COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
     scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }]),
     scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }]),
     scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: ROAD }]),
@@ -155,15 +145,15 @@ export function cues() {
       ...AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })),
       ...HOP_TYPE_TIMES.flatMap((times, k) => times.map((t, i) => ({ t, space: HOP_TYPED[k][i] === ' ' }))),
     ],
-    taps: [CARD_TAP, ...HOPS.map((h) => h.land)].sort((a, b) => a - b),
+    taps: HOPS.map((h) => h.land).sort((a, b) => a - b),
     reword: null,
     reveal: null,
     send: null,
-    sends: [CHAT_SEND, CHALLENGE.at + PARTNER.lineAt[1], ...HOP_SENDS],
+    sends: [CHALLENGE.at + PARTNER.lineAt[1], ...HOP_SENDS],
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
-    pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }],
+    pops: [{ t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }],
     titles: [[0, APP_IN]],
     phones: [PHONE_IN],
     opening: [0, 0],

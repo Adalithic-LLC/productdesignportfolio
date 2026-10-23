@@ -98,8 +98,8 @@ export const D = {
   checkCard1: 5.0, // Arcatext 02's Check scene: the first card is read (the reverse translation lit)
   checkCard2: 4.2, // the second card is read while Check scrolls to the synonyms
   avBurst: 2.6, // Arcatext 02: the avatars burst out from the point
-  avHold: 1.5, // “You text a lot of people” holds in the cloud
-  avCollapse: 1.0, // the cloud and the line collapse back into the point
+  avHold: A03 ? 0.2 : 1.5, // “You text a lot of people” holds in the cloud (Arcatext 03: barely)
+  avCollapse: A03 ? 0.5 : 1.0, // the cloud and the line collapse back into the point
   blockLine1: 4.6, // the first text card is read, fades, and the next comes in
   blockLine2: 4.6, // and the one after (when there are more)
   blockHold: 6.0, // the last card is read and holds
@@ -162,7 +162,7 @@ const AV_WORD_AT = A03
     [0.06, 0.53, 0.8, 1.22, 2.03, 2.23, 2.57, 2.8, 2.98, 3.15, 3.46, 3.7]
   : [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
 /** When the opener's voice clip starts. */
-export const AV_VOICE_AT = AV_BURST + 1.3;
+export const AV_VOICE_AT = AV_BURST + (A03 ? 0.75 : 1.3);
 function spokenTimes(text: string, start: number, wordAt: number[]) {
   const out: number[] = [];
   const words = text.split(' ');

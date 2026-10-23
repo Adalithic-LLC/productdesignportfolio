@@ -355,6 +355,10 @@ const CONVOS: Convo[] = [
   { name: 'Curious Otter', online: true, seen: 'Online', sent: 3, recv: 2 },
   { name: 'Bright Orchid', online: false, seen: 'Last seen 2 hr. ago', sent: 27, recv: 25 },
   { name: 'Wise Falcon 42', online: false, seen: 'Last seen 5 min. ago', sent: 8, recv: 9 },
+  { name: 'Gentle Puffin', online: true, seen: 'Online', unread: 1, sent: 6, recv: 5 },
+  { name: 'Lucky Fox', online: false, seen: 'Last seen 1 hr. ago', sent: 19, recv: 21 },
+  { name: 'Cozy Lantern', online: true, seen: 'Online', sent: 11, recv: 10 },
+  { name: 'Merry Finch 7', online: false, seen: 'Last seen 3 hr. ago', sent: 4, recv: 3 },
 ];
 /** The first chat card's centre on the Active page, in screen points (for the zoom). */
 export const ACTIVE_CARD_CENTER = { x: 201, y: 314 };
@@ -382,7 +386,7 @@ function Presence({ online, seen }: { online: boolean; seen: string }) {
 
 /** Chat tab: starts on Find (or on Active when `activeAt` is negative), the Active segment is tapped at `activeAt`, and
     the first chat card is tapped at `cardTapAt` (seconds from `local` 0). */
-export function CommunityScreen({ local, activeAt, cardTapAt }: { local: number; activeAt: number; cardTapAt: number }) {
+export function CommunityScreen({ local, activeAt, cardTapAt, scroll = 0 }: { local: number; activeAt: number; cardTapAt: number; scroll?: number }) {
   const page = easeInOutCubic(clamp01((local - activeAt - 0.05) / 0.35));
   const segPressed = local >= activeAt - 0.08 && local < activeAt + 0.1;
   const cardPressed = local >= cardTapAt - 0.08 && local < cardTapAt + 0.25;
@@ -436,7 +440,7 @@ export function CommunityScreen({ local, activeAt, cardTapAt }: { local: number;
           })}
         </div>
         {/* Active */}
-        <div className="absolute inset-0 flex flex-col gap-3 px-5" style={{ transform: `translateX(${(page - 1) * 402}px)` }}>
+        <div className="absolute inset-x-0 top-0 flex flex-col gap-3 px-5" style={{ transform: `translateX(${(page - 1) * 402}px) translateY(${-scroll}px)` }}>
           <div className="flex gap-2">
             {['All', 'Spanish'].map((x, i) => (
               <div key={x} className="flex items-center rounded-full px-[14px]" style={{ minHeight: 34, background: i === 0 ? ACCENT : CARD, fontWeight: 500, fontSize: 14, color: '#fff' }}>
