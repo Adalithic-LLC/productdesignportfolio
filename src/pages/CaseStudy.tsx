@@ -17,6 +17,7 @@ import { isMediaBlock } from '@/content/elements';
 import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import RewordOptionScreen from '@/components/RewordOptionScreen';
+import ArcatextAdShorts from '@/components/ArcatextAdShorts';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 import type { ProseItem } from '@/content/proseBlocks';
 
@@ -118,7 +119,10 @@ export default function CaseStudy({ index }: { index: number }) {
           /* The column appears in admin even when the slot is empty: that
              frame is how an image gets uploaded, and it has to be in the
              place the image will occupy for the layout to be judged. */
-          const twoCol = media || (isAdmin && !!figure);
+          /* A demo too wide for the side column (the ads, two phones abreast)
+             goes full width under its section's prose instead. */
+          const wide = slot?.demo === 'shorts-ads';
+          const twoCol = !wide && (media || (isAdmin && !!figure));
           const value = feature[field];
           const items: ProseItem[] = Array.isArray(value) ? (value as ProseItem[]) : [];
           /* Where the figure's column ends. No media block means the whole
@@ -284,6 +288,16 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
             className={`mt-3 text-sm text-muted-foreground ${isAdmin ? 'min-h-5' : ''}`}
           />
         )}
+      </figure>
+    );
+  }
+
+  /* The Cut Room's case study: the launch ads, in 9:16 under the YouTube
+     Shorts interface, with sound on tap. */
+  if (figure.demo === 'shorts-ads') {
+    return (
+      <figure className="mt-12">
+        <ArcatextAdShorts />
       </figure>
     );
   }

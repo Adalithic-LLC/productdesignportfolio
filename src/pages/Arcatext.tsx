@@ -17,7 +17,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ArcatextDemoRow from '@/components/ArcatextDemoRow';
-import ArcatextAdShorts from '@/components/ArcatextAdShorts';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { CaseStudyCard, CaseStudyRow } from '@/components/ArcatextCaseStudies';
@@ -221,22 +220,6 @@ export default function Arcatext() {
       <section className="pb-12 sm:pb-16">
         <div className="mx-[calc(50%-50vw)]">
           <ArcatextDemoRow />
-        </div>
-      </section>
-
-      {/* The launch ads, in 9:16 under the YouTube Shorts interface, with
-          sound on tap. See ArcatextAdShorts. */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 lg:mb-14">
-            <Editable as="div" path="arcatext.ads.eyebrow" className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground" />
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance max-w-3xl">
-              <Editable as="span" path="arcatext.ads.titleLead" />{' '}
-              <Editable as="span" path="arcatext.ads.titleHighlight" className="gradient-text" />
-            </h2>
-            <Editable as="p" path="arcatext.ads.description" multiline className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl" />
-          </div>
-          <ArcatextAdShorts />
         </div>
       </section>
 

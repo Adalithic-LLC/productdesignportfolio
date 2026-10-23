@@ -132,7 +132,7 @@
         "variant": "grid",
         "data": {
           "cols": "2",
-          "rows": "2"
+          "rows": "3"
         },
         "cells": {
           "r1c1": [
@@ -182,6 +182,16 @@
               "data": {
                 "title": "Arcatext Tuning",
                 "desc": "An admin app for understanding and improving typing performance."
+              }
+            }
+          ],
+          "r3c1": [
+            {
+              "type": "element",
+              "variant": "card-basic",
+              "data": {
+                "title": "Arcatext Cut Room",
+                "desc": "Marketing video production interface for Claude Code."
               }
             }
           ]
@@ -1798,6 +1808,79 @@
           "impactTitle": "Impact on the larger product"
         },
         "offHome": "hidden"
+      },
+      {
+        "slug": "cut-room",
+        "title": "Arcatext Cut Room",
+        "body": "Marketing video production interface for Claude Code.",
+        "whatItIs": [
+          {
+            "type": "heading",
+            "style": "h2",
+            "text": "What It Is"
+          },
+          "Arcatext Cut Room is the interface I use to produce Arcatext’s marketing videos with Claude Code. Each ad is a film built in code from the app’s own screens and rendered frame by frame, with an AI voiceover and an original score. Every render is published to the Cut Room as a new version, in 9:16 and 16:9, with its music, voice and sound-effect stems.",
+          "Reviewing a cut, I leave notes pinned to a moment and a scene, preview it under the Reels, TikTok or YouTube Shorts interface, and send the notes to Claude Code. It makes the change, re-renders, publishes the next version and replies in the thread. The two ads below came out of that loop."
+        ],
+        "whyItMattered": [],
+        "problem": [],
+        "constraints": [],
+        "keyDecision": [],
+        "solution": [],
+        "tradeoff": [],
+        "validation": [],
+        "impact": [],
+        "figures": {
+          "whatItIs": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": "The two launch ads, in 9:16 under the YouTube Shorts interface (ArcatextAdShorts).",
+            "demo": "shorts-ads"
+          },
+          "keyDecision": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "solution": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "tradeoff": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "validation": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          },
+          "impact": {
+            "src": "",
+            "alt": "",
+            "caption": "",
+            "note": ""
+          }
+        },
+        "headings": {
+          "whatItIsTitle": "What it is",
+          "whyItMatteredTitle": "WHY IT MATTERS",
+          "problemTitle": "The challenge",
+          "constraintsTitle": "Key constraints",
+          "keyDecisionTitle": "Exploration & key decisions",
+          "solutionTitle": "The solution",
+          "tradeoffTitle": "Tradeoffs & risks",
+          "validationTitle": "Validation / outcome",
+          "impactTitle": "Impact on the larger product"
+        },
+        "offHome": "hidden"
       }
     ],
     "overview": {
@@ -2305,10 +2388,6 @@
       ]
     },
     "ads": {
-      "eyebrow": "LAUNCH ADS",
-      "titleLead": "Made for the",
-      "titleHighlight": "Shorts feed",
-      "description": "Two 9:16 spots, built in code from the app’s own screens and rendered frame by frame, with the voiceover and music timed to every cut. Shown here under the YouTube Shorts interface they were framed for. Tap a phone for sound.",
       "cards": [
         {
           "eyebrow": "Arcatext 02 · 1:02",
