@@ -25,6 +25,9 @@ export interface ProjectItem {
    * white field into a visible white-to-charcoal wash on the dark theme.
    */
   flatImage?: boolean;
+  /** Any non-empty value takes the card off the Work grid (and the hero)
+      while keeping everything in it; admin's Hidden content puts it back. */
+  hidden?: string;
   /** Optional dark-theme variant of `image`, shown while the site is dark. */
   imageDark?: string;
 }

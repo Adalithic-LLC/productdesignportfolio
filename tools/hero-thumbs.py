@@ -32,6 +32,9 @@ CLUSTERS = {
     'arcatext': ['arcatext-keyboard.webp', 'arcatext-reword.webp'],
     'arcatext-analysis': ['arcatext-tuning.webp'],
     'd2c': ['d2c.webp'],
+    # The Arcatext Cut Room, which took D2C's place in the hero (D2C's thumb
+    # is still built, so it can come back).
+    'cut-room': ['cut-room.webp'],
     'conversant': ['d2c-products.webp', 'conversant-phone.webp'],
     'usaa': ['usaa-web.webp', 'usaa-home.webp'],
 }

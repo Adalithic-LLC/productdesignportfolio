@@ -51,7 +51,9 @@ export function AdminBar() {
 
   if (!isAdmin) return null;
 
-  const hiddenCount = content.arcatext.features.filter((f) => f.hidden || f.offHome).length;
+  const hiddenCount =
+    content.arcatext.features.filter((f) => f.hidden || f.offHome).length +
+    content.projects.items.filter((p) => p.hidden).length;
   const paragraphArmed = insertTool?.kind === 'paragraph';
   const headerArmed = insertTool?.kind === 'heading';
   const elementArmed = insertTool?.kind === 'element';
@@ -460,6 +462,32 @@ export function AdminBar() {
                               )}
                             </button>
                           </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="mb-1 mt-3 text-[11px] font-medium text-muted-foreground">Work cards</p>
+                  <ul className="flex flex-col gap-1">
+                    {content.projects.items.map((p, i) => {
+                      const off = !!p.hidden;
+                      return (
+                        <li key={p.id} className="flex items-center justify-between gap-3">
+                          <span className={`text-xs ${off ? 'text-muted-foreground' : ''}`}>{p.title}</span>
+                          <button
+                            type="button"
+                            onClick={() => setText(`projects.items.${i}.hidden`, off ? '' : 'hidden')}
+                            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-0.5 text-[11px] transition-colors hover:bg-muted"
+                          >
+                            {off ? (
+                              <>
+                                <Eye className="h-3 w-3" /> Show
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="h-3 w-3" /> Hide
+                              </>
+                            )}
+                          </button>
                         </li>
                       );
                     })}

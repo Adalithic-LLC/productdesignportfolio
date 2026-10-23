@@ -53,6 +53,8 @@ type Cluster = {
   id: string;
   label: string;
   screens: Screen[];
+  /** Kept, but not shown: its project is hidden from the Work grid. */
+  hidden?: boolean;
 };
 
 /**
@@ -103,7 +105,7 @@ function Shot({
   );
 }
 
-const CLUSTERS: Cluster[] = [
+const ALL_CLUSTERS: Cluster[] = [
   {
     id: 'arcatext',
     label: 'Arcatext — the keyboard toolbar and everything it opens',
@@ -135,7 +137,23 @@ const CLUSTERS: Cluster[] = [
     ],
   },
   {
+    id: 'cut-room',
+    label: 'Arcatext Cut Room — marketing video production for Claude Code',
+    screens: [
+      {
+        name: 'Arcatext Cut Room',
+        project: 'Arcatext Cut Room',
+        aspect: 1400 / 875,
+        render: (open) => (
+          <Shot src="cut-room.webp" alt="Arcatext Cut Room — reviewing an ad's scene timing" w={1400} h={875} open={open} />
+        ),
+      },
+    ],
+  },
+  {
+    // Design 2 Code, put away with its Work card (projects.items, hidden).
     id: 'd2c',
+    hidden: true,
     label: 'Design 2 Code — the Figma plugin',
     screens: [
       {
@@ -193,6 +211,8 @@ const CLUSTERS: Cluster[] = [
     ],
   },
 ];
+
+const CLUSTERS = ALL_CLUSTERS.filter((c) => !c.hidden);
 
 /**
  * A line of copy under the display zone, belonging to the cluster on show.

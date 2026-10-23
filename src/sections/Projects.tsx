@@ -61,9 +61,11 @@ export default function Projects() {
         (p) => p.title.toLowerCase() === title.toLowerCase()
       );
       requestAnimationFrame(() => {
-        const cards = cardsRef.current?.querySelectorAll<HTMLElement>('.project-card');
+        // By its index in the content, not its place among the cards: a
+        // hidden project has no card.
+        const card = index === -1 ? null : cardsRef.current?.querySelector<HTMLElement>(`.project-card[data-pi="${index}"]`);
         // No card by that name: the section is still the right neighbourhood.
-        const target = (index === -1 ? null : cards?.[index]) ?? sectionRef.current;
+        const target = card ?? sectionRef.current;
         target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     });
@@ -223,12 +225,15 @@ export default function Projects() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
         >
           {projects.map((project, index) => {
+            // Hidden: off the grid, but every word and picture is kept.
+            if (project.hidden) return null;
             // A project without a case study page yet: the card still reads,
             // but nothing about it should promise a page to open.
             const hasPage = Boolean(project.link);
             return (
             <div
               key={project.id}
+              data-pi={index}
               className="project-card group relative"
               /* The case-studies tile sits at order 1, so the first project
                  keeps the opening slot and every later one moves down by one
