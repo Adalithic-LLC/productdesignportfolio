@@ -1819,7 +1819,11 @@
             "style": "h2",
             "text": "What It Is"
           },
-          "Arcatext Cut Room enables rapid iteration of marketing videos, direct and precise control over Claude Code.\n\nEach ad is a film built in code from the app’s own screens and rendered frame by frame, with an Google Gemini voiceover and an original soundtrack. Every video is published in 9:16 and 16:9, standard phone aspect ratios.",
+          "Arcatext Cut Room enables rapid iteration of marketing videos, direct and precise control over Claude Code.",
+          {
+            "type": "paragraph",
+            "text": "Each ad is a film built in code from the app’s own screens and rendered frame by frame, with an Google Gemini voiceover and an original soundtrack. Every video is published in 9:16 and 16:9, standard phone aspect ratios."
+          },
           "Reviewing a cut, I leave notes pinned to a moment and a scene, preview it under the Reels, TikTok or YouTube Shorts interface, and send the notes to Claude Code. It makes the change, re-renders, publishes the next version and replies in the thread. The two ads below came out of that loop."
         ],
         "whyItMattered": [
