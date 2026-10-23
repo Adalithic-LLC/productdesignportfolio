@@ -18,6 +18,7 @@ import { AdminNavEntry } from '@/components/AdminToggle';
 import ArcatextKeyboard from '@/components/ArcatextKeyboard';
 import RewordOptionScreen from '@/components/RewordOptionScreen';
 import ArcatextAdShorts from '@/components/ArcatextAdShorts';
+import CutRoomEmbed from '@/components/CutRoomEmbed';
 import type { ArcatextFeature, FigureSection } from '@/content/types';
 import type { ProseItem } from '@/content/proseBlocks';
 
@@ -119,9 +120,9 @@ export default function CaseStudy({ index }: { index: number }) {
           /* The column appears in admin even when the slot is empty: that
              frame is how an image gets uploaded, and it has to be in the
              place the image will occupy for the layout to be judged. */
-          /* A demo too wide for the side column (the ads, two phones abreast)
-             goes full width under its section's prose instead. */
-          const wide = slot?.demo === 'shorts-ads';
+          /* A demo too wide for the side column (the ads, two phones abreast;
+             the Cut Room itself) goes full width under its section's prose. */
+          const wide = slot?.demo === 'shorts-ads' || slot?.demo === 'cut-room';
           const twoCol = !wide && (media || (isAdmin && !!figure));
           const value = feature[field];
           const items: ProseItem[] = Array.isArray(value) ? (value as ProseItem[]) : [];
@@ -298,6 +299,15 @@ function Figure({ index, section }: { index: number; section: FigureSection }) {
     return (
       <figure className="mt-12">
         <ArcatextAdShorts />
+      </figure>
+    );
+  }
+
+  /* The Cut Room's case study: a working copy of the Cut Room itself. */
+  if (figure.demo === 'cut-room') {
+    return (
+      <figure className="mt-10">
+        <CutRoomEmbed />
       </figure>
     );
   }

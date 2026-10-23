@@ -1,0 +1,2505 @@
+<title>Arcatext Cut Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* One deliberate look: a dark grading-suite room, so the film's own
+     colours read true. Accent is Arcatext's Reword blue; markers are amber. */
+  :root {
+    color-scheme: dark;
+    --bg: #0d0e12;
+    --panel: #15171c;
+    --panel-2: #1c1f26;
+    --raised: #242832;
+    --line: #2a2e38;
+    --line-2: #363b47;
+    --fg: #e9ebf1;
+    --muted: #8d93a3;
+    --faint: #5d6372;
+    --accent: #3370ff;
+    --accent-2: #7fa2ff;
+    --accent-soft: rgba(51, 112, 255, 0.16);
+    --marker: #f2b63d;
+    --marker-soft: rgba(242, 182, 61, 0.18);
+    --ok: #3dd68c;
+    --warn: #ff6b5a;
+    --scene-a: #222632;
+    --scene-b: #1b1e27;
+    --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.45 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 14px 28px;
+    overflow-x: hidden;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* Header */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 auto 14px; max-width: 1480px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; min-width: 0; }
+  .brand h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand span { color: var(--muted); font-size: 13px; }
+  /* Projects: the films the Cut Room holds, each with its own cuts and changes. */
+  .proj { position: relative; }
+  /* Background picker: laid under a transparent (alpha) render of the cut. */
+  .bgpick { display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 6px 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); }
+  .bgpick .pj-k { font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .bgpick select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; color: var(--fg); font-size: 13px; padding: 4px 18px 4px 2px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: right 9px top 50%, right 5px top 50%; background-size: 4px 4px; background-repeat: no-repeat; }
+  .bgpick select option { background: var(--panel-2); }
+  .bgpick input[type="color"] { width: 26px; height: 26px; padding: 0; border: 1px solid var(--line-2); border-radius: 6px; background: none; cursor: pointer; }
+  .bgpick input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  .bgpick input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
+  .bgpick .btn { height: 30px; }
+  .bgl { position: absolute; inset: 0; pointer-events: none; }
+  .screen.phone .bgl { top: 8.97%; bottom: 8.97%; }
+  .screen.phone:not(.tall) .bgl { top: 0; bottom: 0; }
+  .screen.has-bg video { background: transparent !important; }
+  /* Stacking: background layer, then the picture, then overlays and the device. */
+  .screen video { position: relative; z-index: 1; }
+  .screen .safe, .screen .ov { z-index: 2; }
+  .screen .device-ui, .screen .rate-tag, .screen .empty { z-index: 3; }
+  .proj-btn { display: flex; align-items: center; gap: 8px; height: 44px; max-width: 280px; padding: 0 10px 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); }
+  .proj-btn:hover, .proj-btn[aria-expanded="true"] { border-color: var(--line-2); background: var(--raised); }
+  .proj-btn .pj-k { font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .proj-btn .pj-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
+  .proj-btn svg { width: 14px; height: 14px; flex: none; color: var(--muted); }
+  .proj-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: min(320px, calc(100vw - 32px)); padding: 6px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); display: flex; flex-direction: column; gap: 2px; }
+  .pj-row { display: flex; align-items: center; gap: 4px; border-radius: 7px; }
+  .pj-row:hover { background: var(--panel-2); }
+  .pj-row.cur { background: var(--accent-soft); }
+  .pj-pick { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px; border: 0; background: none; text-align: left; color: var(--fg); }
+  .pj-pick .ck { width: 14px; flex: none; color: var(--accent-2); }
+  .pj-pick .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .pj-pick .ct { margin-left: auto; flex: none; font: 10.5px var(--mono); color: var(--faint); }
+  .pj-ren { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; color: var(--muted); }
+  .pj-ren:hover { background: var(--raised); color: var(--fg); }
+  .pj-ren svg { width: 14px; height: 14px; fill: currentColor; }
+  .pj-edit { flex: 1; display: flex; gap: 6px; padding: 4px; }
+  .pj-edit .input { flex: 1; min-width: 0; }
+  .pj-sep { height: 1px; margin: 4px 2px; background: var(--line); }
+  .pj-new { display: flex; align-items: center; gap: 8px; padding: 8px; border: 0; border-radius: 7px; background: none; color: var(--accent-2); font-size: 13px; text-align: left; }
+  .pj-new:hover { background: var(--panel-2); }
+  .pj-note { padding: 2px 8px 6px; font-size: 11.5px; color: var(--faint); }
+  .deliv { display: flex; flex-wrap: wrap; gap: 6px; }
+  .deliv button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); text-align: left; }
+  .deliv button:hover { border-color: var(--line-2); background: var(--raised); }
+  .deliv button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .deliv .dv-t { font-size: 13px; font-weight: 600; }
+  .deliv .dv-s { font: 10.5px var(--mono); color: var(--muted); }
+  .deliv button[aria-pressed="true"] .dv-s { color: var(--accent-2); }
+  .screen.tall { aspect-ratio: 9 / 16; height: min(78vh, 900px); width: auto; align-self: center; }
+  .safe { position: absolute; inset: 0; pointer-events: none; }
+  .safe i { position: absolute; background: rgba(255, 107, 90, 0.22); border: 1px dashed rgba(255, 107, 90, 0.7); }
+  .safe span { position: absolute; font: 500 10px var(--mono); color: #ffd1cb; background: rgba(0,0,0,0.55); padding: 1px 5px; border-radius: 4px; }
+  .player:fullscreen .screen:not(.phone) .safe, .player:fullscreen .screen:not(.phone) .ov { display: none; }
+  /* Platform overlays: each app's own buttons, caption and tab bar where they
+     sit over a 9:16 video, drawn in plain white, sized to the video. */
+  .ov { position: absolute; inset: 0; pointer-events: none; container-type: size; color: #fff; font-family: -apple-system, system-ui, 'Helvetica Neue', sans-serif; z-index: 1; }
+  /* Sizes in cqw are taken from the video's own width (.ov is the container). */
+  .ov .o { position: absolute; font-size: 3.3cqw; line-height: 1.3; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
+  .ov svg { width: 7.4cqw; height: 7.4cqw; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45)); }
+  .ov svg .f { fill: #fff; stroke: none; }
+  .ov b { font-weight: 650; }
+  .ov .rail { right: 2.2cqw; width: 14cqw; display: flex; flex-direction: column; align-items: center; gap: 4.2cqw; font-size: 2.7cqw; font-weight: 600; }
+  .ov .rail > div { display: flex; flex-direction: column; align-items: center; gap: 0.6cqw; }
+  .ov .meta { left: 3.6cqw; width: 74cqw; display: flex; flex-direction: column; gap: 1.6cqw; }
+  .ov .row { display: flex; align-items: center; gap: 2.2cqw; }
+  .ov .av { width: 8.6cqw; height: 8.6cqw; border-radius: 50%; background: linear-gradient(135deg, #8aa6ff, #3f5bd6); border: 0.5cqw solid #fff; flex: none; }
+  .ov .pill { border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 1.6cqw; padding: 0.6cqw 2.4cqw; font-size: 3cqw; font-weight: 600; }
+  .ov .pill.solid { background: #fff; color: #111; text-shadow: none; border-color: #fff; border-radius: 99px; }
+  .ov .disc { width: 9cqw; height: 9cqw; border-radius: 2cqw; background: linear-gradient(135deg, #555, #222); border: 0.5cqw solid #fff; }
+  .ov .disc.round { border-radius: 50%; border-width: 1.6cqw; border-color: #2a2a2a; background: radial-gradient(circle, #8aa6ff 30%, #222 32%); }
+  .ov .nav { left: 0; right: 0; bottom: 0; height: 12cqw; display: flex; justify-content: space-around; align-items: center; background: #000; font-size: 2.4cqw; text-shadow: none; }
+  .ov .nav > div { display: flex; flex-direction: column; align-items: center; gap: 0.4cqw; opacity: 0.92; }
+  .ov .nav svg { width: 6.4cqw; height: 6.4cqw; filter: none; }
+  .ov .top { top: 2.6cqh; left: 3.6cqw; right: 3.6cqw; display: flex; align-items: center; justify-content: space-between; font-size: 4cqw; }
+  .ov .prog { left: 0; right: 0; height: 0.6cqw; background: rgba(255, 255, 255, 0.35); }
+  .ov .prog i { display: block; height: 100%; width: 38%; background: #fff; }
+  /* Phone frame: the cut on an iPhone's 19.5:9 screen, fitted to its width
+     (or height, held sideways) as Reels and TikTok show it, inside a bezel. */
+  .device-ui { display: none; position: absolute; pointer-events: none; z-index: 2; }
+  .screen.phone { aspect-ratio: 9 / 19.5; border: 0; border-radius: 14% / 6.46%; margin: 14px auto;
+    box-shadow: 0 0 0 11px #08080a, 0 0 0 12.5px #3b3d44, 0 0 0 13.5px #15161a, 0 24px 60px rgba(0, 0, 0, 0.45); }
+  .screen.phone video { object-fit: contain; }
+  .screen.phone .device-ui { display: block; }
+  .screen.phone .island { left: 34%; right: 34%; top: 1.4%; height: 4.2%; border-radius: 999px; background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07); }
+  .screen.phone .home { left: 33%; right: 33%; bottom: 0.9%; height: 0.6%; border-radius: 999px; background: rgba(255, 255, 255, 0.55); }
+  .screen.phone .safe, .screen.phone .ov { top: 8.97%; bottom: 8.97%; }
+  .screen.phone .rate-tag { top: calc(8.97% + 10px); }
+  .screen.phone:not(.tall) { aspect-ratio: 19.5 / 9; height: auto; border-radius: 6.46% / 14%; }
+  .screen.phone:not(.tall) .island { left: 1.4%; right: auto; width: 4.2%; top: 34%; bottom: 34%; height: auto; }
+  .screen.phone:not(.tall) .home { left: 33%; right: 33%; }
+  .screen.phone:not(.tall) .safe, .screen.phone:not(.tall) .ov { top: 0; bottom: 0; }
+  /* In fullscreen the phone keeps its frame: a tall one fills the height, a
+     sideways one the width, each centered on black. */
+  .player:fullscreen .screen.phone { flex: 1 1 0; min-height: 0; width: auto; max-width: 100%; aspect-ratio: 9 / 19.5; align-self: center; margin: 18px auto; border-radius: 14% / 6.46%; }
+  .player:fullscreen .screen.phone:not(.tall) { flex: 0 0 auto; width: calc(100% - 36px); aspect-ratio: 19.5 / 9; margin: auto; border-radius: 6.46% / 14%; }
+  .field { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  select, .input, textarea {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px;
+    text-transform: none; letter-spacing: 0; font-size: 13px;
+  }
+  select:focus-visible, .input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+  .live.on i { background: var(--ok); box-shadow: 0 0 0 3px rgba(61, 214, 140, 0.15); }
+  .live.off i { background: var(--warn); }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; max-width: 1480px; margin: 0 auto; align-items: start; }
+  @media (max-width: 1020px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+  .stage { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+
+  .player { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .player:fullscreen { background: #000; padding: 16px max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .player:fullscreen .screen { flex: 1; min-height: 0; aspect-ratio: auto; border: 0; border-radius: 0; }
+  .player:fullscreen .screen video { object-fit: contain; }
+  .player:fullscreen .transport { background: rgba(21, 23, 28, 0.92); }
+  .screen { position: relative; background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; border: 1px solid var(--line); }
+  .screen video { width: 100%; height: 100%; display: block; background: #000; }
+  .screen .empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--muted); }
+  .scene-tag {
+    position: absolute; left: 12px; top: 12px; max-width: calc(100% - 24px); padding: 4px 9px; border-radius: 6px;
+    background: rgba(13, 14, 18, 0.72); color: var(--fg); font-size: 12px; backdrop-filter: blur(6px);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+  }
+  .scene-tag b { color: var(--accent-2); font-weight: 500; margin-right: 6px; }
+  .rate-tag { position: absolute; right: 12px; top: 12px; padding: 4px 8px; border-radius: 6px; background: var(--accent); color: #fff; font: 500 11px var(--mono); pointer-events: none; }
+
+  /* Transport */
+  /* Three zones: timecode | transport (centred on the video) | options. */
+  /* The bar follows the player's own width (the side panel takes a share of the
+     window): one row when its three groups fit, else the options drop to a
+     second row, else everything stacks. */
+  .player { container: player / inline-size; }
+  .transport { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  .transport .tc { margin: 0; justify-self: start; }
+  .core { display: flex; align-items: center; gap: 2px; justify-self: center; }
+  .opts { display: flex; align-items: center; gap: 2px; justify-self: end; }
+  .ib { display: inline-grid; place-items: center; min-width: 28px; height: 32px; padding: 0 3px; background: none; border: 1px solid transparent; border-radius: 8px; color: var(--muted); }
+  .ib.txt { font: 500 11px var(--mono); }
+  .ib:hover { background: var(--panel-2); color: var(--fg); }
+  .ib[aria-pressed="true"] { background: var(--accent-soft); border-color: rgba(51, 112, 255, 0.5); color: var(--accent-2); }
+  .ib svg { width: 15px; height: 15px; fill: currentColor; }
+  .ib[aria-busy="true"] { opacity: 0.5; pointer-events: none; }
+  .pick.off select { color: var(--faint); }
+  .mixwrap { position: relative; display: inline-flex; }
+  .mix-pop { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 30; width: min(260px, calc(100vw - 32px)); padding: 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); display: grid; gap: 10px; }
+  .mix-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) 42px; align-items: center; gap: 8px; font: 500 12px var(--sans); color: var(--muted); }
+  .mix-row input[type=range] { width: 100%; accent-color: var(--accent); }
+  .mix-row output { font: 500 11px var(--mono); color: var(--fg); text-align: right; }
+  .mix-row.off { opacity: 0.45; }
+  .mix-foot { display: flex; justify-content: space-between; align-items: center; font: 400 11px var(--sans); color: var(--faint); }
+  .mix-foot button { background: none; border: 0; color: var(--accent-2); font: 500 11px var(--sans); padding: 2px 0; cursor: pointer; }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50; max-width: calc(100vw - 32px); padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--raised); color: var(--fg); font: 500 13px var(--sans); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); overflow-wrap: anywhere; }
+  .play { display: inline-grid; place-items: center; width: 38px; height: 38px; margin: 0 3px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-soft); }
+  .play:hover { background: #4a80ff; }
+  .play svg { width: 16px; height: 16px; fill: currentColor; }
+  .pick { position: relative; display: inline-flex; align-items: center; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); }
+  .pick:hover { border-color: var(--line-2); }
+  .pick:not(:has(.pk-ic)) select { padding-left: 9px; }
+  .pick .pk-ic { width: 13px; height: 13px; margin-left: 8px; flex: none; fill: none; stroke: var(--faint); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .pick select { appearance: none; -webkit-appearance: none; height: 30px; border: 0; background: transparent; padding: 0 18px 0 5px; font-size: 12.5px; color: var(--fg);
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: right 10px top 50%, right 6px top 50%; background-size: 4px 4px; background-repeat: no-repeat; }
+  .pick select:focus-visible { outline: none; }
+  .pick:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .pick select option { background: var(--panel-2); }
+  .sep { width: 1px; height: 20px; background: var(--line); margin: 0 2px; }
+  /* One row down to the narrowest desktop layouts; the frame count gives way
+     first, then the options take a second row, then everything stacks. */
+  @container player (max-width: 800px) { .tc .frame, .tc .dur { display: none; } }
+  @container player (max-width: 600px) {
+    .opts { grid-column: 1 / -1; justify-self: center; flex-wrap: wrap; justify-content: center; }
+  }
+  @container player (max-width: 460px) {
+    .transport { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .transport .tc, .opts { justify-self: center; }
+    .sep { display: none; }
+  }
+  .group { display: flex; align-items: center; gap: 4px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 34px; height: 32px; padding: 0 9px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; font-size: 12px; color: var(--fg);
+  }
+  .btn:hover { background: var(--raised); border-color: var(--line-2); }
+  .btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #4a80ff; }
+  .btn.play { width: 44px; height: 36px; border-radius: 9px; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn svg { width: 15px; height: 15px; fill: currentColor; }
+  .tc { display: flex; align-items: baseline; gap: 6px; margin-left: auto; white-space: nowrap; }
+  .tc .now { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+  .tc .dur, .tc .frame { color: var(--muted); font-size: 12px; }
+  .music { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .music select { height: 32px; padding: 0 8px; font-size: 12px; text-transform: none; letter-spacing: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+  .seg button { background: var(--panel-2); border: 0; padding: 0 8px; height: 30px; font: 12px var(--mono); color: var(--muted); }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-2); }
+
+  /* Timeline */
+  .timeline { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .tl-head { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .tl-head .hint { margin-right: auto; }
+  .tl-body { display: grid; grid-template-columns: 70px minmax(0, 1fr); }
+  .tl-labels { border-right: 1px solid var(--line); }
+  .tl-labels div { height: var(--h); display: flex; align-items: center; padding: 0 10px; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--line); }
+  .tl-scroll { overflow-x: auto; overflow-y: hidden; min-width: 0; touch-action: pan-x; }
+  .tl-inner { position: relative; user-select: none; -webkit-user-select: none; }
+  .row { position: relative; height: var(--h); border-bottom: 1px solid var(--line); }
+  .r-ruler { --h: 26px; cursor: col-resize; }
+  .r-scenes { --h: 46px; cursor: col-resize; }
+  .r-retime { --h: 46px; background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255,255,255,0.015) 6px 12px); }
+  .r-marks { --h: 34px; cursor: col-resize; border-bottom: 0; }
+  .tl-labels .l-ruler { --h: 26px; } .tl-labels .l-scenes { --h: 46px; } .tl-labels .l-retime { --h: 46px; } .tl-labels .l-marks { --h: 34px; border-bottom: 0; }
+  .tick { position: absolute; bottom: 0; width: 1px; background: var(--line-2); height: 6px; }
+  .tick.major { height: 11px; background: var(--faint); }
+  .tick span { position: absolute; left: 4px; bottom: 9px; font: 10px var(--mono); color: var(--muted); white-space: nowrap; }
+  .scene {
+    position: absolute; top: 5px; bottom: 5px; border-radius: 6px; padding: 5px 7px; font-size: 11.5px; line-height: 1.25;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); border: 1px solid transparent;
+  }
+  .scene b { display: block; font: 500 10px var(--mono); color: var(--faint); margin-bottom: 1px; }
+  .scene.a { background: var(--scene-a); } .scene.b { background: var(--scene-b); }
+  .scene.cur { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+  .scene.cur b { color: var(--accent-2); }
+  .ghost { position: absolute; top: 5px; bottom: 5px; border-radius: 6px; background: var(--scene-b); border: 1px dashed var(--line-2); font-size: 11px; color: var(--faint); cursor: pointer; }
+  .ghost .lbl { position: absolute; inset: 0; padding: 5px 12px 5px 7px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.25; }
+  .ghost.changed { background: var(--accent-soft); border: 1px solid rgba(51, 112, 255, 0.55); color: var(--accent-2); }
+  .ghost .d { font: 500 10px var(--mono); display: block; }
+  .handle { position: absolute; top: -1px; bottom: -1px; right: -1px; width: 11px; border-radius: 0 6px 6px 0; cursor: ew-resize; touch-action: none; z-index: 2; }
+  .handle:hover, .handle.drag { background: rgba(127, 162, 255, 0.18); }
+  .handle::after { content: ""; position: absolute; left: 4px; top: 9px; bottom: 9px; width: 2px; border-radius: 2px; background: var(--line-2); }
+  .handle:hover::after, .handle.drag::after { background: var(--accent-2); }
+  .mark {
+    position: absolute; top: 8px; height: 18px; min-width: 18px; margin-left: -9px; border-radius: 9px; border: 0;
+    background: var(--marker); color: #1a1406; font: 600 10px var(--mono); padding: 0 5px; z-index: 1;
+  }
+  .mark.range { margin-left: 0; border-radius: 4px; background: var(--marker-soft); border: 1px solid var(--marker); color: var(--marker); text-align: left; }
+  .mark.done { background: var(--raised); color: var(--muted); }
+  .mark.range.done { background: transparent; border-color: var(--line-2); }
+  .mark.hot { outline: 2px solid #fff; outline-offset: 1px; }
+  .playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--warn); pointer-events: none; z-index: 3; }
+  .playhead::before { content: ""; position: absolute; top: 0; left: -5px; border: 6px solid transparent; border-top: 7px solid var(--warn); }
+  .inpoint { position: absolute; top: 0; bottom: 0; background: rgba(242, 182, 61, 0.08); border-left: 1px solid var(--marker); border-right: 1px solid var(--marker); pointer-events: none; }
+  .drag-tip { position: fixed; z-index: 10; padding: 3px 7px; border-radius: 5px; background: var(--fg); color: var(--bg); font: 500 11px var(--mono); pointer-events: none; transform: translate(-50%, -130%); }
+
+
+  /* Side panel */
+  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; display: flex; flex-direction: column; }
+  @media (min-width: 1021px) { .side { position: sticky; top: max(14px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 28px); } }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tabs button { flex: 1; background: none; border: 0; padding: 11px 8px; font-size: 13px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+  .tabs .count { font: 11px var(--mono); color: var(--faint); margin-left: 4px; }
+  .pane { padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; }
+  .compose { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; }
+  .compose .at { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--muted); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 5px; background: var(--marker-soft); color: var(--marker); font: 500 11.5px var(--mono); border: 0; }
+  button.chip:hover { background: rgba(242, 182, 61, 0.28); }
+  .link { background: none; border: 0; padding: 0; color: var(--accent-2); font-size: 12px; }
+  .link:hover { text-decoration: underline; }
+  textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--bg); }
+  #atScene { flex: 1 1 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .onscreen { display: flex; flex-direction: column; gap: 8px; }
+  .ost { display: flex; flex-direction: column; gap: 5px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+  .ost.dirty { border-color: var(--accent); }
+  .ost .oh { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .ost .oh .link { margin-left: auto; text-transform: none; letter-spacing: 0; font-size: 11.5px; }
+  .ost textarea { min-height: 0; padding: 4px 2px; border: 0; background: transparent; resize: none; overflow: hidden; font-size: 13.5px; line-height: 1.4; }
+  .ost textarea:focus-visible { outline: none; }
+  .ost .row-end { justify-content: flex-end; }
+  .row-end { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .kbd { font: 10.5px var(--mono); color: var(--faint); }
+  .filters .seg button { font-family: var(--sans); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .c { padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); display: flex; flex-direction: column; gap: 6px; }
+  .c.hot { border-color: var(--marker); }
+  .c.done { opacity: 0.62; }
+  .c .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11.5px; color: var(--muted); }
+  .c .ver { font: 10.5px var(--mono); padding: 1px 5px; border-radius: 4px; background: var(--raised); color: var(--muted); }
+  .c .text { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .c .reply { border-left: 2px solid var(--accent); padding: 2px 0 2px 9px; color: var(--muted); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .c .reply b { color: var(--accent-2); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+  .c .acts { display: flex; gap: 12px; }
+  .c .acts .del { color: var(--warn); }
+  .c .acts { align-items: center; }
+  .btn.sm { height: 26px; min-width: 0; padding: 0 10px; font-size: 12px; }
+  .badge { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; background: var(--raised); color: var(--muted); }
+  .badge.submitted { background: var(--accent-soft); color: var(--accent-2); }
+  .badge.done { background: rgba(61, 214, 140, 0.14); color: var(--ok); }
+  .submit-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line); }
+  .submit-bar .help { min-width: 0; }
+  .submit-bar .btn { flex: none; }
+  .submit-bar.err .help { color: var(--warn); }
+  .none { color: var(--faint); font-size: 13px; text-align: center; padding: 18px 8px; }
+
+  .timing { display: flex; flex-direction: column; gap: 6px; }
+  .t-row { display: grid; grid-template-columns: minmax(0, 1fr) 62px 74px; gap: 4px 8px; align-items: center; padding: 8px; border-radius: 8px; border: 1px solid transparent; }
+  .t-row.cur { border-color: var(--accent); background: var(--accent-soft); }
+  .t-row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
+  .t-row .name button { background: none; border: 0; padding: 0; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-row .orig { font: 11.5px var(--mono); color: var(--muted); text-align: right; }
+  .t-row .input { width: 100%; padding: 4px 6px; font: 12px var(--mono); text-align: right; }
+  .t-row .note { grid-column: 1 / -1; font: 12px var(--sans); padding: 5px 8px; text-align: left; }
+  .t-row .input::placeholder { color: var(--faint); }
+  .t-row .delta { grid-column: 1 / -1; font: 11px var(--mono); color: var(--accent-2); }
+  .t-row.dirty { border-color: rgba(51, 112, 255, 0.55); }
+  .t-dls { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 3px; padding: 4px 0 2px 10px; border-left: 1px solid var(--line); margin-left: 2px; }
+  .t-dl { display: grid; grid-template-columns: minmax(0, 1fr) 52px 74px; gap: 8px; align-items: center; }
+  .t-dl .dl-name { min-width: 0; font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-dl .input { padding: 3px 6px; font-size: 11.5px; }
+  .t-flow { grid-column: 1 / -1; font-size: 12.5px; line-height: 2.1; color: var(--fg); padding: 2px 0 2px 10px; border-left: 2px solid var(--accent-soft); margin-left: 1px; overflow-wrap: anywhere; }
+  .t-flow .fw { color: var(--accent-2); background: var(--accent-soft); border-radius: 4px; padding: 1px 5px; margin: 0 2px; white-space: nowrap; }
+  .dly { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; margin: 0 3px; padding: 0 2px 0 6px; height: 22px; border-radius: 11px; border: 1px dashed var(--marker); background: var(--marker-soft); color: var(--marker); font: 500 10.5px var(--mono); white-space: nowrap; }
+  .dly input.input { -moz-appearance: textfield; appearance: textfield; }
+  .dly input.input::-webkit-inner-spin-button, .dly input.input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .dly input.input { width: 40px; height: 18px; padding: 0 4px; border: 0; border-radius: 8px; background: rgba(0,0,0,0.35); color: var(--fg); font: 11px var(--mono); text-align: right; }
+  .dly input.input::placeholder { color: var(--marker); opacity: 0.85; }
+  .dly input.set { color: #fff; background: var(--accent); }
+  .dly > span:last-of-type { padding-right: 2px; }
+  .dly .dx { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 2px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--marker); font: 600 12px/1 var(--sans); }
+  .dly .dx:hover { background: rgba(0,0,0,0.35); color: var(--fg); }
+  .dly .dx svg { display: block; width: 8px; height: 8px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .dly.off { opacity: 0.6; border-style: solid; }
+  .dly.k-hold, .dly.k-duration { border-style: solid; border-color: var(--line-2); background: var(--raised); color: var(--muted); }
+  .dly.k-hold input.input::placeholder, .dly.k-duration input.input::placeholder { color: var(--muted); }
+  .dly.k-duration { border-radius: 4px; }
+  .dly.off input.input { text-decoration: line-through; background: transparent; color: var(--warn); }
+  .dly.added { border-style: solid; border-color: var(--accent); background: var(--accent-soft); color: var(--accent-2); }
+  .dly.added .dx { color: var(--accent-2); }
+  .t-flow .ins { display: inline-grid; place-items: center; width: 14px; height: 14px; margin: 0 1px; padding: 0; vertical-align: middle; border: 1px dashed transparent; border-radius: 50%; background: none; color: var(--faint); font: 600 11px/1 var(--sans); opacity: 0.35; }
+  .t-flow:hover .ins { opacity: 0.8; }
+  .t-flow .ins:hover, .t-flow .ins:focus-visible { opacity: 1; color: var(--marker); border-color: var(--marker); background: var(--marker-soft); }
+  @media (hover: none) { .t-flow .ins { opacity: 0.7; } }
+  .t-edited { grid-column: 1 / -1; justify-self: start; font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-2); background: var(--accent-soft); border-radius: 4px; padding: 2px 6px; }
+  .t-flow.edited { border-left-color: var(--accent); }
+  .t-foot { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+  .t-head { display: grid; grid-template-columns: minmax(0, 1fr) 62px 74px; gap: 8px; padding: 0 8px; font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .t-head span:not(:first-child) { text-align: right; }
+  /* Pinned to the top of the scrolling Scene timing pane (its 12px padding). */
+  .totals { position: sticky; top: -12px; z-index: 3; box-shadow: 0 -12px 0 var(--panel), 0 6px 12px -6px rgba(0, 0, 0, 0.6); }
+  .totals { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line); font-size: 12.5px; flex-wrap: wrap; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; }
+  .toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .muted { color: var(--muted); }
+  .help { font-size: 12px; color: var(--muted); }
+  .help kbd { font: 10.5px var(--mono); padding: 1px 4px; border-radius: 4px; background: var(--raised); color: var(--fg); }
+</style>
+
+<header class="top">
+  <div class="brand"><h1>Cut Room</h1><span id="brandSub">Arcatext marketing films</span></div>
+  <div class="bgpick" id="bgWrap" hidden title="Background: previewed under a transparent render of this cut">
+    <span class="pj-k">Background</span>
+    <select id="bgSel" aria-label="Background">
+      <option value="">As rendered</option>
+      <option value="solid">Solid color</option>
+      <optgroup label="Gradient">
+        <option value="g-midnight">Midnight</option>
+        <option value="g-aurora">Aurora</option>
+        <option value="g-sunset">Sunset</option>
+        <option value="g-ocean">Ocean</option>
+        <option value="g-tint">Tinted fade</option>
+      </optgroup>
+      <optgroup label="Pattern">
+        <option value="grid">Grid</option>
+        <option value="dots">Dot array</option>
+        <option value="blueprint">Blueprint</option>
+        <option value="lines">Ruled lines</option>
+      </optgroup>
+      <optgroup label="Texture">
+        <option value="spotlight">Spotlight</option>
+        <option value="mesh">Soft mesh</option>
+        <option value="grain">Film grain</option>
+      </optgroup>
+    </select>
+    <input type="color" id="bgColor" value="#3370ff" aria-label="Background color" title="Color: the fill for Solid, the tint for the others" />
+    <button class="btn sm" type="button" id="bgAdd" disabled title="Ask for this background in the next render">Add change</button>
+  </div>
+  <nav class="deliv" id="ver" aria-label="Cuts"></nav>
+  <div class="proj" id="proj">
+    <button type="button" class="proj-btn" id="projBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="projMenu">
+      <span class="pj-k">Project</span><span class="pj-name" id="projName">…</span>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="proj-menu" id="projMenu" role="menu" hidden></div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="player" id="player">
+    <div class="screen" id="screen">
+      <div class="safe" id="safe" hidden title="Areas TikTok, Reels and Shorts cover with their own UI">
+        <i style="left:0;right:0;top:0;height:7.8%"></i><i style="left:0;right:0;bottom:0;height:25%"></i><i style="right:0;top:7.8%;bottom:25%;width:13%"></i>
+        <span style="left:6px;bottom:calc(25% - 22px)">caption / CTA</span><span style="right:6px;top:calc(7.8% + 6px)">buttons</span>
+      </div>
+      <div class="bgl" id="bgl" hidden aria-hidden="true"></div>
+      <div class="ov" id="ov" hidden aria-hidden="true"></div>
+      <video id="v" playsinline preload="auto"></video>
+      <i class="device-ui island" aria-hidden="true"></i><i class="device-ui home" aria-hidden="true"></i>
+      <audio id="aud" preload="auto"></audio>
+      <div class="empty" id="empty">Loading cuts…</div>
+      <div class="rate-tag" id="rateTag" hidden></div>
+    </div>
+
+    <div class="transport">
+      <div class="tc mono" aria-live="off"><span class="now" id="now">0:00.00</span><span class="dur" id="dur">/ 0:00.00</span><span class="frame" id="frame">f 0</span></div>
+      <div class="core">
+        <button class="ib" id="prevScene" title="Previous scene ( [ )" aria-label="Previous scene"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+        <button class="ib txt" id="back1" title="Back 1 s (Shift+←)" aria-label="Back one second">−1s</button>
+        <button class="ib txt" id="backF" title="Back 1 frame (←)" aria-label="Back one frame">−1f</button>
+        <button class="play" id="play" title="Play / pause (Space)" aria-label="Play"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg></button>
+        <button class="ib txt" id="fwdF" title="Forward 1 frame (→)" aria-label="Forward one frame">+1f</button>
+        <button class="ib txt" id="fwd1" title="Forward 1 s (Shift+→)" aria-label="Forward one second">+1s</button>
+        <button class="ib" id="nextScene" title="Next scene ( ] )" aria-label="Next scene"><svg viewBox="0 0 16 16"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+      </div>
+      <div class="opts">
+        <label class="pick" title="Playback speed"><select id="speed" aria-label="Playback speed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option></select></label>
+        <label class="pick" id="musicWrap" hidden title="Soundtrack"><svg class="pk-ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12V3.5l7-1.5v8.5"/><circle cx="4.3" cy="12" r="1.7"/><circle cx="11.3" cy="10.5" r="1.7"/></svg><select id="music" aria-label="Soundtrack"></select></label>
+        <button class="ib" id="voiceBtn" hidden aria-pressed="false" title="Voiceover off. Turn it on (V)" aria-label="Voiceover"><svg viewBox="0 0 16 16"><path d="M8 1.5a2.5 2.5 0 0 1 2.5 2.5v4a2.5 2.5 0 0 1-5 0V4A2.5 2.5 0 0 1 8 1.5zM3.5 7.5H5a3 3 0 0 0 6 0h1.5a4.5 4.5 0 0 1-3.75 4.44v1.56H11V15H5v-1.5h2.25v-1.56A4.5 4.5 0 0 1 3.5 7.5z"/></svg></button>
+        <label class="pick" id="voiceWrap" hidden title="Voice: reads the on-screen text as it appears"><select id="voice" aria-label="Voiceover"></select></label>
+        <span class="mixwrap" id="mixWrap" hidden>
+          <button class="ib" id="mixBtn" aria-expanded="false" aria-controls="mixPop" title="Volumes: music and voice" aria-label="Volumes"><svg viewBox="0 0 16 16"><path d="M3 1.5h1.5v5.1a2 2 0 0 1 0 3.8v4.1H3v-4.1a2 2 0 0 1 0-3.8zM7.25 1.5h1.5v8.1a2 2 0 0 1 0 3.8v1.1h-1.5v-1.1a2 2 0 0 1 0-3.8zM11.5 1.5H13v2.1a2 2 0 0 1 0 3.8v7.1h-1.5V7.4a2 2 0 0 1 0-3.8z"/></svg></button>
+          <div class="mix-pop" id="mixPop" role="dialog" aria-label="Volumes" hidden>
+            <label class="mix-row" id="mixMusicRow">Music <input type="range" id="musicVol" min="0" max="150" step="5" value="100" /><output id="musicVolOut">100%</output></label>
+            <label class="mix-row" id="mixVoiceRow">Voice <input type="range" id="voiceVol" min="0" max="150" step="5" value="100" /><output id="voiceVolOut">100%</output></label>
+            <div class="mix-foot"><span>In the preview and downloads</span><button type="button" id="mixReset">Reset</button></div>
+          </div>
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="ib" id="mute" aria-pressed="false" title="Mute (M)" aria-label="Mute"><svg viewBox="0 0 16 16" id="muteIcon"></svg></button>
+        <label class="pick" id="ovWrap" hidden title="Overlay: see what each app's own interface covers"><svg class="pk-ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14 5.2 8 8.4 2 5.2z"/><path d="M2 8.4 8 11.6l6-3.2"/><path d="M2 11.4 8 14.6l6-3.2"/></svg><select id="overlay" aria-label="Overlay"><option value="">Off</option><option value="safe" title="Safe zones">Safe</option><option value="instagram" title="Instagram Reels">Reels</option><option value="tiktok">TikTok</option><option value="youtube" title="YouTube Shorts">Shorts</option></select></label>
+        <button class="ib" id="phoneBtn" aria-pressed="false" title="Phone frame: see the cut on an iPhone screen" aria-label="Phone frame"><svg viewBox="0 0 16 16"><path d="M4.5 0.5h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2zM4.5 2v12h7V2zM6.5 2.6h3v1h-3z" fill-rule="evenodd"/></svg></button>
+        <button class="ib" id="dl" hidden title="Download this cut" aria-label="Download"><svg viewBox="0 0 16 16"><path d="M7 1.5h2v7.1l2.6-2.6L13 7.4 8 12.4 3 7.4 4.4 6 7 8.6z"/><path d="M2 13.2h12v1.8H2z"/></svg></button>
+        <button class="ib" id="fs" title="Fullscreen (F)" aria-label="Fullscreen"><svg viewBox="0 0 16 16" id="fsIcon"><path d="M2 2h5v2H4v3H2zM9 2h5v5h-2V4H9zM2 9h2v3h3v2H2zM12 9h2v5H9v-2h3z"/></svg></button>
+      </div>
+    </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-head">
+        <span class="hint">Click or drag to scrub · drag a block's right edge on <b>Retime</b> to propose a new length</span>
+      </div>
+      <div class="tl-body">
+        <div class="tl-labels"><div class="l-ruler">Time</div><div class="l-scenes">Scenes</div><div class="l-retime">Retime</div><div class="l-marks">Changes</div></div>
+        <div class="tl-scroll" id="tlScroll">
+          <div class="tl-inner" id="tlInner">
+            <div class="row r-ruler" id="ruler"></div>
+            <div class="row r-scenes" id="scenesRow"></div>
+            <div class="row r-retime" id="retimeRow"></div>
+            <div class="row r-marks" id="marksRow"></div>
+            <div class="inpoint" id="inpoint" hidden></div>
+            <div class="playhead" id="playhead"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="side">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabC" aria-selected="true">Changes<span class="count" id="cCount"></span></button>
+      <button role="tab" id="tabT" aria-selected="false">Scene timing<span class="count" id="tCount"></span></button>
+    </div>
+
+    <div class="pane" id="paneC">
+      <form class="compose" id="compose">
+        <div class="at">
+          <button type="button" class="chip" id="atChip" title="Jump to this time">@ 0:00.00</button>
+          <span id="outWrap" hidden>→ <button type="button" class="chip" id="outChip">0:00.00</button></span>
+          <button type="button" class="link" id="setIn" hidden title="Pin the note's start at the playhead (I)">Set start</button>
+          <button type="button" class="link" id="setOut" hidden title="Mark the end of a range at the playhead (O)">Set end</button>
+          <button type="button" class="link" id="clearOut" hidden>Clear range</button>
+          <span id="atScene" class="muted"></span>
+        </div>
+        <div class="onscreen" id="onscreen" hidden></div>
+        <textarea id="ctext" placeholder="What should change here?" aria-label="Comment"></textarea>
+        <div class="row-end" style="justify-content:flex-end">
+          <button class="btn" type="submit" id="addBtn">Add change</button>
+        </div>
+        <div class="help" id="roNote" hidden></div>
+      </form>
+      <div class="filters">
+        <div class="seg" id="cState" role="group" aria-label="Status filter">
+          <button data-s="open" aria-pressed="true">Drafts</button><button data-s="sent">Submitted</button>
+        </div>
+        <div class="seg" id="cScope" role="group" aria-label="Version filter">
+          <button data-v="this">This cut</button><button data-v="all" aria-pressed="true">All cuts</button>
+        </div>
+      </div>
+      <div class="submit-bar">
+        <span class="help" id="submitMsg">Add changes, then submit them to Claude.</span>
+        <button class="btn primary" type="button" id="submitAll">Submit all</button>
+      </div>
+      <div class="list" id="clist"></div>
+    </div>
+
+    <div class="pane" id="paneT" hidden>
+      <div class="totals">
+        <span>Length <b class="mono" id="totOrig">0.0s</b> → <b class="mono" id="totNew">0.0s</b></span>
+        <label class="toggle"><input type="checkbox" id="preview"> Preview retimed</label>
+      </div>
+      <div class="t-head"><span>Scene</span><span>Now</span><span>Proposed</span></div>
+      <div class="timing" id="tlist"></div>
+      <div class="row-end">
+        <span class="help" id="timingSaved"></span>
+        <button class="btn" id="clearTiming" type="button">Reset all</button>
+      </div>
+    </div>
+  </aside>
+</main>
+<div class="drag-tip" id="tip" hidden></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script>
+  // Media a version doc points at is either an uploaded asset (an id, served
+  // at /_blob/<id>) or a file published with this page (a relative path such
+  // as vo/v25/kore-cut.mp4), used once the asset store is full.
+  function mediaUrl(ref) { return /[/.]/.test(ref) ? ref : '/_blob/' + ref; }
+
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const v = $('v');
+  const FPS = 60;
+  const state = {
+    versions: [], ver: null, comments: [], timing: {}, cur: -1,
+    zoom: 1, rate: 1, loop: false, preview: false, out: null,
+    cState: 'open', cScope: 'all', hot: null, canWrite: null, me: null,
+  };
+  let db = null, unsubTiming = null;
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, val) { try { localStorage.setItem(k, val); } catch {} },
+  };
+
+  // ---------- formatting ----------
+  const fmt = (t) => {
+    t = Math.max(0, t || 0);
+    const m = Math.floor(t / 60);
+    const s = t - m * 60;
+    return `${m}:${s.toFixed(2).padStart(5, '0')}`;
+  };
+  const secs = (x) => `${x.toFixed(2).replace(/0$/, '')}s`;
+  const signed = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2).replace(/0$/, '') + 's';
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  // ---------- version helpers ----------
+  const scenes = () => (state.ver && state.ver.scenes) || [];
+  const duration = () => (state.ver && state.ver.duration) || v.duration || 0;
+  const sceneAt = (t) => { const s = scenes(); for (let i = s.length - 1; i >= 0; i--) if (t >= s[i].start - 1e-6) return i; return 0; };
+  const proposed = (sc) => { const p = state.timing[sc.id]; return p && Number.isFinite(p.duration) ? p.duration : null; };
+  const lenOf = (sc) => sc.end - sc.start;
+
+  // ---------- live status ----------
+  function setLive(kind, text) { const l = $('live'); if (!l) return; l.className = 'live ' + kind; l.lastElementChild.textContent = text; }
+
+  // ---------- timeline geometry ----------
+  let pps = 10; // pixels per second
+  function totalSpan() {
+    const s = scenes();
+    const retimed = s.reduce((a, sc) => a + (proposed(sc) ?? lenOf(sc)), 0);
+    return Math.max(duration(), retimed, 1);
+  }
+  function layout() {
+    const w = $('tlScroll').clientWidth;
+    const d = totalSpan();
+    pps = (w * state.zoom - 2) / d;
+    $('tlInner').style.width = Math.max(w, d * pps) + 'px';
+    drawRuler(); drawScenes(); drawRetime(); drawMarks(); drawPlayhead(); drawInpoint();
+  }
+  function drawRuler() {
+    const r = $('ruler'); r.textContent = '';
+    const d = totalSpan();
+    const minor = pps > 60 ? 0.5 : 1;
+    const major = pps > 30 ? 5 : pps > 12 ? 10 : 15;
+    for (let t = 0; t <= d + 1e-6; t += minor) {
+      const isMajor = Math.abs(t / major - Math.round(t / major)) < 1e-6;
+      if (!isMajor && pps < 6) continue;
+      const k = el('div', 'tick' + (isMajor ? ' major' : ''));
+      k.style.left = t * pps + 'px';
+      if (isMajor) k.appendChild(el('span', null, fmt(t).replace(/\.00$/, '')));
+      r.appendChild(k);
+    }
+  }
+  function drawScenes() {
+    const row = $('scenesRow'); row.textContent = '';
+    scenes().forEach((sc, i) => {
+      const b = el('div', 'scene ' + (i % 2 ? 'b' : 'a') + (i === state.cur ? ' cur' : ''));
+      b.style.left = sc.start * pps + 1 + 'px';
+      b.style.width = Math.max(2, lenOf(sc) * pps - 2) + 'px';
+      b.title = `${sc.name}\n${fmt(sc.start)} – ${fmt(sc.end)} (${secs(lenOf(sc))})`;
+      b.dataset.i = i;
+      b.appendChild(el('b', null, `${i + 1} · ${secs(lenOf(sc))}`));
+      b.appendChild(document.createTextNode(sc.name.replace(/^\d+\.\s*/, '')));
+      row.appendChild(b);
+    });
+  }
+  function drawRetime() {
+    const row = $('retimeRow'); row.textContent = '';
+    let x = 0;
+    scenes().forEach((sc, i) => {
+      const p = proposed(sc);
+      const len = p ?? lenOf(sc);
+      const g = el('div', 'ghost' + (p != null && Math.abs(p - lenOf(sc)) > 1e-3 ? ' changed' : ''));
+      g.style.left = x * pps + 1 + 'px';
+      g.style.width = Math.max(2, len * pps - 2) + 'px';
+      g.title = `${sc.name}\nNow ${secs(lenOf(sc))}` + (p != null ? ` → proposed ${secs(p)}` : '');
+      const delta = p != null ? p - lenOf(sc) : 0;
+      const lbl = el('div', 'lbl');
+      lbl.appendChild(el('span', 'd', p != null && Math.abs(delta) > 1e-3 ? signed(delta) : secs(len)));
+      lbl.appendChild(document.createTextNode(sc.name));
+      g.appendChild(lbl);
+      const h = el('div', 'handle');
+      h.dataset.i = i;
+      h.title = 'Drag to change this scene’s length';
+      g.appendChild(h);
+      row.appendChild(g);
+      x += len;
+    });
+  }
+  function visibleComments() {
+    return state.comments.filter((c) => state.ver && c.version === state.ver.id);
+  }
+  function drawMarks() {
+    const row = $('marksRow'); row.textContent = '';
+    visibleComments().forEach((c) => {
+      const range = Number.isFinite(c.tEnd) && c.tEnd > c.t;
+      const m = el('button', 'mark' + (range ? ' range' : '') + (c.resolved ? ' done' : '') + (state.hot === c.id ? ' hot' : ''));
+      m.style.left = c.t * pps + 'px';
+      if (range) m.style.width = Math.max(18, (c.tEnd - c.t) * pps) + 'px';
+      m.title = `${fmt(c.t)}${range ? ' – ' + fmt(c.tEnd) : ''}\n${c.text}`;
+      m.setAttribute('aria-label', `Change at ${fmt(c.t)}: ${c.text}`);
+      m.addEventListener('pointerdown', (e) => e.stopPropagation());
+      m.addEventListener('click', () => focusComment(c.id, true));
+      row.appendChild(m);
+    });
+  }
+  function drawPlayhead() { $('playhead').style.left = v.currentTime * pps + 'px'; }
+  function drawInpoint() {
+    const ip = $('inpoint');
+    if (state.out == null) { ip.hidden = true; return; }
+    const a = Math.min(state.inAt, state.out), b = Math.max(state.inAt, state.out);
+    ip.hidden = false; ip.style.left = a * pps + 'px'; ip.style.width = (b - a) * pps + 'px';
+  }
+
+  // ---------- scrubbing ----------
+  function timeFromX(clientX) {
+    const r = $('tlInner').getBoundingClientRect();
+    return Math.min(Math.max(0, (clientX - r.left) / pps), duration());
+  }
+  function seek(t) {
+    if (state.freeze) { state.freeze = null; aud.pause(); }
+    if (!state.ver) return;
+    v.currentTime = Math.min(Math.max(0, t), Math.max(0, duration() - 1 / FPS));
+    tick(true);
+  }
+  ['ruler', 'scenesRow', 'marksRow'].forEach((id) => {
+    $(id).addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      const target = e.currentTarget;
+      target.setPointerCapture(e.pointerId);
+      const wasPlaying = !v.paused; v.pause();
+      seek(timeFromX(e.clientX));
+      const move = (ev) => seek(timeFromX(ev.clientX));
+      const up = () => { target.removeEventListener('pointermove', move); target.removeEventListener('pointerup', up); target.removeEventListener('pointercancel', up); if (wasPlaying) v.play(); };
+      target.addEventListener('pointermove', move);
+      target.addEventListener('pointerup', up);
+      target.addEventListener('pointercancel', up);
+    });
+  });
+
+  // ---------- retime dragging ----------
+  $('retimeRow').addEventListener('pointerdown', (e) => {
+    const h = e.target.closest('.handle');
+    if (!h) { // clicking a retime block seeks to that scene's start in the current cut
+      const g = e.target.closest('.ghost');
+      if (g) { const i = [...$('retimeRow').children].indexOf(g); if (scenes()[i]) seek(scenes()[i].start + 1e-3); }
+      return;
+    }
+    if (!canEditTiming()) return;
+    e.preventDefault();
+    const i = +h.dataset.i;
+    const sc = scenes()[i];
+    const ghost = h.parentElement;
+    const left = ghost.getBoundingClientRect().left;
+    h.classList.add('drag'); h.setPointerCapture(e.pointerId);
+    const tip = $('tip'); tip.hidden = false;
+    let len = proposed(sc) ?? lenOf(sc);
+    const move = (ev) => {
+      len = Math.max(0.1, Math.round(((ev.clientX - left) / pps) * 20) / 20);
+      ghost.style.width = Math.max(2, len * pps - 2) + 'px';
+      const d = len - lenOf(sc);
+      tip.textContent = `${secs(len)} (${signed(d)})`;
+      tip.style.left = ev.clientX + 'px'; tip.style.top = ghost.getBoundingClientRect().top + 'px';
+    };
+    move(e);
+    const up = () => {
+      h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up);
+      tip.hidden = true; h.classList.remove('drag');
+      setProposal(sc.id, Math.abs(len - lenOf(sc)) < 1e-3 ? null : len);
+    };
+    h.addEventListener('pointermove', move);
+    h.addEventListener('pointerup', up);
+    h.addEventListener('pointercancel', up);
+  });
+
+  // ---------- transport ----------
+  function setPlayIcon() {
+    const playing = !v.paused || !!state.freeze;
+    $('playIcon').innerHTML = !playing ? '<path d="M4 2l10 6-10 6z"/>' : '<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
+    $('play').setAttribute('aria-label', !playing ? 'Play' : 'Pause');
+  }
+  const togglePlay = () => { if (!state.ver) return; if (state.freeze) { state.freeze = null; aud.pause(); setPlayIcon(); return; } if (v.paused) { if (v.currentTime >= duration() - 0.02) v.currentTime = 0; v.play(); } else v.pause(); };
+  const step = (dt) => { v.pause(); seek(Math.round((v.currentTime + dt) * FPS) / FPS); };
+  const toScene = (dir) => {
+    const s = scenes(); if (!s.length) return;
+    let i = sceneAt(v.currentTime);
+    if (dir < 0 && v.currentTime - s[i].start > 0.35) { seek(s[i].start + 1e-3); return; }
+    i = Math.min(Math.max(0, i + dir), s.length - 1);
+    seek(s[i].start + 1e-3);
+  };
+  $('play').onclick = togglePlay;
+  $('backF').onclick = () => step(-1 / FPS);
+  $('fwdF').onclick = () => step(1 / FPS);
+  $('back1').onclick = () => step(-1);
+  $('fwd1').onclick = () => step(1);
+  $('prevScene').onclick = () => toScene(-1);
+  $('nextScene').onclick = () => toScene(1);
+  v.addEventListener('play', setPlayIcon);
+  v.addEventListener('pause', setPlayIcon);
+  v.addEventListener('ended', setPlayIcon);
+  v.addEventListener('loadedmetadata', () => { layout(); tick(true); });
+  v.addEventListener('error', () => { $('empty').hidden = false; $('empty').textContent = 'This cut’s video didn’t load. Reload the page, or ask Claude to re-upload it.'; });
+
+  function segPick(id, attr, onPick) {
+    $(id).addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      [...$(id).children].forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      onPick(b.dataset[attr]);
+    });
+  }
+  $('speed').onchange = (e) => { state.rate = +e.target.value; applyRate(); };
+  segPick('cState', 's', (s) => { state.cState = s; renderComments(); });
+  segPick('cScope', 'v', (s) => { state.cScope = s; renderComments(); });
+  // The speaker button mutes the music only: muted, the preview and every
+  // download leave the music out (the UI sounds, and a voice, stay).
+  function setMuteIcon() {
+    const m = !state.musicOn;
+    $('muteIcon').innerHTML = m
+      ? '<path d="M2 6h3l4-3.5v11L5 10H2zM11 5.6l1.1-1.1L13.5 6l1.4-1.5L16 5.6 14.6 7 16 8.4l-1.1 1.1-1.4-1.4-1.4 1.4L11 8.4 12.4 7z"/>'
+      : '<path d="M2 6h3l4-3.5v11L5 10H2zM11 5.2a3.5 3.5 0 0 1 0 5.6l-.9-1.2a2 2 0 0 0 0-3.2zM12.6 3a6.3 6.3 0 0 1 0 10l-.9-1.2a4.8 4.8 0 0 0 0-7.6z"/>';
+    $('mute').setAttribute('aria-pressed', m);
+    $('mute').setAttribute('aria-label', m ? 'Unmute music' : 'Mute music');
+    $('musicWrap').classList.toggle('off', m);
+    $('mute').title = m ? 'Music muted: left out of the preview and downloads. Unmute (M)' : 'Mute music (M): leaves it out of the preview and downloads';
+  }
+  $('mute').onclick = () => { state.musicOn = !state.musicOn; store.set('cutroom.musicOn', state.musicOn ? '1' : '0'); applyAudio(); setMuteIcon(); updateDl(); if (typeof renderMixer === 'function') renderMixer(); };
+
+  // ---------- soundtrack picker ----------
+  // A cut can carry alternative music (version.soundtracks: [{id, label, assetId}]).
+  // Picking one mutes the cut's own audio and plays that track in sync with it.
+  const aud = $('aud');
+  state.track = store.get('cutroom.music') || 'cut';
+  state.musicOn = store.get('cutroom.musicOn') !== '0';
+  state.voiceOn = store.get('cutroom.voiceOn') === '1';
+  setMuteIcon();
+  const tracksOf = (x) => (x && Array.isArray(x.soundtracks) ? x.soundtracks : []);
+  function currentTrack() { return tracksOf(state.ver).find((s) => s.id === state.track) || null; }
+  // While previewing retimed, the music runs on its own clock: it plays at the
+  // chosen speed along the retimed timeline, so a stretched or frozen stretch
+  // of picture never slows or stops it. Even the cut's own audio is then
+  // played from a separate element, the video staying muted.
+  const decoupled = () => !!(state.preview && state.ver);
+  /** Where video time t falls on the retimed timeline. */
+  function retimedAt(t) {
+    let d = 0;
+    for (const sc of scenes()) {
+      const segs = segsFor(sc);
+      for (const x of segs) {
+        if (x.b === x.a) { if (t > x.a + 1e-3) d += x.len; continue; }
+        if (t <= x.a) continue;
+        const span = Math.min(t, x.b) - x.a;
+        d += span * (x.len / (x.b - x.a)) - span;
+      }
+      const p = proposed(sc);
+      if (p && t > sc.start) { const span = Math.min(t, sc.end) - sc.start; d += span * (p / lenOf(sc)) - span; }
+    }
+    return t + d;
+  }
+  const audTarget = () => (decoupled() ? retimedAt(v.currentTime) : v.currentTime);
+  // Every jump of the music fades through it: a bare seek mid-waveform is a pop.
+  let fadeRaf = 0;
+  function syncAud() {
+    if (!aud.getAttribute('src')) return;
+    const to = audTarget();
+    if (Math.abs(aud.currentTime - to) < 0.02) return;
+    cancelAnimationFrame(fadeRaf);
+    aud.volume = 0;
+    try { aud.currentTime = to; } catch {}
+    aud.addEventListener('seeked', () => {
+      const s0 = performance.now();
+      const up = () => { const k = Math.min(1, (performance.now() - s0) / 160); aud.volume = k * k; if (k < 1) fadeRaf = requestAnimationFrame(up); };
+      fadeRaf = requestAnimationFrame(up);
+    }, { once: true });
+  }
+  state.innerSeek = false;
+  // A voiceover (version.voices: [{id, label, tracks: {cut, mellow, …}}]) is
+  // pre-mixed with each music track, the music ducked under the voice, so a
+  // voice swaps the whole soundtrack for its mix with the picked music.
+  state.voice = store.get('cutroom.voice') || '';
+  // A voice with `stemOnly` exists only as a stem (no pre-mixed tracks), so it
+  // is offered only where the stem mixer runs. `group` sorts the picker.
+  const voicesOf = (x) => (x && Array.isArray(x.voices) ? x.voices.filter((v) => !v.stemOnly || usesStems()) : []);
+  function currentVoice() { return voicesOf(state.ver).find((x) => x.id === state.voice) || null; }
+  /** What should be heard, from the music switch, music pick and voice switch:
+      `own` (the cut's own soundtrack), an `asset` to play instead, or
+      `silent` (music muted on a cut with no UI-sounds track). Voice mixes are
+      keyed by music option, `none` being the music muted. */
+  // ---------- stem mixer ----------
+  // A version with `stems` ({music: {cut, mellow, …}, sfx, voices: {id: ref}})
+  // is mixed here, at the viewer's music and voice volumes: the stems are
+  // decoded once, summed offline with the music ducked under the voice (the
+  // same shape the pre-mixed tracks use), and the result plays through the
+  // same audio element as any track, so sync is unchanged. Downloads encode
+  // that same mix.
+  const ENGINE = !!(window.OfflineAudioContext && window.AudioBuffer);
+  state.musicVol = Math.max(0, Math.min(1.5, +(store.get('cutroom.musicVol') || 1)));
+  state.voiceVol = Math.max(0, Math.min(1.5, +(store.get('cutroom.voiceVol') || 1)));
+  const usesStems = () => !!(ENGINE && state.ver && state.ver.stems);
+  const stemBufs = new Map();
+  function stemBuffer(ref) {
+    if (!stemBufs.has(ref)) {
+      stemBufs.set(ref, fetch(mediaUrl(ref)).then((r) => { if (!r.ok) throw { code: 'fetch' }; return r.arrayBuffer(); })
+        .then((b) => new OfflineAudioContext(2, 48000, 48000).decodeAudioData(b))
+        .catch((e) => { stemBufs.delete(ref); throw e; }));
+    }
+    return stemBufs.get(ref);
+  }
+  function duckCurve(voice, dur, depth) {
+    // Same follower as the pre-mixes: 5 ms hops, 80 ms attack, 350 ms release.
+    const sr = voice.sampleRate, hop = Math.round(sr * 0.005), x = voice.getChannelData(0);
+    const n = Math.ceil((dur * sr) / hop), e = new Float32Array(n);
+    const a = Math.exp(-0.005 / 0.08), r = Math.exp(-0.005 / 0.35);
+    let v = 0, max = 1e-6;
+    for (let i = 0; i < n; i++) {
+      let b = 0; const j0 = i * hop, j1 = Math.min(x.length, j0 + hop);
+      for (let j = j0; j < j1; j++) { const q = Math.abs(x[j]); if (q > b) b = q; }
+      v = b > v ? a * v + (1 - a) * b : r * v + (1 - r) * b;
+      e[i] = v; if (v > max) max = v;
+    }
+    for (let i = 0; i < n; i++) e[i] = 1 - depth * Math.min(1, (e[i] / max) * 3);
+    return e;
+  }
+  const mixes = new Map();
+  function mixSpec() {
+    const tr = currentTrack(), vo = state.voiceOn ? currentVoice() : null;
+    const stems = state.ver.stems;
+    const musicKey = state.musicOn ? (tr ? tr.id : 'cut') : null;
+    return {
+      music: musicKey && stems.music && stems.music[musicKey] ? stems.music[musicKey] : null,
+      voice: vo && stems.voices && stems.voices[vo.id] ? stems.voices[vo.id] : null,
+      sfx: stems.sfx || null,
+      musicVol: state.musicVol, voiceVol: state.voiceVol, dur: state.ver.duration || 0,
+    };
+  }
+  const specKey = (sp) => JSON.stringify([sp.music, sp.voice, sp.sfx, sp.musicVol, sp.voiceVol, sp.dur]);
+  async function renderMix(sp) {
+    const sr = 48000, len = Math.ceil(sp.dur * sr);
+    const [mb, vb, sb] = await Promise.all([sp.music && stemBuffer(sp.music), sp.voice && stemBuffer(sp.voice), sp.sfx && stemBuffer(sp.sfx)]);
+    const ctx = new OfflineAudioContext(2, len, sr);
+    const add = (buf, gain) => { if (!buf) return null; const s = ctx.createBufferSource(); s.buffer = buf; const g = ctx.createGain(); g.gain.value = gain; s.connect(g).connect(ctx.destination); s.start(0); return g; };
+    const mg = add(mb, sp.musicVol);
+    if (mg && vb && sp.voiceVol > 0) {
+      const c = duckCurve(vb, sp.dur, 0.65 * Math.min(1, sp.voiceVol));
+      for (let i = 0; i < c.length; i++) c[i] *= sp.musicVol;
+      mg.gain.setValueCurveAtTime(c, 0, sp.dur);
+    }
+    add(vb, sp.voiceVol);
+    add(sb, 1);
+    const out = await ctx.startRendering();
+    // A soft knee above 0.8 rounds off the few peaks a boosted voice or
+    // music can push past full scale, without turning the whole mix down.
+    for (let ch = 0; ch < out.numberOfChannels; ch++) {
+      const d = out.getChannelData(ch);
+      for (let i = 0; i < d.length; i++) { const q = Math.abs(d[i]); if (q > 0.8) d[i] = Math.sign(d[i]) * (0.8 + 0.18 * Math.tanh((q - 0.8) / 0.18)); }
+    }
+    return out;
+  }
+  function wavUrl(buf) {
+    const ch = buf.numberOfChannels, n = buf.length, sr = buf.sampleRate;
+    const dv = new DataView(new ArrayBuffer(44 + n * ch * 2));
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) dv.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, 'RIFF'); dv.setUint32(4, 36 + n * ch * 2, true); str(8, 'WAVEfmt '); dv.setUint32(16, 16, true);
+    dv.setUint16(20, 1, true); dv.setUint16(22, ch, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * ch * 2, true);
+    dv.setUint16(32, ch * 2, true); dv.setUint16(34, 16, true); str(36, 'data'); dv.setUint32(40, n * ch * 2, true);
+    const data = []; for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+    let o = 44;
+    for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) { const v = Math.max(-1, Math.min(1, data[c][i])); dv.setInt16(o, v < 0 ? v * 0x8000 : v * 0x7fff, true); o += 2; }
+    return URL.createObjectURL(new Blob([dv], { type: 'audio/wav' }));
+  }
+  /** The current mix, rendered once per spec: {buf, url}. */
+  function ensureMix(sp) {
+    const k = specKey(sp);
+    if (!mixes.has(k)) {
+      if (mixes.size > 6) { const [old, m] = mixes.entries().next().value; mixes.delete(old); m.then((x) => URL.revokeObjectURL(x.url)).catch(() => {}); }
+      mixes.set(k, renderMix(sp).then((buf) => ({ buf, url: wavUrl(buf) })).catch((e) => { mixes.delete(k); throw e; }));
+    }
+    return mixes.get(k);
+  }
+  /** The current mix encoded for a download (AAC where the browser can, else Opus), as a blob URL. */
+  async function mixForExport() {
+    const { buf } = await ensureMix(mixSpec());
+    const MB = await import(MB_URL);
+    const codec = await MB.getFirstEncodableAudioCodec(['aac', 'opus'], { numberOfChannels: buf.numberOfChannels, sampleRate: buf.sampleRate });
+    if (!codec) throw { code: 'encode' };
+    const output = new MB.Output({ format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }), target: new MB.BufferTarget() });
+    const src = new MB.AudioBufferSource({ codec, quality: MB.QUALITY_HIGH });
+    output.addAudioTrack(src);
+    await output.start();
+    await src.add(buf);
+    src.close();
+    await output.finalize();
+    return URL.createObjectURL(new Blob([output.target.buffer], { type: 'audio/mp4' }));
+  }
+  let mixReady = null; // spec key of the mix last applied
+  function audioPlan() {
+    const ver = state.ver || {};
+    if (usesStems()) {
+      const tr = currentTrack(), vo = state.voiceOn ? currentVoice() : null;
+      const sp = mixSpec();
+      const k = specKey(sp);
+      const music = state.musicOn ? (tr ? tr.label : (ver.musicLabel || 'Original')) : null;
+      return { mix: sp, mixKey: k, voice: sp.voice ? vo : null, music, track: null, asset: mixReady && mixReady.key === k ? mixReady.url : null };
+    }
+    const tr = currentTrack();
+    const vo = state.voiceOn ? currentVoice() : null;
+    const key = state.musicOn ? (tr ? tr.id : 'cut') : 'none';
+    const music = state.musicOn ? (tr ? tr.label : (ver.musicLabel || 'Original')) : null;
+    if (vo && vo.tracks && vo.tracks[key]) return { asset: vo.tracks[key], voice: vo, music };
+    if (!state.musicOn) return ver.sfxAssetId ? { asset: ver.sfxAssetId, music } : { silent: true, music };
+    if (tr) return { asset: tr.assetId, track: tr, music };
+    return { own: true, music };
+  }
+  function voiceAsset() { const p = audioPlan(); return p.voice ? p.asset : null; }
+  function applyAudio() {
+    const plan = audioPlan();
+    if (plan.mix && !plan.asset) {
+      // Render the mix, then come back; the previous audio keeps playing meanwhile.
+      ensureMix(plan.mix).then((m) => { mixReady = { key: plan.mixKey, url: m.url }; applyAudio(); updateDl(); })
+        .catch((e) => { console.error(e); toast('Couldn’t mix the soundtrack' + (e && e.message ? ': ' + e.message : '')); });
+      v.muted = true;
+      return;
+    }
+    const free = decoupled();
+    const own = plan.own && (free || usingAlpha()) && state.ver && state.ver.assetId;
+    v.muted = !plan.own || !!own;
+    aud.muted = false;
+    const src = plan.asset ? mediaUrl(plan.asset) : own ? mediaUrl(state.ver.assetId) : '';
+    if (aud.dataset.src !== src) {
+      aud.dataset.src = src;
+      if (src) { aud.src = src; aud.load(); } else { aud.pause(); aud.removeAttribute('src'); aud.load(); }
+    }
+    if (src) {
+      aud.playbackRate = state.rate;
+      syncAud();
+      if (!v.paused || state.freeze) aud.play().catch(() => {});
+    }
+  }
+  // ---------- download ----------
+  // Saves the cut as rendered, with the music picked here when that track has
+  // its own muxed video (soundtracks[].videoAssetId); otherwise the original.
+  let dlNs = null;
+  let toastTimer = 0;
+  function toast(msg, sticky) {
+    const t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+  function dlFile() {
+    const ver = state.ver; if (!ver || !ver.assetId) return null;
+    const plan = audioPlan();
+    const slug = String(ver.slotLabel || ver.slot || 'cut').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const bg = usingAlpha();
+    const tinted = bg && !['g-midnight', 'g-aurora', 'g-sunset', 'g-ocean', 'blueprint'].includes(state.bg);
+    // A music pick with its own muxed video downloads as is; any other audio
+    // is swapped into the cut's video (or baked into a background export).
+    const muxed = plan.track && plan.track.videoAssetId;
+    const audio = plan.mix ? { mix: true } : plan.own || muxed ? null : plan.silent ? { none: true } : { asset: plan.asset };
+    const vol = plan.mix ? (state.musicVol !== 1 && plan.music ? '-music' + Math.round(state.musicVol * 100) : '') + (state.voiceVol !== 1 && plan.voice ? '-voice' + Math.round(state.voiceVol * 100) : '') : '';
+    const tr = currentTrack();
+    return {
+      asset: muxed || ver.assetId,
+      audio, plan, bg,
+      name: `arcatext-${ver.film || 'film'}-${slug}-${ver.label || 'cut'}${bg ? '-' + state.bg + (tinted ? '-' + state.bgColor.slice(1) : '') : ''}`
+        + (state.musicOn ? (tr ? '-' + tr.id : '') : '-no-music') + (plan.voice ? '-vo-' + plan.voice.id : '') + vol + '.mp4',
+    };
+  }
+  // The picked background is a CSS layer in the preview, so a download with it
+  // is composited here: each frame of the transparent render is drawn over the
+  // background painted on a canvas, encoded to MP4 (WebM where H.264 encoding
+  // is missing) and muxed with the picked music.
+  const MB_URL = 'https://cdn.jsdelivr.net/npm/mediabunny@1.59.1/dist/bundles/mediabunny.min.mjs';
+  function hexRgb(hex) { const n = parseInt(String(hex).slice(1), 16) || 0; return [n >> 16, (n >> 8) & 255, n & 255]; }
+  const col = (hex, a) => { const [r, g, b] = hexRgb(hex); return `rgba(${r},${g},${b},${a})`; };
+  // `stops` are [pos 0..1, color]; `transparent` is written as the neighbouring
+  // color at alpha 0 so fades don't darken the way premultiplied black would.
+  function radial(ctx, W, H, rx, ry, cx, cy, stops) {
+    ctx.save(); ctx.translate(cx * W, cy * H); ctx.scale(rx * W, ry * H);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    for (const [p, c] of stops) g.addColorStop(p, c);
+    ctx.fillStyle = g; ctx.fillRect(-4, -4, 8, 8); ctx.restore();
+  }
+  function linear(ctx, W, H, deg, stops) {
+    const a = deg * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a);
+    const len = Math.abs(W * dx) + Math.abs(H * dy);
+    const g = ctx.createLinearGradient(W / 2 - dx * len / 2, H / 2 - dy * len / 2, W / 2 + dx * len / 2, H / 2 + dy * len / 2);
+    for (const [p, c] of stops) g.addColorStop(p, c);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  /** Paints background `mode` at W×H. `k` is export pixels per preview CSS
+      pixel, so 1px rules and dots keep the weight they have in the preview. */
+  function paintBackground(mode, c, W, H, tall, k) {
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const x = cv.getContext('2d');
+    const fill = (style) => { x.fillStyle = style; x.fillRect(0, 0, W, H); };
+    const cw = 0.075 * W, ch = (tall ? 0.075 * 9 / 16 : 0.075 * 16 / 9) * H;
+    const px = Math.max(1, Math.round(k));
+    const rules = (stepX, stepY, style) => {
+      x.fillStyle = style;
+      for (let y = 0; y < H; y += stepY) x.fillRect(0, Math.round(y), W, px);
+      for (let xx = 0; xx < W; xx += stepX) x.fillRect(Math.round(xx), 0, px, H);
+    };
+    const glow = (a) => radial(x, W, H, 0.7, 0.55, 0.5, 0.45, [[0, col(c, a)], [0.7, col(c, 0)], [1, col(c, 0)]]);
+    switch (mode) {
+      case 'solid': fill(c); break;
+      case 'g-midnight': linear(x, W, H, 180, [[0, '#0d1330'], [0.55, '#070a18'], [1, '#030409']]); break;
+      case 'g-aurora':
+        fill('#05060c');
+        radial(x, W, H, 0.7, 0.5, 0.7, 0.3, [[0, 'rgba(40,200,190,.25)'], [0.6, 'rgba(40,200,190,0)'], [1, 'rgba(40,200,190,0)']]);
+        radial(x, W, H, 0.8, 0.6, 0.9, 0.85, [[0, 'rgba(140,80,255,.45)'], [0.6, 'rgba(140,80,255,0)'], [1, 'rgba(140,80,255,0)']]);
+        radial(x, W, H, 0.9, 0.6, 0.15, 0.1, [[0, 'rgba(51,112,255,.55)'], [0.6, 'rgba(51,112,255,0)'], [1, 'rgba(51,112,255,0)']]);
+        break;
+      case 'g-sunset': linear(x, W, H, 165, [[0, '#1d0b33'], [0.45, '#5b1f4a'], [0.75, '#b0434a'], [1, '#e2864a']]); break;
+      case 'g-ocean': linear(x, W, H, 180, [[0, '#031923'], [0.5, '#063646'], [1, '#0b5d6e']]); break;
+      case 'g-tint': fill('#05060a'); linear(x, W, H, 180, [[0, col(c, 0.55)], [0.55, col(c, 0.12)], [1, '#05060a']]); break;
+      case 'grid': fill('#06070b'); glow(0.18); rules(cw, ch, col(c, 0.22)); break;
+      case 'dots': {
+        fill('#06070b'); glow(0.16);
+        const r0 = 1.3 * k, r1 = 1.8 * k;
+        for (let y = ch / 2; y < H; y += ch) for (let xx = cw / 2; xx < W; xx += cw) {
+          const g = x.createRadialGradient(xx, y, 0, xx, y, r1);
+          g.addColorStop(0, col(c, 0.5)); g.addColorStop(r0 / r1, col(c, 0.5)); g.addColorStop(1, col(c, 0));
+          x.fillStyle = g; x.fillRect(xx - r1, y - r1, 2 * r1, 2 * r1);
+        }
+        break;
+      }
+      case 'blueprint': fill('#0c2f66'); rules(cw, ch, 'rgba(255,255,255,.08)'); rules(cw * 4, ch * 4, 'rgba(255,255,255,.22)'); break;
+      case 'lines': fill('#07080c'); x.fillStyle = col(c, 0.2); for (let y = ch; y <= H + 0.5; y += ch) x.fillRect(0, Math.round(y) - px, W, px); break;
+      case 'spotlight': fill('#030407'); radial(x, W, H, 0.55, 0.4, 0.5, 0.42, [[0, col(c, 0.45)], [0.55, col(c, 0.08)], [0.75, col(c, 0)], [1, col(c, 0)]]); break;
+      case 'mesh':
+        fill('#07080d');
+        radial(x, W, H, 0.5, 0.4, 0.4, 0.95, [[0, 'rgba(255,255,255,.06)'], [0.7, 'rgba(255,255,255,0)'], [1, 'rgba(255,255,255,0)']]);
+        radial(x, W, H, 0.55, 0.45, 0.85, 0.7, [[0, col(c, 0.32)], [0.7, col(c, 0)], [1, col(c, 0)]]);
+        radial(x, W, H, 0.6, 0.45, 0.2, 0.25, [[0, col(c, 0.5)], [0.7, col(c, 0)], [1, col(c, 0)]]);
+        break;
+      case 'grain': {
+        fill('#0a0b10');
+        radial(x, W, H, 0.8, 0.6, 0.5, 0.4, [[0, col(c, 0.25)], [0.7, col(c, 0)], [1, col(c, 0)]]);
+        const n = 160, tile = document.createElement('canvas'); tile.width = tile.height = n;
+        const tx = tile.getContext('2d'), id = tx.createImageData(n, n);
+        for (let i = 0; i < n * n; i++) { id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255; id.data[i * 4 + 3] = Math.round(Math.random() * 0.09 * 255 * 1.4); }
+        tx.putImageData(id, 0, 0);
+        x.save(); x.scale(k, k); x.fillStyle = x.createPattern(tile, 'repeat'); x.fillRect(0, 0, W / k, H / k); x.restore();
+        break;
+      }
+      default: fill('#000');
+    }
+    return cv;
+  }
+  let exportAudioOverride = null; // an encoded mix to use instead of the plan's asset
+  async function fetchBlob(id) { const r = await fetch(mediaUrl(id)); if (!r.ok) throw { code: 'fetch' }; return r.blob(); }
+  async function exportWithBackground(onProgress) {
+    const ver = state.ver, tr = currentTrack();
+    const MB = await import(MB_URL);
+    const plan = audioPlan();
+    const audRef = exportAudioOverride || (plan.silent ? null : plan.asset || ver.assetId);
+    const [fgBlob, audBlob] = await Promise.all([fetchBlob(ver.alphaAssetId), audRef ? fetchBlob(audRef) : null]);
+    const fgIn = new MB.Input({ source: new MB.BlobSource(fgBlob), formats: MB.ALL_FORMATS });
+    const vt = await fgIn.getPrimaryVideoTrack();
+    if (!vt) throw { code: 'decode' };
+    const W = vt.displayWidth, H = vt.displayHeight;
+    const fps = ver.fps || 60;
+    const dur = ver.duration || await fgIn.computeDuration();
+    const layer = $('bgl');
+    const k = layer && layer.clientWidth ? W / layer.clientWidth : W / 360;
+    const bg = paintBackground(state.bg, state.bgColor, W, H, ver.aspect === '9:16', k);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    // Always an MP4: H.264 where the browser can encode it, else VP9 in MP4.
+    // The music's AAC is copied in as is, so no audio decoder is needed.
+    const vcodec = await MB.getFirstEncodableVideoCodec(['avc', 'vp9'], { width: W, height: H });
+    if (!vcodec) throw { code: 'encode' };
+    const output = new MB.Output({ format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }), target: new MB.BufferTarget() });
+    const vsrc = new MB.CanvasSource(cv, { codec: vcodec, quality: MB.QUALITY_HIGH, keyFrameInterval: 2 });
+    output.addVideoTrack(vsrc, { frameRate: fps });
+    const audIn = audBlob ? new MB.Input({ source: new MB.BlobSource(audBlob), formats: MB.ALL_FORMATS }) : null;
+    const at = audIn ? await audIn.getPrimaryAudioTrack() : null;
+    const copy = !!(at && (at.codec === 'aac' || at.codec === 'opus'));
+    const asrc = !at ? null : copy ? new MB.EncodedAudioPacketSource(at.codec) : new MB.AudioSampleSource({ codec: 'aac', quality: MB.QUALITY_HIGH });
+    if (asrc) output.addAudioTrack(asrc);
+    await output.start();
+    const n = Math.round(dur * fps);
+    const video = (async () => {
+      const sink = new MB.CanvasSink(vt, { alpha: true, poolSize: 2 });
+      const times = Array.from({ length: n }, (_, i) => (i + 0.5) / fps);
+      let i = 0;
+      for await (const wc of sink.canvasesAtTimestamps(times)) {
+        ctx.globalCompositeOperation = 'copy'; ctx.drawImage(bg, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+        if (wc) ctx.drawImage(wc.canvas, 0, 0, W, H);
+        await vsrc.add(i / fps, 1 / fps);
+        i++; if (i % 15 === 0) onProgress(i / n);
+      }
+      vsrc.close();
+    })();
+    const audio = (async () => {
+      if (!asrc) return;
+      if (copy) {
+        const cfg = await at.getDecoderConfig();
+        let first = true;
+        for await (const pk of new MB.EncodedPacketSink(at).packets()) {
+          if (pk.timestamp >= dur) break;
+          await asrc.add(pk, first ? { decoderConfig: cfg } : undefined); first = false;
+        }
+      } else {
+        for await (const smp of new MB.AudioSampleSink(at).samples(0, dur)) { await asrc.add(smp); smp.close(); }
+      }
+      asrc.close();
+    })();
+    await Promise.all([video, audio]);
+    await output.finalize();
+    return { data: output.target.buffer, ext: 'mp4' };
+  }
+
+  /** The cut's video with another soundtrack, both copied as is (no re-encode). */
+  /** The cut's video with another soundtrack (or none), copied as is. */
+  async function remuxWithAudio(videoAsset, audioAsset, onProgress) {
+    const MB = await import(MB_URL);
+    const [vb, ab] = await Promise.all([fetchBlob(videoAsset), audioAsset ? fetchBlob(audioAsset) : null]);
+    const vin = new MB.Input({ source: new MB.BlobSource(vb), formats: MB.ALL_FORMATS });
+    const ain = ab ? new MB.Input({ source: new MB.BlobSource(ab), formats: MB.ALL_FORMATS }) : null;
+    const vt = await vin.getPrimaryVideoTrack(), at = ain ? await ain.getPrimaryAudioTrack() : null;
+    if (!vt || (ain && !at)) throw { code: 'decode' };
+    const dur = await vin.computeDuration();
+    const output = new MB.Output({ format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }), target: new MB.BufferTarget() });
+    const vsrc = new MB.EncodedVideoPacketSource(vt.codec), asrc = at ? new MB.EncodedAudioPacketSource(at.codec) : null;
+    output.addVideoTrack(vsrc, { frameRate: state.ver.fps || 60 });
+    if (asrc) output.addAudioTrack(asrc);
+    await output.start();
+    const copy = async (track, src, isVideo) => {
+      const cfg = await track.getDecoderConfig();
+      let first = true;
+      for await (const pk of new MB.EncodedPacketSink(track).packets()) {
+        if (!isVideo && pk.timestamp >= dur) break;
+        await src.add(pk, first ? { decoderConfig: cfg } : undefined); first = false;
+        if (isVideo && onProgress) onProgress(Math.min(1, pk.timestamp / dur));
+      }
+      src.close();
+    };
+    await Promise.all([copy(vt, vsrc, true), at ? copy(at, asrc, false) : null]);
+    await output.finalize();
+    return output.target.buffer;
+  }
+
+  function updateDl() {
+    const b = $('dl'); const f = dlNs ? dlFile() : null;
+    b.hidden = !f;
+    const tr = currentTrack();
+    if (f) b.title = `Download ${state.ver.label}`
+      + (f.plan.music ? ` with ${f.plan.music} music` : ' without music')
+      + (f.plan.voice ? ` and the ${f.plan.voice.label} voiceover` : '')
+      + (f.bg ? ` on the ${BG_LABEL[state.bg]} background` : '');
+  }
+  $('dl').onclick = async () => {
+    const f = dlFile(); const b = $('dl');
+    if (!f || !dlNs || b.getAttribute('aria-busy') === 'true') return;
+    b.setAttribute('aria-busy', 'true');
+    try {
+      let data, name = f.name;
+      if (f.audio && f.audio.mix) {
+        toast('Mixing the soundtrack…', true);
+        f.audio = { asset: await mixForExport() };
+        exportAudioOverride = f.audio.asset;
+      }
+      if (f.bg) {
+        toast(`Rendering with the ${BG_LABEL[state.bg]} background…`, true);
+        const r = await exportWithBackground((p) => toast(`Rendering with the ${BG_LABEL[state.bg]} background… ${Math.round(p * 100)}%`, true));
+        data = r.data; name = name.replace(/\.mp4$/, '.' + r.ext);
+      } else if (f.audio) {
+        const what = f.plan.voice ? 'Adding the voiceover' : f.audio.none ? 'Removing the music' : 'Swapping the soundtrack';
+        toast(what + '…', true);
+        data = await remuxWithAudio(f.asset, f.audio.none ? null : f.audio.asset, (p) => toast(`${what}… ${Math.round(p * 100)}%`, true));
+      } else {
+        toast('Preparing ' + name + '…', true);
+        data = await fetchBlob(f.asset);
+      }
+      toast('Ready. Confirm the save.', true);
+      await dlNs.save({ filename: name, data });
+      toast('Saved ' + name);
+    } catch (e) {
+      const c = e && e.code;
+      if (!c) console.error(e);
+      toast(c === 'declined' ? 'Download cancelled' : c === 'rate_limited' ? 'A save prompt is already open' : c === 'fetch' ? 'Couldn’t load the video. Try again.'
+        : c === 'encode' ? 'This browser can’t encode video, so the background can’t be baked in here. Try Chrome on a computer.'
+        : !c || c === 'decode' ? 'Couldn’t render the background version' + (e && e.message ? ': ' + e.message : '') : 'Downloads aren’t available in this view');
+      if (['unavailable', 'not_granted', 'capability_disabled', 'capability_removed'].includes(c)) { dlNs = null; updateDl(); }
+    } finally { b.removeAttribute('aria-busy'); exportAudioOverride = null; }
+  };
+
+  function renderMusic() {
+    // Stem-only options (the beats) exist only as stems, so they need the mixer.
+    const list = tracksOf(state.ver).filter((t) => !t.stemOnly || usesStems());
+    const sel = $('music');
+    $('musicWrap').hidden = !list.length;
+    sel.textContent = '';
+    const opts = [{ id: 'cut', label: (state.ver && state.ver.musicLabel) || 'Original' }, ...list];
+    for (const o of opts) { const op = el('option', null, o.label); op.value = o.id; sel.appendChild(op); }
+    sel.value = opts.some((o) => o.id === state.track) ? state.track : 'cut';
+    renderVoices();
+    renderMixer();
+    applyAudio();
+    updateDl();
+  }
+  function renderMixer() {
+    const on = usesStems();
+    $('mixWrap').hidden = !on;
+    if (!on) { $('mixPop').hidden = true; return; }
+    $('musicVol').value = Math.round(state.musicVol * 100); $('musicVolOut').textContent = Math.round(state.musicVol * 100) + '%';
+    $('voiceVol').value = Math.round(state.voiceVol * 100); $('voiceVolOut').textContent = Math.round(state.voiceVol * 100) + '%';
+    const hasVoice = voicesOf(state.ver).length > 0;
+    $('mixVoiceRow').hidden = !hasVoice;
+    $('mixMusicRow').classList.toggle('off', !state.musicOn);
+    $('mixVoiceRow').classList.toggle('off', !state.voiceOn);
+    $('mixMusicRow').title = state.musicOn ? '' : 'Music is muted';
+    $('mixVoiceRow').title = state.voiceOn ? '' : 'The voiceover is off';
+  }
+  let mixTimer = 0;
+  function onVolume(which, el, out) {
+    const val = +el.value / 100;
+    out.textContent = el.value + '%';
+    state[which] = val;
+    store.set('cutroom.' + which, String(val));
+    // Re-mix once the slider settles, not on every step of a drag.
+    clearTimeout(mixTimer);
+    mixTimer = setTimeout(() => { applyAudio(); updateDl(); }, 250);
+  }
+  $('musicVol').oninput = (e) => onVolume('musicVol', e.target, $('musicVolOut'));
+  $('voiceVol').oninput = (e) => onVolume('voiceVol', e.target, $('voiceVolOut'));
+  $('mixReset').onclick = () => { state.musicVol = state.voiceVol = 1; store.set('cutroom.musicVol', '1'); store.set('cutroom.voiceVol', '1'); renderMixer(); applyAudio(); updateDl(); };
+  $('mixBtn').onclick = (e) => { e.stopPropagation(); const p = $('mixPop'); p.hidden = !p.hidden; $('mixBtn').setAttribute('aria-expanded', String(!p.hidden)); if (!p.hidden) renderMixer(); };
+  document.addEventListener('click', (e) => { if (!$('mixPop').hidden && !$('mixWrap').contains(e.target)) { $('mixPop').hidden = true; $('mixBtn').setAttribute('aria-expanded', 'false'); } });
+  function setVoiceBtn() {
+    const b = $('voiceBtn'); const vo = currentVoice();
+    b.setAttribute('aria-pressed', state.voiceOn);
+    b.title = state.voiceOn ? `Voiceover on${vo ? ' (' + vo.label + ')' : ''}: in the preview and downloads. Turn it off (V)` : 'Voiceover off. Turn it on (V)';
+    $('voiceWrap').classList.toggle('off', !state.voiceOn);
+  }
+  function renderVoices() {
+    const list = voicesOf(state.ver);
+    const sel = $('voice');
+    $('voiceWrap').hidden = $('voiceBtn').hidden = !list.length;
+    sel.textContent = '';
+    const groups = new Map();
+    for (const o of list) {
+      const op = el('option', null, o.label); op.value = o.id;
+      if (!o.group) { sel.appendChild(op); continue; }
+      if (!groups.has(o.group)) { const g = document.createElement('optgroup'); g.label = o.group; groups.set(o.group, g); sel.appendChild(g); }
+      groups.get(o.group).appendChild(op);
+    }
+    if (list.length && !list.some((o) => o.id === state.voice)) state.voice = list[0].id;
+    sel.value = state.voice;
+    setVoiceBtn();
+  }
+  $('voiceBtn').onclick = () => {
+    state.voiceOn = !state.voiceOn;
+    store.set('cutroom.voiceOn', state.voiceOn ? '1' : '0');
+    setVoiceBtn(); renderMixer(); applyAudio(); updateDl();
+  };
+  $('voice').onchange = async (e) => {
+    state.voice = e.target.value;
+    store.set('cutroom.voice', state.voice);
+    // Picking a voice turns the voiceover on.
+    if (!state.voiceOn) { state.voiceOn = true; store.set('cutroom.voiceOn', '1'); }
+    setVoiceBtn();
+    applyAudio();
+    updateDl();
+    // Saved where Claude can read which voice you settled on.
+    if (db && state.canWrite !== false && state.ver) {
+      const vo = currentVoice();
+      try { await db.doc('picks/voice').set({ voice: state.voice || null, label: vo ? vo.label : 'No voice', version: state.ver.id, at: Date.now(), author: state.me || null }); } catch {}
+    }
+  };
+  $('music').onchange = async (e) => {
+    state.track = e.target.value;
+    store.set('cutroom.music', state.track);
+    applyAudio();
+    updateDl();
+    // Saved where Claude can read which music you settled on.
+    if (db && state.canWrite !== false && state.ver) {
+      const tr = currentTrack();
+      try { await db.doc('picks/music').set({ track: state.track, label: tr ? tr.label : ((state.ver.musicLabel) || 'Original'), version: state.ver.id, at: Date.now(), author: state.me || null }); } catch {}
+    }
+  };
+  // Seeks and pauses the preview makes itself (a delay's freeze, a removed
+  // stretch skipped) leave the decoupled music alone; the viewer's own ones
+  // move it.
+  const hasAud = () => !!aud.getAttribute('src');
+  aud.addEventListener('loadedmetadata', () => { if (hasAud()) { syncAud(); if (!v.paused || state.freeze) aud.play().catch(() => {}); } });
+  v.addEventListener('play', () => { if (!hasAud()) return; if (!(decoupled() && state.innerSeek)) syncAud(); aud.play().catch(() => {}); });
+  v.addEventListener('pause', () => { if (decoupled() && state.freeze) return; aud.pause(); });
+  v.addEventListener('seeked', () => { if (state.innerSeek) { state.innerSeek = false; return; } if (hasAud()) syncAud(); });
+  aud.preservesPitch = true;
+  $('preview').onchange = (e) => { state.preview = e.target.checked; if (!state.preview && state.freeze) { state.freeze = null; setPlayIcon(); } applyRate(); applyAudio(); };
+
+  // Fullscreen the player (video + transport) so the controls and shortcuts
+  // still work; iOS Safari only fullscreens a bare <video>.
+  const player = $('player');
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function toggleFullscreen() {
+    try {
+      if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      const req = player.requestFullscreen || player.webkitRequestFullscreen;
+      if (req) { const p = req.call(player); if (p && p.catch) p.catch(() => {}); }
+      else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+    } catch {}
+  }
+  function setFsIcon() {
+    const on = !!fsEl();
+    $('fsIcon').innerHTML = on
+      ? '<path d="M5 2h2v5H2V5h3zM9 2h2v3h3v2H9zM2 9h5v5H5v-3H2zM9 9h5v2h-3v3H9z"/>'
+      : '<path d="M2 2h5v2H4v3H2zM9 2h5v5h-2V4H9zM2 9h2v3h3v2H2zM12 9h2v5H9v-2h3z"/>';
+    $('fs').setAttribute('aria-label', on ? 'Exit fullscreen' : 'Fullscreen');
+    $('fs').title = on ? 'Exit fullscreen (F or Esc)' : 'Fullscreen (F)';
+  }
+  $('fs').onclick = toggleFullscreen;
+  document.addEventListener('fullscreenchange', setFsIcon);
+  document.addEventListener('webkitfullscreenchange', setFsIcon);
+
+  // ---------- previewing proposed timing ----------
+  // Every proposed delay, hold or duration knows its stretch of the film
+  // [a, b]; previewing plays that stretch over its new length: faster or
+  // slower, skipped when it's removed (0s), or as a held frame when it's a new
+  // delay between two words (a === b).
+  function segsFor(sc) {
+    const cur = state.timing[sc.id];
+    if (!cur || !cur.delays) return [];
+    const parts = [...(sc.delays || []), ...(sc.flows || []).flat().filter((p) => p && p.key)];
+    const out = [];
+    for (const [k, len] of Object.entries(cur.delays)) {
+      if (cur.inserts && cur.inserts[k]) {
+        const m = /^ins-(\d+)-(\d+)-(\d+)$/.exec(k);
+        const part = m && sc.flows && sc.flows[+m[1]] && sc.flows[+m[1]][+m[2]];
+        const t = part && part.wordTimes && part.wordTimes[+m[3]];
+        if (Number.isFinite(t)) out.push({ a: t, b: t, len });
+        continue;
+      }
+      const p = parts.find((x) => x.key === k);
+      if (p && Number.isFinite(p.at)) out.push({ a: p.at, b: p.at + p.value, len });
+    }
+    return out;
+  }
+  const segDelta = (sc) => segsFor(sc).reduce((a, x) => a + x.len - (x.b - x.a), 0);
+  state.freeze = null; state.lastT = 0;
+  v.addEventListener('seeked', () => { state.lastT = v.currentTime; });
+  function applyRate() {
+    let r = state.rate;
+    let shown = null;
+    const t = v.currentTime;
+    if (state.preview && state.ver) {
+      if (state.freeze) {
+        // A new delay: hold the frame, then carry on.
+        const left = (state.freeze.until - performance.now()) / 1000;
+        if (left <= 0) { const f = state.freeze; state.freeze = null; state.innerSeek = true; v.currentTime = f.at + 0.002; v.play(); }
+        else shown = `new delay ${left.toFixed(1)}s`;
+      } else if (!v.paused) {
+        const segs = scenes().flatMap(segsFor);
+        const hold = segs.find((x) => x.b === x.a && x.len > 0 && state.lastT < x.a && t >= x.a);
+        const skip = segs.find((x) => x.len === 0 && x.b > x.a && t >= x.a && t < x.b - 0.005);
+        const inSeg = segs.find((x) => x.b > x.a && x.len > 0 && t >= x.a && t < x.b);
+        if (hold) {
+          state.freeze = { at: hold.a, until: performance.now() + (hold.len / state.rate) * 1000 };
+          v.pause(); state.innerSeek = true; v.currentTime = hold.a;
+          shown = `new delay ${hold.len.toFixed(1)}s`;
+        } else if (skip) {
+          state.innerSeek = true; v.currentTime = skip.b; shown = 'removed';
+        } else if (inSeg) {
+          const k = Math.min(16, Math.max(0.0625, (inSeg.b - inSeg.a) / inSeg.len));
+          r *= k; shown = `retimed ${k.toFixed(2)}×`;
+        } else if (state.cur >= 0) {
+          const sc = scenes()[state.cur];
+          const p = sc && proposed(sc);
+          if (p) { const k = Math.min(4, Math.max(0.25, lenOf(sc) / p)); r *= k; if (Math.abs(k - 1) > 1e-3) shown = `retimed ${k.toFixed(2)}×`; }
+        }
+      }
+    }
+    state.lastT = v.currentTime;
+    // With separate music playing locked, the tick below owns the picture's
+    // speed (it follows the music); otherwise the picture runs at r.
+    const follows = hasAud() && !decoupled() && !v.paused;
+    if (!follows && Math.abs(v.playbackRate - r) > 1e-4) v.playbackRate = r;
+    // The music's own speed is only ever the chosen playback speed: changing
+    // it to chase the picture is heard as the tempo drifting.
+    if (hasAud() && aud.playbackRate !== state.rate) aud.playbackRate = state.rate;
+    const tag = $('rateTag');
+    tag.hidden = !shown; if (shown) tag.textContent = shown;
+  }
+
+  // ---------- per-frame tick ----------
+  let lastShown = -1;
+  function loop() { tick(false); requestAnimationFrame(loop); }
+  function tick(force) {
+    const t = v.currentTime;
+    const s = scenes();
+    const i = s.length ? sceneAt(v.currentTime) : -1;
+    if (i !== state.cur) {
+      state.cur = i;
+      drawScenes();
+      renderTimingCurrent();
+      updateAt();
+    }
+    applyRate();
+    // Separate music is the clock and is never sped up or slowed down.
+    // Locked, the picture follows it: a few percent of picture speed is
+    // invisible, and only a stall pulls the picture to the music. Decoupled
+    // (preview retimed), the music runs free and only a stall well past
+    // 1.5s moves it, faded.
+    if (hasAud() && !v.paused && !aud.paused && !state.freeze && !aud.seeking) {
+      const err = aud.currentTime - audTarget();
+      if (decoupled()) {
+        if (Math.abs(err) > 1.5) syncAud();
+      } else if (Math.abs(err) > 0.6) {
+        state.innerSeek = true; v.currentTime = aud.currentTime;
+      } else {
+        const want = Math.abs(err) > 0.03 ? state.rate * (1 + Math.max(-0.1, Math.min(0.1, err * 0.6))) : state.rate;
+        if (Math.abs(v.playbackRate - want) > 1e-3) v.playbackRate = want;
+      }
+    }
+    if (force || t !== lastShown) {
+      lastShown = t;
+      $('now').textContent = fmt(t);
+      $('frame').textContent = 'f ' + Math.round(t * FPS);
+      drawPlayhead();
+      updateAt();
+      if (!v.paused) { // keep the playhead in view while playing
+        const sc = $('tlScroll'); const x = t * pps;
+        if (x < sc.scrollLeft || x > sc.scrollLeft + sc.clientWidth - 30) sc.scrollLeft = x - 40;
+      }
+    }
+  }
+
+  // ---------- comment composer ----------
+  state.inAt = 0;
+  function updateAt() {
+    // The note anchors to the playhead until you start typing or mark a range.
+    if (!state.pinned && state.out == null && !$('ctext').value) state.inAt = v.currentTime;
+    $('atChip').textContent = '@ ' + fmt(state.inAt);
+    const s = scenes(); const i = s.length ? sceneAt(state.inAt) : -1;
+    $('atScene').textContent = i >= 0 ? s[i].name : '';
+    $('atScene').title = i >= 0 ? s[i].name : '';
+    renderOnscreen(i >= 0 ? s[i] : null);
+    $('outWrap').hidden = state.out == null;
+    $('clearOut').hidden = state.out == null && !state.pinned;
+    $('setIn').textContent = state.pinned ? 'Move start here' : 'Set start';
+    $('setOut').textContent = state.out == null ? 'Set end' : 'Move end here';
+    if (state.out != null) $('outChip').textContent = fmt(state.out);
+    drawInpoint();
+  }
+  // The words on screen in this scene, each editable in place with its own
+  // Add change. Edits are kept per cut and scene, so scrubbing away keeps them.
+  const textDrafts = new Map();
+  let onscreenKey = '';
+  const grow = (ta) => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  function renderOnscreen(sc) {
+    const box = $('onscreen');
+    const texts = (sc && Array.isArray(sc.texts)) ? sc.texts : [];
+    const key = (state.ver ? state.ver.id : '') + '|' + (sc ? sc.id : '');
+    if (key === onscreenKey && box.childElementCount === texts.length) return;
+    onscreenKey = key;
+    box.textContent = '';
+    box.hidden = !texts.length;
+    for (const tx of texts) {
+      const dk = key + '|' + tx.key;
+      const row = el('div', 'ost');
+      const head = el('div', 'oh'); head.appendChild(el('span', null, tx.label));
+      const reset = el('button', 'link', 'Reset'); reset.type = 'button';
+      head.appendChild(reset);
+      const ta = el('textarea'); ta.rows = 1; ta.value = textDrafts.has(dk) ? textDrafts.get(dk) : tx.text;
+      ta.setAttribute('aria-label', tx.label + ' text'); ta.spellcheck = false;
+      const foot = el('div', 'row-end');
+      const add = el('button', 'btn sm', 'Add change'); add.type = 'button';
+      foot.appendChild(add);
+      const sync = () => {
+        const dirty = ta.value !== tx.text;
+        if (dirty) textDrafts.set(dk, ta.value); else textDrafts.delete(dk);
+        row.classList.toggle('dirty', dirty); reset.hidden = !dirty;
+        add.disabled = !dirty || !db || state.canWrite === false;
+      };
+      ta.addEventListener('input', () => { grow(ta); sync(); });
+      ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); add.click(); } });
+      reset.onclick = () => { ta.value = tx.text; grow(ta); sync(); };
+      add.onclick = async () => {
+        const to = ta.value.trim();
+        if (!to || to === tx.text || !db || !state.ver) return;
+        add.disabled = true;
+        try {
+          await db.collection('comments').add({
+            version: state.ver.id, t: +Math.max(sc.start, state.inAt).toFixed(3), tEnd: null,
+            scene: sc.id, sceneName: sc.name, kind: 'text', field: { key: tx.key, label: tx.label, from: tx.text, to },
+            text: `${tx.label}: change text to\n"${to}"\n(was "${tx.text}")`,
+            resolved: false, createdAt: Date.now(), author: state.me || null,
+          });
+          textDrafts.delete(dk); ta.value = tx.text; grow(ta); sync();
+        } catch (err) { readOnly(err); sync(); }
+      };
+      row.append(head, ta, foot);
+      box.appendChild(row);
+      sync();
+      requestAnimationFrame(() => grow(ta));
+    }
+  }
+  $('atChip').onclick = () => seek(state.inAt);
+  $('outChip').onclick = () => seek(state.out);
+  const setIn = () => { state.pinned = true; state.inAt = v.currentTime; if (state.out != null && state.out < state.inAt) state.out = null; updateAt(); };
+  $('setIn').onclick = setIn;
+  const setOut = () => { state.pinned = true; state.out = v.currentTime; if (state.out < state.inAt) [state.inAt, state.out] = [state.out, state.inAt]; updateAt(); };
+  $('setOut').onclick = setOut;
+  $('clearOut').onclick = () => { state.out = null; state.pinned = false; updateAt(); };
+  $('ctext').addEventListener('focus', () => { if (state.out == null) updateAt(); });
+  $('ctext').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); $('compose').requestSubmit(); } });
+  $('compose').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = $('ctext').value.trim();
+    if (!text || !db || !state.ver) return;
+    const s = scenes(); const i = s.length ? sceneAt(state.inAt) : -1;
+    const doc = {
+      version: state.ver.id, t: +state.inAt.toFixed(3), tEnd: state.out != null && state.out - state.inAt >= 1 / FPS ? +state.out.toFixed(3) : null,
+      scene: i >= 0 ? s[i].id : null, sceneName: i >= 0 ? s[i].name : null,
+      text, resolved: false, createdAt: Date.now(), author: state.me || null,
+    };
+    $('addBtn').disabled = true;
+    try {
+      const ref = await db.collection('comments').add(doc);
+      $('ctext').value = ''; state.out = null; state.pinned = false; updateAt();
+      state.hot = ref.id;
+    } catch (err) {
+      readOnly(err);
+    } finally { $('addBtn').disabled = false; }
+  });
+  function readOnly(err) {
+    if (err && err.code === 'invalid_argument') { state.canWrite = false; applyWriteState(); }
+    else { $('roNote').hidden = false; $('roNote').textContent = 'Couldn’t save that change: ' + ((err && err.message) || 'unknown error') + '. Try again in a moment.'; }
+  }
+
+  // ---------- comments list ----------
+  function focusComment(id, scroll) {
+    state.hot = id;
+    const c = state.comments.find((x) => x.id === id);
+    if (c && state.ver && c.version === state.ver.id) seek(c.t + 1e-3);
+    $('tabC').click();
+    renderComments(); drawMarks();
+    if (scroll) { const n = document.querySelector(`[data-cid="${CSS.escape(id)}"]`); if (n) n.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  }
+  function renderComments() {
+    const list = $('clist'); list.textContent = '';
+    const vid = state.ver && state.ver.id;
+    let items = state.comments.filter((c) => inProject(c.version) && (state.cScope === 'all' || c.version === vid));
+    const openHere = state.comments.filter((c) => c.version === vid && statusOf(c) === 'draft').length;
+    $('cCount').textContent = openHere ? String(openHere) : '';
+    const drafts = draftsHere();
+    $('submitAll').disabled = !drafts.length || !db || state.canWrite === false || submitting;
+    $('submitAll').textContent = drafts.length ? `Submit all (${drafts.length})` : 'Submit all';
+    // Open: drafts not yet sent. Submitted: sent to Claude, in progress or done.
+    if (state.cState === 'open') items = items.filter((c) => statusOf(c) === 'draft');
+    else items = items.filter((c) => statusOf(c) !== 'draft');
+    const order = new Map(state.versions.map((x, i) => [x.id, i]));
+    items.sort((a, b) => (order.get(a.version) ?? 99) - (order.get(b.version) ?? 99) || a.t - b.t);
+    if (!items.length) {
+      list.appendChild(el('div', 'none', state.cState === 'open' ? (state.cScope === 'all' ? 'No drafts. Scrub to a moment and add a change above.' : 'No drafts on this cut. Scrub to a moment and add a change above.') : 'Nothing submitted yet.'));
+      return;
+    }
+    for (const c of items) {
+      const card = el('div', 'c' + (c.resolved ? ' done' : '') + (state.hot === c.id ? ' hot' : ''));
+      card.dataset.cid = c.id;
+      const meta = el('div', 'meta');
+      const here = c.version === vid;
+      const chip = el(here ? 'button' : 'span', 'chip', fmt(c.t) + (Number.isFinite(c.tEnd) ? ' – ' + fmt(c.tEnd) : ''));
+      if (here) { chip.type = 'button'; chip.title = 'Jump here'; chip.onclick = () => focusComment(c.id, false); }
+      meta.appendChild(chip);
+      const ver = state.versions.find((x) => x.id === c.version);
+      if (!here) meta.appendChild(el('span', 'ver', ver ? ver.label : c.version));
+      if (c.sceneName) meta.appendChild(el('span', null, c.sceneName.length > 42 ? c.sceneName.slice(0, 40) + '…' : c.sceneName));
+      const st = statusOf(c);
+      meta.appendChild(el('span', 'badge ' + st, st === 'draft' ? 'Draft' : st === 'submitted' ? 'Submitted' : 'Done'));
+      card.appendChild(meta);
+      card.appendChild(el('div', 'text', c.text));
+      if (c.reply) { const r = el('div', 'reply'); r.appendChild(el('b', null, 'Claude')); r.appendChild(document.createTextNode(c.reply)); card.appendChild(r); }
+      if (state.canWrite !== false && st === 'draft') {
+        const acts = el('div', 'acts');
+        const sub = el('button', 'btn primary sm', 'Submit');
+        sub.type = 'button';
+        sub.disabled = !db || submitting;
+        sub.onclick = () => submit([c], card);
+        acts.appendChild(sub);
+        const del = el('button', 'link del', 'Delete');
+        del.type = 'button';
+        del.onclick = () => {
+          if (del.dataset.armed) { db.doc('comments/' + c.id).delete().catch(readOnly); return; }
+          del.dataset.armed = '1'; del.textContent = 'Confirm delete';
+          setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = 'Delete'; } }, 3000);
+        };
+        acts.appendChild(del);
+        card.appendChild(acts);
+      }
+      list.appendChild(card);
+    }
+  }
+  // ---------- submitting to Claude ----------
+  // A change is a draft until submitted; Claude marks it done (resolved) with a reply.
+  const statusOf = (c) => (c.resolved ? 'done' : c.submittedAt ? 'submitted' : 'draft');
+  // Every unsubmitted draft, on any cut: a draft left on an older cut is still a change you want.
+  const verOrder = (id) => { const i = state.versions.findIndex((x) => x.id === id); return i < 0 ? 99 : -i; };
+  const draftsHere = () => state.comments.filter((c) => statusOf(c) === 'draft' && inProject(c.version)).sort((a, b) => verOrder(a.version) - verOrder(b.version) || a.t - b.t);
+  const verLabel = (id) => { const x = state.versions.find((y) => y.id === id); return x ? (x.slotLabel ? `${x.slotLabel} ${x.label}` : x.label) : id; };
+  let comments = null, submitting = false;
+  function submitText(items) {
+    const cuts = [...new Set(items.map((c) => verLabel(c.version)))].join(', ');
+    const head = `Cut Room: ${items.length} change${items.length > 1 ? 's' : ''} submitted (on ${cuts}). Please implement and render the next cut.\n`;
+    const lines = items.map((c) => `• ${verLabel(c.version)} ${fmt(c.t)}${Number.isFinite(c.tEnd) ? '–' + fmt(c.tEnd) : ''} ${c.sceneName ? '(' + c.sceneName.slice(0, 40) + ') ' : ''}${c.text} [${c.id}]`);
+    let out = head;
+    const enc = new TextEncoder();
+    for (let i = 0; i < lines.length; i++) {
+      const more = `\n…and ${lines.length - i} more in the Cut Room.`;
+      if (enc.encode(out + lines[i] + '\n' + more).length > 3900) { out += more; break; }
+      out += lines[i] + '\n';
+    }
+    return out.trim();
+  }
+  function submitMsg(text, err) { $('submitMsg').textContent = text; $('submitMsg').parentElement.classList.toggle('err', !!err); }
+  async function submit(items, anchorEl) {
+    if (!db || !items.length || submitting) return;
+    submitting = true; renderComments();
+    submitMsg('Sending to Claude…');
+    let via = 'saved';
+    try {
+      const can = comments ? await comments.canSendToClaude().catch(() => 'off') : 'off';
+      if (can === 'available') {
+        // The list re-renders while sending, so find this card's live element again.
+        const live = (anchorEl && anchorEl.isConnected && anchorEl)
+          || (items.length === 1 && document.querySelector(`.c[data-cid="${CSS.escape(items[0].id)}"]`))
+          || $('submitAll');
+        const anchor = await comments.anchorFor(live);
+        await comments.sendToClaude({ anchor, text: submitText(items) });
+        via = 'claude';
+      }
+    } catch (err) {
+      if (!err || err.code !== 'claude_unavailable') {
+        submitting = false; renderComments();
+        submitMsg(err && err.code === 'consent_required' ? 'Allow comments for this page to submit to Claude, then try again.' : 'Couldn’t send that: ' + ((err && (err.message || err.code)) || 'unknown error') + '.', true);
+        return;
+      }
+    }
+    try {
+      const at = Date.now();
+      for (const c of items) await db.doc('comments/' + c.id).update({ submittedAt: at, submittedVia: via });
+      submitMsg(via === 'claude'
+        ? `Sent ${items.length} change${items.length > 1 ? 's' : ''} to Claude. Its reply lands on each card when the next cut is ready.`
+        : `Marked ${items.length} as submitted. Claude isn’t watching this page right now, so say “go” in your Claude session and it will pick them up.`);
+    } catch (err) { readOnly(err); }
+    submitting = false; renderComments();
+  }
+  $('submitAll').onclick = (e) => submit(draftsHere(), e.currentTarget);
+
+  const commentBusy = new Map();
+  async function writeComment(id, patch) {
+    if (!db) return;
+    const prev = commentBusy.get(id) || Promise.resolve();
+    const next = prev.then(() => db.doc('comments/' + id).update(patch)).catch(readOnly);
+    commentBusy.set(id, next);
+  }
+
+  // ---------- scene timing ----------
+  let timingWrite = Promise.resolve(), timingPending = null;
+  function canEditTiming() { return !!db && state.canWrite !== false && !!state.ver; }
+  // A card's proposal: {duration?, note?, delays?: {key: secs}, committed?}.
+  // `committed` is the proposal as of its last Add change, so the button only
+  // shows when the card holds something not yet added.
+  const sigOf = (cur) => JSON.stringify({ d: cur.duration ?? null, n: cur.note || '', l: Object.entries(cur.delays || {}).sort() });
+  const EMPTY_SIG = sigOf({});
+  const isDirty = (cur) => sigOf(cur || {}) !== ((cur && cur.committed) || EMPTY_SIG);
+  function patchTiming(id, fn) {
+    if (!state.ver) return;
+    const cur = JSON.parse(JSON.stringify(state.timing[id] || {}));
+    fn(cur);
+    if (cur.inserts) { for (const k of Object.keys(cur.inserts)) if (!cur.delays || cur.delays[k] == null) delete cur.inserts[k]; if (!Object.keys(cur.inserts).length) delete cur.inserts; }
+    if (cur.delays && !Object.keys(cur.delays).length) delete cur.delays;
+    if (cur.committed === EMPTY_SIG) delete cur.committed;
+    const next = { ...state.timing };
+    if (Object.keys(cur).length) next[id] = cur; else delete next[id];
+    state.timing = next;
+    queueTimingWrite();
+  }
+  function setProposal(id, len, note) {
+    patchTiming(id, (cur) => {
+      if (len !== undefined) { if (len == null) delete cur.duration; else cur.duration = +len.toFixed(2); }
+      if (note !== undefined) { if (note) cur.note = note; else delete cur.note; }
+    });
+    layout(); renderTiming();
+  }
+  function queueTimingWrite() {
+    if (!db || !state.ver) return;
+    const vid = state.ver.id;
+    timingPending = { scenes: state.timing, updatedAt: Date.now(), author: state.me || null };
+    $('timingSaved').textContent = 'Saving…';
+    timingWrite = timingWrite.then(async () => {
+      if (!timingPending) return;
+      const body = timingPending; timingPending = null;
+      await db.doc('timing/' + vid).set(body);
+      $('timingSaved').textContent = 'Saved — Claude reads this before the next cut.';
+    }).catch((err) => { $('timingSaved').textContent = ''; readOnly(err); });
+  }
+  const stableJson = (x) => JSON.stringify(x, (k, val) => (val && typeof val === 'object' && !Array.isArray(val) ? Object.fromEntries(Object.keys(val).sort().map((key) => [key, val[key]])) : val));
+  $('tlist').addEventListener('focusout', () => setTimeout(() => {
+    if (state.timingStale && !$('tlist').contains(document.activeElement)) { state.timingStale = false; layout(); renderTiming(); }
+  }));
+  function renderTiming() {
+    const box = $('tlist'); box.textContent = '';
+    const s = scenes();
+    s.forEach((sc, i) => box.appendChild(timingCard(sc, i)));
+    timingTotals();
+  }
+  function timingTotals() {
+    const s = scenes();
+    const changed = s.filter((sc) => isDirty(state.timing[sc.id])).length;
+    $('tCount').textContent = changed ? String(changed) : '';
+    const orig = s.reduce((a, sc) => a + lenOf(sc), 0);
+    const nw = s.reduce((a, sc) => a + (proposed(sc) ?? lenOf(sc)) + segDelta(sc), 0);
+    $('totOrig').textContent = secs(orig);
+    $('totNew').textContent = secs(nw) + (Math.abs(nw - orig) > 1e-3 ? ` (${signed(nw - orig)})` : '');
+    $('clearTiming').disabled = !canEditTiming() || !Object.keys(state.timing).length;
+  }
+  const num = (x) => String(+(+x).toFixed(2));
+  // ---------- pending text edits in Scene timing ----------
+  // A card shows the text as it will read once your text edits land: the live
+  // draft in the Changes editor, else the newest open text change on this cut.
+  // Its timings are rebuilt around the new words with the cut's current values.
+  function pendingText(sc, key) {
+    if (!state.ver) return null;
+    const dk = state.ver.id + '|' + sc.id + '|' + key;
+    if (textDrafts.has(dk)) return textDrafts.get(dk);
+    const cs = state.comments
+      .filter((c) => c.kind === 'text' && !c.resolved && c.version === state.ver.id && c.scene === sc.id && c.field && c.field.key === key)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    return cs.length ? cs[0].field.to : null;
+  }
+  const parseText = (str) => {
+    const m = /^([\s\S]*?)\s*\[([^\]]*)\]\s*([\s\S]*)$/.exec(str);
+    if (!m) return { base: str, words: null, tail: '' };
+    return { base: m[1], words: m[2].split('/').map((w) => w.trim()).filter((w) => w && w !== '…'), tail: m[3] };
+  };
+  function rebuildFlow(parts, text) {
+    const { base, words, tail } = parseText(text.replace(/\n/g, ' '));
+    const typed = parts.some((p) => p.typed);
+    const timings = parts.filter((p) => p.key);
+    const byKey = Object.fromEntries(timings.map((p) => [p.key, p]));
+    const out = [];
+    // Typing pauses stay with their word, if it survives the edit.
+    let rest = base;
+    for (const p of timings.filter((x) => /^(pause-|type-pause-)/.test(x.key))) {
+      const w = (/“(.+)”/.exec(p.label) || [])[1];
+      const at = w ? rest.indexOf(w) : -1;
+      if (at < 0) continue;
+      out.push({ text: rest.slice(0, at + w.length), typed }, p);
+      rest = rest.slice(at + w.length);
+    }
+    out.push({ text: rest, typed });
+    if (words && words.length) {
+      const tag = timings.some((p) => p.key.startsWith('tag-'));
+      const pre = tag ? 'tag' : 'reel';
+      const holds = timings.filter((p) => p.kind === 'hold');
+      const lastHold = holds[holds.length - 1];
+      const roll = timings.find((p) => /-roll-/.test(p.key));
+      const spin = byKey['reel-spin'];
+      out.push(byKey['reel-start'] || { key: 'reel-start', kind: 'delay', name: 'Delay', label: 'before the reel', value: 1 });
+      const held = spin ? Math.min(holds.length, words.length - 1) : words.length;
+      for (let i = 0; i < held; i++) {
+        out.push({ word: words[i] });
+        const isLast = !spin && i === words.length - 1;
+        if (!isLast) {
+          const hk = tag ? `tag-hold-${i}` : spin ? `reel-hold-${i}` : i === 0 ? 'reel-first' : `reel-each-${i}`;
+          const hv = (byKey[hk] || lastHold || { value: 0.72 }).value;
+          out.push({ key: hk, kind: 'hold', name: 'Hold', label: `on “${words[i]}”`, value: hv });
+          if (i < held - 1 || !spin) {
+            const rk = `${pre}-roll-${i}`;
+            out.push({ key: rk, kind: 'duration', name: 'Scroll', label: `from “${words[i]}” to “${words[i + 1]}”`, value: (byKey[rk] || roll || { value: 0.32 }).value });
+          }
+        }
+      }
+      if (spin) {
+        out.push({ ...spin, label: `to “${words[words.length - 1]}”` });
+        if (words.length > held + 1) out.push({ text: '…' });
+        out.push({ word: words[words.length - 1] });
+      }
+    }
+    if (tail) out.push({ text: ' ' + tail });
+    return out;
+  }
+  function flowsFor(sc) {
+    const flows = Array.isArray(sc.flows) ? sc.flows : [];
+    const tx = Array.isArray(sc.texts) ? sc.texts[0] : null;
+    if (!flows.length || !tx) return flows;
+    const next = pendingText(sc, tx.key);
+    if (next == null || next === tx.text) return flows;
+    const out = flows.map((parts, i) => (i === 0 ? rebuildFlow(parts, next) : parts));
+    out.edited = true;
+    return out;
+  }
+
+  // Seconds fields: text, not type=number, which reports "" while "." or "0."
+  // is half-typed. Only digits and one point are kept; a partial entry ("",
+  // ".", "0", "0.", "1.") waits, and leaving the field commits what is there.
+  function secondsField(x, onValue) {
+    x.type = 'text'; x.inputMode = 'decimal'; x.autocomplete = 'off'; x.spellcheck = false;
+    const partial = (v) => v === '' || v.endsWith('.') || /^0*\.?0*$/.test(v);
+    x.addEventListener('input', () => {
+      const clean = x.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+      if (clean !== x.value) x.value = clean;
+      if (!partial(clean)) onValue(parseFloat(clean));
+    });
+    x.addEventListener('change', () => {
+      const v = x.value.replace(/\.$/, '');
+      onValue(v === '' ? NaN : parseFloat(v) || 0);
+    });
+  }
+
+  function timingCard(sc, i) {
+    const row = el('div', 't-row' + (i === state.cur ? ' cur' : ''));
+    row.dataset.i = i;
+    const ro = !canEditTiming();
+    const get = () => state.timing[sc.id] || {};
+    const name = el('div', 'name');
+    const nb = el('button', null, sc.name); nb.type = 'button'; nb.title = sc.name + ' — jump here';
+    nb.onclick = () => seek(sc.start + 1e-3);
+    name.appendChild(nb);
+    row.append(name, el('div', 'orig', secs(lenOf(sc))));
+    const inp = el('input', 'input');
+    inp.placeholder = lenOf(sc).toFixed(2); inp.value = get().duration != null ? String(get().duration) : '';
+    inp.setAttribute('aria-label', `Proposed length for ${sc.name}`);
+    inp.disabled = ro;
+    row.appendChild(inp);
+    const delta = el('div', 'delta'); row.appendChild(delta);
+    const dInputs = [];
+    const delayInput = (d, label) => {
+      const di = el('input', 'input');
+      di.placeholder = num(d.value);
+      const pv = get().delays && get().delays[d.key];
+      di.value = pv != null ? String(pv) : '';
+      di.setAttribute('aria-label', `Proposed delay ${label} in ${sc.name}`);
+      di.disabled = ro;
+      secondsField(di, (x) => {
+        patchTiming(sc.id, (cur) => {
+          cur.delays = cur.delays || {};
+          if (Number.isFinite(x) && x >= 0 && Math.abs(x - d.value) > 1e-3) cur.delays[d.key] = +x.toFixed(2); else delete cur.delays[d.key];
+        });
+        di.classList.toggle('set', Number.isFinite(x) && Math.abs(x - d.value) > 1e-3);
+        refresh();
+      });
+      di.classList.toggle('set', pv != null);
+      dInputs.push(di);
+      return di;
+    };
+    // Typing and reel sequences, with each delay as an inline control where it
+    // happens. In typed text a + between any two words adds a delay there; ×
+    // removes one (an existing delay is proposed as 0s, so it can be undone).
+    const flows = flowsFor(sc);
+    const flowDelays = [];
+    const redraw = (focusKey) => {
+      const fresh = timingCard(sc, i);
+      row.replaceWith(fresh);
+      if (focusKey) { const x = fresh.querySelector(`[data-dkey="${CSS.escape(focusKey)}"]`); if (x) { x.focus(); x.select(); } }
+    };
+    const xBtn = (label, onClick, title) => {
+      // Drawn, not typed: a text glyph sits off-center in the round target.
+      const b = el('button', 'dx'); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title);
+      b.innerHTML = label === '×'
+        ? '<svg viewBox="0 0 8 8" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7"/></svg>'
+        : '<svg viewBox="0 0 8 8" aria-hidden="true"><path d="M2.2 2.4A2.9 2.9 0 1 1 1.2 4.6"/><path d="M1 1v1.8h1.8"/></svg>';
+      b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onClick(); };
+      return b;
+    };
+    if (flows.edited) row.appendChild(el('div', 't-edited', 'Showing your text edit'));
+    flows.forEach((parts, fi) => {
+      const f = el('div', 't-flow' + (flows.edited ? ' edited' : ''));
+      parts.forEach((p, pi) => {
+        if (p.key) {
+          // A delay is a wait and can be removed; a hold or a duration (a
+          // scroll, a spin) can only be retimed.
+          const kind = p.kind || 'delay', name = p.name || 'Delay';
+          const what = `${name} ${p.label}`;
+          const removed = kind === 'delay' && get().delays && get().delays[p.key] === 0;
+          const pill = el('label', 'dly k-' + kind + (removed ? ' off' : '')); pill.title = `${what} (now ${secs(p.value)})`;
+          pill.appendChild(el('span', null, name));
+          const di = delayInput(p, what); di.dataset.dkey = p.key;
+          pill.appendChild(di);
+          pill.appendChild(el('span', null, 's'));
+          if (!ro && kind === 'delay') pill.appendChild(removed
+            ? xBtn('↺', () => { patchTiming(sc.id, (cur) => { delete cur.delays[p.key]; }); redraw(); }, `Keep the delay ${p.label}`)
+            : xBtn('×', () => { patchTiming(sc.id, (cur) => { cur.delays = cur.delays || {}; cur.delays[p.key] = 0; }); redraw(); }, `Remove the delay ${p.label}`));
+          f.appendChild(pill);
+          flowDelays.push(p);
+        } else if (p.word != null) f.appendChild(el('span', 'fw', p.word));
+        else if (p.typed && !ro) {
+          // Words, with a place to add a delay after each one but the last.
+          const toks = p.text.split(/(\s+)/);
+          const lastIdx = toks.map((t, k) => (/\S/.test(t) ? k : -1)).filter((k) => k >= 0).pop();
+          let wi = 0;
+          toks.forEach((tok, k) => {
+            f.appendChild(document.createTextNode(tok));
+            if (!/\S/.test(tok) || k === lastIdx) return;
+            const key = `ins-${fi}-${pi}-${wi++}`;
+            const ins = get().inserts && get().inserts[key];
+            if (ins) {
+              const pill = el('label', 'dly added'); pill.title = `New delay after “${tok}”`;
+              pill.appendChild(el('span', null, 'Delay'));
+              const di = el('input', 'input set');
+              di.value = String(get().delays[key]); di.dataset.dkey = key;
+              di.setAttribute('aria-label', `New delay after “${tok}” in ${sc.name}`);
+              secondsField(di, (x) => {
+                if (Number.isFinite(x) && x >= 0) { patchTiming(sc.id, (cur) => { cur.delays[key] = +x.toFixed(2); }); refresh(); }
+              });
+              dInputs.push(di);
+              pill.appendChild(di);
+              pill.appendChild(el('span', null, 's'));
+              pill.appendChild(xBtn('×', () => { patchTiming(sc.id, (cur) => { delete cur.delays[key]; delete cur.inserts[key]; }); redraw(); }, `Remove this new delay`));
+              f.appendChild(pill);
+            } else {
+              const plus = el('button', 'ins', '+'); plus.type = 'button';
+              plus.title = `Add a delay after “${tok}”`; plus.setAttribute('aria-label', plus.title);
+              plus.onclick = () => {
+                const ctx = p.text.trim();
+                patchTiming(sc.id, (cur) => {
+                  cur.delays = cur.delays || {}; cur.inserts = cur.inserts || {};
+                  cur.delays[key] = 0.5; cur.inserts[key] = { after: tok, in: ctx.length > 60 ? ctx.slice(0, 58) + '…' : ctx };
+                });
+                redraw(key);
+              };
+              f.appendChild(plus);
+            }
+          });
+        } else f.appendChild(document.createTextNode(p.text));
+      });
+      row.appendChild(f);
+    });
+    // Every other delay in the scene: what the cut uses now, and a proposed value.
+    const dls = Array.isArray(sc.delays) ? sc.delays : [];
+    if (dls.length) {
+      const wrap = el('div', 't-dls');
+      for (const d of dls) {
+        const r = el('div', 't-dl');
+        r.appendChild(el('span', 'dl-name', d.label));
+        r.appendChild(el('span', 'orig', secs(d.value)));
+        r.appendChild(delayInput(d, d.label));
+        wrap.appendChild(r);
+      }
+      row.appendChild(wrap);
+    }
+    const n = el('input', 'input note');
+    n.type = 'text'; n.placeholder = 'Note on this scene’s pacing (optional)'; n.value = get().note || '';
+    n.setAttribute('aria-label', `Pacing note for ${sc.name}`);
+    n.disabled = ro;
+    row.appendChild(n);
+    const foot = el('div', 't-foot');
+    const add = el('button', 'btn sm', 'Add change'); add.type = 'button';
+    foot.appendChild(add);
+    row.appendChild(foot);
+    function refresh() {
+      const cur = get();
+      const p = cur.duration;
+      const d = (p != null ? p - lenOf(sc) : 0) + segDelta(sc);
+      if (p != null || Math.abs(d) > 1e-3) { delta.textContent = Math.abs(d) < 1e-3 ? 'same length' : `${Math.abs(d).toFixed(2).replace(/0$/, '')}s ${d > 0 ? 'longer' : 'shorter'}`; delta.hidden = false; }
+      else delta.hidden = true;
+      const dirty = isDirty(cur);
+      foot.hidden = !dirty || ro;
+      row.classList.toggle('dirty', dirty);
+      timingTotals();
+    }
+    secondsField(inp, (x) => {
+      patchTiming(sc.id, (cur) => { if (Number.isFinite(x) && x > 0 && Math.abs(x - lenOf(sc)) > 1e-3) cur.duration = +x.toFixed(2); else delete cur.duration; });
+      layout(); refresh();
+    });
+    n.addEventListener('input', () => { const v = n.value.trim(); patchTiming(sc.id, (cur) => { if (v) cur.note = v; else delete cur.note; }); refresh(); });
+    for (const x of [inp, n, ...dInputs]) x.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !foot.hidden) { e.preventDefault(); add.click(); } });
+    add.onclick = async () => {
+      const cur = get();
+      if (!isDirty(cur) || !db || !state.ver) return;
+      const parts = [];
+      if (cur.duration != null) parts.push(`Length ${secs(lenOf(sc))} → ${secs(cur.duration)}`);
+      for (const d of flowDelays) if (cur.delays && cur.delays[d.key] != null) {
+        const name = d.name || 'Delay';
+        parts.push(cur.delays[d.key] === 0 && (d.kind || 'delay') === 'delay'
+          ? `Remove the delay ${d.label} (was ${secs(d.value)})`
+          : `${name} ${d.label}: ${secs(d.value)} → ${secs(cur.delays[d.key])}`);
+      }
+      for (const [k, ins] of Object.entries(cur.inserts || {})) if (cur.delays && cur.delays[k] != null) parts.push(`Add a ${secs(cur.delays[k])} delay after “${ins.after}” in “${ins.in}”`);
+      for (const d of dls) if (cur.delays && cur.delays[d.key] != null) parts.push(`${d.label}: ${secs(d.value)} → ${secs(cur.delays[d.key])}`);
+      if (cur.note) parts.push(`Note: ${cur.note}`);
+      const text = parts.length ? 'Timing — ' + parts.join('\n') : 'Timing — undo my earlier timing change: keep this scene as cut.';
+      add.disabled = true;
+      try {
+        await db.collection('comments').add({
+          version: state.ver.id, t: +sc.start.toFixed(3), tEnd: +sc.end.toFixed(3), scene: sc.id, sceneName: sc.name,
+          kind: 'timing', timing: { duration: cur.duration ?? null, delays: cur.delays || {}, note: cur.note || '' },
+          text, resolved: false, createdAt: Date.now(), author: state.me || null,
+        });
+        patchTiming(sc.id, (c) => { c.committed = sigOf(c); });
+        refresh();
+      } catch (err) { readOnly(err); }
+      finally { add.disabled = false; }
+    };
+    refresh();
+    return row;
+  }
+  function renderTimingCurrent() {
+    [...$('tlist').children].forEach((r) => r.classList.toggle('cur', +r.dataset.i === state.cur));
+  }
+  $('clearTiming').onclick = () => {
+    const b = $('clearTiming');
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Confirm reset'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Reset all'; }, 3000); return; }
+    delete b.dataset.armed; b.textContent = 'Reset all';
+    state.timing = {}; layout(); renderTiming(); queueTimingWrite();
+  };
+
+  // ---------- tabs ----------
+  function tab(which) {
+    if (which === 't') renderTiming();
+    $('tabC').setAttribute('aria-selected', which === 'c'); $('tabT').setAttribute('aria-selected', which === 't');
+    $('paneC').hidden = which !== 'c'; $('paneT').hidden = which !== 't';
+    store.set('cutroom.tab', which);
+  }
+  $('tabC').onclick = () => tab('c');
+  $('tabT').onclick = () => tab('t');
+  if (store.get('cutroom.tab') === 't') tab('t');
+
+  // ---------- keyboard ----------
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select')) { if (e.key === 'Escape') e.target.blur(); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (k === ' ' || k === 'k') { e.preventDefault(); togglePlay(); }
+    else if (k === 'ArrowLeft') { e.preventDefault(); step(e.shiftKey ? -1 : -1 / FPS); }
+    else if (k === 'ArrowRight') { e.preventDefault(); step(e.shiftKey ? 1 : 1 / FPS); }
+    else if (k === '[') toScene(-1);
+    else if (k === ']') toScene(1);
+    else if (k === 'm' || k === 'M') $('mute').click();
+    else if ((k === 'v' || k === 'V') && !$('voiceBtn').hidden) $('voiceBtn').click();
+    else if (k === 'o' || k === 'O') setOut();
+    else if (k === 'i' || k === 'I') setIn();
+    else if (k === 'f' || k === 'F') toggleFullscreen();
+    else if (k === 'c' || k === 'C') { e.preventDefault(); tab('c'); $('ctext').focus(); }
+  });
+
+  // ---------- versions ----------
+  // Only the latest render of each deliverable (version.slot) is offered; older
+  // renders stay in the database so their notes keep their context.
+  // ---------- projects ----------
+  // Each film is a project (projects/<film>, with a name you can change);
+  // its cuts are the versions with that `film`. Older versions predate the
+  // field and belong to the chat film.
+  state.projects = [];
+  state.project = store.get('cutroom.project') || 'chat';
+  const filmOf = (x) => (x && x.film) || 'chat';
+  const inProject = (versionId) => { const x = state.versions.find((y) => y.id === versionId); return !x || filmOf(x) === state.project; };
+  function projectList() {
+    const films = new Set([...state.projects.map((p) => p.id), ...state.versions.map(filmOf)]);
+    return [...films].map((id) => {
+      const p = state.projects.find((q) => q.id === id) || { id };
+      const cuts = new Set(state.versions.filter((x) => filmOf(x) === id && x.slot).map((x) => x.slot)).size;
+      return { id, name: p.name || id, order: p.order ?? 99, createdAt: p.createdAt || 0, cuts };
+    }).sort((a, b) => a.order - b.order || a.createdAt - b.createdAt);
+  }
+  const projectName = (id) => (projectList().find((p) => p.id === id) || { name: id }).name;
+  const pencil = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.6 1.6a1.6 1.6 0 0 1 2.3 0l.5.5a1.6 1.6 0 0 1 0 2.3L5.6 13.2 2 14l.8-3.6zM3.9 11l-.3 1.4 1.4-.3 7-7-1.1-1.1z"/></svg>';
+  function renderProjects() {
+    $('projName').textContent = projectName(state.project);
+    $('brandSub').textContent = projectName(state.project);
+    const menu = $('projMenu');
+    if (menu.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
+    menu.textContent = '';
+    const canWrite = !!db && state.canWrite !== false;
+    for (const p of projectList()) {
+      const row = el('div', 'pj-row' + (p.id === state.project ? ' cur' : ''));
+      const pick = el('button', 'pj-pick'); pick.type = 'button'; pick.setAttribute('role', 'menuitemradio'); pick.setAttribute('aria-checked', p.id === state.project);
+      pick.appendChild(el('span', 'ck', p.id === state.project ? '✓' : ''));
+      pick.appendChild(el('span', 'nm', p.name));
+      pick.appendChild(el('span', 'ct', p.cuts === 1 ? '1 cut' : `${p.cuts} cuts`));
+      pick.onclick = () => { openProject(p.id); closeProjMenu(); };
+      row.appendChild(pick);
+      if (canWrite) {
+        const ren = el('button', 'pj-ren'); ren.type = 'button'; ren.title = 'Rename'; ren.setAttribute('aria-label', `Rename ${p.name}`); ren.innerHTML = pencil;
+        ren.onclick = () => editRow(row, p.name, (name) => db.doc('projects/' + p.id).set({ ...(state.projects.find((q) => q.id === p.id) || { order: p.order, createdAt: p.createdAt || Date.now() }), name }));
+        row.appendChild(ren);
+      }
+      menu.appendChild(row);
+    }
+    if (canWrite) {
+      menu.appendChild(el('div', 'pj-sep'));
+      const add = el('button', 'pj-new', '+ New project'); add.type = 'button';
+      add.onclick = () => {
+        const row = el('div', 'pj-row'); add.replaceWith(row);
+        editRow(row, '', async (name) => {
+          const id = (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'project') + '-' + Date.now().toString(36);
+          await db.doc('projects/' + id).set({ name, order: 50 + projectList().length, createdAt: Date.now() });
+          openProject(id);
+          closeProjMenu();
+        }, 'Project name');
+      };
+      menu.appendChild(add);
+    }
+  }
+  function editRow(row, value, save, placeholder = 'Name') {
+    row.textContent = '';
+    const f = el('form', 'pj-edit');
+    const inp = el('input', 'input'); inp.value = value; inp.placeholder = placeholder; inp.setAttribute('aria-label', placeholder);
+    const ok = el('button', 'btn primary sm', 'Save'); ok.type = 'submit';
+    f.append(inp, ok); row.appendChild(f);
+    let done = false;
+    const finish = async (keep) => {
+      if (done) return; done = true;
+      const name = inp.value.trim();
+      if (keep && name && name !== value) { try { await save(name); } catch (err) { readOnly(err); } }
+      inp.blur(); renderProjects();
+    };
+    f.onsubmit = (e) => { e.preventDefault(); finish(true); };
+    inp.onkeydown = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); } };
+    inp.focus(); inp.select();
+  }
+  function openProjMenu() { renderProjects(); $('projMenu').hidden = false; $('projBtn').setAttribute('aria-expanded', 'true'); }
+  function closeProjMenu() { $('projMenu').hidden = true; $('projBtn').setAttribute('aria-expanded', 'false'); }
+  $('projBtn').onclick = () => ($('projMenu').hidden ? openProjMenu() : closeProjMenu());
+  document.addEventListener('pointerdown', (e) => { if (!$('proj').contains(e.target)) closeProjMenu(); });
+  $('proj').addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeProjMenu(); $('projBtn').focus(); } });
+  function openProject(id) {
+    if (id === state.project && state.ver) return;
+    state.project = id;
+    store.set('cutroom.project', id);
+    state.ver = null;
+    renderProjects();
+    showProject();
+  }
+  function showProject() {
+    const list = deliverables();
+    renderVersions();
+    renderProjects();
+    if (!list.length) {
+      state.ver = null;
+      v.pause(); v.removeAttribute('src'); v.load();
+      $('screen').classList.remove('tall'); $('safe').hidden = true; $('ov').hidden = true; $('ovWrap').hidden = true;
+      $('empty').hidden = false;
+      $('empty').textContent = `No cuts in “${projectName(state.project)}” yet. Tell Claude what to make, and each render appears here.`;
+      layout(); renderComments(); renderTiming();
+      return;
+    }
+    // Stay on the same deliverable; a new render of it replaces the old one in place.
+    const wantSlot = (state.ver && state.ver.slot) || store.get('cutroom.slot');
+    selectVersion((list.find((x) => x.slot === wantSlot) || list[0]).id);
+  }
+
+  function deliverables() {
+    const by = new Map();
+    for (const x of state.versions) {
+      if (!x.slot || filmOf(x) !== state.project) continue;
+      const cur = by.get(x.slot);
+      if (!cur || (x.createdAt || 0) > (cur.createdAt || 0)) by.set(x.slot, x);
+    }
+    return [...by.values()].sort((a, b) => (a.slotOrder ?? 99) - (b.slotOrder ?? 99));
+  }
+  function renderVersions() {
+    const nav = $('ver');
+    nav.textContent = '';
+    for (const x of deliverables()) {
+      const b = el('button');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', state.ver && state.ver.id === x.id ? 'true' : 'false');
+      b.appendChild(el('span', 'dv-t', x.slotLabel || x.label));
+      b.appendChild(el('span', 'dv-s', `${secs(x.duration || 0)} · ${x.label}`));
+      b.onclick = () => selectVersion(x.id);
+      nav.appendChild(b);
+    }
+  }
+  function setPhone(on) {
+    $('screen').classList.toggle('phone', on);
+    $('phoneBtn').setAttribute('aria-pressed', on);
+  }
+  $('phoneBtn').onclick = () => { const on = !$('screen').classList.contains('phone'); store.set('cutroom.phone', on ? '1' : ''); setPhone(on); };
+  setPhone(store.get('cutroom.phone') === '1');
+  // ---------- overlays ----------
+  // What each app draws over a 9:16 video, at its own positions: generic safe
+  // zones, or a plain-white mock of Instagram Reels, TikTok or YouTube Shorts.
+  const OV_ICON = {
+    heart: '<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>',
+    heartF: '<path class="f" d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>',
+    comment: '<path d="M20 11.5a8 7 0 0 1-11.6 6.2L4 19l1.4-3.6A7 7 0 0 1 4 11.5a8 7 0 0 1 16 0z"/>',
+    commentF: '<path class="f" d="M20 11.5a8 7 0 0 1-11.6 6.2L4 19l1.4-3.6A7 7 0 0 1 4 11.5a8 7 0 0 1 16 0z"/>',
+    plane: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>',
+    share: '<path class="f" d="M13 4l8 7.5-8 7.5v-4.6c-5 0-8.2 1.5-10 5.1.8-5.6 4-10.1 10-11z"/>',
+    bookmarkF: '<path class="f" d="M6 3h12v18l-6-4.3L6 21z"/>',
+    more: '<circle class="f" cx="5" cy="12" r="1.7"/><circle class="f" cx="12" cy="12" r="1.7"/><circle class="f" cx="19" cy="12" r="1.7"/>',
+    moreV: '<circle class="f" cx="12" cy="5" r="1.7"/><circle class="f" cx="12" cy="12" r="1.7"/><circle class="f" cx="12" cy="19" r="1.7"/>',
+    thumbF: '<path class="f" d="M3 10h4v11H3zM8.5 10.2 12.6 3c1.6 0 2.6 1.2 2.2 2.8L14 9h5.6a2 2 0 0 1 2 2.4l-1.6 7.8a2 2 0 0 1-2 1.8H8.5z"/>',
+    thumbDownF: '<path class="f" d="M21 14h-4V3h4zM15.5 13.8 11.4 21c-1.6 0-2.6-1.2-2.2-2.8L10 15H4.4a2 2 0 0 1-2-2.4L4 4.8A2 2 0 0 1 6 3h9.5z"/>',
+    remix: '<path d="M4 8h12l-3.5-3.5M20 16H8l3.5 3.5"/>',
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/>',
+    camera: '<path d="M3.5 7.5h4l2-2.5h5l2 2.5h4v12h-17z"/><circle cx="12" cy="13" r="3.6"/>',
+    home: '<path d="M4 10.5 12 4l8 6.5V20h-5.5v-6h-5v6H4z"/>',
+    homeF: '<path class="f" d="M4 10.5 12 4l8 6.5V20h-5.5v-6h-5v6H4z"/>',
+    plusBox: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
+    plusCircle: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+    plusPill: '<rect class="f" x="2.5" y="6" width="19" height="12" rx="3.5"/><path d="M12 9v6M9 12h6" style="stroke:#111"/>',
+    reels: '<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M4 9h16M9 4l2.5 5M14.5 4 17 9"/><path class="f" d="M10.5 12.5v4.5l4-2.25z"/>',
+    user: '<circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-4 4-5.8 7.5-5.8s6.3 1.8 7.5 5.8"/>',
+    users: '<circle cx="9" cy="9" r="3.5"/><path d="M2.5 19.5c.9-3.4 3.3-5 6.5-5s5.6 1.6 6.5 5"/><circle cx="16.5" cy="8" r="3"/><path d="M17.5 13.8c2.4.3 3.8 1.9 4.4 4.7"/>',
+    inbox: '<path d="M4 5.5h16v13H4zM4 6l8 6.5L20 6"/>',
+    shorts: '<path class="f" d="M15.8 3.6a4.3 4.3 0 0 1 2 8l-1.4.8 1.4.8a4.3 4.3 0 0 1-4 7.6l-6-3.3a4.3 4.3 0 0 1-2-8l1.4-.8-1.4-.8a4.3 4.3 0 0 1 4-7.6z"/><path d="M10.2 9.5v5l4.2-2.5z" style="fill:#000;stroke:none"/>',
+    subs: '<rect x="3.5" y="7" width="17" height="13" rx="2"/><path d="M6 4.5h12M10 11v6l5-3z"/>',
+    note: '<path d="M9 17.5V5.5l10-2v12"/><circle class="f" cx="6.8" cy="17.5" r="2.4"/><circle class="f" cx="16.8" cy="15.5" r="2.4"/>',
+    chev: '<path d="m7 9.5 5 5 5-5"/>',
+  };
+  const ovIcon = (k) => `<svg viewBox="0 0 24 24">${OV_ICON[k]}</svg>`;
+  const ovRail = (items) => items.map(([k, label]) => `<div>${k.startsWith('<') ? k : ovIcon(k)}${label ? `<span>${label}</span>` : ''}</div>`).join('');
+  const ovNav = (items) => `<div class="o nav">${items.map(([k, label]) => `<div>${ovIcon(k)}${label ? `<span>${label}</span>` : ''}</div>`).join('')}</div>`;
+  const OVERLAYS = {
+    instagram: () => `
+      <div class="o top"><b style="font-size:5.4cqw">Reels <span style="display:inline-block;vertical-align:middle">${ovIcon('chev')}</span></b>${ovIcon('camera')}</div>
+      <div class="o rail" style="bottom:17cqw">${ovRail([['heart', '8,214'], ['comment', '112'], ['plane', '1,036'], ['more', ''], ['<div class="disc"></div>', '']])}</div>
+      <div class="o meta" style="bottom:16cqw">
+        <div class="row"><span class="av"></span><b>arcatext</b><span class="pill">Follow</span></div>
+        <div>Your safety net to explore, make mistakes, and learn a lang… <span style="opacity:.75">more</span></div>
+        <div class="row" style="font-size:2.9cqw">${ovIcon('note').replace('<svg', '<svg style="width:3.6cqw;height:3.6cqw"')} arcatext · Original audio</div>
+      </div>
+      ${ovNav([['homeF', ''], ['search', ''], ['plusBox', ''], ['reels', ''], ['user', '']])}`,
+    tiktok: () => `
+      <div class="o top"><b style="font-size:3cqw;border:1px solid #fff;border-radius:1cqw;padding:0 1.2cqw">LIVE</b><span style="opacity:.75">Following&nbsp;&nbsp;&nbsp;<b style="opacity:1;border-bottom:0.6cqw solid #fff;padding-bottom:0.8cqw">For You</b></span>${ovIcon('search')}</div>
+      <div class="o rail" style="bottom:20cqw">${ovRail([['<div class="av" style="width:11cqw;height:11cqw"></div>', ''], ['heartF', '12.4K'], ['commentF', '318'], ['bookmarkF', '1,204'], ['share', '907'], ['<div class="disc round"></div>', '']])}</div>
+      <div class="o meta" style="bottom:15cqw">
+        <b style="font-size:3.6cqw">arcatext</b>
+        <div>Text your way into a new language ✨ #languagelearning #texting</div>
+        <div class="row" style="font-size:3cqw">${ovIcon('note').replace('<svg', '<svg style="width:3.6cqw;height:3.6cqw"')} original sound - arcatext</div>
+      </div>
+      ${ovNav([['homeF', 'Home'], ['users', 'Friends'], ['plusPill', ''], ['inbox', 'Inbox'], ['user', 'Profile']])}`,
+    youtube: () => `
+      <div class="o top" style="justify-content:flex-end;gap:5cqw">${ovIcon('search')}${ovIcon('moreV')}</div>
+      <div class="o rail" style="bottom:18cqw">${ovRail([['thumbF', '24K'], ['thumbDownF', 'Dislike'], ['commentF', '406'], ['share', 'Share'], ['remix', 'Remix'], ['<div class="disc"></div>', '']])}</div>
+      <div class="o meta" style="bottom:15.5cqw">
+        <div class="row"><span class="av"></span><b>@arcatext</b><span class="pill solid">Subscribe</span></div>
+        <div>How can texting become language learning? #shorts</div>
+        <div class="row" style="font-size:3cqw">${ovIcon('note').replace('<svg', '<svg style="width:3.6cqw;height:3.6cqw"')} Original sound</div>
+      </div>
+      <div class="o prog" style="bottom:12cqw"><i></i></div>
+      ${ovNav([['homeF', 'Home'], ['shorts', 'Shorts'], ['plusCircle', ''], ['subs', 'Subscriptions'], ['user', 'You']])}`,
+  };
+  function applyOverlay() {
+    const tall = !!(state.ver && state.ver.aspect === '9:16');
+    let pick = store.get('cutroom.overlay');
+    if (pick == null) pick = store.get('cutroom.safe') === '1' ? 'safe' : '';
+    if (pick !== 'safe' && !OVERLAYS[pick]) pick = '';
+    $('ovWrap').hidden = !tall;
+    $('overlay').value = pick;
+    $('safe').hidden = !tall || pick !== 'safe';
+    const ov = $('ov');
+    ov.hidden = !tall || !OVERLAYS[pick];
+    ov.innerHTML = !ov.hidden ? OVERLAYS[pick]() : '';
+  }
+  $('overlay').onchange = () => { store.set('cutroom.overlay', $('overlay').value); applyOverlay(); };
+  // ---------- backgrounds ----------
+  // A cut rendered with `alphaAssetId` (a VP9 WebM with transparency) can be
+  // previewed over any background: the picker swaps that render in and draws
+  // the background on a layer under it.
+  const BG_LABEL = { solid: 'Solid color', 'g-midnight': 'Midnight gradient', 'g-aurora': 'Aurora gradient', 'g-sunset': 'Sunset gradient', 'g-ocean': 'Ocean gradient', 'g-tint': 'Tinted fade', grid: 'Grid', dots: 'Dot array', blueprint: 'Blueprint', lines: 'Ruled lines', spotlight: 'Spotlight', mesh: 'Soft mesh', grain: 'Film grain' };
+  const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+  const GRAIN = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+  function bgCss(mode, c, tall) {
+    // Square cells: a 7.5%-wide cell is 7.5 × (w/h)% tall.
+    const cw = 7.5, ch = tall ? 7.5 * 9 / 16 : 7.5 * 16 / 9;
+    const cell = `${cw}% ${ch}%`;
+    switch (mode) {
+      case 'solid': return { background: c };
+      case 'g-midnight': return { background: 'linear-gradient(180deg, #0d1330 0%, #070a18 55%, #030409 100%)' };
+      case 'g-aurora': return { background: 'radial-gradient(90% 60% at 15% 10%, rgba(51,112,255,.55), transparent 60%), radial-gradient(80% 60% at 90% 85%, rgba(140,80,255,.45), transparent 60%), radial-gradient(70% 50% at 70% 30%, rgba(40,200,190,.25), transparent 60%), #05060c' };
+      case 'g-sunset': return { background: 'linear-gradient(165deg, #1d0b33 0%, #5b1f4a 45%, #b0434a 75%, #e2864a 100%)' };
+      case 'g-ocean': return { background: 'linear-gradient(180deg, #031923 0%, #063646 50%, #0b5d6e 100%)' };
+      case 'g-tint': return { background: `linear-gradient(180deg, ${rgba(c, 0.55)} 0%, ${rgba(c, 0.12)} 55%, #05060a 100%), #05060a` };
+      case 'grid': return { background: `linear-gradient(${rgba(c, 0.22)} 1px, transparent 1px) 0 0 / ${cell}, linear-gradient(90deg, ${rgba(c, 0.22)} 1px, transparent 1px) 0 0 / ${cell}, radial-gradient(70% 55% at 50% 45%, ${rgba(c, 0.18)}, transparent 70%), #06070b` };
+      case 'dots': return { background: `radial-gradient(circle, ${rgba(c, 0.5)} 1.3px, transparent 1.8px) 0 0 / ${cell}, radial-gradient(70% 55% at 50% 45%, ${rgba(c, 0.16)}, transparent 70%), #06070b` };
+      case 'blueprint': return { background: `linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px) 0 0 / ${cw * 4}% ${ch * 4}%, linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px) 0 0 / ${cw * 4}% ${ch * 4}%, linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px) 0 0 / ${cell}, linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px) 0 0 / ${cell}, #0c2f66` };
+      case 'lines': return { background: `repeating-linear-gradient(180deg, transparent 0 calc(${ch}% - 1px), ${rgba(c, 0.2)} calc(${ch}% - 1px) ${ch}%), #07080c` };
+      case 'spotlight': return { background: `radial-gradient(55% 40% at 50% 42%, ${rgba(c, 0.45)}, ${rgba(c, 0.08)} 55%, transparent 75%), #030407` };
+      case 'mesh': return { background: `radial-gradient(60% 45% at 20% 25%, ${rgba(c, 0.5)}, transparent 70%), radial-gradient(55% 45% at 85% 70%, ${rgba(c, 0.32)}, transparent 70%), radial-gradient(50% 40% at 40% 95%, rgba(255,255,255,.06), transparent 70%), #07080d` };
+      case 'grain': return { background: `${GRAIN}, radial-gradient(80% 60% at 50% 40%, ${rgba(c, 0.25)}, transparent 70%), #0a0b10` };
+    }
+    return null;
+  }
+  state.bg = store.get('cutroom.bg') || '';
+  state.bgColor = store.get('cutroom.bgColor') || '#3370ff';
+  $('bgColor').value = state.bgColor;
+  function usingAlpha() { return !!(state.bg && state.ver && state.ver.alphaAssetId); }
+  function loadVideo(t, keepPlaying) {
+    const x = state.ver; if (!x) return;
+    const src = mediaUrl(usingAlpha() ? x.alphaAssetId : x.assetId);
+    if (v.getAttribute('src') === src) return;
+    const wasPlaying = keepPlaying && !v.paused;
+    v.src = src; v.load();
+    v.addEventListener('loadedmetadata', () => { v.currentTime = Math.min(t, (x.duration || 1) - 0.05); if (wasPlaying) v.play().catch(() => {}); }, { once: true });
+  }
+  function applyBackground() {
+    const x = state.ver;
+    const can = !!(x && x.alphaAssetId);
+    $('bgWrap').hidden = !can;
+    $('bgSel').value = state.bg;
+    $('bgColor').hidden = !state.bg || ['g-midnight', 'g-aurora', 'g-sunset', 'g-ocean', 'blueprint'].includes(state.bg);
+    $('bgAdd').disabled = !state.bg || !db || state.canWrite === false;
+    const on = can && !!state.bg;
+    const css = on ? bgCss(state.bg, state.bgColor, x.aspect === '9:16') : null;
+    const layer = $('bgl');
+    layer.hidden = !css;
+    layer.style.background = css ? css.background : '';
+    $('screen').classList.toggle('has-bg', !!css);
+    if (x && x.assetId) loadVideo(v.currentTime, true);
+    applyAudio();
+  }
+  $('bgSel').onchange = () => { state.bg = $('bgSel').value; store.set('cutroom.bg', state.bg); applyBackground(); updateDl(); };
+  $('bgColor').oninput = () => { state.bgColor = $('bgColor').value; store.set('cutroom.bgColor', state.bgColor); applyBackground(); };
+  $('bgAdd').onclick = async () => {
+    if (!state.bg || !db || !state.ver) return;
+    const tinted = !$('bgColor').hidden;
+    const label = BG_LABEL[state.bg] + (tinted ? ` (${state.bgColor})` : '');
+    const s = scenes(); const i = s.length ? sceneAt(state.inAt) : -1;
+    $('bgAdd').disabled = true;
+    try {
+      await db.collection('comments').add({
+        version: state.ver.id, t: +state.inAt.toFixed(3), tEnd: null,
+        scene: i >= 0 ? s[i].id : null, sceneName: i >= 0 ? s[i].name : null,
+        kind: 'background', bg: { mode: state.bg, color: tinted ? state.bgColor : null },
+        text: `Background: use ${label} for the whole film`,
+        resolved: false, createdAt: Date.now(), author: state.me || null,
+      });
+      tab('c');
+    } catch (err) { readOnly(err); } finally { applyBackground(); }
+  };
+
+  function selectVersion(id) {
+    const x = state.versions.find((y) => y.id === id) || state.versions[0];
+    if (!x) return;
+    const same = state.ver && state.ver.id === x.id;
+    state.ver = x;
+    store.set('cutroom.slot', x.slot || '');
+    renderVersions();
+    const tall = x.aspect === '9:16';
+    $('screen').classList.toggle('tall', tall);
+    applyOverlay();
+    $('dur').textContent = '/ ' + fmt(x.duration);
+    if (!same) {
+      const t = v.currentTime;
+      state.cur = -1; state.out = null; state.pinned = false; state.hot = null;
+      $('empty').hidden = true;
+      if (x.assetId) loadVideo(t, false);
+      subscribeTiming(x.id);
+    }
+    applyBackground();
+    layout(); renderComments(); renderTiming(); updateAt(); renderMusic();
+  }
+  function subscribeTiming(vid) {
+    if (unsubTiming) unsubTiming();
+    state.timing = {};
+    if (!db) return;
+    unsubTiming = db.doc('timing/' + vid).onSnapshot((snap) => {
+      if (snap.metadata.hasPendingWrites || timingPending) return;
+      const d = snap.exists ? snap.data() : null;
+      const next = (d && d.scenes) ? JSON.parse(JSON.stringify(d.scenes)) : {};
+      // Our own save coming back changes nothing; skip the rebuild, which would
+      // replace the field being typed in. Someone else's change waits until
+      // focus leaves the list.
+      const same = stableJson(next) === stableJson(state.timing);
+      state.timing = next;
+      if (same) return;
+      if ($('tlist').contains(document.activeElement)) { state.timingStale = true; return; }
+      layout(); renderTiming();
+    }, () => {});
+  }
+
+  function applyWriteState() {
+    const ro = state.canWrite === false || !db;
+    $('ctext').disabled = ro; $('addBtn').disabled = ro;
+    $('roNote').hidden = !ro;
+    if (ro) $('roNote').textContent = db ? 'You can watch this cut, but your access is view-only, so changes and timing can’t be saved.' : 'Changes and timing are saved when this page is opened while signed in to claude.ai.';
+    renderComments(); renderTiming();
+  }
+
+  // ---------- boot ----------
+  window.addEventListener('resize', () => layout());
+  new ResizeObserver(() => layout()).observe($('tlScroll'));
+  setPlayIcon();
+  layout();
+  requestAnimationFrame(loop);
+
+  (async () => {
+    const claude = window.claude;
+    const [dbNs, user, cm, dls] = await Promise.all([
+      claude ? claude.use('db') : null,
+      claude ? claude.use('user') : null,
+      claude ? claude.use('comments') : null,
+      claude ? claude.use('downloads') : null,
+    ]);
+    db = dbNs; comments = cm; dlNs = dls; updateDl();
+    if (user) {
+      try { state.me = await user.id(); } catch {}
+      try { state.canWrite = await user.can('data.write'); } catch {}
+    }
+    if (!db) {
+      setLive('off', 'Offline');
+      $('empty').textContent = 'Open this page in claude.ai, signed in, to load the cuts.';
+      applyWriteState();
+      return;
+    }
+    setLive('on', 'Live');
+    applyWriteState();
+    db.collection('versions').orderBy('createdAt', 'desc').onSnapshot((snap) => {
+      state.versions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      showProject();
+    }, (err) => setLive('off', 'Disconnected — reload'));
+    db.collection('projects').onSnapshot((snap) => {
+      state.projects = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderProjects();
+    }, () => {});
+    db.collection('comments').onSnapshot((snap) => {
+      state.comments = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderComments(); drawMarks();
+      if (!$('tlist').contains(document.activeElement)) renderTiming();
+    }, () => setLive('off', 'Disconnected — reload'));
+  })();
+})();
+</script>
