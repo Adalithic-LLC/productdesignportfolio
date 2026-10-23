@@ -17,7 +17,6 @@ import { Device, OUTER_H, OUTER_W } from './Device';
 import { KB_DOCK_H, MessagingApp } from './MessagingApps';
 import { ACTIVE_CARD_CENTER, CommunityScreen, NOTO, PartnerScreen, RINGS_GRID, RingsGrid } from './Screens';
 import {
-  ACTIVE_TAP,
   CARD_TAP,
   CARDS,
   CHALLENGE,
@@ -353,7 +352,7 @@ function PhoneScreen({ i, t }: { i: number; t: number }) {
   const dock = kbIn(i, t);
   if (i === 0) {
     const nav: Nav = [
-      { at: PHONE_IN, how: 'push', draw: (l) => <CommunityScreen local={l - (COMMUNITY.at - PHONE_IN)} activeAt={ACTIVE_TAP - COMMUNITY.at} cardTapAt={CARD_TAP - COMMUNITY.at} /> },
+      { at: PHONE_IN, how: 'push', draw: (l) => <CommunityScreen local={l - (COMMUNITY.at - PHONE_IN)} activeAt={-1} cardTapAt={CARD_TAP - COMMUNITY.at} /> },
       // The partner chat stays on through Freedom, when the keyboard comes up in it.
       { at: CHALLENGE.at, how: 'push', draw: (l) => <PartnerScreen local={l} dock={dock} /> },
     ];

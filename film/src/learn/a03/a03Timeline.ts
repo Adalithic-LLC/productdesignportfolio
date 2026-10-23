@@ -18,7 +18,7 @@ export const D3 = {
   lead: 0.25, // a line's card comes in this long before its voice
   practice: 2.9, // "Practice the most common words," (1.9 s spoken)
   challenge: 4.0, // (3.4 s spoken) "with unstructured chats and writing challenges with partners."
-  community: 3.3, // "chat with real people from the community," (2.2 s): Find, Active, zoom, tap
+  community: 3.0, // "chat with real people from the community," (2.2 s): Active, zoom, tap
   freedom: 9.6, // "Now, imagine breaking out of the mold…" (8.3 s spoken), the keyboard hops
   progress: 4.0, // "And what if you could measure your progress…" (2.9 s), the rings fill
   youcan: 2.7, // "Well… you can." (1.9 s)
@@ -80,10 +80,9 @@ const typeTimes = (text: string, start: number, per: number) => [...text].map((_
 export const HOP_TYPE_TIMES = HOP_TYPED.map((x, i) => typeTimes(x, HOPS[i].land + 0.2, 0.048));
 export const HOP_SENDS = HOP_TYPE_TIMES.map((x) => x[x.length - 1] + 0.12);
 
-/** Community: the Find list, then Active is tapped, the camera closes in on
-    Sunny Heron's chat card, and the card is tapped into the partner chat. */
-export const ACTIVE_TAP = COMMUNITY.at + 1.0;
-export const ZOOM_AT = COMMUNITY.at + 1.5;
+/** Community: the Active list, the camera closes in on Sunny Heron's chat
+    card, and the card is tapped into the partner chat. */
+export const ZOOM_AT = COMMUNITY.at + 1.0;
 export const CARD_TAP = CHALLENGE.at - 0.3;
 /** The partner chat opens, the phone dissolves, and the exchange plays as
     bubbles; the phone forms again just before Freedom. Times are absolute
@@ -155,7 +154,7 @@ export function cues() {
       ...AV_TYPE_TIMES.map((t, i) => ({ t, space: AV_TEXT[i] === ' ' })),
       ...HOP_TYPE_TIMES.flatMap((times, k) => times.map((t, i) => ({ t, space: HOP_TYPED[k][i] === ' ' }))),
     ],
-    taps: [ACTIVE_TAP, CARD_TAP, ...HOPS.map((h) => h.land)].sort((a, b) => a - b),
+    taps: [CARD_TAP, ...HOPS.map((h) => h.land)].sort((a, b) => a - b),
     reword: null,
     reveal: null,
     send: null,

@@ -380,7 +380,7 @@ function Presence({ online, seen }: { online: boolean; seen: string }) {
   );
 }
 
-/** Chat tab: starts on Find, the Active segment is tapped at `activeAt`, and
+/** Chat tab: starts on Find (or on Active when `activeAt` is negative), the Active segment is tapped at `activeAt`, and
     the first chat card is tapped at `cardTapAt` (seconds from `local` 0). */
 export function CommunityScreen({ local, activeAt, cardTapAt }: { local: number; activeAt: number; cardTapAt: number }) {
   const page = easeInOutCubic(clamp01((local - activeAt - 0.05) / 0.35));
@@ -446,7 +446,15 @@ export function CommunityScreen({ local, activeAt, cardTapAt }: { local: number;
           </div>
           <Notice />
           {CONVOS.map((c, i) => (
-            <div key={c.name} className="relative flex items-center gap-3 overflow-hidden rounded-[14px] p-[14px]" style={{ background: CARD, transform: i === 0 && cardPressed ? 'scale(0.98)' : undefined }}>
+            <div
+              key={c.name}
+              className="relative flex items-center gap-3 overflow-hidden rounded-[14px] p-[14px]"
+              style={{
+                background: CARD,
+                opacity: activeAt < 0 ? easeOutCubic(clamp01((local - 0.12 - i * 0.11) / 0.45)) : 1,
+                transform: `translateY(${activeAt < 0 ? (1 - easeOutCubic(clamp01((local - 0.12 - i * 0.11) / 0.45))) * 28 : 0}px)${i === 0 && cardPressed ? ' scale(0.98)' : ''}`,
+              }}
+            >
               {i === 0 && cardPressed && <div className="absolute inset-0 bg-white/10" />}
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex items-center gap-2">
