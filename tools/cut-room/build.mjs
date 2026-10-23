@@ -46,8 +46,10 @@ swap(
   ': `Marked ${items.length} as submitted. Claude isn’t watching this page right now, so say “go” in your Claude session and it will pick them up.`);',
   ': `Marked ${items.length} as submitted. This is a demo copy: in the real Cut Room the notes go to Claude Code, which makes the changes, renders the next cut and replies on each note.`);',
 );
-// Open on Arcatext 02, the one project this copy carries.
-swap("state.project = store.get('cutroom.project') || 'chat';", "state.project = store.get('cutroom.project') || 'arcatext02-mvd6bgsn';");
+// Open on Arcatext 03 (Arcatext 02 is the other project this copy carries).
+swap("state.project = store.get('cutroom.project') || 'chat';", "state.project = store.get('cutroom.project') || 'arcatext03';");
+// The voiceover is on unless the visitor turns it off.
+swap("state.voiceOn = store.get('cutroom.voiceOn') === '1';", "state.voiceOn = store.get('cutroom.voiceOn') !== '0';");
 // Embedded (?embed), the tall player takes a fixed height instead of 78% of
 // the frame's, so the frame can grow to fit the whole Cut Room.
 swap('.screen.tall { aspect-ratio: 9 / 16; height: min(78vh, 900px);', '.screen.tall { aspect-ratio: 9 / 16; height: min(var(--tall-h, 78vh), 900px);');
@@ -76,6 +78,14 @@ const shim = `<script>
    tools/cut-room/build.mjs). Seeded with Arcatext 02; a visitor's own notes,
    retiming and picks stay in their browser. */
 (() => {
+  // Once per release of this copy, forget the picks an earlier one left
+  // behind (project, cut, voice switch), so everyone opens on its defaults.
+  try {
+    if (localStorage.getItem('arcatext-cut-room-demo.release') !== '2') {
+      ['cutroom.project', 'cutroom.slot', 'cutroom.voiceOn'].forEach((k) => localStorage.removeItem(k));
+      localStorage.setItem('arcatext-cut-room-demo.release', '2');
+    }
+  } catch {}
   const SEED = ${JSON.stringify(seed)};
   const KEY = 'arcatext-cut-room-demo-v1';
   let local = {};
@@ -138,8 +148,19 @@ const shim = `<script>
   // its own page it opens at 110% and the layer below fits it to the window.
   if (EMBED) document.documentElement.style.setProperty('--tall-h', 'min(600px, 125vw)');
   else document.documentElement.style.zoom = '1.1';
-  // The first cut opens on the avatar cloud, not its black first frame.
-  window.__CUTROOM_START = 4.2;
+  // The first cut opens on a finished frame of its opener rather than its
+  // black first frame; the first press of play still starts from 0:00, so
+  // the whole voiceover is heard.
+  window.__CUTROOM_START = 5.1;
+  document.addEventListener('DOMContentLoaded', () => {
+    const v = document.getElementById('v');
+    if (!v) return;
+    const first = () => {
+      v.removeEventListener('play', first);
+      if (Math.abs(v.currentTime - window.__CUTROOM_START) < 0.02) v.currentTime = 0;
+    };
+    v.addEventListener('play', first);
+  });
   // Fixed in place, so nothing loaded later can swap in a runtime that talks to Claude.
   Object.defineProperty(window, 'claude', { value: Object.freeze({ use: async (name) => NS[name] || null }), writable: false, configurable: false });
 })();

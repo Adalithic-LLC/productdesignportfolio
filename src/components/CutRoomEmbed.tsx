@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Maximize2 } from 'lucide-react';
 
 /**
- * A working copy of the Arcatext Cut Room with Arcatext 02 loaded, embedded
+ * A working copy of the Arcatext Cut Room with Arcatext 03 loaded (and 02), embedded
  * live. The page is public/cut-room/index.html, built from the Cut Room
  * artifact by tools/cut-room/build.mjs: everything works -- playback, the
  * 9:16 and 16:9 cuts, the phone frame and platform overlays, the music and
@@ -56,7 +56,7 @@ export default function CutRoomEmbed() {
         <iframe
           ref={frame}
           src={`${PAGE}?embed`}
-          title="Arcatext Cut Room, with Arcatext 02 loaded"
+          title="Arcatext Cut Room, with Arcatext 03 loaded"
           className="block w-full"
           style={{ height }}
           allow="autoplay; fullscreen"

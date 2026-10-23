@@ -1647,6 +1647,954 @@
      "stemOnly": true
     }
    ]
+  },
+  "a03-v7": {
+   "duration": 42.38333333333333,
+   "film": "arcatext03",
+   "fps": 60,
+   "label": "v7",
+   "musicLabel": "Original",
+   "notes": "New opener: faces only; the question clears and 'Arcatext makes the journey collaborative, individual, and measurable.' types in three voiced parts. Five pairs snap into pills, drift apart, then ten progress rings count to 10-55 and turn green; the cloud collapses.",
+   "scenes": [
+    {
+     "delays": [],
+     "id": "avatars",
+     "name": "Avatars: You only need 1000 words to communicate in a new language.",
+     "start": 0,
+     "texts": [
+      {
+       "key": "q",
+       "label": "Typed line",
+       "text": "You only need 1000 words to communicate in a new language."
+      },
+      {
+       "key": "line2",
+       "label": "Second line",
+       "text": "Arcatext makes the journey collaborative, individual, and measurable."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "key": "av-burst",
+        "kind": "duration",
+        "name": "Burst",
+        "label": "the burst",
+        "value": 2.6,
+        "at": 0.6
+       },
+       {
+        "text": "You only need 1000 words to communicate in a new language.",
+        "typed": true,
+        "wordTimes": [
+         1.564,
+         1.875,
+         2.185,
+         2.496,
+         2.868,
+         3.055,
+         3.8,
+         3.986,
+         4.111,
+         4.359
+        ]
+       },
+       {
+        "key": "q-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the question holds",
+        "value": 0.3,
+        "at": 4.95
+       },
+       {
+        "key": "q-clear",
+        "kind": "duration",
+        "name": "Clear",
+        "label": "the question clears",
+        "value": 0.35,
+        "at": 5.25
+       }
+      ],
+      [
+       {
+        "text": "Arcatext makes the journey collaborative,",
+        "typed": true,
+        "wordTimes": [
+         6.178,
+         6.511,
+         6.733,
+         7.177
+        ]
+       },
+       {
+        "key": "pairs",
+        "kind": "duration",
+        "name": "Pairs",
+        "label": "after “Arcatext makes the journey collaborative,”: five pairs snap together",
+        "value": 1.1,
+        "at": 8.08
+       },
+       {
+        "text": " individual,",
+        "typed": true,
+        "wordTimes": []
+       },
+       {
+        "key": "split",
+        "kind": "duration",
+        "name": "Split",
+        "label": "after “individual,”: the pairs drift apart",
+        "value": 1.1,
+        "at": 9.93
+       },
+       {
+        "text": " and measurable.",
+        "typed": true,
+        "wordTimes": [
+         11.15
+        ]
+       },
+       {
+        "key": "rings-in",
+        "kind": "duration",
+        "name": "Rings",
+        "label": "after “and measurable.”: the ten faces turn into rings",
+        "value": 0.4,
+        "at": 11.76
+       },
+       {
+        "key": "rings-fill",
+        "kind": "duration",
+        "name": "Fill",
+        "label": "the rings count up and turn green",
+        "value": 2.02,
+        "at": 12.16
+       },
+       {
+        "key": "rings-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the green rings hold",
+        "value": 0.55,
+        "at": 14.18
+       },
+       {
+        "key": "op-collapse",
+        "kind": "duration",
+        "name": "Collapse",
+        "label": "the collapse",
+        "value": 0.6,
+        "at": 14.73
+       }
+      ]
+     ],
+     "end": 15.68
+    },
+    {
+     "delays": [],
+     "id": "community",
+     "name": "Text: Chat with real people from the community",
+     "start": 15.68,
+     "texts": [
+      {
+       "key": "a3-community",
+       "label": "Text",
+       "text": "Chat with real people from the community"
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Chat with real people from the community"
+       },
+       {
+        "key": "community-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the community list scrolls",
+        "value": 3,
+        "at": 15.68
+       }
+      ]
+     ],
+     "end": 18.68
+    },
+    {
+     "delays": [],
+     "id": "challenge",
+     "name": "Text: Complete co-writing challenges with partners",
+     "start": 18.68,
+     "texts": [
+      {
+       "key": "a3-challenge",
+       "label": "Text",
+       "text": "Complete co-writing challenges with partners"
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Complete co-writing challenges with partners"
+       }
+      ],
+      [
+       {
+        "key": "cowrite-lead",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the paragraph",
+        "value": 1.05,
+        "at": 18.68
+       },
+       {
+        "text": "El sábado fuimos al mercado. ",
+        "typed": true,
+        "wordTimes": [
+         19.786,
+         19.968,
+         20.15,
+         20.228
+        ]
+       },
+       {
+        "key": "cowrite-turn-0",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “El sábado fuimos al mercado.”: the other writer takes over",
+        "value": 0.15,
+        "at": 20.458
+       },
+       {
+        "text": "Compramos fruta y pan fresco. ",
+        "typed": true,
+        "wordTimes": [
+         20.842,
+         20.998,
+         21.05,
+         21.154
+        ]
+       },
+       {
+        "key": "cowrite-turn-1",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “Compramos fruta y pan fresco.”: the other writer takes over",
+        "value": 0.15,
+        "at": 21.358
+       },
+       {
+        "text": "¡Después cocinamos juntos!",
+        "typed": true,
+        "wordTimes": [
+         21.716,
+         21.976
+        ]
+       },
+       {
+        "key": "challenge-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the challenge scene",
+        "value": 4.3,
+        "at": 18.68
+       }
+      ]
+     ],
+     "end": 22.98
+    },
+    {
+     "delays": [],
+     "id": "freedom",
+     "name": "Text: Learn in your own way,",
+     "start": 22.98,
+     "texts": [
+      {
+       "key": "freedom",
+       "label": "Text cards",
+       "text": "Learn in your own way, / using the most powerful AI keyboard inside any messaging app."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Learn in your own way,"
+       },
+       {
+        "key": "freedom-a",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “Learn in your own way,”",
+        "value": 2.56,
+        "at": 22.98
+       },
+       {
+        "text": "using the most powerful AI keyboard inside any messaging app."
+       },
+       {
+        "key": "freedom-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the keyboard hops through three apps",
+        "value": 5.64,
+        "at": 25.54
+       }
+      ],
+      [
+       {
+        "key": "hop-0",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 1",
+        "value": 0.15,
+        "at": 25.08
+       },
+       {
+        "text": "¡Sí! ¿Vamos juntos?",
+        "typed": true,
+        "wordTimes": [
+         25.38,
+         25.66
+        ]
+       }
+      ],
+      [
+       {
+        "key": "hop-1",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 2",
+        "value": 0.15,
+        "at": 27.38
+       },
+       {
+        "text": "¡Qué foto tan bonita!",
+        "typed": true,
+        "wordTimes": [
+         27.68,
+         27.88,
+         28.04
+        ]
+       }
+      ],
+      [
+       {
+        "key": "hop-2",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 3",
+        "value": 0.15,
+        "at": 29.73
+       },
+       {
+        "text": "¡Perfecto, a las 5!",
+        "typed": true,
+        "wordTimes": [
+         30.27,
+         30.35,
+         30.51
+        ]
+       }
+      ]
+     ],
+     "end": 31.18
+    },
+    {
+     "delays": [],
+     "id": "progress",
+     "name": "Text: No matter how you learn, we measure your progress the whole time.",
+     "start": 31.18,
+     "texts": [
+      {
+       "key": "progress",
+       "label": "Text",
+       "text": "No matter how you learn, we measure your progress the whole time."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "No matter how you learn, we measure your progress the whole time."
+       },
+       {
+        "key": "rings-at",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the rings fill",
+        "value": 0.8,
+        "at": 31.18
+       },
+       {
+        "key": "rings-len",
+        "kind": "duration",
+        "name": "Fill",
+        "label": "the rings fill",
+        "value": 2.2,
+        "at": 31.98
+       },
+       {
+        "key": "progress-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the progress scene",
+        "value": 4.7,
+        "at": 31.18
+       }
+      ]
+     ],
+     "end": 35.88
+    },
+    {
+     "delays": [],
+     "id": "end",
+     "name": "End card",
+     "start": 35.88,
+     "texts": [
+      {
+       "key": "road",
+       "label": "Line",
+       "text": "The road to 1000 words.\nAnd beyond."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "The road to 1000 words."
+       },
+       {
+        "key": "road2",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “The road to 1000 words.”",
+        "value": 3.4,
+        "at": 36.03
+       },
+       {
+        "text": "And beyond."
+       },
+       {
+        "key": "road-out",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the logo",
+        "value": 1.1,
+        "at": 39.43
+       },
+       {
+        "key": "logo-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the logo holds",
+        "value": 1.85,
+        "at": 40.53
+       }
+      ]
+     ],
+     "end": 42.38333333333333
+    }
+   ],
+   "sfxAssetId": "stems/a03-v7/sfx.mp4",
+   "soundtracks": [],
+   "stems": {
+    "music": {
+     "cut": "stems/a03-v7/music-cut.mp4"
+    },
+    "sfx": "stems/a03-v7/sfx.mp4",
+    "voices": {
+     "g-enceladus": "stems/a03-v7/voice-g-enceladus.mp4"
+    }
+   },
+   "voices": [
+    {
+     "id": "g-enceladus",
+     "label": "Enceladus · M",
+     "name": "Enceladus",
+     "model": "gemini-3.1-flash-tts-preview",
+     "gender": "male",
+     "group": "Gemini 3.1 Flash",
+     "stemOnly": true
+    }
+   ],
+   "aspect": "9:16",
+   "assetId": "cut/a03-v7/a03-portrait.mp4",
+   "createdAt": 1792739513884,
+   "slot": "a03-9x16",
+   "slotLabel": "Ad · 9:16",
+   "slotOrder": 1
+  },
+  "a03-v7-16x9": {
+   "duration": 42.38333333333333,
+   "film": "arcatext03",
+   "fps": 60,
+   "label": "v7",
+   "musicLabel": "Original",
+   "notes": "New opener: faces only; the question clears and 'Arcatext makes the journey collaborative, individual, and measurable.' types in three voiced parts. Five pairs snap into pills, drift apart, then ten progress rings count to 10-55 and turn green; the cloud collapses.",
+   "scenes": [
+    {
+     "delays": [],
+     "id": "avatars",
+     "name": "Avatars: You only need 1000 words to communicate in a new language.",
+     "start": 0,
+     "texts": [
+      {
+       "key": "q",
+       "label": "Typed line",
+       "text": "You only need 1000 words to communicate in a new language."
+      },
+      {
+       "key": "line2",
+       "label": "Second line",
+       "text": "Arcatext makes the journey collaborative, individual, and measurable."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "key": "av-burst",
+        "kind": "duration",
+        "name": "Burst",
+        "label": "the burst",
+        "value": 2.6,
+        "at": 0.6
+       },
+       {
+        "text": "You only need 1000 words to communicate in a new language.",
+        "typed": true,
+        "wordTimes": [
+         1.564,
+         1.875,
+         2.185,
+         2.496,
+         2.868,
+         3.055,
+         3.8,
+         3.986,
+         4.111,
+         4.359
+        ]
+       },
+       {
+        "key": "q-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the question holds",
+        "value": 0.3,
+        "at": 4.95
+       },
+       {
+        "key": "q-clear",
+        "kind": "duration",
+        "name": "Clear",
+        "label": "the question clears",
+        "value": 0.35,
+        "at": 5.25
+       }
+      ],
+      [
+       {
+        "text": "Arcatext makes the journey collaborative,",
+        "typed": true,
+        "wordTimes": [
+         6.178,
+         6.511,
+         6.733,
+         7.177
+        ]
+       },
+       {
+        "key": "pairs",
+        "kind": "duration",
+        "name": "Pairs",
+        "label": "after “Arcatext makes the journey collaborative,”: five pairs snap together",
+        "value": 1.1,
+        "at": 8.08
+       },
+       {
+        "text": " individual,",
+        "typed": true,
+        "wordTimes": []
+       },
+       {
+        "key": "split",
+        "kind": "duration",
+        "name": "Split",
+        "label": "after “individual,”: the pairs drift apart",
+        "value": 1.1,
+        "at": 9.93
+       },
+       {
+        "text": " and measurable.",
+        "typed": true,
+        "wordTimes": [
+         11.15
+        ]
+       },
+       {
+        "key": "rings-in",
+        "kind": "duration",
+        "name": "Rings",
+        "label": "after “and measurable.”: the ten faces turn into rings",
+        "value": 0.4,
+        "at": 11.76
+       },
+       {
+        "key": "rings-fill",
+        "kind": "duration",
+        "name": "Fill",
+        "label": "the rings count up and turn green",
+        "value": 2.02,
+        "at": 12.16
+       },
+       {
+        "key": "rings-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the green rings hold",
+        "value": 0.55,
+        "at": 14.18
+       },
+       {
+        "key": "op-collapse",
+        "kind": "duration",
+        "name": "Collapse",
+        "label": "the collapse",
+        "value": 0.6,
+        "at": 14.73
+       }
+      ]
+     ],
+     "end": 15.68
+    },
+    {
+     "delays": [],
+     "id": "community",
+     "name": "Text: Chat with real people from the community",
+     "start": 15.68,
+     "texts": [
+      {
+       "key": "a3-community",
+       "label": "Text",
+       "text": "Chat with real people from the community"
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Chat with real people from the community"
+       },
+       {
+        "key": "community-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the community list scrolls",
+        "value": 3,
+        "at": 15.68
+       }
+      ]
+     ],
+     "end": 18.68
+    },
+    {
+     "delays": [],
+     "id": "challenge",
+     "name": "Text: Complete co-writing challenges with partners",
+     "start": 18.68,
+     "texts": [
+      {
+       "key": "a3-challenge",
+       "label": "Text",
+       "text": "Complete co-writing challenges with partners"
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Complete co-writing challenges with partners"
+       }
+      ],
+      [
+       {
+        "key": "cowrite-lead",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the paragraph",
+        "value": 1.05,
+        "at": 18.68
+       },
+       {
+        "text": "El sábado fuimos al mercado. ",
+        "typed": true,
+        "wordTimes": [
+         19.786,
+         19.968,
+         20.15,
+         20.228
+        ]
+       },
+       {
+        "key": "cowrite-turn-0",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “El sábado fuimos al mercado.”: the other writer takes over",
+        "value": 0.15,
+        "at": 20.458
+       },
+       {
+        "text": "Compramos fruta y pan fresco. ",
+        "typed": true,
+        "wordTimes": [
+         20.842,
+         20.998,
+         21.05,
+         21.154
+        ]
+       },
+       {
+        "key": "cowrite-turn-1",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “Compramos fruta y pan fresco.”: the other writer takes over",
+        "value": 0.15,
+        "at": 21.358
+       },
+       {
+        "text": "¡Después cocinamos juntos!",
+        "typed": true,
+        "wordTimes": [
+         21.716,
+         21.976
+        ]
+       },
+       {
+        "key": "challenge-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the challenge scene",
+        "value": 4.3,
+        "at": 18.68
+       }
+      ]
+     ],
+     "end": 22.98
+    },
+    {
+     "delays": [],
+     "id": "freedom",
+     "name": "Text: Learn in your own way,",
+     "start": 22.98,
+     "texts": [
+      {
+       "key": "freedom",
+       "label": "Text cards",
+       "text": "Learn in your own way, / using the most powerful AI keyboard inside any messaging app."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "Learn in your own way,"
+       },
+       {
+        "key": "freedom-a",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “Learn in your own way,”",
+        "value": 2.56,
+        "at": 22.98
+       },
+       {
+        "text": "using the most powerful AI keyboard inside any messaging app."
+       },
+       {
+        "key": "freedom-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the keyboard hops through three apps",
+        "value": 5.64,
+        "at": 25.54
+       }
+      ],
+      [
+       {
+        "key": "hop-0",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 1",
+        "value": 0.15,
+        "at": 25.08
+       },
+       {
+        "text": "¡Sí! ¿Vamos juntos?",
+        "typed": true,
+        "wordTimes": [
+         25.38,
+         25.66
+        ]
+       }
+      ],
+      [
+       {
+        "key": "hop-1",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 2",
+        "value": 0.15,
+        "at": 27.38
+       },
+       {
+        "text": "¡Qué foto tan bonita!",
+        "typed": true,
+        "wordTimes": [
+         27.68,
+         27.88,
+         28.04
+        ]
+       }
+      ],
+      [
+       {
+        "key": "hop-2",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before typing in app 3",
+        "value": 0.15,
+        "at": 29.73
+       },
+       {
+        "text": "¡Perfecto, a las 5!",
+        "typed": true,
+        "wordTimes": [
+         30.27,
+         30.35,
+         30.51
+        ]
+       }
+      ]
+     ],
+     "end": 31.18
+    },
+    {
+     "delays": [],
+     "id": "progress",
+     "name": "Text: No matter how you learn, we measure your progress the whole time.",
+     "start": 31.18,
+     "texts": [
+      {
+       "key": "progress",
+       "label": "Text",
+       "text": "No matter how you learn, we measure your progress the whole time."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "No matter how you learn, we measure your progress the whole time."
+       },
+       {
+        "key": "rings-at",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the rings fill",
+        "value": 0.8,
+        "at": 31.18
+       },
+       {
+        "key": "rings-len",
+        "kind": "duration",
+        "name": "Fill",
+        "label": "the rings fill",
+        "value": 2.2,
+        "at": 31.98
+       },
+       {
+        "key": "progress-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the progress scene",
+        "value": 4.7,
+        "at": 31.18
+       }
+      ]
+     ],
+     "end": 35.88
+    },
+    {
+     "delays": [],
+     "id": "end",
+     "name": "End card",
+     "start": 35.88,
+     "texts": [
+      {
+       "key": "road",
+       "label": "Line",
+       "text": "The road to 1000 words.\nAnd beyond."
+      }
+     ],
+     "flows": [
+      [
+       {
+        "text": "The road to 1000 words."
+       },
+       {
+        "key": "road2",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "after “The road to 1000 words.”",
+        "value": 3.4,
+        "at": 36.03
+       },
+       {
+        "text": "And beyond."
+       },
+       {
+        "key": "road-out",
+        "kind": "delay",
+        "name": "Delay",
+        "label": "before the logo",
+        "value": 1.1,
+        "at": 39.43
+       },
+       {
+        "key": "logo-hold",
+        "kind": "hold",
+        "name": "Hold",
+        "label": "the logo holds",
+        "value": 1.85,
+        "at": 40.53
+       }
+      ]
+     ],
+     "end": 42.38333333333333
+    }
+   ],
+   "sfxAssetId": "stems/a03-v7/sfx.mp4",
+   "soundtracks": [],
+   "stems": {
+    "music": {
+     "cut": "stems/a03-v7/music-cut.mp4"
+    },
+    "sfx": "stems/a03-v7/sfx.mp4",
+    "voices": {
+     "g-enceladus": "stems/a03-v7/voice-g-enceladus.mp4"
+    }
+   },
+   "voices": [
+    {
+     "id": "g-enceladus",
+     "label": "Enceladus · M",
+     "name": "Enceladus",
+     "model": "gemini-3.1-flash-tts-preview",
+     "gender": "male",
+     "group": "Gemini 3.1 Flash",
+     "stemOnly": true
+    }
+   ],
+   "aspect": "16:9",
+   "assetId": "cut/a03-v7/a03-16x9.mp4",
+   "createdAt": 1792739513886,
+   "slot": "a03-16x9",
+   "slotLabel": "Ad · 16:9",
+   "slotOrder": 2
   }
  },
  "projects": {
@@ -1654,6 +2602,11 @@
    "createdAt": 1792288535495,
    "name": "Arcatext 02",
    "order": 53
+  },
+  "arcatext03": {
+   "createdAt": 1792712700000,
+   "name": "Arcatext 03",
+   "order": 54
   }
  }
 }
