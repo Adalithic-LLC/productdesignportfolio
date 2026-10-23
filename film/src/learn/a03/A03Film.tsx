@@ -33,6 +33,8 @@ import {
   HOP_TYPE_TIMES,
   HOPS,
   LOGO_AT,
+  LOGO_SPEED,
+  ROAD_OUT,
   PORTRAIT,
   PHONE_AWAY,
   PRACTICE,
@@ -120,13 +122,13 @@ function Card({ l, t }: { l: Line; t: number }) {
 function Ending({ t }: { t: number }) {
   const local = t - END_AT;
   const k = span(local, 0.15, 0.75, easeOutCubic);
-  const lineOut = span(t, LOGO_AT - 0.35, LOGO_AT + 0.15, (x) => x);
+  const lineOut = span(t, ROAD_OUT, LOGO_AT, (x) => x);
   const fade = span(t, DURATION - 0.6, DURATION, (x) => x);
   const cy = PORTRAIT ? STAGE.cy + 60 : H / 2;
   return (
     <div className="absolute inset-0">
       <div className="absolute grid place-items-center" style={{ left: STAGE.cx - 300, width: 600, top: cy - 150, height: 300 }}>
-        {t >= LOGO_AT && <SplashLogo s={t - LOGO_AT} scale={2.2} keepBlue />}
+        {t >= LOGO_AT && <SplashLogo s={(t - LOGO_AT) * LOGO_SPEED} scale={2.2} keepBlue />}
       </div>
       {lineOut < 1 && (
         <div className="absolute flex justify-center" style={{ left: STAGE.cx - 500, width: 1000, top: cy, transform: `translateY(calc(-50% + ${(1 - k) * 18}px))`, opacity: k * (1 - lineOut), filter: k < 1 ? `blur(${(1 - k) * 8}px)` : undefined }}>

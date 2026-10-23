@@ -111,9 +111,13 @@ export const RINGS_LEN = 2.2;
 export const END_AT = c;
 /** The road line, then the logo; the logo's name types on "Arcatext" (3.8 s into the take). */
 export const ROAD = 'The road to 1000 words.';
-export const LOGO_AT = END_AT + 0.2 + 3.82 - 1.55;
-/** The end card runs 5.5 s (to the frame): the line, the logo, a brief hold. */
-export const END_LEN = 5.5;
+/** The road line fades as "words" ends; the logo starts only once it's gone,
+    and plays 1.5x fast so "Arcatext" types as it's spoken. */
+export const ROAD_OUT = END_AT + 2.9;
+export const LOGO_AT = ROAD_OUT + 0.25;
+export const LOGO_SPEED = 1.5;
+/** The end card runs 5.3 s (to the frame): the line, the logo, a short hold once the name has typed. */
+export const END_LEN = 5.3;
 export const DURATION = Math.round((END_AT + END_LEN) * 60) / 60;
 
 // ── Voice ──
