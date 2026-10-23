@@ -20,8 +20,7 @@ export const D3 = {
   challenge: 4.0, // (3.4 s spoken) "with unstructured chats and writing challenges with partners."
   community: 3.0, // "chat with real people from the community," (2.2 s): Active, zoom, tap
   freedom: 9.6, // "Now, imagine breaking out of the mold…" (8.3 s spoken), the keyboard hops
-  progress: 4.0, // "And what if you could measure your progress…" (2.9 s), the rings fill
-  youcan: 2.7, // "Well… you can." (1.9 s)
+  progress: 4.7, // "No matter how you learn, we measure your progress…" (3.8 s), the rings fill and the camera flies through one
   endHold: 1.6, // the finished closer holds
 };
 
@@ -54,12 +53,11 @@ export const CHALLENGE = line('a3-challenge', 'With unstructured chats and writi
 export const FREEDOM_AT = c;
 export const FREEDOM_A = line('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way,', 'your own way', 4.45);
 export const FREEDOM_B = line('a3-freedom-b', 'using the most powerful AI keyboard inside any messaging app.', 'most powerful AI keyboard', D3.freedom - 4.45);
-export const PROGRESS = line('a3-progress', 'And what if you could measure your progress the whole time?', 'measure your progress', D3.progress);
-export const YOUCAN = line('a3-youcan', 'Well… you can.', 'you can.', D3.youcan);
+export const PROGRESS = line('a3-progress', 'No matter how you learn, we measure your progress the whole time.', 'measure your progress', D3.progress);
 export const CARDS = [PRACTICE, COMMUNITY, CHALLENGE, FREEDOM_A, FREEDOM_B, PROGRESS];
 
-/** The phone leaves as "Well… you can." comes in. */
-export const APP_OUT = YOUCAN.at;
+/** The end of the app part: the rings fly-through hands over to the end card. */
+export const APP_OUT = c;
 
 // ── The keyboard's hops (seconds from FREEDOM_AT) ──
 /** The phones in the hop: the Arcatext app, then three messaging apps. */
@@ -126,8 +124,7 @@ export const VOICE_LINES: VoiceLine[] = [
   voiceLine('a3-community', 'chat with real people from the community,', COMMUNITY.at + D3.lead, CHALLENGE.at),
   voiceLine('a3-challenge', 'with unstructured chats and writing challenges with partners.', CHALLENGE.at + D3.lead, FREEDOM_AT),
   voiceLine('a3-freedom', 'Now, imagine breaking out of the mold, learning in your own way, using the most powerful AI keyboard inside any messaging app.', FREEDOM_AT + D3.lead, PROGRESS.at),
-  voiceLine('a3-progress', 'And what if you could measure your progress the whole time?', PROGRESS.at + D3.lead, YOUCAN.at),
-  voiceLine('a3-youcan', 'Well... you can.', YOUCAN.at + D3.lead, END_AT),
+  voiceLine('a3-progress', 'No matter how you learn, we measure your progress the whole time.', PROGRESS.at + D3.lead, END_AT),
   voiceLine('a3-road', 'The road to one thousand words. Arcatext.', END_AT + 0.2, DURATION - 0.5),
 ];
 
@@ -139,7 +136,6 @@ export function scenes() {
     ...[PRACTICE, COMMUNITY, CHALLENGE].map((l) => scene(l.key.slice(3), `Text: ${l.text}`, l.at, [{ key: l.key, label: 'Text', text: l.text }])),
     scene('freedom', `Text: ${FREEDOM_A.text}`, FREEDOM_AT, [{ key: 'freedom', label: 'Text cards', text: `${FREEDOM_A.text} / ${FREEDOM_B.text}` }]),
     scene('progress', `Text: ${PROGRESS.text}`, PROGRESS.at, [{ key: 'progress', label: 'Text', text: PROGRESS.text }]),
-    scene('youcan', `Text: ${YOUCAN.text}`, YOUCAN.at, [{ key: 'youcan', label: 'Text', text: YOUCAN.text }]),
     scene('end', 'End card', END_AT, [{ key: 'road', label: 'Line', text: ROAD }]),
   ];
   return list.map((s, i) => ({ flows: [] as unknown[], delays: [], ...s, end: i + 1 < list.length ? list[i + 1].start : DURATION }));
@@ -160,7 +156,7 @@ export function cues() {
     send: null,
     sends: [CHAT_SEND, CHALLENGE.at + PARTNER.lineAt[1], ...HOP_SENDS],
     swipes: HOPS.map((h) => h.push),
-    words: [...CARDS.map((l) => l.at), YOUCAN.at, END_AT],
+    words: [...CARDS.map((l) => l.at), END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
     pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }],
     titles: [[0, APP_IN]],

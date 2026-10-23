@@ -42,7 +42,6 @@ import {
   RINGS_AT,
   RINGS_LEN,
   ROAD,
-  YOUCAN,
   cues,
   type Line,
 } from './a03Timeline';
@@ -114,21 +113,6 @@ function Card({ l, t }: { l: Line; t: number }) {
   return (
     <div className="absolute" style={{ ...CARD_PLACE, transform: `translateY(calc(-50% + ${(1 - k) * 22 - out * 30}px))`, opacity: k * (1 - out), filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined }}>
       <div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 74 : 72, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', textWrap: 'balance' }}>{accentParts(l.text, l.accent)}</div>
-    </div>
-  );
-}
-
-function YouCan({ t }: { t: number }) {
-  const a = span(t, YOUCAN.at + 0.2, YOUCAN.at + 0.75, easeOutCubic);
-  const b = span(t, YOUCAN.at + 0.25 + 1.12, YOUCAN.at + 0.25 + 1.62, easeOutCubic);
-  const out = span(t, END_AT - 0.45, END_AT - 0.05, (x) => x);
-  if (a <= 0 || out >= 1) return null;
-  const piece = (k: number) => ({ display: 'inline-block', opacity: k, transform: `translateY(${(1 - k) * 26}px)`, filter: k < 1 ? `blur(${(1 - k) * 12}px)` : undefined });
-  return (
-    <div className="absolute flex justify-center" style={{ left: STAGE.cx - 500, width: 1000, top: PORTRAIT ? STAGE.cy + 60 : H / 2, transform: `translateY(calc(-50% - ${out * 30}px))`, opacity: 1 - out }}>
-      <div className="whitespace-nowrap" style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: PORTRAIT ? 96 : 116, letterSpacing: '-0.03em', color: '#fff' }}>
-        <span style={piece(a)}>Well…</span> <span style={{ ...piece(b), color: ACCENT }}>you can.</span>
-      </div>
     </div>
   );
 }
@@ -423,7 +407,7 @@ const RINGS_SCALE = PORTRAIT ? 2.55 : 1.9;
 const RINGS_C = PORTRAIT ? { x: 540, y: 880 } : { x: PH.cx, y: PH.cy };
 /** After the rings fill, the camera closes in on the ring that completed and
     flies through it into "Well… you can." */
-const RING_ZOOM = { from: RINGS_AT + RINGS_LEN + 0.3, to: YOUCAN.at + 0.4, k: 50 };
+const RING_ZOOM = { from: RINGS_AT + RINGS_LEN + 0.3, to: END_AT + 0.4, k: 50 };
 function Rings({ t }: { t: number }) {
   if (t < PHONE_AWAY + 0.15 || t > RING_ZOOM.to) return null;
   const appear = clamp01((t - PHONE_AWAY - 0.2) / 0.9);
@@ -500,7 +484,7 @@ export default function A03Film() {
         [...document.fonts].some((f) => f.family.replace(/["']/g, '') === 'Inter') || performance.now() - t0 > 8000 ? resolve() : setTimeout(check, 50);
       check();
     });
-    const allText = CARDS.map((c) => c.text).join('') + YOUCAN.text + ROAD;
+    const allText = CARDS.map((c) => c.text).join('') + ROAD;
     interRegistered
       .then(() =>
         Promise.all([
@@ -554,7 +538,6 @@ export default function A03Film() {
       <Phones t={t} />
       <FlyingKeyboard t={t} />
       <Rings t={t} />
-      <YouCan t={t} />
       {t >= END_AT - 0.1 && <Ending t={t} />}
     </div>
   );
