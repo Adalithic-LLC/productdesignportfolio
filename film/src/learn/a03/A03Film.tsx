@@ -148,43 +148,7 @@ function Ending({ t }: { t: number }) {
   );
 }
 
-// ── Practice: the exchange as chat bubbles alone ──
-
-const BUB = PORTRAIT ? { cx: 540, w: 860, bottom: 1560, font: 46, pad: '26px 36px', r: 48, gap: 22 } : { cx: 1390, w: 820, bottom: 820, font: 42, pad: '22px 32px', r: 44, gap: 18 };
-
-function Bubble({ k, me, rise, fill, children }: { k: number; me?: boolean; rise?: boolean; fill?: string; children: ReactNode }) {
-  if (k <= 0) return null;
-  return (
-    <div style={{ display: 'grid', gridTemplateRows: `${Math.min(1, k * 1.5)}fr` }}>
-      <div className={`flex min-h-0 ${me ? 'justify-end' : 'justify-start'}`}>
-        <div
-          style={{
-            maxWidth: '80%',
-            padding: BUB.pad,
-            borderRadius: BUB.r,
-            background: me ? fill ?? '#2D63E6' : '#2C2C2E',
-            color: '#fff',
-            fontFamily: NOTO,
-            fontSize: BUB.font,
-            lineHeight: 1.3,
-            opacity: Math.min(1, k * 1.6),
-            transform: rise ? `translateY(${(1 - k) * 160}px) scale(${0.85 + 0.15 * k})` : `translateY(${(1 - k) * 30}px) scale(${0.9 + 0.1 * k})`,
-            transformOrigin: me ? '100% 100%' : '0% 100%',
-            boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
-          }}
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type Line3 = { me?: boolean; text: string; at: number };
-/** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
-const PARTNER_CHAT: Line3[] = [
-  { text: 'Reto de escritura: describe tu fin de semana.', at: PARTNER.lineAt[0] },
-];
+// ── Challenge: the co-written paragraph ──
 
 /** The paragraph two people write together: each part typed in its writer's
     highlight, with a named cursor. The whole paragraph is laid out from the
@@ -195,8 +159,11 @@ function CoWrite({ t }: { t: number }) {
   if (l > PARTNER.out + 0.45) return null;
   const k = easeOutCubic(clamp01((l - COWRITE.cardAt) / 0.4));
   const fade = span(l, PARTNER.out, PARTNER.out + 0.4, (x) => x);
+  if (l < COWRITE.cardAt) return null;
   const active = [...COWRITE.segs].reverse().find((s) => l >= s.at - 0.15);
+  const box = PORTRAIT ? { cx: 540, w: 860, cy: 1000 } : { cx: 1390, w: 820, cy: 560 };
   return (
+    <div className="absolute flex flex-col justify-center" style={{ left: box.cx - box.w / 2, width: box.w, top: box.cy - 400, height: 800 }}>
     <div
       style={{
         padding: PORTRAIT ? '34px 40px' : '30px 36px',
@@ -230,37 +197,6 @@ function CoWrite({ t }: { t: number }) {
         );
       })}
     </div>
-  );
-}
-
-/** A chat as bubbles alone. `dotsAt` shows the other side typing until the next line. */
-function BubbleShot({ t, at, lines, out, mine, dotsAt, bottom = BUB.bottom, children }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number; bottom?: number; children?: ReactNode }) {
-  const l = t - at;
-  if (l < lines[0].at || l > out + 0.45) return null;
-  const k = (a: number, len = 0.4) => easeOutCubic(clamp01((l - a) / len));
-  const fade = span(l, out, out + 0.4, (x) => x);
-  const next = dotsAt !== undefined ? lines.find((x) => x.at > dotsAt) : undefined;
-  const dots = next && l >= dotsAt! && l < next.at;
-  return (
-    <div className="absolute flex flex-col justify-end" style={{ left: BUB.cx - BUB.w / 2, width: BUB.w, bottom: H - bottom, gap: BUB.gap, opacity: 1 - fade, transform: `translateY(${-fade * 40}px)` }}>
-      {lines.map((x, i) => {
-        const before = dots && next === x;
-        return (
-          <Bubble key={i} k={before ? 0 : k(x.at, x.me ? 0.45 : 0.4)} me={x.me} rise={x.me} fill={x.me ? mine : undefined}>
-            {x.text}
-          </Bubble>
-        );
-      })}
-      {children}
-      {dots && (
-        <Bubble k={k(dotsAt!, 0.25)}>
-          <span style={{ letterSpacing: '0.15em' }}>
-            {[0, 1, 2].map((i) => (
-              <span key={i} style={{ opacity: 0.35 + 0.65 * Math.max(0, Math.sin((l - dotsAt!) * 9 - i * 0.9)) }}>•</span>
-            ))}
-          </span>
-        </Bubble>
-      )}
     </div>
   );
 }
@@ -669,9 +605,7 @@ export default function A03Film() {
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}
-      <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" bottom={PORTRAIT ? 1250 : 820}>
-        <CoWrite t={t} />
-      </BubbleShot>
+      <CoWrite t={t} />
       <Phones t={t} />
       <FlyingKeyboard t={t} />
       <Rings t={t} />

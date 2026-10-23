@@ -175,7 +175,7 @@ export function cues() {
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
-    pops: [{ t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }],
+    pops: [],
     titles: [[0, APP_IN]],
     phones: [PHONE_IN],
     opening: [0, 0],
