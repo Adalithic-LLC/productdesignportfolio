@@ -194,7 +194,6 @@ type Line3 = { me?: boolean; text: string; at: number };
 const PRACTICE_CHAT: Line3[] = [
   { text: '¿Me ayudas a lavar los platos?', at: CHAT.askAt },
   { me: true, text: 'Sí, voy ahora.', at: CHAT.sendAt },
-  { text: 'Genial, te espero en la cocina.', at: CHAT.answerAt },
 ];
 /** The partner chat, once the phone dissolves. Times from CHALLENGE.at. */
 const PARTNER_CHAT: Line3[] = [
@@ -205,7 +204,7 @@ const PARTNER_CHAT: Line3[] = [
 ];
 
 /** A chat as bubbles alone. `dotsAt` shows the other side typing until the next line. */
-function BubbleShot({ t, at, lines, out, mine, dotsAt }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number }) {
+function BubbleShot({ t, at, lines, out, mine, dotsAt, bottom = BUB.bottom }: { t: number; at: number; lines: Line3[]; out: number; mine: string; dotsAt?: number; bottom?: number }) {
   const l = t - at;
   if (l < lines[0].at || l > out + 0.45) return null;
   const k = (a: number, len = 0.4) => easeOutCubic(clamp01((l - a) / len));
@@ -213,7 +212,7 @@ function BubbleShot({ t, at, lines, out, mine, dotsAt }: { t: number; at: number
   const next = dotsAt !== undefined ? lines.find((x) => x.at > dotsAt) : undefined;
   const dots = next && l >= dotsAt! && l < next.at;
   return (
-    <div className="absolute flex flex-col justify-end" style={{ left: BUB.cx - BUB.w / 2, width: BUB.w, bottom: H - BUB.bottom, gap: BUB.gap, opacity: 1 - fade, transform: `translateY(${-fade * 40}px)` }}>
+    <div className="absolute flex flex-col justify-end" style={{ left: BUB.cx - BUB.w / 2, width: BUB.w, bottom: H - bottom, gap: BUB.gap, opacity: 1 - fade, transform: `translateY(${-fade * 40}px)` }}>
       {lines.map((x, i) => {
         const before = dots && next === x;
         return (
@@ -553,7 +552,7 @@ export default function A03Film() {
       {CARDS.map((l) => (
         <Card key={l.key} l={l} t={t} />
       ))}
-      <BubbleShot t={t} at={PRACTICE.at} lines={PRACTICE_CHAT} out={CHAT.out} mine="#2D63E6" dotsAt={CHAT.dotsAt} />
+      <BubbleShot t={t} at={PRACTICE.at} lines={PRACTICE_CHAT} out={CHAT.out} mine="#2D63E6" bottom={PORTRAIT ? 1110 : 700} />
       <BubbleShot t={t} at={CHALLENGE.at} lines={PARTNER_CHAT} out={PARTNER.out} mine="#4F7FFF" />
       <Phones t={t} />
       <FlyingKeyboard t={t} />

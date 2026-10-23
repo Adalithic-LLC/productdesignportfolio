@@ -163,31 +163,6 @@ const AV_WORD_AT = A03
   : [0, 0.16, 0.32, 0.56, 1.0, 1.12, 1.36, 1.46, 1.98];
 /** When the opener's voice clip starts. */
 export const AV_VOICE_AT = AV_BURST + 1.3;
-/** Arcatext 03: each word's first letter lands just as it's heard, and the
-    letters between are spread evenly then eased across neighbours, so the
-    pace drifts with the voice instead of jumping word to word. */
-function smoothTimes(text: string, start: number, wordAt: number[], lead = 0.05, win = 6) {
-  const idx: number[] = [];
-  text.split(' ').reduce((at, w) => (idx.push(at), at + w.length + 1), 0);
-  const anchors = idx.map((c, i) => [c, start + wordAt[i] - lead]);
-  anchors.push([text.length, start + wordAt[wordAt.length - 1] - 0.12]);
-  const raw = [...text].map((_, j) => {
-    let k = 0;
-    while (k + 2 < anchors.length && anchors[k + 1][0] <= j) k++;
-    const [c0, t0] = anchors[k];
-    const [c1, t1] = anchors[k + 1];
-    return t0 + ((t1 - t0) * (j - c0)) / (c1 - c0);
-  });
-  // A centred window that narrows at the ends, so the first and last letters keep their times.
-  const out = raw.map((_, j) => {
-    const h = Math.min(win, j, raw.length - 1 - j);
-    let sum = 0;
-    for (let i = j - h; i <= j + h; i++) sum += raw[i];
-    return sum / (2 * h + 1);
-  });
-  for (let j = 1; j < out.length; j++) out[j] = Math.max(out[j], out[j - 1] + 0.012);
-  return out;
-}
 function spokenTimes(text: string, start: number, wordAt: number[]) {
   const out: number[] = [];
   const words = text.split(' ');
@@ -200,7 +175,8 @@ function spokenTimes(text: string, start: number, wordAt: number[]) {
   return out;
 }
 export const AV_TYPE_TIMES = A03
-  ? smoothTimes(AV_TEXT, AV_VOICE_AT, AV_WORD_AT)
+  ? // An even rate: the first letter as speech starts, the last just before it ends.
+    [...AV_TEXT].map((_, i) => AV_VOICE_AT + AV_WORD_AT[0] + (i * (AV_WORD_AT[AV_WORD_AT.length - 1] - 0.1 - AV_WORD_AT[0])) / (AV_TEXT.length - 1))
   : AV_WORD_AT.length === AV_TEXT.split(' ').length + 1
   ? spokenTimes(AV_TEXT, AV_BURST + 1.3, AV_WORD_AT)
   : typeTimes(AV_TEXT, AV_BURST + 1.3, 0.062, 17);

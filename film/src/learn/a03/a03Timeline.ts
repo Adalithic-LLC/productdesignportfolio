@@ -163,7 +163,7 @@ export function cues() {
     swipes: HOPS.map((h) => h.push),
     words: [...CARDS.map((l) => l.at), YOUCAN.at, END_AT],
     ticks: Array.from({ length: 8 }, (_, i) => RINGS_AT + (i * RINGS_LEN) / 8),
-    pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHAT_ANSWER, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[2], who: 'them' }],
+    pops: [{ t: CHAT_ASK, who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[0], who: 'them' }, { t: CHALLENGE.at + PARTNER.lineAt[2], who: 'them' }],
     titles: [[0, APP_IN]],
     phones: [PHONE_IN],
     opening: [0, 0],
