@@ -60,10 +60,25 @@
         "flatImage": true
       },
       {
+        "id": 7,
+        "title": "Arcatext Cut Room",
+        "description": "Marketing video production interface for Claude Code.",
+        "image": "/project-cut-room.webp",
+        "tags": [
+          "Video",
+          "Claude Code",
+          "Review Tool"
+        ],
+        "link": "#/arcatext/cut-room",
+        "timeframe": "",
+        "flatImage": true
+      },
+      {
         "id": 2,
         "title": "Conversant",
         "description": "Enterprise desktop platform for USAA call center and back-office servicing.",
         "image": "/project-conversant-screens.webp",
+        "imageDark": "/project-conversant-screens-dark.webp",
         "tags": [
           "Enterprise UX",
           "Desktop Platform",
@@ -78,6 +93,7 @@
         "title": "USAA Mobile App",
         "description": "Native mobile redesign of USAA's app for iOS, Android, and iPad.",
         "image": "/project-usaa-home.webp",
+        "imageDark": "/project-usaa-home-dark.webp",
         "tags": [
           "Native Mobile",
           "Financial Services"
@@ -91,26 +107,13 @@
         "title": "USAA Member Home Page",
         "description": "An authenticated homepage redesign that turned a cluttered legacy page into a scalable product system — organized around what members own, what needs attention, and what they can do next.",
         "image": "/project-memberhome.webp",
+        "imageDark": "/project-memberhome-dark.webp",
         "tags": [
           "Web",
           "Financial Services"
         ],
         "link": "#/memberhome",
         "timeframe": "2 years",
-        "flatImage": true
-      },
-      {
-        "id": 7,
-        "title": "Arcatext Cut Room",
-        "description": "Marketing video production interface for Claude Code.",
-        "image": "/project-cut-room.webp",
-        "tags": [
-          "Video",
-          "Claude Code",
-          "Review Tool"
-        ],
-        "link": "#/arcatext/cut-room",
-        "timeframe": "",
         "flatImage": true
       },
       {
