@@ -23,8 +23,10 @@ import { INITIAL_LOCALES, STUDY_SEED, type Locale } from './seed';
  * as the demo phones (ArcatextKeyboard, ArcatextViews, ArcatextOptionsPage),
  * but where those play a timeline, this holds real state:
  *
- *  - any key types the next character of the scripted message; backspace
- *    deletes (and repeats while held); a press that drags draws a glide trail
+ *  - any key writes the whole scripted message, and backspace clears it: the
+ *    point of the prototype is everything that happens *after* a message is
+ *    typed, and spelling one out a character at a time is forty taps of
+ *    nothing. A press that drags still draws its glide trail
  *  - Reword turns the field into the chosen language and script; changing an
  *    option and closing Options rewords the saved original again, as
  *    RewordService.autoReword does
@@ -147,12 +149,10 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
   const autoCap = text === '' || /[.!?]\s$/.test(text);
   const upper = shift ?? autoCap;
 
-  const typeNext = useCallback(() => {
-    setText((t) => {
-      // A reword in the field is finished text; typing only writes the script.
-      if (!MESSAGE.startsWith(t) || t.length >= MESSAGE.length) return t;
-      return MESSAGE.slice(0, t.length + 1);
-    });
+  /** Any key writes the scripted message, whole. */
+  const typeMessage = useCallback(() => {
+    // A reword in the field is finished text; typing only writes the script.
+    setText((t) => (t === MESSAGE ? t : MESSAGE));
     setReworded(false);
     setShift(null);
   }, []);
@@ -161,19 +161,20 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
     (a: KeyAction) => {
       if (view === 'fixWords') {
         const target = checkData?.reverse ?? '';
-        if (a.kind === 'backspace') setFixText((t) => t.slice(0, -1));
-        else if (a.kind === 'char' || a.kind === 'space')
-          setFixText((t) => (target.startsWith(t) && t.length < target.length ? target.slice(0, t.length + 1) : t));
+        if (a.kind === 'backspace') setFixText('');
+        else if (a.kind === 'char' || a.kind === 'space') setFixText(target);
         return;
       }
       switch (a.kind) {
         case 'char':
         case 'space':
-          if (!reworded) typeNext();
+          if (!reworded) typeMessage();
           break;
         case 'backspace':
-          setText((t) => t.slice(0, -1));
-          if (reworded) setReworded(false);
+          // The whole field, not a character: it was written in one press, so
+          // it comes out in one.
+          setText('');
+          setReworded(false);
           break;
         case 'shift':
           setShift((s) => !(s ?? autoCap));
@@ -195,7 +196,7 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [view, checkData, reworded, typeNext, autoCap, locales, locale]
+    [view, checkData, reworded, typeMessage, autoCap, locales, locale]
   );
 
   // ── reword ──

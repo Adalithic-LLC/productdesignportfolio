@@ -16,9 +16,9 @@ import { Editable } from '@/content/Editable';
  * one of them). The heading copy is left in the content file rather than
  * deleted, in case it is wanted back.
  *
- * Playback: every phone plays on its own while on screen. Pause, under any
- * phone, holds the whole row; Play plays that one phone alone (the others stay
- * held); Restart replays a phone, and lets it play if the row is held.
+ * Playback: every phone plays on its own while on screen, and each carries
+ * its own play/pause toggle and a restart beside it. Restart replays a phone
+ * and lets it play if it was held.
  */
 
 const PHONES: Scene[][] = [['type', 'reword'], ['check'], ['paste'], ['study'], ['options']];
@@ -28,10 +28,12 @@ const SCALE = 0.62;
 const CARD_W = 264;
 
 export default function ArcatextDemoRow() {
-  const [paused, setPaused] = useState(false);
-  /** The one phone playing while the row is paused. */
-  const [solo, setSolo] = useState<number | null>(null);
-  const isRunning = (i: number) => (solo !== null ? solo === i : !paused);
+  /* One running flag per phone. It used to be a flag for the row plus the one
+     phone allowed to play while it was held, which is what a Pause that
+     stopped everything needed; now each phone's toggle is its own. */
+  const [running, setRunning] = useState<boolean[]>(() => PHONES.map(() => true));
+  const setRun = (i: number, on: boolean) =>
+    setRunning((r) => r.map((was, k) => (k === i ? on : was)));
 
   return (
     // --g matches SectionBody's gutters (px-4 sm:px-6 lg:px-8); the column's
@@ -73,18 +75,11 @@ export default function ArcatextDemoRow() {
             <ArcatextKeyboard
               scenes={scenes}
               scale={SCALE}
-              running={isRunning(i)}
-              onPause={() => {
-                setPaused(true);
-                setSolo(null);
-              }}
-              onPlay={() => {
-                setPaused(true);
-                setSolo(i);
-              }}
-              onRestart={() => {
-                if (!isRunning(i)) setSolo(i);
-              }}
+              running={running[i]}
+              onToggleRun={() => setRun(i, !running[i])}
+              /* Restarting a held phone lets it play: asking to see it again
+                 and then not seeing it would be a strange answer. */
+              onRestart={() => setRun(i, true)}
             />
             <figcaption className="mt-5">
               <Editable

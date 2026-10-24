@@ -20,7 +20,8 @@ import { Spinner } from "@/components/ArcatextViews";
  * same metrics as the demo phones (ArcatextKeyboard), but every key live.
  *
  * Keys fire on release, as iOS keys do, except backspace, which fires on
- * press and repeats while held. A press that travels more than a few points
+ * press -- and once only, since in this prototype it clears the field whole.
+ * A press that travels more than a few points
  * becomes a glide instead: no key fires, and the finger leaves a trail that
  * fades behind it. The glide is only drawn -- there is no decoder here.
  */
@@ -228,17 +229,9 @@ export function PrototypeKeyboard({
         onKeyRef.current({ kind: "localesHold" });
       }, 450);
     }
-    if (id === "backspace") {
-      onKeyRef.current({ kind: "backspace" });
-      // Held: repeat after a beat, then faster.
-      let n = 0;
-      const again = () => {
-        onKeyRef.current({ kind: "backspace" });
-        n += 1;
-        repeat.current = setTimeout(again, n > 8 ? 45 : 95);
-      };
-      repeat.current = setTimeout(again, 420);
-    }
+    // Backspace fires on press, once: here it clears the whole field, so
+    // there is nothing left for a repeat to delete.
+    if (id === "backspace") onKeyRef.current({ kind: "backspace" });
   };
 
   const onMove = (e: React.PointerEvent) => {

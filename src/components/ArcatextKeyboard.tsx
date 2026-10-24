@@ -164,6 +164,10 @@ const OUTER_W = DESIGN_W + BEZEL * 2;
 const OUTER_H = SCREEN_H + BEZEL * 2;
 const BASE_SCALE = 0.8;
 
+/** The transport buttons under a playing phone: one size, both of them. */
+const BTN =
+  'grid h-9 w-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-colors hover:bg-muted';
+
 const CHECK_IDLE: CheckState = {
   opening: true,
   reverse: 'loading',
@@ -397,8 +401,7 @@ export default function ArcatextKeyboard({
   scenes = ['type', 'reword'],
   scale,
   running = true,
-  onPause,
-  onPlay,
+  onToggleRun,
   onRestart,
   still,
   bare = false,
@@ -409,10 +412,8 @@ export default function ArcatextKeyboard({
   scale?: number;
   /** Whether this phone may play (a row pauses its phones together). */
   running?: boolean;
-  /** Given by a row: a Pause button left of Restart (pauses the whole row)… */
-  onPause?: () => void;
-  /** …and a Play button right of it (plays this phone alone). */
-  onPlay?: () => void;
+  /** Given by a row: the play/pause toggle for this phone alone. */
+  onToggleRun?: () => void;
   /** Called on Restart or a toolbar tap, so a paused row can let this phone run. */
   onRestart?: () => void;
   /** Accepted for older call sites; the demo is always the compact phone. */
@@ -1149,38 +1150,24 @@ export default function ArcatextKeyboard({
         </div>
       </div>
 
+      {/* Two buttons of one size: this phone's play/pause, and restart. A
+          toggle rather than a pause beside a play, because at any moment one
+          of those two was always disabled -- half the controls were always dead. */}
       {controls && (
       <div className="mt-5 flex items-center gap-2">
-        {onPause && (
+        {onToggleRun && (
           <button
-            onClick={onPause}
-            disabled={!running}
-            aria-label="Pause all"
-            title="Pause all"
-            className="grid h-9 w-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-opacity hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent"
+            onClick={onToggleRun}
+            aria-label={running ? 'Pause' : 'Play'}
+            title={running ? 'Pause' : 'Play'}
+            className={BTN}
           >
-            <Pause className="h-4 w-4" />
+            {running ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 translate-x-[1px]" />}
           </button>
         )}
-        <button
-          onClick={restart}
-          aria-label="Restart"
-          className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-muted"
-        >
+        <button onClick={restart} aria-label="Restart" title="Restart" className={BTN}>
           <RotateCcw className="h-4 w-4" />
-          Restart
         </button>
-        {onPlay && (
-          <button
-            onClick={onPlay}
-            disabled={running}
-            aria-label="Play this one"
-            title="Play this one"
-            className="grid h-9 w-9 place-items-center rounded-full border border-border/60 text-foreground/80 transition-opacity hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent"
-          >
-            <Play className="h-4 w-4 translate-x-[1px]" />
-          </button>
-        )}
       </div>
       )}
     </div>
