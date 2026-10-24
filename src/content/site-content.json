@@ -1851,10 +1851,34 @@
           },
           "A working copy of the Cut Room, with Arcatext 03 loaded (Arcatext 02 is under Project). Play it, switch between the 9:16 and 16:9 cuts, frame it on a phone under the Reels, TikTok or YouTube Shorts interface, set the music and voice levels, and leave a note at any moment. Your notes stay in your browser."
         ],
-        "whyItMattered": [],
-        "problem": [],
-        "constraints": [],
-        "keyDecision": [],
+        "whyItMattered": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "WHY IT MATTERS"
+          }
+        ],
+        "problem": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "The challenge"
+          }
+        ],
+        "constraints": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Key constraints"
+          }
+        ],
+        "keyDecision": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Exploration & key decisions"
+          }
+        ],
         "solution": [
           {
             "type": "heading",
@@ -1863,9 +1887,27 @@
           },
           "Arcatext 02 and Arcatext 03, framed as they would run in YouTube Shorts. Tap a phone for sound."
         ],
-        "tradeoff": [],
-        "validation": [],
-        "impact": [],
+        "tradeoff": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Tradeoffs & risks"
+          }
+        ],
+        "validation": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Validation / outcome"
+          }
+        ],
+        "impact": [
+          {
+            "type": "heading",
+            "style": "sectionLabel",
+            "text": "Impact on the larger product"
+          }
+        ],
         "figures": {
           "whatItIs": {
             "src": "",
@@ -2408,23 +2450,23 @@
       "cards": [
         {
           "eyebrow": "Reword",
-          "body": "Write in your own language, typos and all, and tap Reword. The message is translated or corrected in place, keeping its meaning and tone, and is ready to send."
+          "body": "Translate or correct anything you type, while retaining meaning and tone."
         },
         {
           "eyebrow": "Check",
-          "body": "Check reverse-translates the reword so you can confirm it says what you meant, offers synonyms, and flags words with more than one meaning so you can pick the right one."
+          "body": "Verify a translation says what you intended, get synonyms, clarify homographs, and gendered words."
         },
         {
           "eyebrow": "Paste",
-          "body": "Copy a message you received and tap Paste. It is translated right in the keyboard, with the original kept underneath, so you can reply without leaving the conversation."
+          "body": "Copy a message you received and quickly translate it without switching apps."
         },
         {
           "eyebrow": "Study",
-          "body": "The leaf opens Study: the words and phrases taken from your own rewords, with what they mean and how often you needed them, to review the language you actually use."
+          "body": "Automatically save words that you miss in a translation with Reword, so you can review them later."
         },
         {
           "eyebrow": "Options",
-          "body": "The Reword chevron opens Options: script, recipient gender, Reword language and a translation copy. Change one and the message rewords itself when you return to the keyboard."
+          "body": "Adjust script, recipient gender, Reword language, enable translation copy, and more."
         }
       ]
     },
