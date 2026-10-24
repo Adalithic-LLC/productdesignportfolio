@@ -2401,6 +2401,10 @@
       "titleLead": "The keyboard,",
       "titleHighlight": "in motion",
       "description": "Each of the keyboard’s views, running on its own. Tap Restart under any of them to watch it again.",
+      "prototype": {
+        "eyebrow": "Try it out",
+        "body": "The real keyboard, running in the page. Tap any key to type, drag across them to glide, and tap Reword to see it translate what you wrote."
+      },
       "cards": [
         {
           "eyebrow": "Reword",

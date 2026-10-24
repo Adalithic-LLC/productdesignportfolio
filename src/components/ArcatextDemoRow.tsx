@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ArcatextKeyboard, { type Scene } from '@/components/ArcatextKeyboard';
+import { TryItOut } from '@/components/prototype/TryItOut';
 import { Editable } from '@/content/Editable';
 
 /**
@@ -8,10 +9,11 @@ import { Editable } from '@/content/Editable';
  * The row starts on the page's content column (the max-w-6xl column the
  * section headers sit in) and runs out to the right edge of the window.
  *
- * It introduces itself -- five phones playing is not a thing that needs a
- * heading to say what it is -- so the only copy here is an eyebrow and a
- * description under each phone (arcatext.interactive.cards, in the same order
- * as PHONES). The heading copy is left in the content file rather than
+ * It introduces itself -- phones playing is not a thing that needs a heading
+ * to say what it is -- so the only copy here is an eyebrow and a description
+ * under each phone (arcatext.interactive.cards, in the same order as PHONES;
+ * the prototype card at the head of the row has its own pair, since it is not
+ * one of them). The heading copy is left in the content file rather than
  * deleted, in case it is wanted back.
  *
  * Playback: every phone plays on its own while on screen. Pause, under any
@@ -46,6 +48,26 @@ export default function ArcatextDemoRow() {
           scrollPaddingLeft: 'calc(max(0px, (100% - 72rem) / 2) + var(--g))',
         }}
       >
+        {/* The one you can use comes first, at the same size as the ones
+            playing: the row reads as five keyboards running and one to pick
+            up, rather than a demo and an advert for it. */}
+        <figure className="flex shrink-0 snap-start flex-col" style={{ width: CARD_W }}>
+          <TryItOut variant="phone" width={CARD_W} phoneScale={SCALE} />
+          <figcaption className="mt-5">
+            <Editable
+              as="div"
+              path="arcatext.interactive.prototype.eyebrow"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-primary"
+            />
+            <Editable
+              as="p"
+              path="arcatext.interactive.prototype.body"
+              multiline
+              className="mt-2 text-sm leading-relaxed text-muted-foreground"
+            />
+          </figcaption>
+        </figure>
+
         {PHONES.map((scenes, i) => (
           <figure key={i} className="flex shrink-0 snap-start flex-col" style={{ width: CARD_W }}>
             <ArcatextKeyboard

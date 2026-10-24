@@ -402,6 +402,7 @@ export default function ArcatextKeyboard({
   onRestart,
   still,
   bare = false,
+  controls = true,
 }: {
   /** The scenes this phone plays, in order, looping. */
   scenes?: Scene[];
@@ -421,6 +422,9 @@ export default function ArcatextKeyboard({
   /** The screen alone, square-cornered: no bezel and no controls, for a
       container that supplies its own frame (the hero's cards). */
   bare?: boolean;
+  /** The bezelled phone with no Pause/Restart/Play under it -- a still that is
+      a control in its own right (the demo row's prototype card). */
+  controls?: boolean;
 } = {}) {
   const phoneScale = scale ?? BASE_SCALE;
   // ── visual state driven by the timeline ──
@@ -1145,6 +1149,7 @@ export default function ArcatextKeyboard({
         </div>
       </div>
 
+      {controls && (
       <div className="mt-5 flex items-center gap-2">
         {onPause && (
           <button
@@ -1177,6 +1182,7 @@ export default function ArcatextKeyboard({
           </button>
         )}
       </div>
+      )}
     </div>
   );
 }

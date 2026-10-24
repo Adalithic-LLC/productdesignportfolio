@@ -1,4 +1,3 @@
-import { TryItOut } from '@/components/prototype/TryItOut';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
@@ -174,17 +173,13 @@ export default function Arcatext() {
           }}
         />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* The name, and the way into the prototype beside it. Nothing
-              else: what the product is, the keyboards running directly
-              underneath say better than a sentence can, and the facts of the
-              work now sit with the product-type card in "What is Arcatext?",
-              where the account of the project is. */}
-          <div className="flex items-center gap-5 sm:gap-7">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
-              <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
-            </h1>
-            <TryItOut />
-          </div>
+          {/* The name and what it is, and nothing else: the way into the
+              prototype is now the first card of the row below, among the
+              phones it belongs with, and the facts of the work sit with the
+              product-type card in "What is Arcatext?". */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
+            <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
+          </h1>
 
           {/* What it is, in four words, under the name. */}
           <Editable
