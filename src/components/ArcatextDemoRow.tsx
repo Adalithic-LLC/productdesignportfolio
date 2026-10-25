@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ArcatextKeyboard, { type Scene } from '@/components/ArcatextKeyboard';
+import ArcatextAppPhone from '@/components/ArcatextAppPhone';
 import { TryItOut } from '@/components/prototype/TryItOut';
 import { Editable } from '@/content/Editable';
 
@@ -23,6 +24,10 @@ import { Editable } from '@/content/Editable';
 
 const PHONES: Scene[][] = [['type', 'reword'], ['check'], ['paste'], ['study'], ['options']];
 
+/** The app's own tabs, after the keyboard phones. Their captions continue the
+    same list (arcatext.interactive.cards), after PHONES'. */
+const APP_SCREENS = ['chat', 'practice'] as const;
+
 /** Phone scale: 426pt × 0.62 ≈ 264px wide. */
 const SCALE = 0.62;
 const CARD_W = 264;
@@ -31,7 +36,7 @@ export default function ArcatextDemoRow() {
   /* One running flag per phone. It used to be a flag for the row plus the one
      phone allowed to play while it was held, which is what a Pause that
      stopped everything needed; now each phone's toggle is its own. */
-  const [running, setRunning] = useState<boolean[]>(() => PHONES.map(() => true));
+  const [running, setRunning] = useState<boolean[]>(() => [...PHONES, ...APP_SCREENS].map(() => true));
   const setRun = (i: number, on: boolean) =>
     setRunning((r) => r.map((was, k) => (k === i ? on : was)));
 
@@ -81,22 +86,44 @@ export default function ArcatextDemoRow() {
                  and then not seeing it would be a strange answer. */
               onRestart={() => setRun(i, true)}
             />
-            <figcaption className="mt-5">
-              <Editable
-                as="div"
-                path={`arcatext.interactive.cards.${i}.eyebrow`}
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-primary"
-              />
-              <Editable
-                as="p"
-                path={`arcatext.interactive.cards.${i}.body`}
-                multiline
-                className="mt-2 text-sm leading-relaxed text-muted-foreground"
-              />
-            </figcaption>
+            <Caption i={i} />
           </figure>
         ))}
+
+        {APP_SCREENS.map((screen, k) => {
+          const i = PHONES.length + k;
+          return (
+            <figure key={screen} className="flex shrink-0 snap-start flex-col" style={{ width: CARD_W }}>
+              <ArcatextAppPhone
+                screen={screen}
+                scale={SCALE}
+                running={running[i]}
+                onToggleRun={() => setRun(i, !running[i])}
+                onRestart={() => setRun(i, true)}
+              />
+              <Caption i={i} />
+            </figure>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function Caption({ i }: { i: number }) {
+  return (
+    <figcaption className="mt-5">
+      <Editable
+        as="div"
+        path={`arcatext.interactive.cards.${i}.eyebrow`}
+        className="text-xs font-semibold uppercase tracking-[0.18em] text-primary"
+      />
+      <Editable
+        as="p"
+        path={`arcatext.interactive.cards.${i}.body`}
+        multiline
+        className="mt-2 text-sm leading-relaxed text-muted-foreground"
+      />
+    </figcaption>
   );
 }

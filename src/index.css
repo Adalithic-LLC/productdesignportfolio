@@ -62,6 +62,26 @@
   --ax-grouped: #FFFFFF;          /* secondarySystemGroupedBackground */
   --ax-warning-bg: #FFD980;       /* TranslationWarningBgColor */
   --ax-warning-stroke: #FFB200;   /* TranslationWarningStrokeColor */
+  /* The app's own screens (Chat, Practice): iOS system colors and the few
+     app colors the keyboard never needed. */
+  --ax-sys2: #F2F2F7;             /* secondarySystemBackground */
+  --ax-grouped-card: #FFFFFF;     /* secondarySystemGroupedBackground */
+  --ax-sec-label: rgba(60, 60, 67, 0.6);   /* secondaryLabel */
+  --ax-ter-label: rgba(60, 60, 67, 0.3);   /* tertiaryLabel */
+  --ax-gray3: #C7C7CC;            /* systemGray3 */
+  --ax-gray4: #D1D1D6;            /* systemGray4 */
+  --ax-zt-blue: #0040DD;          /* ztFilledBlue (ChatScreen) */
+  --ax-btn-text-blue: #0070F3;    /* ButtonTextBlueColor */
+  --ax-green: #34C759;
+  --ax-orange: #FF9500;
+  --ax-red: #FF3B30;
+  --ax-tabbar: rgba(249, 249, 249, 0.94);
+  --ax-tabbar-line: rgba(0, 0, 0, 0.3);
+  --ax-tab-off: #8E8E93;
+  --ax-notice-bg: #FFF3C4;        /* PeerPillTint: anonymous notice */
+  --ax-notice-fg: #5C4500;
+  --ax-seg-bg: #F6F6F9;           /* PastePickerBgColor */
+  --ax-toast: #000000;            /* ToastBgColor */
   --ax-shimmer-a: #CBCBCB;        /* LoadingBarComponent gradient */
   --ax-shimmer-b: #FFFFFF;
   --ax-shimmer-c: #737373;
@@ -117,6 +137,24 @@
   --ax-grouped: #1C1C1E;
   --ax-warning-bg: #664D1A;
   --ax-warning-stroke: #CC8F00;
+  --ax-sys2: #1C1C1E;
+  --ax-grouped-card: #1C1C1E;
+  --ax-sec-label: rgba(235, 235, 245, 0.6);
+  --ax-ter-label: rgba(235, 235, 245, 0.3);
+  --ax-gray3: #48484A;
+  --ax-gray4: #3A3A3C;
+  --ax-zt-blue: #2D63E6;
+  --ax-btn-text-blue: #7BA2FF;
+  --ax-green: #30D158;
+  --ax-orange: #FF9F0A;
+  --ax-red: #FF453A;
+  --ax-tabbar: rgba(22, 22, 22, 0.94);
+  --ax-tabbar-line: rgba(255, 255, 255, 0.15);
+  --ax-tab-off: #8E8E93;
+  --ax-notice-bg: rgba(107, 83, 0, 0.45);
+  --ax-notice-fg: #FFE7A3;
+  --ax-seg-bg: #3B3B3B;
+  --ax-toast: #1B1B1B;
   --ax-shimmer-a: #3A3A3A;
   --ax-shimmer-b: #5E5E5E;
   --ax-shimmer-c: #2A2A2A;
@@ -739,4 +777,17 @@ html[data-preview] .sticky.top-0 {
 [data-rise-root='pending'] [data-rise],
 [data-rise-root='pending'] [data-rise-group] {
   display: none;
+}
+
+/* A rejected reply in a guided chat: the input bar shakes once (ChatScreen,
+   8pt x sin(4pi t)). */
+@keyframes ax-shake {
+  0%, 100% { transform: translateX(0); }
+  12.5% { transform: translateX(8px); }
+  37.5% { transform: translateX(-8px); }
+  62.5% { transform: translateX(8px); }
+  87.5% { transform: translateX(-8px); }
+}
+.ax-shake {
+  animation: ax-shake 0.45s ease-in-out;
 }

@@ -2494,6 +2494,14 @@
         {
           "eyebrow": "Options",
           "body": "Adjust script, recipient gender, Reword language, enable translation copy, and more."
+        },
+        {
+          "eyebrow": "Chat",
+          "body": "Chat anonymously with real learners. Translate any reply in place, and keep your original beside every message you Reword."
+        },
+        {
+          "eyebrow": "Practice",
+          "body": "Guided conversations at your level: pick a reply, type it in the language you're learning, then lock in the words with a quick quiz."
         }
       ]
     },
