@@ -514,7 +514,7 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "tagline": "User-driven language learning",
+      "tagline": "Supported user-driven language learning",
       "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",
@@ -1967,9 +1967,20 @@
       "titleLead": "What is",
       "titleHighlight": "Arcatext?",
       "intro": [
-        "Arcatext is a language learning product designed to make the complexity and nuance of language more accessible and the learning process more natural, engaging, and practical.",
-        "The first phase, a translation keyboard, helps users turn real conversations with friends, penpals, and AI into personalized language learning experiences. Instead of forcing learners through generic lessons, Arcatext helps them learn from the conversations they actually want to have.",
-        "It combines context aware translation, clarification tools, and language exposure so users can communicate across languages with greater fluency, accuracy, and confidence."
+        "Arcatext is a language learning app that combines guided, unstructured, collaborative, and individual methods. It doesn't force anyone onto a particular learning path, but offers flexibility, support, and progress tracking on everything users type.",
+        {
+          "type": "paragraph",
+          "text": "Partner writing activities give user access to a community, while the AI writing partner provides individual 24/7 collaborative access."
+        },
+        {
+          "type": "paragraph",
+          "text": "Guided chats transform the top 1000 most common words into a series of learning scenarios with an embedded structure for gradual vocabulary exposure and spaced repetition."
+        },
+        {
+          "type": "paragraph",
+          "text": "The translation keyboard offers access to the complexity and nuance of language as well as the methodological flexibility, allowing users to leverage conversations in any 3rd-party app for opportunities."
+        },
+        "Underlying the keyboard and writing activities, is a word tracking infrastructure, automatically documenting words that users miss and generating a personal study guide."
       ],
       "productTypeLabel": "Product type",
       "productTypeList": [
@@ -1989,12 +2000,20 @@
       ],
       "roleTitle": "My role",
       "role": [
-        "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, MVP design, implementation, and launch.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 11 features, plus a 'typing performance' admin control center!",
         {
-          "type": "paragraph",
-          "text": "My vision is to evolve Arcatext into a more robust language learning platform, keeping the translation-keyboard at the center."
-        }
+          "type": "element",
+          "variant": "spacer",
+          "data": {
+            "height": "32"
+          }
+        },
+        {
+          "type": "heading",
+          "style": "h4",
+          "text": "My Role"
+        },
+        "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, design, implementation, launch, and marketing.",
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 11 features, plus a 'typing performance' admin control center!"
       ]
     },
     "problem": {
