@@ -19,7 +19,7 @@ import ArcatextDemoRow from '@/components/ArcatextDemoRow';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
 import { CaseStudyCard, CaseStudyRow } from '@/components/ArcatextCaseStudies';
-import { EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
+import { BlockSlot, EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
@@ -181,11 +181,27 @@ export default function Arcatext() {
             <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
           </h1>
 
-          {/* What it is, in four words, under the name. */}
-          <Editable
-            as="p"
-            path="arcatext.hero.tagline"
-            className="mt-5 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-foreground text-balance"
+          {/* What it is, under the name -- a slot rather than one fixed line,
+              so the subheader can be deleted and a different one (or a header,
+              or an element) put in its place without touching the page. It
+              carries the subheader's type: whatever paragraph goes in reads
+              as the line under the title.
+
+              `tagline`, the single field this replaces, is left in the content
+              file: an admin save from a browser that still has the old shape
+              writes that string back, and the line below renders it rather
+              than dropping the subheader on the floor. */}
+          {typeof arc.hero.tagline === 'string' && arc.hero.tagline.trim() ? (
+            <Editable
+              as="p"
+              path="arcatext.hero.tagline"
+              className="mt-5 text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-foreground text-balance"
+            />
+          ) : null}
+
+          <BlockSlot
+            path="arcatext.hero.subhead"
+            className="my-0 mt-5 max-w-4xl space-y-4 text-balance [&_p]:text-xl [&_p]:font-bold [&_p]:tracking-tight [&_p]:text-foreground sm:[&_p]:text-2xl lg:[&_p]:text-3xl"
           />
         </div>
       </section>

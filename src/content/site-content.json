@@ -514,7 +514,13 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "tagline": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning.",
+      "tagline": "",
+      "subhead": [
+        {
+          "type": "paragraph",
+          "text": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning."
+        }
+      ],
       "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",

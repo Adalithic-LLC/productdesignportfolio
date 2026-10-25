@@ -243,8 +243,12 @@ export interface ArcatextContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
-    /** The line under the name at the top of the project page. */
+    /** The line under the name, before it became a block slot. Kept so an
+        admin save from a browser holding the old shape still renders. */
     tagline?: string;
+    /** The subheader under the name: a block list, so it can be removed and
+        another one put in its place. Created on first insert. */
+    subhead?: unknown[];
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -395,8 +399,12 @@ export interface ConversantContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
-    /** The line under the name at the top of the project page. */
+    /** The line under the name, before it became a block slot. Kept so an
+        admin save from a browser holding the old shape still renders. */
     tagline?: string;
+    /** The subheader under the name: a block list, so it can be removed and
+        another one put in its place. Created on first insert. */
+    subhead?: unknown[];
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -548,8 +556,12 @@ export interface UsaaContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
-    /** The line under the name at the top of the project page. */
+    /** The line under the name, before it became a block slot. Kept so an
+        admin save from a browser holding the old shape still renders. */
     tagline?: string;
+    /** The subheader under the name: a block list, so it can be removed and
+        another one put in its place. Created on first insert. */
+    subhead?: unknown[];
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
@@ -660,8 +672,12 @@ export interface MemberHomeContent {
     /** Heads the block, in the same style as the case study strip's. */
     eyebrow: string;
     title: string;
-    /** The line under the name at the top of the project page. */
+    /** The line under the name, before it became a block slot. Kept so an
+        admin save from a browser holding the old shape still renders. */
     tagline?: string;
+    /** The subheader under the name: a block list, so it can be removed and
+        another one put in its place. Created on first insert. */
+    subhead?: unknown[];
     subtitle: string;
     typeTags: string[];
     roleLabel: string;
