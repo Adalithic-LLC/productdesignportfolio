@@ -514,7 +514,7 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "tagline": "Supported user-driven language learning",
+      "tagline": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning.",
       "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",
@@ -1993,10 +1993,10 @@
       "origin": [
         "Arcatext began as a personal attempt to make multilingual texting more streamlined.\n\nStarting as a conceptual messaging app optimization, I pivoted to language learning product after further research and market exploration."
       ],
-      "readingWritingTitle": "The focus on reading and writing",
+      "readingWritingTitle": "Learning approach: reading and writing",
       "readingWriting": [
-        "Language learning involves reading, writing, speaking, listening, vocabulary, grammar, and tone. While many tools support guided lessons or speaking practice, the biggest opportunity was in reading and writing, especially in real texting conversations.",
-        "Writing gives learners time to pause, revise, compare, and understand language before responding."
+        "Language learning involves reading, writing, speaking, listening, vocabulary, grammar, and tone. While many tools support guided lessons or speaking practice, I found the biggest opportunity for improvement in reading and writing, especially in real texting conversations.",
+        "Writing is a potentially powerful methodology becuase it gives learners time to pause, reflect, revise, compare, and understand language before responding."
       ],
       "roleTitle": "My role",
       "role": [
@@ -2013,21 +2013,21 @@
           "text": "My Role"
         },
         "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, design, implementation, launch, and marketing.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 11 features, plus a 'typing performance' admin control center!"
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 17 features, plus supporting systems, and a keyboard performance admin control center."
       ]
     },
     "problem": {
       "eyebrow": "Problem / Opportunity",
-      "titleLead": "Most language-learning tools separate practice from",
+      "titleLead": "Language-learning tools separate practice from",
       "titleHighlight": "real communication.",
       "intro": [
-        "Learners spend time on scripted exercises, flashcards, grammar drills, and guided lessons. While those activities create important foundational knowledge, they don’t always fully prepare them for the conversations they want to have. Real communication is personal, unpredictable, emotional, and full of nuance.",
-        "A learner may know vocabulary from an app but still struggle when texting a friend, replying to a penpal, navigating tone, choosing the right level of formality, reading an unfamiliar script, or understanding why one translation sounds natural and another does not.",
-        "Translation tools solve part of the problem, but they usually focus on producing a result rather than helping the user learn from the moment. They translate the message, but rarely expose the decisions behind the translation."
+        "Most apps limit learners to scripted exercises and flashcards or give them access to a large community without any learning scaffolding. While those activities create important foundational knowledge, they don’t expose them to real communication, which is unpredictable and full of nuance.",
+        "These system can produce learners who know the language in theory, in a contorlled environemtn, but struggle in real conversations.",
+        "Translation tools facilitate real conversations, but they usually focus on producing a generic result rather than understanding the context and leveraging each message for additional learning."
       ],
       "opportunityEyebrow": "The opportunity",
-      "opportunityLead": "What if everyday messages could become personalized",
-      "opportunityHighlight": "language-learning moments?",
+      "opportunityLead": "What if real conversations could become the methodological core with",
+      "opportunityHighlight": "just enough structure built around it?",
       "problemsTitle": "Key problems",
       "problems": [
         {
@@ -2039,16 +2039,16 @@
           "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
         },
         {
-          "title": "Translators solve the message, not the moment",
-          "desc": "Most tools produce a result without explaining why a translation works — or how meaning shifts through tone, gender, or context."
-        },
-        {
-          "title": "Nuance is hidden in a black box",
-          "desc": "Users often need to adjust gender, register, or word choice, but those decisions are buried inside the translation engine."
+          "title": "Translators don't understand context",
+          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, or tone."
         },
         {
           "title": "Unfamiliar scripts add a second barrier",
           "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language."
+        },
+        {
+          "title": "Language apps don't leverage teachers",
+          "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
         }
       ],
       "opportunitiesTitle": "Product opportunities",
@@ -2072,6 +2072,14 @@
         {
           "title": "Learn from real behavior",
           "desc": "Real conversations reveal recurring words, grammar gaps, and topics — the foundation for an adaptive learning path."
+        },
+        {
+          "title": "Capture mistakes and help users learn",
+          "desc": "Since we know what each user attempted to write and have their translations, we can help them understand mistake patterns."
+        },
+        {
+          "title": "Support users with a real pedagogy",
+          "desc": "Offer flexibility with just the right amount of structure to support learners and make their"
         }
       ],
       "closing": [
