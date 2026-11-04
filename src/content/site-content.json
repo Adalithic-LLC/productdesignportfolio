@@ -514,7 +514,7 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "tagline": "",
+      "tagline": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning.",
       "subhead": [
         {
           "type": "paragraph",
@@ -2150,7 +2150,7 @@
     },
     "productSystem": {
       "eyebrow": "Product System",
-      "titleLead": "Not one linear flow — a",
+      "titleLead": "Not one linear flow a",
       "titleHighlight": "system of flows.",
       "intro": [
         "Arcatext is not built around one linear feature flow. It is a system designed to support multiple communication needs while preserving the speed and familiarity of texting. The default path stays simple, and deeper support is revealed only when the user needs it."
