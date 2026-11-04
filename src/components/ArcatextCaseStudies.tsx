@@ -1,26 +1,31 @@
 /**
- * The Arcatext page's case studies: one card that holds them, and the row they
- * come out into.
+ * The Arcatext page's case studies: one card that holds them, and the modal
+ * they come out into.
  *
  * The page opens with the product running, not with a list of links, so the
- * four case studies are folded into a single card -- four mini cards in a
- * 2 × 2, the same number, name and order they have when they are out. The card
- * sits above the section nav, where the page's other navigation lives, and
- * clicking it sends them out into a row under the page header, above the
- * keyboards.
+ * case studies are folded into a single card -- mini cards in a 2 × 2, the
+ * same number, name and order they have when they are out. The card sits
+ * above the section nav, where the page's other navigation lives, and clicking
+ * it sends them out into the middle of the window.
  *
- * The flight is a FLIP: the row is laid out where it will end up, each card is
+ * A modal rather than a row in the page, because the card is reachable from
+ * anywhere: the rail holding it is fixed, so it can be clicked halfway down
+ * the page, and a row that opened under the header would then be somewhere the
+ * reader is not. Centred on the viewport, they arrive where the click was.
+ *
+ * The flight is a FLIP: the cards are laid out where they will end up, each is
  * then transformed back onto the card that holds them -- the same offset and
  * the same scale -- and released a beat apart, so they read as coming out of
- * it rather than appearing near it. Closing runs it backwards, and the row
- * gives its height back once the last card is home.
+ * it rather than appearing near it. Closing runs it backwards, from the far
+ * end in, and the overlay goes once the last card is home.
  *
  * The trigger is rendered twice: in the fixed rail from 1600px, where the rail
  * exists, and inline under the header below that. Whichever one is on screen
  * is the one the cards fly from.
  */
-import { useEffect, useRef } from 'react';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { ArrowRight, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Editable } from '@/content/Editable';
 import { useContent } from '@/content/ContentContext';
@@ -119,29 +124,49 @@ export function CaseStudyCard({
 }
 
 /**
- * The row the case studies fly out into. Always rendered -- the flight needs
- * them laid out to measure -- but it keeps no height and takes no clicks or
- * tab stops until it is open.
+ * The case studies, in the middle of the window.
+ *
+ * It is mounted only while it is wanted, and stays mounted through the closing
+ * flight: the cards have to be laid out to be measured, and they have to still
+ * be there to fly home.
  */
-export function CaseStudyRow({ items, open }: { items: CaseStudyItem[]; open: boolean }) {
-  const wrap = useRef<HTMLDivElement>(null);
+export function CaseStudyModal({
+  items,
+  open,
+  onClose,
+}: {
+  items: CaseStudyItem[];
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(open);
   const row = useRef<HTMLDivElement>(null);
-  /* The first pass only sets the closed state; there is nothing to fly from
-     before anyone has asked for it. */
-  const settled = useRef(false);
+  const chrome = useRef<HTMLDivElement>(null);
+  const veil = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const box = wrap.current;
+    if (open) setMounted(true);
+  }, [open]);
+
+  /** Everything but the cards: the backdrop, the title and the close button. */
+  const fade = useCallback((to: number, delay = 0) => {
+    [veil.current, chrome.current].forEach((el) => {
+      if (!el) return;
+      el.style.transition = `opacity ${(DURATION * 0.6).toFixed(2)}s ease-out ${delay}s`;
+      el.style.opacity = String(to);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const rail = row.current;
-    if (!box || !rail) return;
+    if (!rail) return;
     const cards = Array.from(rail.querySelectorAll<HTMLElement>('[data-genie-card]'));
     const timers: number[] = [];
     const after = (seconds: number, fn: () => void) =>
       timers.push(window.setTimeout(fn, seconds * 1000));
 
     const settle = () => {
-      box.style.transition = '';
-      box.style.maxHeight = open ? '' : '0px';
       cards.forEach((card) => {
         card.style.transition = '';
         card.style.transform = '';
@@ -149,32 +174,24 @@ export function CaseStudyRow({ items, open }: { items: CaseStudyItem[]; open: bo
       });
     };
 
-    const first = !settled.current;
-    settled.current = true;
-    if (first || reduceMotion()) {
+    if (reduceMotion()) {
       settle();
-      return;
+      fade(open ? 1 : 0);
+      if (!open) after(0.05, () => setMounted(false));
+      return () => timers.forEach(clearTimeout);
     }
 
     const origin = originRect();
+    const places = cards.map((card) => card.getBoundingClientRect());
 
     if (open) {
-      // Measured open, then put back: the row's own height and each card's
-      // place are what the flight is interpolating between.
-      box.style.transition = '';
-      box.style.maxHeight = '';
-      const height = box.scrollHeight;
-      const places = cards.map((card) => card.getBoundingClientRect());
-      box.style.maxHeight = '0px';
       cards.forEach((card, i) => {
         card.style.transition = 'none';
         card.style.transform = origin ? onto(origin, places[i]) : 'scale(0.6)';
         card.style.opacity = '0';
       });
-      void box.offsetHeight;
-
-      box.style.transition = `max-height ${DURATION}s ${EASE}`;
-      box.style.maxHeight = `${height}px`;
+      void rail.offsetHeight;
+      fade(1);
       cards.forEach((card, i) => {
         const delay = i * STAGGER;
         card.style.transition =
@@ -183,19 +200,12 @@ export function CaseStudyRow({ items, open }: { items: CaseStudyItem[]; open: bo
         card.style.transform = '';
         card.style.opacity = '';
       });
-      // Height back to auto once they are out, so the row reflows with the page.
       after(DURATION + (cards.length - 1) * STAGGER + 0.05, settle);
-      return;
+      return () => timers.forEach(clearTimeout);
     }
 
-    const height = box.scrollHeight;
-    const places = cards.map((card) => card.getBoundingClientRect());
-    box.style.transition = '';
-    box.style.maxHeight = `${height}px`;
-    void box.offsetHeight;
-
+    // Last out, first back, and the overlay goes with the last of them.
     cards.forEach((card, i) => {
-      // Last out, first back: the row empties from its far end inwards.
       const delay = (cards.length - 1 - i) * STAGGER;
       card.style.transition =
         `transform ${DURATION}s ${EASE} ${delay}s, ` +
@@ -203,56 +213,99 @@ export function CaseStudyRow({ items, open }: { items: CaseStudyItem[]; open: bo
       card.style.transform = origin ? onto(origin, places[i]) : 'scale(0.6)';
       card.style.opacity = '0';
     });
-    /* The height goes last. Collapsing it while they are still in the air
-       would pull the page up from under them. */
-    box.style.transition = `max-height ${DURATION}s ${EASE} ${(DURATION * 0.45).toFixed(2)}s`;
-    box.style.maxHeight = '0px';
-    after(DURATION * 1.45 + (cards.length - 1) * STAGGER + 0.05, settle);
-
+    fade(0, DURATION * 0.35);
+    after(DURATION * 1.1 + (cards.length - 1) * STAGGER + 0.05, () => setMounted(false));
     return () => timers.forEach(clearTimeout);
-  }, [open]);
+  }, [mounted, open, fade]);
 
-  return (
+  /* Escape closes it, and the page behind it stays put: the scrollbar's width
+     is handed back as padding so nothing shifts under the overlay. */
+  useEffect(() => {
+    if (!mounted) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const gap = window.innerWidth - document.documentElement.clientWidth;
+    const { overflow, paddingRight } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    if (gap > 0) document.body.style.paddingRight = `${gap}px`;
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+      document.body.style.paddingRight = paddingRight;
+    };
+  }, [mounted, onClose]);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      ref={wrap}
-      aria-hidden={!open}
-      className={cn('overflow-hidden', !open && 'pointer-events-none')}
-      style={{ maxHeight: 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Case studies"
+      /* Anywhere outside the cards closes it. The handler is here rather than
+         on the backdrop because the centring wrapper covers the backdrop, so
+         a click near the edge of the window never reaches it. */
+      onClick={onClose}
+      className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain"
     >
-      {/* The row's own spacing lives in here, inside what collapses: the
-          section around it keeps none, so closed it takes no room at all. */}
-      <div ref={row} className="flex flex-wrap gap-6 pb-10 pt-2">
-        {items.map(({ slug, index }, i) => (
-          <a
-            key={index}
-            data-genie-card
-            href={`#/arcatext/${slug}`}
-            tabIndex={open ? undefined : -1}
-            style={{ width: CARD, transformOrigin: 'top left' }}
-            className="flex min-h-44 shrink-0 flex-col rounded-xl bg-muted/40 p-5 transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {/* The same parts, in the same order, as the deeper case-study
-                cards further down the page: number, arrow, name, question. */}
-            <span className="flex items-start justify-between gap-3">
-              <span className="font-mono text-[11px] text-primary/70">
-                Case {String(i + 1).padStart(2, '0')}
-              </span>
-              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            </span>
+      <div ref={veil} style={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-md" />
+      {/* min-h-full with the items centred: centred on the window when they
+          fit, scrolled from the top when they do not. */}
+      <div className="relative flex min-h-full items-center justify-center p-5 sm:p-8">
+        <div className="w-full max-w-[1340px]" onClick={(e) => e.stopPropagation()}>
+          <div ref={chrome} style={{ opacity: 0 }} className="mb-5 flex items-center justify-between gap-4">
             <Editable
-              as="h3"
-              path={`arcatext.features.${index}.title`}
-              className="mb-2 mt-2 text-base font-semibold leading-snug text-foreground"
+              as="span"
+              path="arcatext.featuresTitle"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
             />
-            <Editable
-              as="p"
-              path={`arcatext.features.${index}.body`}
-              multiline
-              className="text-sm italic leading-relaxed text-muted-foreground"
-            />
-          </a>
-        ))}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="grid h-9 w-9 place-items-center rounded-full border border-border/60 bg-background/80 text-foreground/70 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div ref={row} className="flex flex-wrap justify-center gap-5">
+            {items.map(({ slug, index }, i) => (
+              <a
+                key={index}
+                data-genie-card
+                href={`#/arcatext/${slug}`}
+                onClick={onClose}
+                style={{ width: CARD, transformOrigin: 'top left' }}
+                className="flex min-h-44 shrink-0 flex-col rounded-xl border border-border/50 bg-card/90 p-5 shadow-lg backdrop-blur transition-shadow duration-300 hover:shadow-[0_0_18px_8px_rgba(13,95,254,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {/* The same parts, in the same order, as the deeper case-study
+                    cards further down the page: number, arrow, name, question. */}
+                <span className="flex items-start justify-between gap-3">
+                  <span className="font-mono text-[11px] text-primary/70">
+                    Case {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                </span>
+                <Editable
+                  as="h3"
+                  path={`arcatext.features.${index}.title`}
+                  className="mb-2 mt-2 text-base font-semibold leading-snug text-foreground"
+                />
+                <Editable
+                  as="p"
+                  path={`arcatext.features.${index}.body`}
+                  multiline
+                  className="text-sm italic leading-relaxed text-muted-foreground"
+                />
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

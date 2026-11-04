@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import ArcatextDemoRow from '@/components/ArcatextDemoRow';
 import { useContent } from '@/content/ContentContext';
 import { Editable } from '@/content/Editable';
-import { CaseStudyCard, CaseStudyRow } from '@/components/ArcatextCaseStudies';
+import { CaseStudyCard, CaseStudyModal } from '@/components/ArcatextCaseStudies';
 import { BlockSlot, EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
@@ -208,12 +208,9 @@ export default function Arcatext() {
 
 
 
-      {/* The case studies, under the header and above the keyboards: folded
-          into one card by the section nav until someone asks for them, then
-          flown out into this row. See ArcatextCaseStudies. */}
-      {/* No padding of its own: closed, this has to take no room at all, or
-          the keyboards would sit a gap below the header rather than under it.
-          The spacing the open row needs is inside the part that collapses. */}
+      {/* The case studies: folded into one card by the section nav until
+          someone asks for them, then flown out into the middle of the window.
+          See ArcatextCaseStudies. */}
       <section>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Below 1600px the rail does not exist, so the card that holds them
@@ -221,9 +218,12 @@ export default function Arcatext() {
           <div className="mb-6 min-[1600px]:hidden">
             <CaseStudyCard items={caseStudies} open={casesOpen} onToggle={toggleCases} />
           </div>
-          <CaseStudyRow items={caseStudies} open={casesOpen} />
         </div>
       </section>
+
+      {/* Centred on the window wherever the page is scrolled to, because the
+          card that opens it is fixed and can be clicked from anywhere. */}
+      <CaseStudyModal items={caseStudies} open={casesOpen} onClose={() => setCasesOpen(false)} />
 
       {/* The keyboard in motion: a phone per view in a sideways row. It breaks
           out to the full window width so the row can run to the right edge,
