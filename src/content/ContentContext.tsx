@@ -37,6 +37,12 @@ interface ContentContextValue {
   content: SiteContent;
   /** False while previewing, so every consumer renders as a visitor would. */
   isAdmin: boolean;
+  /**
+   * The admin session itself, preview or not. Copy stays editable in preview
+   * -- a typo seen there is fixed there -- so `Editable` reads this while
+   * everything that is admin *furniture* reads `isAdmin`.
+   */
+  canEdit: boolean;
   /** True while admin is showing the draft as the site, editing affordances off. */
   previewing: boolean;
   setPreviewing: (on: boolean) => void;
@@ -389,6 +395,10 @@ export function ContentProvider({
      turns preview off reads `previewing` instead. */
   const [previewing, setPreviewing] = useState(false);
   const isAdmin = unlocked && !previewing;
+  /* Editing outlives preview: the point of preview is to read the page as a
+     visitor would, and the thing most often wanted on reading it is to change
+     a word. The furniture stays away; the caret does not. */
+  const canEdit = unlocked;
 
   /* The content on GitHub as far as this browser knows: the bundled file, or
      a save of its own the bundle has not caught up with yet. `baseSha` is that
@@ -931,6 +941,7 @@ export function ContentProvider({
     () => ({
       content,
       isAdmin,
+      canEdit,
       previewing,
       setPreviewing,
       dirty,
@@ -959,7 +970,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, moveSectionsTo, moveBlocksTo, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, moveSectionsTo, moveBlocksTo, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

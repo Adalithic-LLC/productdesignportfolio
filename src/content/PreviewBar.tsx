@@ -41,7 +41,7 @@ export function PreviewBar() {
       <Eye className="h-4 w-4 shrink-0" aria-hidden />
       <span>
         Preview — {dirty ? 'showing unsaved changes' : 'showing the saved draft'} as visitors will see
-        them
+        them. Click any text to fix it here.
       </span>
       <button
         type="button"

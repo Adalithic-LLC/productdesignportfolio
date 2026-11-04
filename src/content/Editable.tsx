@@ -20,15 +20,16 @@ interface EditableProps {
 /**
  * Renders a piece of editable copy from the content store.
  *
- * In normal mode it renders the text, with any inline marks it carries as
- * spans. In admin mode the element becomes `contentEditable`; its contents are
+ * To a visitor it renders the text, with any inline marks it carries as
+ * spans. In an admin session -- preview included, where only the outline
+ * changes -- the element becomes `contentEditable`; its contents are
  * managed imperatively through a ref so React never re-reconciles them while
  * the user is typing (which would otherwise drop characters). Changes are
  * committed to the store on blur, read back out of the DOM so marks survive
  * being typed around -- see inlineMarks.tsx.
  */
 export function Editable({ path, as = 'span', className, multiline = false, ...rest }: EditableProps) {
-  const { content, isAdmin, setText } = useContent();
+  const { content, canEdit, previewing, setText } = useContent();
   const value = String(resolveValue(content, path) ?? '');
   const ref = useRef<HTMLElement>(null);
   const Tag = as as ElementType;
@@ -40,13 +41,13 @@ export function Editable({ path, as = 'span', className, multiline = false, ...r
   // a string comparison would then rewrite the field on every render.
   useEffect(() => {
     const el = ref.current;
-    if (!isAdmin || !el) return;
+    if (!canEdit || !el) return;
     if (document.activeElement !== el && domToValue(el) !== value) {
       el.innerHTML = html;
     }
-  }, [isAdmin, html, value]);
+  }, [canEdit, html, value]);
 
-  if (!isAdmin) {
+  if (!canEdit) {
     return (
       <Tag className={className} {...rest}>
         {renderMarks(value)}
@@ -57,7 +58,11 @@ export function Editable({ path, as = 'span', className, multiline = false, ...r
   return (
     <Tag
       ref={ref}
-      className={cn('admin-editable', className)}
+      /* In preview the field keeps the page's own look until it is reached
+         for: no dashed outline at rest, one on hover, the full one on focus.
+         Preview is for reading the page as a visitor would, and a typo seen
+         there should be fixable without leaving it. */
+      className={cn(previewing ? 'preview-editable' : 'admin-editable', className)}
       contentEditable
       suppressContentEditableWarning
       spellCheck={false}

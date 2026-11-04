@@ -791,3 +791,31 @@ html[data-preview] .sticky.top-0 {
 .ax-shake {
   animation: ax-shake 0.45s ease-in-out;
 }
+
+/* An editable field in preview: the page as a visitor sees it until the
+   pointer reaches for the words. Preview is for reading the draft as the
+   site, and a typo seen there is fixed there -- so the caret stays while the
+   dashed outline that marks every field in admin does not. */
+.preview-editable {
+  cursor: text;
+  border-radius: 0.25rem;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.2s ease, background-color 0.2s ease;
+}
+
+.preview-editable:hover {
+  outline-color: hsl(var(--primary) / 0.45);
+}
+
+.preview-editable:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.preview-editable:empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
