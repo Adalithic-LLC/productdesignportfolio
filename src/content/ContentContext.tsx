@@ -10,7 +10,10 @@ import defaultContent from './site-content.json';
  */
 export type MoveSelection =
   | { domain: 'section'; ids: string[] }
-  | { domain: 'block'; path: string; indices: number[] };
+  | { domain: 'block'; path: string; indices: number[] }
+  /* A page's own markup: the children of one seam group, addressed by their
+     position in the source. See `Seams` in EditableBlocks. */
+  | { domain: 'part'; prefix: string; keys: string[] };
 
 /**
  * Where the content lives in the repo and which repo/branch admin edits commit to.
@@ -63,10 +66,16 @@ interface ContentContextValue {
   cancelMove: () => void;
   toggleSectionSelection: (id: string) => void;
   toggleBlockSelection: (path: string, index: number) => void;
+  /** Select/deselect one of a seam group's own parts (page markup). */
+  togglePartSelection: (prefix: string, key: string) => void;
   /** Move the selected sections before gap `targetGap` in the current order. */
   moveSectionsTo: (pageKey: string, naturalIds: string[], targetGap: number) => void;
   /** Move the selected blocks before gap `targetGap` within their list. */
   moveBlocksTo: (targetPath: string, targetGap: number) => void;
+  /** Move the selected parts before gap `targetGap` in their seam group. */
+  movePartsTo: (prefix: string, naturalKeys: string[], targetGap: number) => void;
+  /** Hide (or bring back) one of a seam group's parts. */
+  setPartHidden: (prefix: string, key: string, hidden: boolean) => void;
   setText: (path: string, value: string | number) => void;
   /** Insert a block into the array at `path` at the given index. */
   insertBlock: (path: string, index: number, block: ProseBlock) => void;
@@ -558,6 +567,19 @@ export function ContentProvider({
     });
   }, []);
 
+  const togglePartSelection = useCallback((prefix: string, key: string) => {
+    setSelection((prev) => {
+      // One group at a time: selecting in another starts a fresh selection.
+      if (prev?.domain === 'part' && prev.prefix === prefix) {
+        const keys = prev.keys.includes(key)
+          ? prev.keys.filter((k) => k !== key)
+          : [...prev.keys, key];
+        return keys.length ? { domain: 'part', prefix, keys } : null;
+      }
+      return { domain: 'part', prefix, keys: [key] };
+    });
+  }, []);
+
   const persistDraft = useCallback((next: SiteContent) => {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
@@ -742,6 +764,63 @@ export function ContentProvider({
       cancelMove();
     },
     [selection, persistDraft, cancelMove, requestScrollRestore]
+  );
+
+  /**
+   * Reorder a seam group's own parts. The stored order is a list of the
+   * children's source positions; anything the source has since added is kept
+   * in place at the end, the same rule `moveSectionsTo` follows for sections.
+   */
+  const movePartsTo = useCallback(
+    (prefix: string, naturalKeys: string[], targetGap: number) => {
+      if (selection?.domain !== 'part' || selection.prefix !== prefix) return;
+      const keys = selection.keys;
+      requestScrollRestore();
+      setContent((prev) => {
+        const orderPath = `${prefix}.order`;
+        const stored = getByPath(prev, orderPath) as string[] | undefined;
+        const current =
+          stored && stored.length
+            ? [
+                ...stored.filter((k) => naturalKeys.includes(k)),
+                ...naturalKeys.filter((k) => !stored.includes(k)),
+              ]
+            : naturalKeys;
+        const removedBefore = current.slice(0, targetGap).filter((k) => keys.includes(k)).length;
+        const moving = current.filter((k) => keys.includes(k)); // keep relative order
+        const remaining = current.filter((k) => !keys.includes(k));
+        const at = Math.max(0, Math.min(targetGap - removedBefore, remaining.length));
+        const next = setByPath(prev, orderPath, [
+          ...remaining.slice(0, at),
+          ...moving,
+          ...remaining.slice(at),
+        ]);
+        persistDraft(next);
+        return next;
+      });
+      cancelMove();
+    },
+    [selection, persistDraft, cancelMove, requestScrollRestore]
+  );
+
+  /* Hidden rather than deleted: the part is markup, not content, so there is
+     nothing to throw away and everything to gain from being able to put it
+     back. Move mode lists what a group is hiding. */
+  const setPartHidden = useCallback(
+    (prefix: string, key: string, hidden: boolean) => {
+      requestScrollRestore();
+      setContent((prev) => {
+        const path = `${prefix}.hidden`;
+        const raw = getByPath(prev, path);
+        const list = Array.isArray(raw) ? (raw as string[]) : [];
+        if (hidden === list.includes(key)) return prev;
+        const nextList = hidden ? [...list, key] : list.filter((k) => k !== key);
+        const next = setByPath(prev, path, nextList);
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft, requestScrollRestore]
   );
 
   const setToken = useCallback((value: string) => {
@@ -956,8 +1035,11 @@ export function ContentProvider({
       cancelMove,
       toggleSectionSelection,
       toggleBlockSelection,
+      togglePartSelection,
       moveSectionsTo,
       moveBlocksTo,
+      movePartsTo,
+      setPartHidden,
       setText,
       insertBlock,
       removeBlock,
@@ -970,7 +1052,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, moveSectionsTo, moveBlocksTo, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

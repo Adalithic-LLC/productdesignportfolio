@@ -1,6 +1,6 @@
 import { Children, Fragment, cloneElement, isValidElement, useState } from 'react';
 import type { ElementType, ReactElement, ReactNode } from 'react';
-import { ArrowDown, ArrowUp, Copy, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, Eye, GripVertical, Check as CheckIcon, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
@@ -51,7 +51,10 @@ function blockElement(path: string, index: number, item: ProseItem) {
     const cfg = headerConfig(item.style);
     return <Editable as={cfg.tag} path={textPath} className={cfg.className} />;
   }
-  return <Editable as="p" multiline path={textPath} />;
+  /* The measure travels with the block; its size, weight and colour do not --
+     those belong to the prose the block has been put into, and every page sets
+     them its own way. */
+  return <Editable as="p" multiline path={textPath} className="max-w-3xl" />;
 }
 
 /**
@@ -208,6 +211,7 @@ export function BlockSlot({
   path,
   className,
   rise,
+  prose = true,
 }: {
   path: string;
   className?: string;
@@ -215,6 +219,12 @@ export function BlockSlot({
      blocks inside it can keep the slot itself -- margins and all -- out of the
      page until the first one arrives. */
   rise?: boolean;
+  /* A slot at a structural seam has no prose around it to inherit from, so it
+     sets the pages' own body style itself -- otherwise a paragraph dropped
+     between two cards comes out at browser defaults beside copy that is a step
+     larger and muted. Slots inside an element (a card's caption, a grid cell)
+     pass false: their type is the card's, not the page's. */
+  prose?: boolean;
 }) {
   const { content, isAdmin, insertTool, moveMode } = useContent();
   const raw = getByPath(content, path);
@@ -222,7 +232,14 @@ export function BlockSlot({
   const armed = isAdmin && (!!insertTool || moveMode);
   if (items.length === 0 && !armed) return null;
   return (
-    <div className={cn('my-6 space-y-5', className)} data-rise-group={rise ? '' : undefined}>
+    <div
+      className={cn(
+        'my-6 space-y-5',
+        prose && 'text-base leading-relaxed text-muted-foreground sm:text-lg',
+        className
+      )}
+      data-rise-group={rise ? '' : undefined}
+    >
       <EditableBlocks path={path} />
     </div>
   );
@@ -335,23 +352,152 @@ function seamable(
 /** How many levels of wrapper below a section get seams of their own. */
 const SEAM_DEPTH = 2;
 
-function seamed(children: ReactNode, prefix: string, rise: boolean | undefined, depth: number) {
+/**
+ * One level of a section's own markup: a slot in every gap, and -- in Move
+ * mode -- a handle on every part between them, so the page's own pieces can be
+ * reordered and hidden the way inserted blocks already can.
+ *
+ * A part is addressed by its position in the source, the same way the slots
+ * around it are, and the order and the hidden list live beside those slots at
+ * `<prefix>.order` and `<prefix>.hidden`. So a part keeps the slot above it
+ * when it moves, and -- as with the slots -- adding or removing a piece of
+ * markup in the page renumbers what an existing order refers to.
+ *
+ * Hiding rather than deleting: a part is markup, not content, so there is
+ * nothing to throw away and a hidden one can be brought back from the same
+ * place it was hidden.
+ *
+ * Outside Move mode this renders exactly what the page wrote, minus whatever
+ * is hidden: no wrapper, no handle, nothing for a visitor to pay for.
+ */
+function SeamGroup({
+  prefix,
+  children,
+  rise,
+  depth,
+}: {
+  prefix: string;
+  children: ReactNode;
+  rise?: boolean;
+  depth: number;
+}) {
+  const { content, isAdmin, moveMode, selection, togglePartSelection, movePartsTo, setPartHidden } =
+    useContent();
   const kids = Children.toArray(children);
+  const natural = kids.map((_, i) => String(i));
+  const storedOrder = getByPath(content, `${prefix}.order`);
+  const stored = Array.isArray(storedOrder) ? (storedOrder as string[]) : [];
+  const order = stored.length
+    ? [...stored.filter((k) => natural.includes(k)), ...natural.filter((k) => !stored.includes(k))]
+    : natural;
+  const hiddenRaw = getByPath(content, `${prefix}.hidden`);
+  const hidden = new Set(Array.isArray(hiddenRaw) ? (hiddenRaw as string[]) : []);
+
+  const inMove = isAdmin && moveMode;
+  const picked = (key: string) =>
+    selection?.domain === 'part' && selection.prefix === prefix && selection.keys.includes(key);
+  const active =
+    inMove && selection?.domain === 'part' && selection.prefix === prefix && selection.keys.length > 0;
+
+  const line = (gap: number) =>
+    active ? (
+      <button
+        type="button"
+        aria-label="Move selected parts here"
+        onClick={() => movePartsTo(prefix, natural, gap)}
+        className="group/part relative z-40 flex w-full items-center gap-2 py-2"
+      >
+        <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-wide text-primary/70 transition-colors group-hover/part:text-primary">
+          Move {selection?.domain === 'part' ? selection.keys.length : 0} here
+        </span>
+        <span className="h-0.5 flex-1 rounded-full bg-primary/40 transition-colors group-hover/part:bg-primary" />
+      </button>
+    ) : null;
+
+  /* `-in` so a wrapper's inner gaps cannot be mistaken for entries in the slot
+     that sits above it, which is the array at this very path. */
+  const part = (key: string) => {
+    const child = kids[Number(key)];
+    return depth > 0 && seamable(child)
+      ? cloneElement(child, {
+          children: (
+            <SeamGroup prefix={`${prefix}.${key}-in`} rise={rise} depth={depth - 1}>
+              {child.props.children}
+            </SeamGroup>
+          ),
+        })
+      : child;
+  };
+
   return (
     <>
-      {kids.map((child, i) => (
-        <Fragment key={i}>
-          <BlockSlot path={`${prefix}.${i}`} rise={rise} />
-          {depth > 0 && seamable(child)
-            ? cloneElement(child, {
-                /* `-in` so a wrapper's inner gaps cannot be mistaken for
-                   entries in the slot that sits above it, which is the array
-                   at this very path. */
-                children: seamed(child.props.children, `${prefix}.${i}-in`, rise, depth - 1),
-              })
-            : child}
-        </Fragment>
-      ))}
+      {order.map((key, gap) => {
+        const isHidden = hidden.has(key);
+        const slot = <BlockSlot path={`${prefix}.${key}`} rise={rise} />;
+        if (!inMove) {
+          return (
+            <Fragment key={key}>
+              {slot}
+              {!isHidden && part(key)}
+            </Fragment>
+          );
+        }
+        return (
+          <Fragment key={key}>
+            {line(gap)}
+            {slot}
+            <div
+              className={cn(
+                'relative',
+                picked(key) && 'rounded-xl ring-2 ring-primary ring-offset-4 ring-offset-background'
+              )}
+            >
+              <div contentEditable={false} className="mb-1 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => togglePartSelection(prefix, key)}
+                  aria-label={picked(key) ? 'Deselect this part' : 'Select this part'}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-sm backdrop-blur transition-colors',
+                    picked(key)
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border/70 bg-background/90 text-muted-foreground hover:border-primary/60 hover:text-foreground'
+                  )}
+                >
+                  {picked(key) ? (
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  ) : (
+                    <GripVertical className="h-3.5 w-3.5" />
+                  )}
+                  Part
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPartHidden(prefix, key, !isHidden)}
+                  title={isHidden ? 'Bring this part back' : 'Hide this part'}
+                  aria-label={isHidden ? 'Bring this part back' : 'Hide this part'}
+                  className={cn(
+                    'inline-flex h-6 w-6 items-center justify-center rounded-md border border-border/70 bg-background/90 text-muted-foreground shadow-sm transition',
+                    isHidden
+                      ? 'hover:border-primary/60 hover:text-foreground'
+                      : 'hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive'
+                  )}
+                >
+                  {isHidden ? <Eye className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              {isHidden ? (
+                <div className="rounded-lg border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
+                  Hidden — visitors do not see this part.
+                </div>
+              ) : (
+                part(key)
+              )}
+            </div>
+          </Fragment>
+        );
+      })}
+      {line(order.length)}
       <BlockSlot path={`${prefix}.${kids.length}`} rise={rise} />
     </>
   );
@@ -381,7 +527,11 @@ export function Seams({
   /** Passed to every slot — see {@link BlockSlot}. */
   rise?: boolean;
 }) {
-  return seamed(children, `seams.${id}`, rise, SEAM_DEPTH);
+  return (
+    <SeamGroup prefix={`seams.${id}`} rise={rise} depth={SEAM_DEPTH}>
+      {children}
+    </SeamGroup>
+  );
 }
 
 /**

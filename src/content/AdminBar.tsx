@@ -65,12 +65,19 @@ export function AdminBar() {
         ? headerConfig(insertTool.style).label
         : getElement(insertTool.variant)?.label ?? 'Element';
 
-  const selectedCount = selection
-    ? selection.domain === 'section'
+  const selectedCount = !selection
+    ? 0
+    : selection.domain === 'section'
       ? selection.ids.length
-      : selection.indices.length
-    : 0;
-  const selectedNoun = selection?.domain === 'section' ? 'section' : 'block';
+      : selection.domain === 'part'
+        ? selection.keys.length
+        : selection.indices.length;
+  const selectedNoun =
+    selection?.domain === 'section'
+      ? 'section'
+      : selection?.domain === 'part'
+        ? 'part'
+        : 'block';
 
   const exitAdmin = () => {
     // Strip any admin URL flag first, then clear the persistent session so the

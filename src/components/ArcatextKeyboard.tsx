@@ -1011,24 +1011,26 @@ export default function ArcatextKeyboard({
           toolbar and the keys together). */}
       {view === 'none' && (
         <div style={{ backgroundColor: C.toolbarBar }} className="shrink-0 px-[5px] pb-1 pt-2">
-          {/* Toolbar: Study, Paste, Check left-clustered with 12pt gaps
-              and 8pt edge margins; the split Reword pill at the trailing
-              edge (StandardToolbar base metrics). */}
+          {/* Toolbar: Reword Review, Read aloud, Paste and Check left-clustered
+              with 12pt gaps and 8pt edge margins; the split Reword pill at the
+              trailing edge (StandardToolbar base metrics). */}
           <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
-            <ToolButton pressed={pressed === 'study'} onClick={() => jump('study')} label="Open Study">
+            {/* Reword Review (the leaf), then the speaker beside it, then
+                Paste and Check. */}
+            <ToolButton pressed={pressed === 'study'} onClick={() => jump('study')} label="Open Reword Review">
               <AxIcon light={studyUrl} dark={studyDarkUrl} width={20} height={17} />
-            </ToolButton>
-            <ToolButton pressed={pressed === 'paste'} onClick={() => jump('paste')} label="Open Paste">
-              <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
-            </ToolButton>
-            <ToolButton pressed={pressed === 'check'} onClick={() => jump('check')} label="Open Check">
-              <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
             </ToolButton>
             {/* Read it aloud. These phones play a script rather than hold a
                 field, so here the button is the button: it takes the press and
                 nothing follows it. The prototype's speaks. */}
             <ToolButton pressed={speaking} onClick={speak} label="Read aloud">
               <AxIcon light={speakerUrl} dark={speakerDarkUrl} width={20} height={20} />
+            </ToolButton>
+            <ToolButton pressed={pressed === 'paste'} onClick={() => jump('paste')} label="Open Paste">
+              <AxIcon light={pasteUrl} dark={pasteDarkUrl} width={16} height={20} />
+            </ToolButton>
+            <ToolButton pressed={pressed === 'check'} onClick={() => jump('check')} label="Open Check">
+              <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
             </ToolButton>
             <div className="flex-1" />
             <div

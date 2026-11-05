@@ -338,20 +338,18 @@ export default function Arcatext() {
             </ItemGroup>
           </div>
 
-          {/* The opportunity, after the problems rather than before them: it is
-              the answer to the list above, and a question put before anyone has
-              read what it answers is just a slogan. */}
-          <div className="mt-10 rounded-2xl bg-primary/10 p-8 reveal">
-            <Editable as="p" path="arcatext.problem.opportunityEyebrow" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
-            <p className="text-xl sm:text-2xl font-semibold text-balance leading-snug">
-              <Editable as="span" path="arcatext.problem.opportunityLead" multiline />{' '}
-              <Editable as="span" path="arcatext.problem.opportunityHighlight" className="gradient-text" />
-            </p>
-          </div>
-
-          {/* Opportunities */}
+          {/* Opportunities. The question the list answers sits under the
+              heading rather than above it: asked before anyone has read the
+              problems it answers, it is just a slogan. */}
           <div className="mt-16">
             <Editable as="h3" path="arcatext.problem.opportunitiesTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
+            <div className="mb-8 rounded-2xl bg-primary/10 p-8 reveal">
+              <Editable as="p" path="arcatext.problem.opportunityEyebrow" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
+              <p className="text-xl sm:text-2xl font-semibold text-balance leading-snug">
+                <Editable as="span" path="arcatext.problem.opportunityLead" multiline />{' '}
+                <Editable as="span" path="arcatext.problem.opportunityHighlight" className="gradient-text" />
+              </p>
+            </div>
             <ItemGroup as="div" path="arcatext.problem.opportunities" className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {arc.problem.opportunities.map((_, i) => (
                 <div

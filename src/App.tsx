@@ -109,9 +109,9 @@ function App() {
               <Arcatext />
             </ProjectGate>
           ) : route === 'aristotle' ? (
-            <ProjectGate bypass={isAdmin}>
-              <Aristotle />
-            </ProjectGate>
+            /* No gate: it is a public experiment rather than client work, and
+               the case study is the point of the page. */
+            <Aristotle />
           ) : route === 'conversant' ? (
             <ProjectGate bypass={isAdmin}>
               <Conversant />

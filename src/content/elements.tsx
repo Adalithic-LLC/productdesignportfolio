@@ -336,6 +336,7 @@ function GridElement({ ctx }: { ctx: ElementCtx }) {
               className={`flex flex-col ${armed ? 'rounded-xl border border-dashed border-primary/30 p-2' : ''}`}
             >
               <BlockSlot
+                prose={false}
                 path={`${ctx.path}.cells.${key}`}
                 className="my-0 flex flex-1 flex-col [&>*:last-child]:flex-1 [&>[data-block]]:flex [&>[data-block]]:flex-col [&>[data-block]>*:first-child]:flex-1"
               />
@@ -391,7 +392,7 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
         {/* Room for more than the one line this card defines: a heading over
             the text, a note under it, another element entirely. Both slots
             render nothing until something is put in them. */}
-        {ctx.path && <BlockSlot path={`${ctx.path}.above`} className="mb-4 mt-0" />}
+        {ctx.path && <BlockSlot prose={false} path={`${ctx.path}.above`} className="mb-4 mt-0" />}
         {ctx.path ? (
           <Editable
             as="p"
@@ -404,7 +405,7 @@ function ScreenCard({ ctx }: { ctx: ElementCtx }) {
             {ctx.data.caption ?? ''}
           </p>
         )}
-        {ctx.path && <BlockSlot path={`${ctx.path}.below`} className="mb-0 mt-4" />}
+        {ctx.path && <BlockSlot prose={false} path={`${ctx.path}.below`} className="mb-0 mt-4" />}
         {ctx.path && isAdmin && (
           <p className="mt-2 text-xs text-muted-foreground/70">
             <span className="font-medium">Screen:</span>{' '}

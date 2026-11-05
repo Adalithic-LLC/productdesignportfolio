@@ -5,6 +5,8 @@ import pasteUrl from '@/assets/keyboard/paste.svg';
 import pasteDarkUrl from '@/assets/keyboard/paste-dark.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
 import checkDarkUrl from '@/assets/keyboard/check-dark.svg';
+import speakerUrl from '@/assets/keyboard/speaker.svg';
+import speakerDarkUrl from '@/assets/keyboard/speaker-dark.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
 import shiftDarkUrl from '@/assets/keyboard/shift-dark.svg';
 import backspaceUrl from '@/assets/keyboard/backspace.svg';
@@ -256,12 +258,17 @@ function Key({
   );
 }
 
-/** A 57x50pt toolbar icon button (StandardToolbar's base metrics). */
+/**
+ * A 48x50pt toolbar icon button. StandardToolbar's base frame is 57pt, which
+ * the borrow cascade narrows when the row runs out of room; with four buttons
+ * beside the Reword pill it always does, and 48 is where it lands on a 402pt
+ * screen. Same figure as the drawn keyboard's TOOL_W.
+ */
 function ToolButton({ src, dark, w, h }: { src: string; dark: string; w: number; h: number }) {
   return (
     <div
       className="grid shrink-0 place-items-center rounded-[12px]"
-      style={{ width: 57, height: 50, backgroundColor: C.toolButtonBg }}
+      style={{ width: 48, height: 50, backgroundColor: C.toolButtonBg }}
     >
       <AxIcon light={src} dark={dark} width={w} height={h} />
     </div>
@@ -269,9 +276,9 @@ function ToolButton({ src, dark, w, h }: { src: string; dark: string; w: number;
 }
 
 /**
- * StandardToolbar over the English keys. Study (leaf.fill at 24pt x 0.8),
- * Paste and Check are clustered left with 12pt gaps and 8pt edge margins; the
- * split Reword pill is pushed to the trailing edge.
+ * StandardToolbar over the English keys. Reword Review (leaf.fill at 24pt x
+ * 0.8), Read aloud, Paste and Check are clustered left with 12pt gaps and 8pt
+ * edge margins; the split Reword pill is pushed to the trailing edge.
  */
 function Keyboard() {
   const row1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
@@ -283,6 +290,7 @@ function Keyboard() {
     <div style={{ backgroundColor: C.keyboardBg }} className="px-[5px] pt-2">
       <div className="mb-2 flex items-center px-[3px]" style={{ height: 50, gap: 12 }}>
         <ToolButton src={studyUrl} dark={studyDarkUrl} w={20} h={17} />
+        <ToolButton src={speakerUrl} dark={speakerDarkUrl} w={20} h={20} />
         <ToolButton src={pasteUrl} dark={pasteDarkUrl} w={16} h={20} />
         <ToolButton src={checkUrl} dark={checkDarkUrl} w={20} h={20} />
         <div className="flex-1" />

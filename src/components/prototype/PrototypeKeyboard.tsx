@@ -305,34 +305,19 @@ export function PrototypeKeyboard({
       style={{ backgroundColor: keysOnly ? undefined : AX.keyboardBg }}
       className="relative shrink-0 px-[5px] pb-1 pt-2"
     >
-      {/* Toolbar: Study, Paste, Check, then the split Reword pill. */}
+      {/* Toolbar: Reword Review, Read aloud, Paste, Check, then the split
+          Reword pill at the trailing edge. */}
       {!keysOnly && (
         <div
           className="mb-2 flex items-center px-[3px]"
           style={{ height: 50, gap: 12 }}
         >
-          <ToolButton onClick={() => onTool("study")} label="Open Study">
+          <ToolButton onClick={() => onTool("study")} label="Open Reword Review">
             <AxIcon
               light={studyUrl}
               dark={studyDarkUrl}
               width={20}
               height={17}
-            />
-          </ToolButton>
-          <ToolButton onClick={() => onTool("paste")} label="Open Paste">
-            <AxIcon
-              light={pasteUrl}
-              dark={pasteDarkUrl}
-              width={16}
-              height={20}
-            />
-          </ToolButton>
-          <ToolButton onClick={() => onTool("check")} label="Open Check">
-            <AxIcon
-              light={checkUrl}
-              dark={checkDarkUrl}
-              width={20}
-              height={20}
             />
           </ToolButton>
           {/* Read the field aloud; a stop while it is reading. */}
@@ -353,6 +338,22 @@ export function PrototypeKeyboard({
                 height={20}
               />
             )}
+          </ToolButton>
+          <ToolButton onClick={() => onTool("paste")} label="Open Paste">
+            <AxIcon
+              light={pasteUrl}
+              dark={pasteDarkUrl}
+              width={16}
+              height={20}
+            />
+          </ToolButton>
+          <ToolButton onClick={() => onTool("check")} label="Open Check">
+            <AxIcon
+              light={checkUrl}
+              dark={checkDarkUrl}
+              width={20}
+              height={20}
+            />
           </ToolButton>
           <div className="flex-1" />
           <div
