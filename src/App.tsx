@@ -13,6 +13,7 @@ import About from '@/sections/About';
 import Contact from '@/sections/Contact';
 import Footer from '@/sections/Footer';
 import Arcatext from '@/pages/Arcatext';
+import Aristotle from '@/pages/Aristotle';
 import Conversant from '@/pages/Conversant';
 import UsaaApp from '@/pages/UsaaApp';
 import MemberHome from '@/pages/MemberHome';
@@ -106,6 +107,10 @@ function App() {
           ) : route === 'arcatext' ? (
             <ProjectGate bypass={isAdmin}>
               <Arcatext />
+            </ProjectGate>
+          ) : route === 'aristotle' ? (
+            <ProjectGate bypass={isAdmin}>
+              <Aristotle />
             </ProjectGate>
           ) : route === 'conversant' ? (
             <ProjectGate bypass={isAdmin}>

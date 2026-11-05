@@ -74,6 +74,21 @@
         "flatImage": true
       },
       {
+        "id": 6,
+        "title": "Aristotle",
+        "description": "A speed reading experiment, written up against the research.",
+        "image": "/project-aristotle.webp",
+        "tags": [
+          "Web App",
+          "Reading",
+          "Experiment"
+        ],
+        "link": "#/aristotle",
+        "timeframe": "",
+        "imageDark": "/project-aristotle-dark.webp",
+        "flatImage": true
+      },
+      {
         "id": 2,
         "title": "Conversant",
         "description": "Enterprise desktop platform for USAA call center and back-office servicing.",
@@ -130,19 +145,6 @@
         "timeframe": "",
         "flatImage": true,
         "hidden": "hidden"
-      },
-      {
-        "id": 6,
-        "title": "Socrates",
-        "description": "A customizable speed reading app with doc upload and free book search.",
-        "image": "/project-socrates-placeholder.svg",
-        "tags": [
-          "iOS",
-          "Reading",
-          "Consumer App"
-        ],
-        "link": "",
-        "timeframe": ""
       }
     ],
     "caseStudiesBlocks": [
@@ -4111,6 +4113,200 @@
             ],
             "r3c1": []
           }
+        }
+      ]
+    }
+  },
+  "aristotle": {
+    "backToPortfolio": "Back to portfolio",
+    "brand": "Aristotle",
+    "toc": [
+      "What it is",
+      "The claim it shipped with",
+      "What the research changes",
+      "What I would change",
+      "Where the reading piles up",
+      "What I would test next"
+    ],
+    "hero": {
+      "title": "Aristotle",
+      "tagline": "A speed reading app, read back against the research",
+      "roleLabel": "ROLE",
+      "roleValue": "Solo · Design & build",
+      "platformLabel": "PLATFORM",
+      "platformValue": "Web (React · TypeScript)",
+      "statusLabel": "STATUS",
+      "statusValue": "Experiment · built first, researched after"
+    },
+    "overview": {
+      "eyebrow": "What it is",
+      "titleLead": "A reader that paces",
+      "titleHighlight": "the page for you",
+      "intro": [
+        "Aristotle takes a document — PDF, DOCX, EPUB, TXT, Markdown, HTML — and reads it to you at a speed you set. Two modes: Scroll keeps the whole page in front of you and walks a highlight through it, and Isolate flashes one word (or a chunk) at a fixed point, the technique the literature calls RSVP, Rapid Serial Visual Presentation.",
+        "Everything about the pace and the page is adjustable: words per minute, how many words at a time, a ramp that raises the speed every few sentences, pauses at sentence ends, column width, five highlight styles, bionic bolding, light and dark. Imported files are cleaned up before they are read — front matter detected, chapters found, PDF layout repaired — and the library lives in the browser."
+      ],
+      "featuresLabel": "What it does",
+      "featuresList": [
+        "Scroll: a highlight walks the real page",
+        "Isolate: one word at a time, in one place",
+        "PDF, DOCX, EPUB, TXT, MD, HTML import with cleanup",
+        "Chapter and front-matter detection",
+        "WPM, chunk size, ramping, sentence pauses",
+        "Public-domain books from Open Library, Gutenberg and the Internet Archive"
+      ],
+      "shotAlt": "Aristotle in Scroll mode: a highlight walking the page, with the pacing controls open",
+      "shot": "/aristotle-scroll.webp",
+      "shotDark": "/aristotle-scroll-dark.webp"
+    },
+    "origin": {
+      "eyebrow": "The claim it shipped with",
+      "titleLead": "I built it first and read",
+      "titleHighlight": "the research afterwards",
+      "intro": [
+        "This started as a weekend idea rather than a researched product, and it shows in the app's own demo document, which I wrote from the same folklore everyone else repeats: that speed reading lets you “absorb information faster without sacrificing comprehension”, by “reducing subvocalization” and widening your visual span.",
+        "That sentence is the product's thesis, and it is the part the evidence does not support. What follows is what I found when I went looking, and what I would change because of it. The app is unchanged in these shots — this is the case study doing the work the project did not."
+      ]
+    },
+    "research": {
+      "eyebrow": "What the research changes",
+      "titleLead": "Speed and comprehension",
+      "titleHighlight": "trade against each other",
+      "intro": [
+        "Four findings do most of the damage to the premise. They are not obscure: the central one is a 30-page review in Psychological Science in the Public Interest, written by five of the field's reading researchers."
+      ],
+      "findings": [
+        {
+          "title": "A normal adult reads about 238 words a minute",
+          "body": "A meta-analysis of 190 studies and 18,573 participants puts silent reading of English non-fiction at 238 wpm, fiction at 260, and reading aloud at 183. So the ceiling a reader starts from is far below the 500–1,000 wpm these apps advertise, and the 300 wpm this one defaults to is already above average.",
+          "source": "Brysbaert, 2019, Journal of Memory and Language"
+        },
+        {
+          "title": "Doubling your speed costs you the text",
+          "body": "The 2016 review's conclusion is blunt: “there is a trade-off between speed and accuracy”, and “it is unlikely that readers will be able to double or triple their reading speeds … while still being able to understand the text as well as if they read at normal speed.” What faster reading buys is skimming: getting through it with moderate comprehension, which is a legitimate goal, but a different one.",
+          "source": "Rayner, Schotter, Masson, Potter & Treiman, 2016"
+        },
+        {
+          "title": "Re-reading is part of reading, and RSVP removes it",
+          "body": "Fixations last about 200–250 ms, and 10–15% of eye movements in normal reading are regressions — jumps back to something already passed. That is how readers repair a misparsed sentence. A word flashed in a fixed window cannot be looked back at, so the mode that promises the biggest gain is the one that takes away the reader's main repair tool.",
+          "source": "Rayner's eye-movement work; regression figure via the Sage Encyclopedia of the Mind"
+        },
+        {
+          "title": "The formatting tricks do not have the evidence either",
+          "body": "Bionic Reading — bolding the first half of each word — is in this app as a toggle. The largest public test I could find ran over 2,000 readers and found no reliable speed gain, with comprehension no better than plain text. It is a blog experiment on a self-selected sample rather than a controlled study, which is roughly the state of the evidence on the whole genre.",
+          "source": "Readwise, 2022"
+        }
+      ],
+      "closing": [
+        "The one thing the review does endorse is unglamorous: “the way to maintain high comprehension and get through text faster is to practice reading and to become a more skilled language user”. No app sells that."
+      ]
+    },
+    "rethink": {
+      "eyebrow": "What I would change",
+      "titleLead": "The honest version of",
+      "titleHighlight": "this product",
+      "intro": [
+        "None of this makes the thing useless. It makes the claim wrong, and the claim is what the design is currently organised around. Re-read against the evidence, the parts that earn their place are the ones that have nothing to do with going faster."
+      ],
+      "keepsLabel": "What holds up",
+      "keeps": [
+        {
+          "title": "Getting a document in",
+          "body": "Import, PDF repair, front-matter and chapter detection. The friction before reading is real, measurable and nothing to do with eye movements."
+        },
+        {
+          "title": "Not losing your place",
+          "body": "A highlight that walks the page, progress kept per document, a column set to a width you choose. Pacing as a way to keep going, not a way to go faster."
+        },
+        {
+          "title": "Skimming, named as skimming",
+          "body": "The review says skimming works for moderate comprehension. A mode that says that plainly is more useful than one that promises the same understanding at triple the speed."
+        },
+        {
+          "title": "Reading with the eyes you have",
+          "body": "Column width, spacing, highlight style and theme are preferences, not performance claims — and they are what people actually fiddle with and keep."
+        }
+      ],
+      "changesLabel": "What I would change",
+      "changes": [
+        "Rewrite the demo document: it currently teaches the reader the folklore.",
+        "Make Scroll the default and Isolate the explicitly experimental mode, with what it costs you stated where you turn it on.",
+        "Show the speed you are asking for against the 238 wpm baseline, rather than against an invented ceiling.",
+        "Let a reader stop and go back inside Isolate — the missing regression is the mode's real defect.",
+        "Drop “without sacrificing comprehension” from every surface it appears on."
+      ],
+      "isolateAlt": "Isolate mode: one word held in a fixed window, counter beneath it and the pacing panel open alongside",
+      "settingsAlt": "The pacing block on its own: words per minute, a ramp that raises it every few sentences, and how many words are shown at a time",
+      "isolateShot": "/aristotle-isolate.webp",
+      "isolateShotDark": "/aristotle-isolate-dark.webp",
+      "settingsShot": "/aristotle-settings.webp",
+      "settingsShotDark": "/aristotle-settings-dark.webp"
+    },
+    "opportunity": {
+      "eyebrow": "Where the reading piles up",
+      "titleLead": "The opportunity is the volume,",
+      "titleHighlight": "not the speed",
+      "intro": [
+        "If the speed claim goes, what is left? The reading load itself, which is real and documented for the groups usually named in speed-reading marketing. The arithmetic below is just the 238 wpm baseline applied — it is not a claim about any product."
+      ],
+      "areas": [
+        {
+          "title": "Law students",
+          "body": "LSSSE's 2025 survey of US law students puts class preparation at about 27–29 hours a week, most of it reading. At 238 wpm, a 60,000-word week is a little over four hours of reading at full attention — and casebook prose is slower than the average the figure is drawn from."
+        },
+        {
+          "title": "Students generally",
+          "body": "Assigned reading per week varies so widely by discipline that I could not find a defensible average, which is itself worth saying: the published numbers are mostly guidance and anecdote. The load is real; the figure quoted at you usually is not."
+        },
+        {
+          "title": "Anyone reading to decide",
+          "body": "Professional reading is not one thing. Some of it has to be read at full comprehension; much of it is triage. A tool that helps sort which is which is more honest than one that speeds up both."
+        }
+      ],
+      "closing": [
+        "That is the market the research supports: not readers who want to triple their speed, but readers with more to get through than time, who would take a tool that gets documents in, keeps their place, and tells them the truth about what skimming costs."
+      ]
+    },
+    "next": {
+      "eyebrow": "What I would test next",
+      "titleLead": "The experiment",
+      "titleHighlight": "I did not run",
+      "intro": [
+        "The project was a fun idea built quickly, and the useful part of writing this up was finding out how much of it rests on things that are not true. If it goes further, these are the things worth measuring rather than asserting."
+      ],
+      "tests": [
+        "Comprehension at matched time, not matched speed: the same text in Scroll and Isolate, same total seconds, questions afterwards.",
+        "Literal versus inferential questions separately — the review's own studies found RSVP hurt literal recall more.",
+        "How often readers go back, and what happens to comprehension when the mode makes that impossible.",
+        "Whether the import and cleanup — the unglamorous part — is what brings anyone back."
+      ],
+      "closingLabel": "Where it stands",
+      "closing": [
+        "Still an experiment, now with a clearer idea of which half of it is worth building on. The reader works and is pleasant to use; the premise on the box does not survive contact with the literature, and I would rather say so here than repeat it."
+      ]
+    },
+    "sources": {
+      "label": "Sources",
+      "items": [
+        {
+          "text": "Rayner, K., Schotter, E. R., Masson, M. E. J., Potter, M. C., & Treiman, R. (2016). So Much to Read, So Little Time: How Do We Read, and Can Speed Reading Help? Psychological Science in the Public Interest, 17(1), 4–34.",
+          "href": "https://doi.org/10.1177/1529100615623267"
+        },
+        {
+          "text": "Brysbaert, M. (2019). How many words do we read per minute? A review and meta-analysis of reading rate. Journal of Memory and Language, 109.",
+          "href": "https://doi.org/10.1016/j.jml.2019.104047"
+        },
+        {
+          "text": "Eye movements during reading — fixation durations and regression rates. The Sage Encyclopedia of the Mind.",
+          "href": "https://sk.sagepub.com/ency/edvol/encyclopedia-of-the-mind/chpt/eye-movements-during-reading"
+        },
+        {
+          "text": "Readwise (2022). Does Bionic Reading actually work? We timed over 2,000 readers.",
+          "href": "https://blog.readwise.io/bionic-reading-results/"
+        },
+        {
+          "text": "Law School Survey of Student Engagement (LSSSE), 2025 Annual Report.",
+          "href": "https://lssse.indiana.edu/what-we-do/research/annual-results.html"
         }
       ]
     }

@@ -60,6 +60,72 @@ export interface SocialLink {
   href: string;
 }
 
+/**
+ * The Aristotle case study: a short project page whose sections are a reading
+ * of the research rather than a process narrative. `intro`/`closing` are block
+ * lists so paragraphs can be added between them in admin.
+ */
+export interface AristotleContent {
+  backToPortfolio: string;
+  brand: string;
+  toc: string[];
+  hero: Record<string, string>;
+  overview: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
+    intro: unknown[];
+    featuresLabel: string;
+    featuresList: string[];
+    shot: string;
+    shotDark: string;
+    shotAlt: string;
+  };
+  origin: { eyebrow: string; titleLead: string; titleHighlight: string; intro: unknown[] };
+  research: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
+    intro: unknown[];
+    findings: { title: string; body: string; source: string }[];
+    closing: unknown[];
+  };
+  rethink: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
+    intro: unknown[];
+    keepsLabel: string;
+    keeps: { title: string; body: string }[];
+    changesLabel: string;
+    changes: string[];
+    isolateShot: string;
+    isolateShotDark: string;
+    isolateAlt: string;
+    settingsShot: string;
+    settingsShotDark: string;
+    settingsAlt: string;
+  };
+  opportunity: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
+    intro: unknown[];
+    areas: { title: string; body: string }[];
+    closing: unknown[];
+  };
+  next: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
+    intro: unknown[];
+    tests: string[];
+    closingLabel: string;
+    closing: unknown[];
+  };
+  sources: { label: string; items: { text: string; href: string }[] };
+}
+
 export interface SiteContent {
   nav: {
     links: NavLink[];
@@ -127,6 +193,8 @@ export interface SiteContent {
     links: NavLink[];
   };
   arcatext: ArcatextContent;
+  /** The Aristotle case study — see src/pages/Aristotle.tsx. */
+  aristotle: AristotleContent;
   conversant: ConversantContent;
   usaa: UsaaContent;
   memberHome: MemberHomeContent;

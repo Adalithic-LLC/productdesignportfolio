@@ -22,7 +22,7 @@ import { useTheme } from '@/hooks/useTheme';
 const BASE = import.meta.env.BASE_URL;
 
 /** Clusters whose thumbnail has a dark-theme twin in hero-thumbs/dark/. */
-const DARK_THUMBS = new Set(['arcatext', 'arcatext-analysis']);
+const DARK_THUMBS = new Set(['arcatext', 'arcatext-analysis', 'aristotle']);
 
 /**
  * The zone's proportions, and the gap between screens as a share of its width.
@@ -74,17 +74,21 @@ function rowHeight(screens: Screen[]): number {
 
 function Shot({
   src,
+  darkSrc,
   alt,
   w,
   h,
   open,
 }: {
   src: string;
+  /** The same tile recaptured in the app's dark appearance, if it has one. */
+  darkSrc?: string;
   alt: string;
   w: number;
   h: number;
   open: () => void;
 }) {
+  const isDark = useTheme().resolvedTheme === 'dark';
   return (
     <button
       type="button"
@@ -93,7 +97,7 @@ function Shot({
       className="group block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <img
-        src={`${BASE}hero-tiles/${src}`}
+        src={`${BASE}hero-tiles/${isDark && darkSrc ? darkSrc : src}`}
         alt=""
         width={w}
         height={h}
@@ -133,6 +137,27 @@ const ALL_CLUSTERS: Cluster[] = [
         project: 'Arcatext',
         aspect: 1400 / 897,
         render: (open) => <AdminToolTile onSelect={open} />,
+      },
+    ],
+  },
+  {
+    id: 'aristotle',
+    label: 'Aristotle — the speed reading experiment',
+    screens: [
+      {
+        name: 'Aristotle speed reader',
+        project: 'Aristotle',
+        aspect: 1400 / 875,
+        render: (open) => (
+          <Shot
+            src="aristotle.webp"
+            darkSrc="dark/aristotle.webp"
+            alt="Aristotle — a highlight walking the page while it reads"
+            w={1400}
+            h={875}
+            open={open}
+          />
+        ),
       },
     ],
   },

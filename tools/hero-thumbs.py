@@ -31,6 +31,7 @@ CLUSTERS = {
     # zone shows this cluster.
     'arcatext': ['arcatext-keyboard.webp', 'arcatext-reword.webp'],
     'arcatext-analysis': ['arcatext-tuning.webp'],
+    'aristotle': ['aristotle.webp'],
     'd2c': ['d2c.webp'],
     # The Arcatext Cut Room, which took D2C's place in the hero (D2C's thumb
     # is still built, so it can come back).
