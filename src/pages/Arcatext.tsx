@@ -320,13 +320,6 @@ export default function Arcatext() {
               <Paragraphs base="arcatext.problem.intro" items={arc.problem.intro} />
             </Prose>
 
-            <div className="mt-10 rounded-2xl bg-primary/10 p-8">
-              <Editable as="p" path="arcatext.problem.opportunityEyebrow" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
-              <p className="text-xl sm:text-2xl font-semibold text-balance leading-snug">
-                <Editable as="span" path="arcatext.problem.opportunityLead" multiline />{' '}
-                <Editable as="span" path="arcatext.problem.opportunityHighlight" className="gradient-text" />
-              </p>
-            </div>
           </div>
 
           {/* Problems */}
@@ -343,6 +336,17 @@ export default function Arcatext() {
                 </div>
               ))}
             </ItemGroup>
+          </div>
+
+          {/* The opportunity, after the problems rather than before them: it is
+              the answer to the list above, and a question put before anyone has
+              read what it answers is just a slogan. */}
+          <div className="mt-10 rounded-2xl bg-primary/10 p-8 reveal">
+            <Editable as="p" path="arcatext.problem.opportunityEyebrow" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
+            <p className="text-xl sm:text-2xl font-semibold text-balance leading-snug">
+              <Editable as="span" path="arcatext.problem.opportunityLead" multiline />{' '}
+              <Editable as="span" path="arcatext.problem.opportunityHighlight" className="gradient-text" />
+            </p>
           </div>
 
           {/* Opportunities */}
