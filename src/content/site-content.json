@@ -2028,7 +2028,6 @@
       "titleHighlight": "real communication.",
       "intro": [
         "Most apps limit learners to scripted exercises and flashcards or give them access to a large community without any learning scaffolding. While those activities create important foundational knowledge, they don’t expose them to real communication, which is unpredictable and full of nuance.",
-        "These system can produce learners who know the language in theory, in a contorlled environemtn, but struggle in real conversations.",
         "Translation tools facilitate real conversations, but they usually focus on producing a generic result rather than understanding the context and leveraging each message for additional learning."
       ],
       "opportunityEyebrow": "The opportunity",
@@ -4006,6 +4005,16 @@
     "conversant": "10fGXy4to9Qe1cdwTM2TpXqh8fRKZ50S5BjW0zoIC6r0"
   },
   "seams": {
+    "arcatext-02": {
+      "2-in": {
+        "1": [
+          {
+            "type": "paragraph",
+            "text": "These system can produce learners who know the language in theory, in a contorlled environemtn, but struggle in real conversations."
+          }
+        ]
+      }
+    },
     "arcatext-05": {
       "3": [
         {

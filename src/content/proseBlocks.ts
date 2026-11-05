@@ -113,17 +113,19 @@ export function proseText(item: ProseItem): string {
  * Whether the selected blocks (indices into the list at `source`) may move to
  * the list at `target`.
  *
- * Within one list, always. Across lists, only into a grid cell or back out of
- * one to a list that contains its grid: that is what a grid is for, and
- * opening every slot on the page as a target would put a move line in every
- * gap of it. Never into a block that is itself moving -- a grid into its own
- * cell.
+ * Anywhere on the page, bar one case: into themselves. Moves used to be kept
+ * to one list, a grid cell, or back out of one, to keep the page from filling
+ * with move lines -- but a move that cannot cross a section is not much of a
+ * move, and a line is only drawn in a gap that is a slot anyway.
  */
 export function canMoveBlocks(source: string, indices: number[], target: string): boolean {
   if (target === source) return true;
-  if (indices.some((i) => target.startsWith(`${source}.${i}.`))) return false;
-  const isCell = (p: string) => p.includes('.cells.');
-  return isCell(target) || (isCell(source) && source.startsWith(`${target}.`));
+  /* The one move that cannot work: into itself. The target list lives inside
+     the block being moved, so it would travel with it and the blocks would
+     have nowhere to land. Everything else is allowed -- a paragraph out of a
+     section's prose and into a seam, a card out of a grid cell and into
+     another one, anything into anything. */
+  return !indices.some((i) => target === `${source}.${i}` || target.startsWith(`${source}.${i}.`));
 }
 
 /** Look up a header config by style, falling back to the subsection style. */

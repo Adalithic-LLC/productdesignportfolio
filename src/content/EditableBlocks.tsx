@@ -312,11 +312,64 @@ export function ItemGroup({
 }
 
 /**
+ * A wrapper whose own children can take seams between them: a plain block
+ * `div` or `section` with more than one child.
+ *
+ * Components are left alone -- they own their layout, and their children are
+ * props rather than markup. So are rows, columns and anything taken out of the
+ * flow: a slot inside a grid becomes a cell of it, a slot inside a flex row
+ * becomes an item, and either one moves the things around it.
+ */
+function seamable(
+  child: ReactNode
+): child is ReactElement<{ className?: string; children?: ReactNode }> {
+  if (!isValidElement(child)) return false;
+  const el = child as ReactElement<{ className?: string; children?: ReactNode }>;
+  if (el.type !== 'div' && el.type !== 'section') return false;
+  if (/(^|[\s:])(grid|flex|absolute|fixed|sticky|inline)(\s|-|$)/.test(el.props.className ?? '')) {
+    return false;
+  }
+  return Children.count(el.props.children) > 1;
+}
+
+/** How many levels of wrapper below a section get seams of their own. */
+const SEAM_DEPTH = 2;
+
+function seamed(children: ReactNode, prefix: string, rise: boolean | undefined, depth: number) {
+  const kids = Children.toArray(children);
+  return (
+    <>
+      {kids.map((child, i) => (
+        <Fragment key={i}>
+          <BlockSlot path={`${prefix}.${i}`} rise={rise} />
+          {depth > 0 && seamable(child)
+            ? cloneElement(child, {
+                /* `-in` so a wrapper's inner gaps cannot be mistaken for
+                   entries in the slot that sits above it, which is the array
+                   at this very path. */
+                children: seamed(child.props.children, `${prefix}.${i}-in`, rise, depth - 1),
+              })
+            : child}
+        </Fragment>
+      ))}
+      <BlockSlot path={`${prefix}.${kids.length}`} rise={rise} />
+    </>
+  );
+}
+
+/**
  * Wraps a section's children and drops a {@link BlockSlot} in *every* gap —
  * before the first child, between each pair, and after the last — so admins can
  * insert paragraphs/headers at any structural seam (after a card grid, a
- * diagram, etc.), not only inside the predefined prose arrays. Each slot's
- * backing array lives at `seams.<id>.<gapIndex>` and is created on first insert.
+ * diagram, etc.), not only inside the predefined prose arrays.
+ *
+ * It goes a couple of levels down, into the plain wrappers a section groups
+ * its parts with, so the gaps that matter are reachable too: between a
+ * subsection's heading and the cards under it, say. A gap costs nothing until
+ * something is put in it — an empty slot renders nothing at all.
+ *
+ * Each slot's backing array lives at `seams.<id>.<gap>`, and a nested one at
+ * `seams.<id>.<gap>-in.<gap>`; both are created on first insert.
  */
 export function Seams({
   id,
@@ -328,18 +381,7 @@ export function Seams({
   /** Passed to every slot — see {@link BlockSlot}. */
   rise?: boolean;
 }) {
-  const kids = Children.toArray(children);
-  return (
-    <>
-      {kids.map((child, i) => (
-        <Fragment key={i}>
-          <BlockSlot path={`seams.${id}.${i}`} rise={rise} />
-          {child}
-        </Fragment>
-      ))}
-      <BlockSlot path={`seams.${id}.${kids.length}`} rise={rise} />
-    </>
-  );
+  return seamed(children, `seams.${id}`, rise, SEAM_DEPTH);
 }
 
 /**
