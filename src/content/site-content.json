@@ -516,13 +516,8 @@
       "status": "In development",
       "eyebrow": "Project Overview",
       "title": "Arcatext",
-      "tagline": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning.",
-      "subhead": [
-        {
-          "type": "paragraph",
-          "text": "Learners are either boxed into a confining learning app or given no support and don't learn efficiently because they don't know what to say. Let's combine the best of both worlds to create supported user-driven language learning."
-        }
-      ],
+      "tagline": "User-driven language learning with just enough structure.",
+      "subhead": [],
       "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "typeTags": [
         "AI-Powered Translation",
@@ -1986,9 +1981,9 @@
         },
         {
           "type": "paragraph",
-          "text": "The translation keyboard offers access to the complexity and nuance of language as well as the methodological flexibility, allowing users to leverage conversations in any 3rd-party app for opportunities."
+          "text": "The translation keyboard offers access to the complexity and nuance of language as well as methodological flexibility, allowing users to leverage conversations in any 3rd-party app."
         },
-        "Underlying the keyboard and writing activities, is a word tracking infrastructure, automatically documenting words that users miss and generating a personal study guide."
+        "Underlying the keyboard and writing activities, is a word tracking infrastructure, that automatically documents words that users miss and generates a personal study guide."
       ],
       "productTypeLabel": "Product type",
       "productTypeList": [
@@ -2001,10 +1996,10 @@
       "origin": [
         "Arcatext began as a personal attempt to make multilingual texting more streamlined.\n\nStarting as a conceptual messaging app optimization, I pivoted to language learning product after further research and market exploration."
       ],
-      "readingWritingTitle": "Learning approach: reading and writing",
+      "readingWritingTitle": "Learning approach",
       "readingWriting": [
-        "Language learning involves reading, writing, speaking, listening, vocabulary, grammar, and tone. While many tools support guided lessons or speaking practice, I found the biggest opportunity for improvement in reading and writing, especially in real texting conversations.",
-        "Writing is a potentially powerful methodology becuase it gives learners time to pause, reflect, revise, compare, and understand language before responding."
+        "The basics of language learning are reading, writing, speaking, listening, vocabulary, and grammar. While many tools support speaking practice, I found the biggest opportunity in reading, writing, and listening.",
+        "The texting conversation is the vehicle to deliver value on that learning approach. It gives learners time to pause, reflect, revise, compare, and understand language before responding."
       ],
       "roleTitle": "My role",
       "role": [
@@ -2020,34 +2015,31 @@
           "style": "h4",
           "text": "My Role"
         },
-        "I led Arcatext as the company founder & product designer, and \"AI-developer\", taking the app from the early concept through research, design, implementation, launch, and marketing.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 17 features, plus supporting systems, and a keyboard performance admin control center."
+        "I led Arcatext as the company founder, product designer, and \"AI-developer\". I took the app from early concept through research, design, implementation, launch, and marketing.",
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin control center."
       ]
     },
     "problem": {
       "eyebrow": "Problem / Opportunity",
       "titleLead": "Language-learning tools separate practice from",
       "titleHighlight": "real communication.",
-      "intro": [
-        "Most apps limit learners to scripted exercises and flashcards or give them access to a large community without any learning scaffolding. While those activities create important foundational knowledge, they don’t expose them to real communication, which is unpredictable and full of nuance.",
-        "Translation tools facilitate real conversations, but they usually focus on producing a generic result rather than understanding the context and leveraging each message for additional learning."
-      ],
-      "opportunityEyebrow": "The opportunity",
-      "opportunityLead": "What if real conversations could become the methodological core with",
+      "intro": [],
+      "opportunityEyebrow": "Opportunities",
+      "opportunityLead": "Can real conversations become the methodological core with",
       "opportunityHighlight": "just enough structure built around it?",
       "problemsTitle": "Key problems",
       "problems": [
         {
           "title": "Learning is disconnected from real life",
-          "desc": "Scripted exercises rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+          "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
         },
         {
-          "title": "Generic paths over personal goals",
+          "title": "Generic paths are prioritized over personal goals",
           "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
         },
         {
           "title": "Translators don't understand context",
-          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, or tone."
+          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning."
         },
         {
           "title": "Unfamiliar scripts add a second barrier",
@@ -2056,6 +2048,10 @@
         {
           "title": "Language apps don't leverage teachers",
           "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
+        },
+        {
+          "title": "Large community without structure",
+          "desc": "The same conversations repeat without any connection to a goal."
         }
       ],
       "opportunitiesTitle": "Product opportunities",
@@ -4008,11 +4004,12 @@
   },
   "seams": {
     "arcatext-02": {
+      "3": [],
       "2-in": {
         "1": [
           {
             "type": "paragraph",
-            "text": "These system can produce learners who know the language in theory, in a contorlled environemtn, but struggle in real conversations."
+            "text": "Current learning systems offer the feeling of progress, but learners succeed within unrealistic constructed environments and struggle in real conversations when they need to use the language without support."
           }
         ]
       }
