@@ -54,7 +54,10 @@ Every Arcatext surface has a dark appearance that follows the site theme:
   To change a card, change its `Still` there. Its two thumbnail tiles,
   `hero-tiles/arcatext-keyboard.webp` and `arcatext-reword.webp` (and their
   `dark/` twins), are 1206x2622 renders of those same stills, used only by
-  `tools/hero-thumbs.py`; re-render them when the stills change.
+  `tools/hero-thumbs.py`; re-render them when the stills change -- or when the
+  drawn keyboard itself does. `node tools/tile/render.mjs` (with `npx vite`
+  running) rebuilds the toolbar tile and its dark twin, then rerun
+  `tools/hero-thumbs.py` with and without `--dark`.
 - The other simulator captures have recolored twins in `public/hero-tiles/dark/`,
   `public/hero-thumbs/dark/` and `public/project-arcatext-keyboard-dark.webp`.
   They are the light captures recolored to the app's dark colorset values by

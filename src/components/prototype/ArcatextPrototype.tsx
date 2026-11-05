@@ -4,7 +4,7 @@ import { AX } from '@/lib/arcatextTheme';
 import ArcatextOptionsPage, { type OptionsConfig } from '@/components/ArcatextOptionsPage';
 import { CheckPanel, FixWordsCard, VIEW_H, type CheckData, type CheckState } from '@/components/ArcatextViews';
 import { PrototypeKeyboard, type KeyAction, type ToolAction } from './PrototypeKeyboard';
-import { LANGS, MESSAGE, RECEIVED, TRIP_GLOSSES, findLang, outFor } from './data';
+import { LANGS, MESSAGE, RECEIVED, TRIP_GLOSSES, VOICE_TAGS, findLang, outFor } from './data';
 import {
   KeyboardsPage,
   LanguageList,
@@ -77,6 +77,8 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
 
   // ── the message field ──
   const [text, setText] = useState('');
+  /** Reading the field aloud: the toolbar's speaker becomes a stop. */
+  const [speaking, setSpeaking] = useState(false);
   /** The field holds a Reword result (not something typed). */
   const [reworded, setReworded] = useState(false);
   /** What the reword was made from, kept to reword again (originalTextKey). */
@@ -267,10 +269,42 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
     closeViewRef.current = closeView;
   });
 
+  /**
+   * Read the field aloud, and stop it if it is already reading.
+   *
+   * The app plays audio rendered for the line; here it is the browser's own
+   * voice, asked for in the language the field is in -- the reword's language
+   * once it has been reworded, English while it is still what was typed. A
+   * device with no voice for that language says nothing, which is what the app
+   * does when it has no audio either.
+   */
+  const speak = () => {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    if (speaking) {
+      synth.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const line = text.trim() || msgs[msgs.length - 1]?.text?.trim();
+    if (!line) return;
+    const say = new SpeechSynthesisUtterance(line);
+    say.lang = (reworded ? VOICE_TAGS[lang] : VOICE_TAGS.English) ?? 'en-US';
+    say.onend = () => setSpeaking(false);
+    say.onerror = () => setSpeaking(false);
+    synth.cancel();
+    synth.speak(say);
+    setSpeaking(true);
+  };
+
+  // Nothing should still be talking after the prototype is closed.
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
   const onTool = (t: ToolAction) => {
     if (t === 'reword') reword();
     else if (t === 'options') setView('options');
     else if (t === 'check') openCheck();
+    else if (t === 'speak') speak();
     else setView(t);
   };
 
@@ -470,6 +504,7 @@ export default function ArcatextPrototype({ scale = 1, bezel = true }: { scale?:
           upper={upper}
           numbers={numbers}
           rewordLoading={rewording}
+          speaking={speaking}
           onKey={onKey}
           onTool={onTool}
           spaceLabel={spaceLabel}

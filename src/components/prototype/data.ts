@@ -272,5 +272,28 @@ export function outFor(lang: Lang, script?: string): Out {
   return lang.out[key];
 }
 
+/**
+ * The voice tag for each language, for reading a message aloud.
+ *
+ * The app plays audio rendered for it; the prototype has only the browser's
+ * own voices, so it asks for the language and takes whatever the device has.
+ * A language with no voice installed simply does not speak -- which is the
+ * app's behaviour too (SpeakerButton hides when there is no audio).
+ */
+export const VOICE_TAGS: Record<string, string> = {
+  English: 'en-US',
+  Spanish: 'es-ES',
+  French: 'fr-FR',
+  German: 'de-DE',
+  Italian: 'it-IT',
+  Portuguese: 'pt-BR',
+  Japanese: 'ja-JP',
+  Mandarin: 'zh-CN',
+  Korean: 'ko-KR',
+  Arabic: 'ar-SA',
+  Russian: 'ru-RU',
+  Hindi: 'hi-IN',
+};
+
 /** English glosses of "trip"'s two meanings, for the homograph cards. */
 export const TRIP_GLOSSES: [string, string] = ['a journey to a place;', 'a stumble or misstep;'];

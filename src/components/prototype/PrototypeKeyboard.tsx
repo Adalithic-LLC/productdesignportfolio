@@ -6,6 +6,8 @@ import pasteUrl from "@/assets/keyboard/paste.svg";
 import pasteDarkUrl from "@/assets/keyboard/paste-dark.svg";
 import checkUrl from "@/assets/keyboard/check.svg";
 import checkDarkUrl from "@/assets/keyboard/check-dark.svg";
+import speakerUrl from "@/assets/keyboard/speaker.svg";
+import speakerDarkUrl from "@/assets/keyboard/speaker-dark.svg";
 import shiftUrl from "@/assets/keyboard/shift.svg";
 import shiftDarkUrl from "@/assets/keyboard/shift-dark.svg";
 import backspaceUrl from "@/assets/keyboard/backspace.svg";
@@ -14,6 +16,14 @@ import localesUrl from "@/assets/keyboard/locales.svg";
 import localesDarkUrl from "@/assets/keyboard/locales-dark.svg";
 import { AX, AxIcon } from "@/lib/arcatextTheme";
 import { Spinner } from "@/components/ArcatextViews";
+
+/**
+ * The width of a toolbar icon button. The app's base frame is 57pt and it
+ * narrows when the row runs out of room -- the gutter around the icon first,
+ * then the icon (StandardToolbar). A fourth button is that case, so each gives
+ * up gutter and the icons stay whole.
+ */
+const TOOL_W = 48;
 
 /**
  * The prototype's keyboard: the toolbar and four rows of keys, drawn to the
@@ -36,7 +46,7 @@ export type KeyAction =
   | { kind: "locales" }
   | { kind: "localesHold" };
 
-export type ToolAction = "study" | "paste" | "check" | "reword" | "options";
+export type ToolAction = "study" | "paste" | "check" | "speak" | "reword" | "options";
 
 const ROW1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
 const ROW2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
@@ -131,7 +141,7 @@ function ToolButton({
       aria-label={label}
       // Classes, not inline colors, so :active can darken it (ToolbarButtonPressedColor).
       className="grid shrink-0 place-items-center rounded-[12px] bg-[var(--ax-tool-btn)] transition-colors duration-100 active:bg-[var(--ax-tool-btn-pressed)]"
-      style={{ width: 57, height: 50 }}
+      style={{ width: TOOL_W, height: 50 }}
     >
       {children}
     </button>
@@ -142,6 +152,7 @@ export function PrototypeKeyboard({
   upper,
   numbers,
   rewordLoading,
+  speaking = false,
   onKey,
   onTool,
   keysOnly = false,
@@ -152,6 +163,8 @@ export function PrototypeKeyboard({
   /** The 123 layer is showing. */
   numbers: boolean;
   rewordLoading: boolean;
+  /** Reading the field aloud: the speaker becomes a stop. */
+  speaking?: boolean;
   onKey: (a: KeyAction) => void;
   onTool: (t: ToolAction) => void;
   /** Just the keys, no toolbar (Fix Words' own keyboard). */
@@ -321,6 +334,25 @@ export function PrototypeKeyboard({
               width={20}
               height={20}
             />
+          </ToolButton>
+          {/* Read the field aloud; a stop while it is reading. */}
+          <ToolButton
+            onClick={() => onTool("speak")}
+            label={speaking ? "Stop reading" : "Read aloud"}
+          >
+            {speaking ? (
+              <span
+                className="block rounded-[3px]"
+                style={{ width: 14, height: 14, backgroundColor: AX.accent }}
+              />
+            ) : (
+              <AxIcon
+                light={speakerUrl}
+                dark={speakerDarkUrl}
+                width={20}
+                height={20}
+              />
+            )}
           </ToolButton>
           <div className="flex-1" />
           <div

@@ -13,6 +13,8 @@ import pasteUrl from '@/assets/keyboard/paste.svg';
 import pasteDarkUrl from '@/assets/keyboard/paste-dark.svg';
 import checkUrl from '@/assets/keyboard/check.svg';
 import checkDarkUrl from '@/assets/keyboard/check-dark.svg';
+import speakerUrl from '@/assets/keyboard/speaker.svg';
+import speakerDarkUrl from '@/assets/keyboard/speaker-dark.svg';
 import shiftUrl from '@/assets/keyboard/shift.svg';
 import shiftDarkUrl from '@/assets/keyboard/shift-dark.svg';
 import backspaceUrl from '@/assets/keyboard/backspace.svg';
@@ -262,7 +264,18 @@ function Key({
   );
 }
 
-/** A 57x50pt toolbar icon button; darkens to ToolbarButtonPressedColor on tap. */
+/**
+ * The width of a toolbar icon button.
+ *
+ * The app's base frame is 57pt, which it narrows when the row runs out of room
+ * -- the gutter around the icon gives way first, down to 8pt a side, and only
+ * then the icon itself (StandardToolbar). A fourth button is exactly that
+ * case: at 57 the four of them and the Reword pill do not fit the 402pt
+ * screen, so each gives up its share of the gutter and the icons stay whole.
+ */
+const TOOL_W = 48;
+
+/** A 48x50pt toolbar icon button; darkens to ToolbarButtonPressedColor on tap. */
 function ToolButton({
   pressed,
   onClick,
@@ -278,7 +291,7 @@ function ToolButton({
     <button onClick={onClick} aria-label={label} className="shrink-0">
       <div
         className="grid place-items-center rounded-[12px] transition-colors duration-100"
-        style={{ width: 57, height: 50, backgroundColor: pressed ? C.toolButtonPressed : C.toolButtonBg }}
+        style={{ width: TOOL_W, height: 50, backgroundColor: pressed ? C.toolButtonPressed : C.toolButtonBg }}
       >
         {children}
       </div>
@@ -771,6 +784,14 @@ export default function ArcatextKeyboard({
     schedule();
   };
 
+  /* The speaker's own press: there is no scene behind it on a drawn phone, so
+     the tap is acknowledged and let go. */
+  const [speaking, setSpeaking] = useState(false);
+  const speak = () => {
+    setSpeaking(true);
+    window.setTimeout(() => setSpeaking(false), 220);
+  };
+
   /** A toolbar tap: replays this phone's scene that starts from it. */
   const jump = (scene: Scene) => {
     const i = scenesKey.split(',').indexOf(scene);
@@ -1002,6 +1023,12 @@ export default function ArcatextKeyboard({
             </ToolButton>
             <ToolButton pressed={pressed === 'check'} onClick={() => jump('check')} label="Open Check">
               <AxIcon light={checkUrl} dark={checkDarkUrl} width={20} height={20} />
+            </ToolButton>
+            {/* Read it aloud. These phones play a script rather than hold a
+                field, so here the button is the button: it takes the press and
+                nothing follows it. The prototype's speaks. */}
+            <ToolButton pressed={speaking} onClick={speak} label="Read aloud">
+              <AxIcon light={speakerUrl} dark={speakerDarkUrl} width={20} height={20} />
             </ToolButton>
             <div className="flex-1" />
             <div
