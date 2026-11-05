@@ -74,6 +74,21 @@
         "flatImage": true
       },
       {
+        "id": 6,
+        "title": "Aristotle",
+        "description": "A speed reading experiment, written up against the research.",
+        "image": "/project-aristotle.webp",
+        "imageDark": "/project-aristotle-dark.webp",
+        "tags": [
+          "Web App",
+          "Reading",
+          "Experiment"
+        ],
+        "link": "#/aristotle",
+        "timeframe": "",
+        "flatImage": true
+      },
+      {
         "id": 2,
         "title": "Conversant",
         "description": "Enterprise desktop platform for USAA call center and back-office servicing.",
@@ -121,26 +136,10 @@
         "title": "Design 2 Code",
         "description": "A plugin bridge between Figma and Claude for translating frames into code and pulling screens from the codebase into Figma.",
         "image": "/project-d2c-window.webp",
-        "imageDark": "/project-memberhome-dark.webp",
         "tags": [
           "Figma Plugin",
           "AI Tooling",
           "Design ↔ Code"
-        ],
-        "link": "",
-        "timeframe": "",
-        "flatImage": true,
-        "hidden": "hidden"
-      },
-      {
-        "id": 6,
-        "title": "Socrates",
-        "description": "A customizable speed reading app with doc upload and free book search.",
-        "image": "/project-socrates-placeholder.svg",
-        "tags": [
-          "iOS",
-          "Reading",
-          "Consumer App"
         ],
         "link": "",
         "timeframe": "",
@@ -4014,7 +4013,7 @@
           }
         ]
       },
-      "4-in": {
+      "3-in": {
         "1": [
           {
             "type": "paragraph",
