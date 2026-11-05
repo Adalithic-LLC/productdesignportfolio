@@ -74,26 +74,10 @@
         "flatImage": true
       },
       {
-        "id": 6,
-        "title": "Aristotle",
-        "description": "A speed reading experiment, written up against the research.",
-        "image": "/project-aristotle.webp",
-        "tags": [
-          "Web App",
-          "Reading",
-          "Experiment"
-        ],
-        "link": "#/aristotle",
-        "timeframe": "",
-        "imageDark": "/project-aristotle-dark.webp",
-        "flatImage": true
-      },
-      {
         "id": 2,
         "title": "Conversant",
         "description": "Enterprise desktop platform for USAA call center and back-office servicing.",
         "image": "/project-conversant-screens.webp",
-        "imageDark": "/project-conversant-screens-dark.webp",
         "tags": [
           "Enterprise UX",
           "Desktop Platform",
@@ -101,6 +85,7 @@
         ],
         "link": "#/conversant",
         "timeframe": "3 years",
+        "imageDark": "/project-conversant-screens-dark.webp",
         "flatImage": true
       },
       {
@@ -136,10 +121,26 @@
         "title": "Design 2 Code",
         "description": "A plugin bridge between Figma and Claude for translating frames into code and pulling screens from the codebase into Figma.",
         "image": "/project-d2c-window.webp",
+        "imageDark": "/project-memberhome-dark.webp",
         "tags": [
           "Figma Plugin",
           "AI Tooling",
           "Design ↔ Code"
+        ],
+        "link": "",
+        "timeframe": "",
+        "flatImage": true,
+        "hidden": "hidden"
+      },
+      {
+        "id": 6,
+        "title": "Socrates",
+        "description": "A customizable speed reading app with doc upload and free book search.",
+        "image": "/project-socrates-placeholder.svg",
+        "tags": [
+          "iOS",
+          "Reading",
+          "Consumer App"
         ],
         "link": "",
         "timeframe": "",
@@ -2024,8 +2025,8 @@
       "titleLead": "Language-learning tools separate practice from",
       "titleHighlight": "real communication.",
       "intro": [],
-      "opportunityEyebrow": "Opportunities",
-      "opportunityLead": "Can real conversations become the methodological core with",
+      "opportunityEyebrow": "Driving question",
+      "opportunityLead": "Can realistic conversations and common vocabulary become the methodological core with",
       "opportunityHighlight": "just enough structure built around it?",
       "problemsTitle": "Key problems",
       "problems": [
@@ -2061,8 +2062,8 @@
           "desc": "Every message becomes a chance to learn vocabulary, grammar, tone, and cultural nuance in context."
         },
         {
-          "title": "Give users control over meaning",
-          "desc": "Treat translation as a dialogue — clarify ambiguity, compare alternatives, adjust nuance."
+          "title": "Give users more control",
+          "desc": "Treat translation as a dialogue: clarify ambiguity, compare alternatives, adjust nuance."
         },
         {
           "title": "Turn translation into feedback",
@@ -4010,6 +4011,14 @@
           {
             "type": "paragraph",
             "text": "Current learning systems offer the feeling of progress, but learners succeed within unrealistic constructed environments and struggle in real conversations when they need to use the language without support."
+          }
+        ]
+      },
+      "4-in": {
+        "1": [
+          {
+            "type": "paragraph",
+            "text": "Research synthesis produced a set of key product concepts."
           }
         ]
       }
