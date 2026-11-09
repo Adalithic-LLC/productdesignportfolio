@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   Sparkles,
   ShieldCheck,
   GraduationCap,
@@ -90,6 +91,10 @@ export default function Arcatext() {
   const rootRef = useRef<HTMLDivElement>(null);
   const { content } = useContent();
   const arc = content.arcatext;
+  /* Optional, and trimmed: an admin who empties the field should get no icon
+     rather than a link to nowhere. */
+  const siteUrl = (arc.hero.siteUrl ?? '').trim();
+  const siteLabel = (arc.hero.siteLabel ?? '').trim() || 'The company behind it';
 
   /* The case studies are folded into one card until asked for -- see
      ArcatextCaseStudies. Each carries its own index in the feature list rather
@@ -177,9 +182,28 @@ export default function Arcatext() {
               prototype is now the first card of the row below, among the
               phones it belongs with, and the facts of the work sit with the
               product-type card in "What is Arcatext?". */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
-            <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
-          </h1>
+          {/* The name, and beside it the way out to the company that makes
+              it. A link rather than a line of copy: it is the one thing on
+              this page that leads off the site, and the title is where a
+              reader looks for "whose is this?". Rendered only when a URL is
+              set, so clearing the field in admin removes it. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance">
+              <Editable as="span" path="arcatext.hero.title" className="gradient-text" />
+            </h1>
+            {siteUrl ? (
+              <a
+                href={siteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={siteLabel}
+                aria-label={siteLabel}
+                className="group inline-grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border/60 bg-background/70 text-foreground/70 shadow-sm backdrop-blur transition-colors hover:border-primary/40 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-11 sm:w-11"
+              >
+                <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            ) : null}
+          </div>
 
           {/* What it is, under the name -- a slot rather than one fixed line,
               so the subheader can be deleted and a different one (or a header,

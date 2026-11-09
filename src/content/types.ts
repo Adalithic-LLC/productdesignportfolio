@@ -318,6 +318,11 @@ export interface ArcatextContent {
         another one put in its place. Created on first insert. */
     subhead?: unknown[];
     subtitle: string;
+    /** The company site behind the product; the icon beside the title opens
+        it. Empty or missing and no icon is drawn. */
+    siteUrl?: string;
+    /** What that icon is called, for its tooltip and its accessible name. */
+    siteLabel?: string;
     typeTags: string[];
     roleLabel: string;
     roleValue: string;
@@ -474,6 +479,11 @@ export interface ConversantContent {
         another one put in its place. Created on first insert. */
     subhead?: unknown[];
     subtitle: string;
+    /** The company site behind the product; the icon beside the title opens
+        it. Empty or missing and no icon is drawn. */
+    siteUrl?: string;
+    /** What that icon is called, for its tooltip and its accessible name. */
+    siteLabel?: string;
     typeTags: string[];
     roleLabel: string;
     roleValue: string;
@@ -631,6 +641,11 @@ export interface UsaaContent {
         another one put in its place. Created on first insert. */
     subhead?: unknown[];
     subtitle: string;
+    /** The company site behind the product; the icon beside the title opens
+        it. Empty or missing and no icon is drawn. */
+    siteUrl?: string;
+    /** What that icon is called, for its tooltip and its accessible name. */
+    siteLabel?: string;
     typeTags: string[];
     roleLabel: string;
     roleValue: string;
@@ -747,6 +762,11 @@ export interface MemberHomeContent {
         another one put in its place. Created on first insert. */
     subhead?: unknown[];
     subtitle: string;
+    /** The company site behind the product; the icon beside the title opens
+        it. Empty or missing and no icon is drawn. */
+    siteUrl?: string;
+    /** What that icon is called, for its tooltip and its accessible name. */
+    siteLabel?: string;
     typeTags: string[];
     roleLabel: string;
     roleValue: string;
