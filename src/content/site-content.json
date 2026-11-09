@@ -4122,8 +4122,49 @@
             ],
             "r3c1": []
           }
+        },
+        {
+          "type": "element",
+          "variant": "grid",
+          "data": {
+            "cols": "3",
+            "rows": "1"
+          },
+          "cells": {
+            "r1c1": [
+              {
+                "type": "element",
+                "variant": "card-basic",
+                "data": {
+                  "title": "Research",
+                  "desc": "Market, competitive, interviews, synthesis, requirements"
+                }
+              }
+            ],
+            "r1c2": [
+              {
+                "type": "element",
+                "variant": "card-basic",
+                "data": {
+                  "title": "Design",
+                  "desc": "Strategy, UX, UI, interaction, A11y, localization"
+                }
+              }
+            ],
+            "r1c3": [
+              {
+                "type": "element",
+                "variant": "card-basic",
+                "data": {
+                  "title": "AI Supported",
+                  "desc": "Full-stack mobile product engineering, web development, LLM prompt engineering"
+                }
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "3": []
     }
   },
   "aristotle": {
