@@ -77,14 +77,26 @@ function Paragraphs({ base }: { base: string; items?: readonly unknown[] }) {
   return <EditableBlocks path={base} />;
 }
 
+/**
+ * The section nav, index-aligned with `arcatext.toc`.
+ *
+ * The ids are the ones the sections were born with and the numbers are what a
+ * reader sees, so the two stopped matching when Research & Insights was given
+ * a section of its own. Renaming the ids to match would have moved every
+ * section's seam content (`seams.arcatext-0N`) one section down with it, and
+ * the content an admin has already put in those seams would have landed in
+ * the wrong place. The id is private; the number is the one that has to read
+ * right.
+ */
 const tocItems = [
   { id: 'sec-01', n: '01' },
   { id: 'sec-02', n: '02' },
-  { id: 'sec-03', n: '03' },
-  { id: 'sec-04', n: '04' },
-  { id: 'sec-05', n: '05' },
-  { id: 'sec-06', n: '06' },
-  { id: 'sec-07', n: '07' },
+  { id: 'sec-research', n: '03' },
+  { id: 'sec-03', n: '04' },
+  { id: 'sec-04', n: '05' },
+  { id: 'sec-05', n: '06' },
+  { id: 'sec-06', n: '07' },
+  { id: 'sec-07', n: '08' },
 ];
 
 export default function Arcatext() {
@@ -395,11 +407,121 @@ export default function Arcatext() {
         </SectionBody>
       </section>
 
-      {/* 03 — Strategy */}
+      {/* 03 — Research & Insights. Lifted out of Execution, where it used to
+          sit under "From discovery to a shipped product": two thirds of that
+          section was discovery, filed three screens after the strategy it is
+          the evidence for. Here it reads in the order it happened — the
+          problem, what people said about it, then what I decided. */}
+      <section id="sec-research" className="py-20 sm:py-28 scroll-mt-24">
+        <SectionBody id="arcatext-research">
+          <div className="reveal">
+            <SectionHeader number="03" eyebrowPath="arcatext.research.eyebrow" titlePath="arcatext.research.titleLead" highlightPath="arcatext.research.titleHighlight" />
+          </div>
+
+          {/* The size of the discovery, up front: it used to be a stat block
+              inside the Reword case study, two clicks from here, where nobody
+              skimming the page would ever reach it. */}
+          <div className="reveal">
+            <Editable as="p" path="arcatext.research.statsLabel" className="text-xs uppercase tracking-[0.2em] text-primary mb-5" />
+            <ItemGroup as="div" path="arcatext.research.stats" className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+              {arc.research.stats.map((_, i) => (
+                <div key={i} className="rounded-2xl bg-muted/40 p-6">
+                  <Editable as="span" path={`arcatext.research.stats.${i}.value`} className="block text-4xl sm:text-5xl font-bold tracking-tight gradient-text" />
+                  <Editable as="p" path={`arcatext.research.stats.${i}.label`} multiline className="mt-2 text-sm text-muted-foreground leading-relaxed" />
+                </div>
+              ))}
+            </ItemGroup>
+          </div>
+
+          {/* Discovery interviews */}
+          <div className="mt-16 reveal">
+            <Editable as="h3" path="arcatext.research.discoveryTitle" className="text-xl sm:text-2xl font-semibold mb-5" />
+            <Prose>
+              <Paragraphs base="arcatext.research.discovery" items={arc.research.discovery} />
+            </Prose>
+          </div>
+
+          {/* Research synthesis */}
+          <div className="mt-16 reveal">
+            <Editable as="h3" path="arcatext.research.synthesisTitle" className="text-xl sm:text-2xl font-semibold mb-5" />
+            <Prose>
+              <Paragraphs base="arcatext.research.synthesis" items={arc.research.synthesis} />
+            </Prose>
+          </div>
+
+          {/* Directional insights */}
+          <div className="mt-20">
+            <Editable as="h3" path="arcatext.research.directionalTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
+            <ItemGroup as="div" path="arcatext.research.directionalInsights" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {arc.research.directionalInsights.map((insight, i) => (
+                <div
+                  key={i}
+                  className="reveal rounded-2xl bg-muted/40 p-6 lg:p-7"
+                >
+                  <Editable as="h4" path={`arcatext.research.directionalInsights.${i}.title`} className="font-semibold mb-3 text-balance" />
+                  <Editable as="p" path={`arcatext.research.directionalInsights.${i}.desc`} multiline className="text-sm text-muted-foreground leading-relaxed" />
+                  {insight.response && (
+                    <div className="mt-5 pt-5 border-t border-primary/15">
+                      <p className="text-xs uppercase tracking-[0.18em] text-primary mb-2">
+                        Product response
+                      </p>
+                      <Editable as="p" path={`arcatext.research.directionalInsights.${i}.response`} multiline className="text-sm text-foreground/85 leading-relaxed" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </ItemGroup>
+          </div>
+
+          {/* So what */}
+          <div className="mt-20 reveal rounded-2xl bg-primary/10 p-8 lg:p-10">
+            <Editable as="p" path="arcatext.research.soWhatLabel" className="text-xs uppercase tracking-[0.2em] text-primary mb-4" />
+            <p className="text-xl sm:text-2xl font-semibold leading-snug text-balance mb-5">
+              <Editable as="span" path="arcatext.research.soWhatLead" multiline />{' '}
+              <Editable as="span" path="arcatext.research.soWhatHighlight" className="gradient-text" />
+            </p>
+            <Prose>
+              <Paragraphs base="arcatext.research.soWhat" items={arc.research.soWhat} />
+            </Prose>
+          </div>
+
+          {/* From insight to product response */}
+          <div className="mt-20">
+            <Editable as="h3" path="arcatext.research.insightToResponseTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
+            <ItemGroup as="div" path="arcatext.research.productResponses" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {arc.research.productResponses.map((_, i) => (
+                <div
+                  key={i}
+                  className="reveal rounded-2xl bg-muted/40 p-6 lg:p-7"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-xs font-mono text-primary/70">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      Insight
+                    </span>
+                  </div>
+                  <Editable as="h4" path={`arcatext.research.productResponses.${i}.insight`} className="font-semibold mb-4 text-balance" />
+                  <div className="pt-4 border-t border-primary/15">
+                    <p className="text-xs uppercase tracking-[0.18em] text-primary mb-2">
+                      Response
+                    </p>
+                    <Editable as="p" path={`arcatext.research.productResponses.${i}.response`} multiline className="text-sm text-foreground/85 leading-relaxed" />
+                  </div>
+                </div>
+              ))}
+            </ItemGroup>
+          </div>
+
+        </SectionBody>
+      </section>
+
+      {/* 04 — Strategy */}
       <section id="sec-03" className="py-20 sm:py-28 scroll-mt-24">
         <SectionBody id="arcatext-03">
           <div className="reveal">
-            <SectionHeader number="03" eyebrowPath="arcatext.strategy.eyebrow" titlePath="arcatext.strategy.titleLead" highlightPath="arcatext.strategy.titleHighlight" />
+            <SectionHeader number="04" eyebrowPath="arcatext.strategy.eyebrow" titlePath="arcatext.strategy.titleLead" highlightPath="arcatext.strategy.titleHighlight" />
           </div>
 
           <div className="reveal">
@@ -456,11 +578,11 @@ export default function Arcatext() {
         </SectionBody>
       </section>
 
-      {/* 04 — Product System */}
+      {/* 05 — Product System */}
       <section id="sec-04" className="py-20 sm:py-28 scroll-mt-24">
         <SectionBody id="arcatext-04">
           <div className="reveal">
-            <SectionHeader number="04" eyebrowPath="arcatext.productSystem.eyebrow" titlePath="arcatext.productSystem.titleLead" highlightPath="arcatext.productSystem.titleHighlight" />
+            <SectionHeader number="05" eyebrowPath="arcatext.productSystem.eyebrow" titlePath="arcatext.productSystem.titleLead" highlightPath="arcatext.productSystem.titleHighlight" />
           </div>
 
           <div className="reveal mb-12">
@@ -518,11 +640,11 @@ export default function Arcatext() {
         </SectionBody>
       </section>
 
-      {/* 05 — Key Design Decisions */}
+      {/* 06 — Key Design Decisions */}
       <section id="sec-05" className="py-20 sm:py-28 scroll-mt-24">
         <SectionBody id="arcatext-05">
           <div className="reveal">
-            <SectionHeader number="05" eyebrowPath="arcatext.decisions.eyebrow" titlePath="arcatext.decisions.titleLead" highlightPath="arcatext.decisions.titleHighlight" />
+            <SectionHeader number="06" eyebrowPath="arcatext.decisions.eyebrow" titlePath="arcatext.decisions.titleLead" highlightPath="arcatext.decisions.titleHighlight" />
           </div>
 
           <div className="reveal">
@@ -546,96 +668,16 @@ export default function Arcatext() {
         </SectionBody>
       </section>
 
-      {/* 06 — Execution / Outcomes */}
+      {/* 07 — Execution / Outcomes */}
       <section id="sec-06" className="py-20 sm:py-28 scroll-mt-24">
         <SectionBody id="arcatext-06">
           <div className="reveal">
-            <SectionHeader number="06" eyebrowPath="arcatext.execution.eyebrow" titlePath="arcatext.execution.titleLead" highlightPath="arcatext.execution.titleHighlight" />
+            <SectionHeader number="07" eyebrowPath="arcatext.execution.eyebrow" titlePath="arcatext.execution.titleLead" highlightPath="arcatext.execution.titleHighlight" />
           </div>
 
-          {/* Discovery interviews */}
-          <div className="reveal">
-            <Editable as="h3" path="arcatext.execution.discoveryTitle" className="text-xl sm:text-2xl font-semibold mb-5" />
-            <Prose>
-              <Paragraphs base="arcatext.execution.discovery" items={arc.execution.discovery} />
-            </Prose>
-          </div>
-
-          {/* Research synthesis */}
-          <div className="mt-16 reveal">
-            <Editable as="h3" path="arcatext.execution.synthesisTitle" className="text-xl sm:text-2xl font-semibold mb-5" />
-            <Prose>
-              <Paragraphs base="arcatext.execution.synthesis" items={arc.execution.synthesis} />
-            </Prose>
-          </div>
-
-          {/* Directional insights */}
-          <div className="mt-20">
-            <Editable as="h3" path="arcatext.execution.directionalTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
-            <ItemGroup as="div" path="arcatext.execution.directionalInsights" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {arc.execution.directionalInsights.map((insight, i) => (
-                <div
-                  key={i}
-                  className="reveal rounded-2xl bg-muted/40 p-6 lg:p-7"
-                >
-                  <Editable as="h4" path={`arcatext.execution.directionalInsights.${i}.title`} className="font-semibold mb-3 text-balance" />
-                  <Editable as="p" path={`arcatext.execution.directionalInsights.${i}.desc`} multiline className="text-sm text-muted-foreground leading-relaxed" />
-                  {insight.response && (
-                    <div className="mt-5 pt-5 border-t border-primary/15">
-                      <p className="text-xs uppercase tracking-[0.18em] text-primary mb-2">
-                        Product response
-                      </p>
-                      <Editable as="p" path={`arcatext.execution.directionalInsights.${i}.response`} multiline className="text-sm text-foreground/85 leading-relaxed" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </ItemGroup>
-          </div>
-
-          {/* So what */}
-          <div className="mt-20 reveal rounded-2xl bg-primary/10 p-8 lg:p-10">
-            <Editable as="p" path="arcatext.execution.soWhatLabel" className="text-xs uppercase tracking-[0.2em] text-primary mb-4" />
-            <p className="text-xl sm:text-2xl font-semibold leading-snug text-balance mb-5">
-              <Editable as="span" path="arcatext.execution.soWhatLead" multiline />{' '}
-              <Editable as="span" path="arcatext.execution.soWhatHighlight" className="gradient-text" />
-            </p>
-            <Prose>
-              <Paragraphs base="arcatext.execution.soWhat" items={arc.execution.soWhat} />
-            </Prose>
-          </div>
-
-          {/* From insight to product response */}
-          <div className="mt-20">
-            <Editable as="h3" path="arcatext.execution.insightToResponseTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
-            <ItemGroup as="div" path="arcatext.execution.productResponses" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {arc.execution.productResponses.map((_, i) => (
-                <div
-                  key={i}
-                  className="reveal rounded-2xl bg-muted/40 p-6 lg:p-7"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xs font-mono text-primary/70">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Insight
-                    </span>
-                  </div>
-                  <Editable as="h4" path={`arcatext.execution.productResponses.${i}.insight`} className="font-semibold mb-4 text-balance" />
-                  <div className="pt-4 border-t border-primary/15">
-                    <p className="text-xs uppercase tracking-[0.18em] text-primary mb-2">
-                      Response
-                    </p>
-                    <Editable as="p" path={`arcatext.execution.productResponses.${i}.response`} multiline className="text-sm text-foreground/85 leading-relaxed" />
-                  </div>
-                </div>
-              ))}
-            </ItemGroup>
-          </div>
-
-          {/* Shipped */}
-          <div className="mt-20">
+          {/* Shipped. First in the section now that discovery has its own, so
+              it carries no top margin of its own. */}
+          <div>
             <Editable as="h3" path="arcatext.execution.shippedTitle" className="text-xl sm:text-2xl font-semibold mb-8 reveal" />
             <ItemGroup as="ol" path="arcatext.execution.outcomes" className="space-y-4">
               {arc.execution.outcomes.map((_, i) => (
@@ -720,11 +762,11 @@ export default function Arcatext() {
         </SectionBody>
       </section>
 
-      {/* 07 — Deeper Case Studies */}
+      {/* 08 — Deeper Case Studies */}
       <section id="sec-07" className="py-20 sm:py-28 scroll-mt-24">
         <SectionBody id="arcatext-07">
           <div className="reveal">
-            <SectionHeader number="07" eyebrowPath="arcatext.caseStudies.eyebrow" titlePath="arcatext.caseStudies.titleLead" highlightPath="arcatext.caseStudies.titleHighlight" />
+            <SectionHeader number="08" eyebrowPath="arcatext.caseStudies.eyebrow" titlePath="arcatext.caseStudies.titleLead" highlightPath="arcatext.caseStudies.titleHighlight" />
           </div>
 
           <div className="reveal">

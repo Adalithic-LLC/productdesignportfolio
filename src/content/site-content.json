@@ -506,6 +506,7 @@
     "toc": [
       "Overview",
       "Problem / Opportunity",
+      "Research & Insights",
       "Strategy",
       "Product System",
       "Key Design Decisions",
@@ -520,7 +521,7 @@
       "subhead": [],
       "subtitle": "A user-driven language learning system leveraging a translation keyboard & study guide turning real conversations into language practice, with features that provide control and insight.",
       "siteUrl": "https://adalithic.com",
-      "siteLabel": "Adalithic \u2014 the company behind Arcatext",
+      "siteLabel": "Adalithic — the company behind Arcatext",
       "typeTags": [
         "AI-Powered Translation",
         "Language-Learning Tool",
@@ -2096,6 +2097,108 @@
         "Arcatext reduces that friction by bringing translation, context, and clarification into one integrated writing experience."
       ]
     },
+    "research": {
+      "eyebrow": "Research & Insights",
+      "titleLead": "What learners and teachers",
+      "titleHighlight": "actually told me.",
+      "statsLabel": "Discovery at a glance",
+      "stats": [
+        {
+          "value": "31",
+          "label": "interviews with learners, teachers and language-exchange users"
+        },
+        {
+          "value": "8",
+          "label": "insights synthesized into the MVP roadmap"
+        }
+      ],
+      "discoveryTitle": "Conducted discovery interviews with learners and teachers",
+      "discovery": [
+        "I spoke with language students, language teachers, and language-exchange app users to understand how they were currently learning, practicing, and teaching languages. I explored the tools they relied on, where existing methods broke down, what made conversation practice difficult, and what support they needed in real communication contexts.",
+        "These conversations helped validate the opportunity around texting-based practice and shaped early product decisions — including the shift away from a standalone messaging app and toward a keyboard that could support learners inside the apps they already used."
+      ],
+      "synthesisTitle": "Research synthesis",
+      "synthesis": [
+        "To keep early product direction grounded in user needs, I translated interview notes and quotes into affinity themes — tracing each insight back to real user pain points instead of relying on assumptions about what language learners might want.",
+        "The strongest pattern was that learners did not need another generic practice environment. They needed a way to close the gap between learning and real conversation. Practice had to feel relevant to their goals, reflect the vocabulary and grammar they actually wanted to use, and support either real conversations or highly customizable conversational practice.",
+        "Further concept exploration, user feedback, market research, and language study helped narrow the strategy. There was overlap across users, but some needs were language-specific — additional support for non-Roman scripts, gendered grammar, and translation context. Studying translation tools also revealed a broader product gap: the complexity and nuance of language was not well supported, and users often had to accept generic outputs because tools lacked meaningful controls."
+      ],
+      "directionalTitle": "Directional insights",
+      "directionalInsights": [
+        {
+          "title": "Current apps did not fully prepare learners for real-world conversation",
+          "desc": "Language apps were useful for habit-building, vocabulary, and structured practice, but scripted content often failed to prepare learners for unpredictable, personal, context-dependent conversations.",
+          "response": ""
+        },
+        {
+          "title": "Generic content did not always align with learner goals",
+          "desc": "Learners had specific reasons for studying — travel, relationships, work, school, cultural connection, or communication with a specific person. When lesson content did not match those goals, practice felt less relevant and less motivating.",
+          "response": ""
+        },
+        {
+          "title": "Real conversations were motivating, but poorly supported",
+          "desc": "Students and language-exchange users were often most engaged when practice connected to real people and real topics. But the tools around those conversations were fragmented.",
+          "response": ""
+        },
+        {
+          "title": "Switching between tools created too much friction",
+          "desc": "Learners often had to move between messaging apps, translators, keyboards, and reverse-translation tools just to understand and respond to a message.",
+          "response": ""
+        },
+        {
+          "title": "Users were unlikely to move existing conversations into a new app",
+          "desc": "Learners were unlikely to move established relationships into a dedicated language-learning messenger or convince friends and penpals to adopt another platform. A standalone app could still serve dedicated language-exchange discovery, but it was not the strongest first surface for conversations already happening elsewhere.",
+          "response": ""
+        },
+        {
+          "title": "Trust mattered as much as accuracy",
+          "desc": "Users know tools like Google Translate and DeepL can be \"bad,\" but they think of bad translation as obvious broken grammar. They are less prepared for the more dangerous failure: a translation that looks fluent but changes tone, sounds unnatural, or subtly shifts intent.",
+          "response": "This shaped the Check experience. Reverse translation helps verify intent, while a glanceable naturalness score and teacher-style explanations help users understand whether a message sounds fluent in context — and why a translation works instead of simply trusting the output."
+        },
+        {
+          "title": "Language nuance needed more controls",
+          "desc": "Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs.",
+          "response": ""
+        }
+      ],
+      "soWhatLabel": "So what?",
+      "soWhatLead": "Arcatext needed to close the gap between learning and",
+      "soWhatHighlight": "real conversations.",
+      "soWhat": [
+        "It had to support relevant vocabulary and grammar, align with users’ interests, and enable practice through real or highly customizable conversations. That led to a keyboard-first strategy: a keyboard could support real conversations wherever they already happened, while also creating a foundation for future AI conversation tools, learning insights, and teacher-facing features."
+      ],
+      "insightToResponseTitle": "From insight to product response",
+      "productResponses": [
+        {
+          "insight": "Reduce friction in translating and understanding messages",
+          "response": "A consolidated keyboard experience that brought previously dispersed translation tasks into one writing surface."
+        },
+        {
+          "insight": "Build confidence before sending",
+          "response": "The Check experience: reverse translation, a glanceable naturalness score concept, and teacher-style explanations to verify intent and avoid sending fluent-looking translations that subtly change meaning."
+        },
+        {
+          "insight": "Support same-language corrections",
+          "response": "Part of the Reword feature — improving clarity, grammar, and naturalness even when the user is not translating into another language."
+        },
+        {
+          "insight": "Lower the barrier for non-Roman script languages",
+          "response": "Alphabet and romanization controls."
+        },
+        {
+          "insight": "Help users maintain conversation context",
+          "response": "The \"send a copy\" concept, helping users preserve translated context across message exchanges."
+        },
+        {
+          "insight": "Expose the learning value inside each message",
+          "response": "Synonyms, homograph clarification, sentence breakdown, and the Meaning Map concept."
+        },
+        {
+          "insight": "Support contextual accuracy through user controls",
+          "response": "Gender controls, script options, clarification tools, and alternate phrasing."
+        }
+      ]
+    },
     "strategy": {
       "eyebrow": "Strategy",
       "titleLead": "Balancing the learner, the product, the system, and the",
@@ -2253,94 +2356,8 @@
     },
     "execution": {
       "eyebrow": "Execution / Outcomes",
-      "titleLead": "From discovery to a",
+      "titleLead": "From decisions to a",
       "titleHighlight": "shipped product.",
-      "discoveryTitle": "Conducted discovery interviews with learners and teachers",
-      "discovery": [
-        "I spoke with language students, language teachers, and language-exchange app users to understand how they were currently learning, practicing, and teaching languages. I explored the tools they relied on, where existing methods broke down, what made conversation practice difficult, and what support they needed in real communication contexts.",
-        "These conversations helped validate the opportunity around texting-based practice and shaped early product decisions — including the shift away from a standalone messaging app and toward a keyboard that could support learners inside the apps they already used."
-      ],
-      "synthesisTitle": "Research synthesis",
-      "synthesis": [
-        "To keep early product direction grounded in user needs, I translated interview notes and quotes into affinity themes — tracing each insight back to real user pain points instead of relying on assumptions about what language learners might want.",
-        "The strongest pattern was that learners did not need another generic practice environment. They needed a way to close the gap between learning and real conversation. Practice had to feel relevant to their goals, reflect the vocabulary and grammar they actually wanted to use, and support either real conversations or highly customizable conversational practice.",
-        "Further concept exploration, user feedback, market research, and language study helped narrow the strategy. There was overlap across users, but some needs were language-specific — additional support for non-Roman scripts, gendered grammar, and translation context. Studying translation tools also revealed a broader product gap: the complexity and nuance of language was not well supported, and users often had to accept generic outputs because tools lacked meaningful controls."
-      ],
-      "directionalTitle": "Directional insights",
-      "directionalInsights": [
-        {
-          "title": "Current apps did not fully prepare learners for real-world conversation",
-          "desc": "Language apps were useful for habit-building, vocabulary, and structured practice, but scripted content often failed to prepare learners for unpredictable, personal, context-dependent conversations.",
-          "response": ""
-        },
-        {
-          "title": "Generic content did not always align with learner goals",
-          "desc": "Learners had specific reasons for studying — travel, relationships, work, school, cultural connection, or communication with a specific person. When lesson content did not match those goals, practice felt less relevant and less motivating.",
-          "response": ""
-        },
-        {
-          "title": "Real conversations were motivating, but poorly supported",
-          "desc": "Students and language-exchange users were often most engaged when practice connected to real people and real topics. But the tools around those conversations were fragmented.",
-          "response": ""
-        },
-        {
-          "title": "Switching between tools created too much friction",
-          "desc": "Learners often had to move between messaging apps, translators, keyboards, and reverse-translation tools just to understand and respond to a message.",
-          "response": ""
-        },
-        {
-          "title": "Users were unlikely to move existing conversations into a new app",
-          "desc": "Learners were unlikely to move established relationships into a dedicated language-learning messenger or convince friends and penpals to adopt another platform. A standalone app could still serve dedicated language-exchange discovery, but it was not the strongest first surface for conversations already happening elsewhere.",
-          "response": ""
-        },
-        {
-          "title": "Trust mattered as much as accuracy",
-          "desc": "Users know tools like Google Translate and DeepL can be \"bad,\" but they think of bad translation as obvious broken grammar. They are less prepared for the more dangerous failure: a translation that looks fluent but changes tone, sounds unnatural, or subtly shifts intent.",
-          "response": "This shaped the Check experience. Reverse translation helps verify intent, while a glanceable naturalness score and teacher-style explanations help users understand whether a message sounds fluent in context — and why a translation works instead of simply trusting the output."
-        },
-        {
-          "title": "Language nuance needed more controls",
-          "desc": "Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs.",
-          "response": ""
-        }
-      ],
-      "soWhatLabel": "So what?",
-      "soWhatLead": "Arcatext needed to close the gap between learning and",
-      "soWhatHighlight": "real conversations.",
-      "soWhat": [
-        "It had to support relevant vocabulary and grammar, align with users’ interests, and enable practice through real or highly customizable conversations. That led to a keyboard-first strategy: a keyboard could support real conversations wherever they already happened, while also creating a foundation for future AI conversation tools, learning insights, and teacher-facing features."
-      ],
-      "insightToResponseTitle": "From insight to product response",
-      "productResponses": [
-        {
-          "insight": "Reduce friction in translating and understanding messages",
-          "response": "A consolidated keyboard experience that brought previously dispersed translation tasks into one writing surface."
-        },
-        {
-          "insight": "Build confidence before sending",
-          "response": "The Check experience: reverse translation, a glanceable naturalness score concept, and teacher-style explanations to verify intent and avoid sending fluent-looking translations that subtly change meaning."
-        },
-        {
-          "insight": "Support same-language corrections",
-          "response": "Part of the Reword feature — improving clarity, grammar, and naturalness even when the user is not translating into another language."
-        },
-        {
-          "insight": "Lower the barrier for non-Roman script languages",
-          "response": "Alphabet and romanization controls."
-        },
-        {
-          "insight": "Help users maintain conversation context",
-          "response": "The \"send a copy\" concept, helping users preserve translated context across message exchanges."
-        },
-        {
-          "insight": "Expose the learning value inside each message",
-          "response": "Synonyms, homograph clarification, sentence breakdown, and the Meaning Map concept."
-        },
-        {
-          "insight": "Support contextual accuracy through user controls",
-          "response": "Gender controls, script options, clarification tools, and alternate phrasing."
-        }
-      ],
       "competitiveTitle": "Competitive product requirement",
       "competitive": [
         "After testing Arcatext with students and teachers, I learned that the translation feature set would not drive adoption if the keyboard was significantly less fluid and accurate than default keyboards from Apple & Google.",

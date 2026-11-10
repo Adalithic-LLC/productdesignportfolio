@@ -407,10 +407,18 @@ export interface ArcatextContent {
     intro: string[];
     items: ArcatextDecision[];
   };
-  execution: {
+  /**
+   * Discovery and what came out of it. Its own section, between the problem
+   * and the strategy: everything after it -- the strategy, the system, the
+   * design decisions -- is a conclusion drawn from what is here, and a
+   * conclusion read before its evidence is just an assertion.
+   */
+  research: {
     eyebrow: string;
     titleLead: string;
     titleHighlight: string;
+    statsLabel: string;
+    stats: { value: string; label: string }[];
     discoveryTitle: string;
     discovery: string[];
     synthesisTitle: string;
@@ -423,6 +431,11 @@ export interface ArcatextContent {
     soWhat: string[];
     insightToResponseTitle: string;
     productResponses: ArcatextResponse[];
+  };
+  execution: {
+    eyebrow: string;
+    titleLead: string;
+    titleHighlight: string;
     competitiveTitle: string;
     competitive: string[];
     shippedTitle: string;
