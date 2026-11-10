@@ -1979,7 +1979,7 @@
         },
         {
           "type": "paragraph",
-          "text": "The basic architecture is an app that hosts writing activities and the learning community, and a keyboard extension where value extends to 3rd party messaging apps."
+          "text": "The basic architecture is an app that hosts writing activities and the learning community, and a custom keyboard where value extends to 3rd party messaging apps."
         }
       ],
       "productTypeLabel": "Product type",
@@ -1996,7 +1996,7 @@
       "readingWritingTitle": "Learning approach",
       "readingWriting": [
         "The basics of language learning are reading, writing, speaking, listening, vocabulary, and grammar. While many tools support speaking practice, I found the biggest opportunity in reading, writing, and listening.",
-        "The texting conversation is the vehicle to deliver value on that learning approach. It gives learners time to pause, reflect, revise, compare, and understand language before responding."
+        "The \"texting conversation\" is the vehicle to deliver value on that learning approach. It gives learners time to pause, reflect, revise, compare, and understand language before responding."
       ],
       "roleTitle": "My role",
       "role": [
@@ -2013,7 +2013,7 @@
           "text": "My Role"
         },
         "I led Arcatext as the company founder, product designer, and \"AI-developer\". I took the app from early concept through research, design, implementation, launch, and marketing.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin control center."
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin webapp."
       ]
     },
     "problem": {
