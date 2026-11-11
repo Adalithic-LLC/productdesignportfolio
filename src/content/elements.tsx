@@ -9,7 +9,7 @@ import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
-import { QuoteLinkElement } from '@/components/QuoteBoard';
+import { QuoteLinkElement, QuoteNotesElement } from '@/components/QuoteBoard';
 import { MARK_KEYS } from '@/lib/brandMarks';
 import { cn } from '@/lib/utils';
 import type { ProseBlock, ProseItem } from './proseBlocks';
@@ -924,6 +924,15 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Callouts',
     defaultData: { cluster: '' },
     body: (ctx) => <QuoteLinkElement path={ctx.path} data={ctx.data} />,
+  },
+  {
+    /* Chosen notes from the board, on the card. Not in "Cards" for the same
+       reason as the button: it belongs inside a card. */
+    id: 'quotes-notes',
+    label: 'Quotes — chosen notes',
+    group: 'Callouts',
+    defaultData: { cluster: '', notes: '' },
+    body: (ctx) => <QuoteNotesElement path={ctx.path} data={ctx.data} />,
   },
   {
     id: 'quote',

@@ -17,7 +17,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { createContext } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Link2, MessageSquareQuote, X } from 'lucide-react';
+import { Check, Link2, MessageSquareQuote, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Editable } from '@/content/Editable';
 import { ItemGroup } from '@/content/EditableBlocks';
@@ -219,22 +219,175 @@ export function QuoteLinkElement({
     );
   }
 
+  /* One line of explanation, as a tooltip rather than as copy on the page:
+     the first version printed the cluster id under the button in grey, which
+     read as something the page was saying rather than as a control. */
+  const hint = !available
+    ? 'No quote board on this page, so the button is hidden from visitors.'
+    : cluster
+      ? `Opens the “${cluster.insight}” column.${typed ? ' Set here.' : ' Matched from the card above — type an id here to override it.'}`
+      : `Nothing matched the card above. Type one of: ${(board?.clusters ?? []).map((c) => c.id).join(', ')}`;
+
   return (
-    <div>
+    <div className="flex flex-wrap items-center gap-2">
       <QuoteBoardLink clusterId={cluster?.id} className="mt-0" />
       {isAdmin && (
-        <p className="mt-2 font-mono text-[10px] leading-relaxed text-muted-foreground/70">
-          {!available
-            ? 'No quote board on this page.'
-            : cluster
-              ? `→ ${cluster.id}${typed ? '' : ' (matched from the card above)'}`
-              : 'No cluster matched. Type one below.'}
-          {' · '}
-          <Editable as="span" path={`${path}.data.cluster`} className="inline-block min-w-8" />
-          {!cluster && board?.clusters?.length ? (
-            <span className="opacity-60"> — {board.clusters.map((c) => c.id).join(', ')}</span>
-          ) : null}
-        </p>
+        <span
+          title={hint}
+          className={cn(
+            'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]',
+            cluster
+              ? 'border-border/60 bg-muted/50 text-muted-foreground/70'
+              : 'border-destructive/40 bg-destructive/10 text-destructive/80'
+          )}
+        >
+          <Link2 className="h-3 w-3 opacity-60" aria-hidden />
+          {!typed && <span className="opacity-70">{cluster ? cluster.id : 'no match'}</span>}
+          <Editable as="span" path={`${path}.data.cluster`} className="inline-block min-w-3" />
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Chosen notes, brought from the board onto the card.
+ *
+ * The notes are not copied: they are rendered from the board's own paths, so
+ * editing one here edits the board and the two can never drift. What is
+ * stored on the card is only which ones -- "<group>.<note>" refs, resolved
+ * defensively, so a note taken off the board leaves no hole behind.
+ */
+export function QuoteNotesElement({
+  path,
+  data,
+}: {
+  path: string | null;
+  data: Record<string, string>;
+}) {
+  const { content, isAdmin, setText } = useContent();
+  const board = content.arcatext.quoteBoard;
+  const typed = (data.cluster ?? '').trim();
+  const resolved = typed || clusterForPath(content, path) || '';
+  const ci = (board?.clusters ?? []).findIndex((c) => c.id === resolved);
+  const cluster = ci >= 0 ? board!.clusters[ci] : undefined;
+
+  const picked = (data.notes ?? '')
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  const toggle = (ref: string) => {
+    if (!path) return;
+    const next = picked.includes(ref) ? picked.filter((r) => r !== ref) : [...picked, ref];
+    setText(`${path}.data.notes`, next.join(','));
+  };
+
+  /* Colour follows the board: a note keeps the colour of the group it was
+     sorted into, so the same quote is the same colour in both places. */
+  let g0 = 0;
+  for (let k = 0; k < Math.max(0, ci); k++) g0 += board!.clusters[k].groups.length;
+
+  const resolve = (ref: string) => {
+    const [g, n] = ref.split('.').map(Number);
+    const note = cluster?.groups?.[g]?.notes?.[n];
+    if (!note) return null;
+    const override = (note as { color?: string }).color;
+    return {
+      g,
+      n,
+      note,
+      color: isColor(override) ? override : NOTE_COLORS[(g0 + g) % NOTE_COLORS.length],
+    };
+  };
+
+  if (!path) {
+    return (
+      <div className="rounded-[10px] bg-amber-200/80 px-4 py-3.5 text-sm leading-snug text-amber-950 dark:bg-amber-300/15 dark:text-amber-100">
+        A quote from the board, chosen for this card.
+      </div>
+    );
+  }
+
+  if (!cluster) {
+    return isAdmin ? (
+      <p className="font-mono text-[10px] text-destructive/80">
+        Quotes: nothing matched this card. Set a cluster on the Quotes button, or here:{' '}
+        <Editable as="span" path={`${path}.data.cluster`} className="inline-block min-w-8" />
+      </p>
+    ) : null;
+  }
+
+  return (
+    <div>
+      {/* Capped and upright, unlike the board's. A degree and a half of tilt
+          reads as a hand-placed sticky at the 288px a board column gives it;
+          across the full width of a card the same angle drops one end 30px
+          below the other and the note reads as a wedge. */}
+      <div className="flex max-w-[34rem] flex-col gap-2.5">
+        {picked.map((ref) => {
+          const r = resolve(ref);
+          if (!r) return null;
+          return (
+            <div
+              key={ref}
+              className={cn('rounded-[10px] px-4 py-3 shadow-sm', NOTE_STYLE[r.color])}
+            >
+              <Editable
+                as="p"
+                multiline
+                className="whitespace-pre-line text-sm leading-snug"
+                path={`arcatext.quoteBoard.clusters.${ci}.groups.${r.g}.notes.${r.n}.text`}
+              />
+              <Editable
+                as="p"
+                className="mt-2 font-mono text-[10px] uppercase tracking-wide opacity-55"
+                path={`arcatext.quoteBoard.clusters.${ci}.groups.${r.g}.notes.${r.n}.who`}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {isAdmin && (
+        <div contentEditable={false} className="mt-3 rounded-lg border border-dashed border-border/70 p-2.5">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground/70">
+            Notes from “{cluster.insight}” · {picked.length} chosen
+          </p>
+          <div className="flex flex-col gap-2">
+            {cluster.groups.map((group, g) => (
+              <div key={g}>
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
+                  {group.title}
+                </p>
+                <div className="flex flex-col gap-1">
+                  {group.notes.map((note, n) => {
+                    const ref = `${g}.${n}`;
+                    const on = picked.includes(ref);
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => toggle(ref)}
+                        className={cn(
+                          'flex items-start gap-2 rounded-md border px-2 py-1.5 text-left text-xs leading-snug transition-colors',
+                          on
+                            ? 'border-primary/50 bg-primary/10 text-foreground'
+                            : 'border-transparent bg-muted/40 text-muted-foreground hover:bg-muted'
+                        )}
+                      >
+                        <span className="mt-0.5 shrink-0">
+                          {on ? <Check className="h-3 w-3 text-primary" /> : <Plus className="h-3 w-3 opacity-50" />}
+                        </span>
+                        <span className="line-clamp-2">{note.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
