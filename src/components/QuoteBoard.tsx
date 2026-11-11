@@ -58,9 +58,64 @@ interface BoardApi {
 
 const BoardContext = createContext<BoardApi | null>(null);
 
-/** Opens the board from anywhere under the provider. */
-export function useQuoteBoard(): BoardApi {
-  return useContext(BoardContext) ?? { open: () => {} };
+/**
+ * Opens the board from anywhere under the provider. `available` is false on a
+ * page that has no board, so a button dropped there can take itself off
+ * rather than sit on the page doing nothing when clicked.
+ */
+export function useQuoteBoard(): BoardApi & { available: boolean } {
+  const api = useContext(BoardContext);
+  return { open: api?.open ?? (() => {}), available: !!api };
+}
+
+/** Everything but letters and numbers goes, so punctuation cannot miss a match. */
+const norm = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/**
+ * The cluster a card is about, worked out from the card rather than typed in.
+ *
+ * A quotes button lives in a card's `inside` slot, so its own path names the
+ * card that holds it: strip the slot off and the block left is the insight.
+ * Its title is matched against the clusters -- exactly first, then by one
+ * containing the other, then by how many words they share. Good enough to be
+ * right without being asked, and `cluster` in the button's own data overrides
+ * it when it is wrong.
+ */
+export function clusterForPath(
+  content: { arcatext: { quoteBoard?: { clusters: { id: string; insight: string }[] } } },
+  path: string | null
+): string | null {
+  const clusters = content.arcatext.quoteBoard?.clusters ?? [];
+  if (!clusters.length || !path) return null;
+
+  const owner = path.replace(/\.inside\.\d+$/, '');
+  if (owner === path) return null;
+  const block = owner.split('.').reduce<unknown>((acc, k) => {
+    if (acc == null || typeof acc !== 'object') return undefined;
+    return (acc as Record<string, unknown>)[k];
+  }, content as unknown);
+  const data = (block as { data?: Record<string, string> } | undefined)?.data ?? {};
+  const title = norm(data.title || data.text || data.desc || '');
+  if (!title) return null;
+
+  const exact = clusters.find((c) => norm(c.insight) === title);
+  if (exact) return exact.id;
+  const inside = clusters.find((c) => {
+    const n = norm(c.insight);
+    return n.includes(title) || title.includes(n);
+  });
+  if (inside) return inside.id;
+
+  const words = new Set(title.split(' ').filter((w) => w.length > 3));
+  let best: { id: string; score: number } | null = null;
+  for (const c of clusters) {
+    const score = norm(c.insight)
+      .split(' ')
+      .filter((w) => words.has(w)).length;
+    if (score > (best?.score ?? 0)) best = { id: c.id, score };
+  }
+  return best && best.score >= 2 ? best.id : null;
 }
 
 export function QuoteBoardProvider({ children }: { children: ReactNode }) {
@@ -111,8 +166,8 @@ export function QuoteBoardLink({
   const cluster = clusterId
     ? board?.clusters?.find((c) => c.id === clusterId)
     : undefined;
-  const { open } = useQuoteBoard();
-  if (!cluster) return null;
+  const { open, available } = useQuoteBoard();
+  if (!cluster || !available) return null;
   const count = cluster.groups.reduce((n, g) => n + g.notes.length, 0);
 
   return (
@@ -132,6 +187,56 @@ export function QuoteBoardLink({
       What people said
       <span className="font-mono opacity-70">{count}</span>
     </button>
+  );
+}
+
+/**
+ * The quotes button as something droppable: put it in an insight card and it
+ * finds the card's own cluster. In admin it says which one it landed on, and
+ * says so when it lands on none, because a button that silently shows nothing
+ * is indistinguishable from a broken one.
+ */
+export function QuoteLinkElement({
+  path,
+  data,
+}: {
+  path: string | null;
+  data: Record<string, string>;
+}) {
+  const { content, isAdmin } = useContent();
+  const { available } = useQuoteBoard();
+  const board = content.arcatext.quoteBoard;
+  const typed = (data.cluster ?? '').trim();
+  const resolved = typed || clusterForPath(content, path) || '';
+  const cluster = board?.clusters?.find((c) => c.id === resolved);
+
+  if (!path) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary">
+        <MessageSquareQuote className="h-3.5 w-3.5" />
+        What people said
+      </span>
+    );
+  }
+
+  return (
+    <div>
+      <QuoteBoardLink clusterId={cluster?.id} className="mt-0" />
+      {isAdmin && (
+        <p className="mt-2 font-mono text-[10px] leading-relaxed text-muted-foreground/70">
+          {!available
+            ? 'No quote board on this page.'
+            : cluster
+              ? `→ ${cluster.id}${typed ? '' : ' (matched from the card above)'}`
+              : 'No cluster matched. Type one below.'}
+          {' · '}
+          <Editable as="span" path={`${path}.data.cluster`} className="inline-block min-w-8" />
+          {!cluster && board?.clusters?.length ? (
+            <span className="opacity-60"> — {board.clusters.map((c) => c.id).join(', ')}</span>
+          ) : null}
+        </p>
+      )}
+    </div>
   );
 }
 

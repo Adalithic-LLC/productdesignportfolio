@@ -9,6 +9,7 @@ import { useContent } from './ContentContext';
 import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
+import { QuoteLinkElement } from '@/components/QuoteBoard';
 import { MARK_KEYS } from '@/lib/brandMarks';
 import { cn } from '@/lib/utils';
 import type { ProseBlock, ProseItem } from './proseBlocks';
@@ -913,6 +914,16 @@ export const ELEMENTS: ElementDef[] = [
     group: 'Layout',
     defaultData: { height: '32' },
     body: (ctx) => <Spacer ctx={ctx} />,
+  },
+  {
+    /* Not in "Cards": it is a control that belongs inside a card, not a card
+       of its own, so a run of them must never be gridded. Its one field is
+       the cluster to open, left empty so it works the card out for itself. */
+    id: 'quotes-link',
+    label: 'Quotes button',
+    group: 'Callouts',
+    defaultData: { cluster: '' },
+    body: (ctx) => <QuoteLinkElement path={ctx.path} data={ctx.data} />,
   },
   {
     id: 'quote',
