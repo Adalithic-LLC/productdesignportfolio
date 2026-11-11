@@ -50,12 +50,59 @@ export interface ElementDef {
 /** Build a field renderer: editable when a path is set, static text otherwise. */
 function makeField(ctx: ElementCtx) {
   return function F({ field, as = 'span', className, multiline = false }: FieldProps) {
-    if (ctx.path) {
-      return <Editable as={as} path={`${ctx.path}.data.${field}`} className={className} multiline={multiline} />;
-    }
+    const value = ctx.data[field] ?? '';
+    if (ctx.path) return <EditableField ctx={ctx} field={field} as={as} className={className} multiline={multiline} />;
+    /* An emptied field is a removed one: nothing drawn, and no empty line
+       left where it was. In admin it stays reachable -- see EditableField. */
+    if (!value.trim()) return null;
     const Tag = as as ElementType;
-    return <Tag className={className}>{ctx.data[field] ?? ''}</Tag>;
+    return <Tag className={className}>{value}</Tag>;
   };
+}
+
+/**
+ * A live element field. Split out of `makeField` because it needs a hook:
+ * cleared text has to keep its slot in admin -- that empty box is the only
+ * way back to a field once it is emptied -- while a visitor sees nothing at
+ * all, which is what makes clearing a field the way to remove it.
+ */
+function EditableField({
+  ctx,
+  field,
+  as,
+  className,
+  multiline,
+}: FieldProps & { ctx: ElementCtx }) {
+  const { isAdmin } = useContent();
+  const value = ctx.data[field] ?? '';
+  if (!isAdmin && !value.trim()) return null;
+  return (
+    <Editable
+      as={as}
+      path={`${ctx.path}.data.${field}`}
+      className={className}
+      multiline={multiline}
+    />
+  );
+}
+
+/**
+ * Room inside a card for anything its own fields do not cover: another
+ * paragraph, a heading, a picture, a whole card.
+ *
+ * Every element has one, at the foot of its content and inside its padding,
+ * so a note added to a card reads as part of the card rather than as
+ * something sitting under it. Created on first insert, so a card that never
+ * uses it carries no key and renders nothing extra.
+ *
+ * `prose={false}`: the type inside a card is the card's, a step down from the
+ * page's body text, so the slot leaves it to whatever it is dropped into.
+ */
+function ElementSlot({ ctx, className }: { ctx: ElementCtx; className?: string }) {
+  if (!ctx.path) return null;
+  return (
+    <BlockSlot prose={false} path={`${ctx.path}.inside`} className={cn('my-0 mt-4', className)} />
+  );
 }
 
 /**
@@ -146,6 +193,7 @@ function LogoCard({ ctx }: { ctx: ElementCtx }) {
           {ctx.data.body ?? ''}
         </p>
       )}
+      <ElementSlot ctx={ctx} />
       {ctx.path && isAdmin && (
         <p className="mt-auto text-left text-xs text-muted-foreground/70">
           <span className="font-medium">Logos:</span>{' '}
@@ -203,6 +251,7 @@ function TextCard({ ctx }: { ctx: ElementCtx }) {
       ) : (
         <p className={body}>{ctx.data.body ?? ''}</p>
       )}
+      <ElementSlot ctx={ctx} />
       {ctx.path && isAdmin && (
         <div contentEditable={false} className="mt-4 flex items-center gap-1">
           <span className="mr-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
@@ -666,6 +715,7 @@ export const ELEMENTS: ElementDef[] = [
         <div className="rounded-2xl bg-muted/40 p-6 lg:p-8">
           <F field="title" as="h4" className="font-semibold mb-2 text-balance" />
           <F field="desc" as="p" multiline className="text-sm text-muted-foreground leading-relaxed" />
+          <ElementSlot ctx={ctx} />
         </div>
       );
     },
@@ -692,6 +742,7 @@ export const ELEMENTS: ElementDef[] = [
           <F field="num" as="span" className="text-sm font-mono text-primary/70" />
           <F field="title" as="h3" className="text-lg lg:text-xl font-semibold mt-2 mb-3" />
           <F field="desc" as="p" multiline className="text-sm text-muted-foreground leading-relaxed" />
+          <ElementSlot ctx={ctx} />
         </div>
       );
     },
@@ -707,6 +758,7 @@ export const ELEMENTS: ElementDef[] = [
         <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/[0.03] p-6 lg:p-8">
           <F field="title" as="h4" className="font-semibold mb-2 text-balance" />
           <F field="desc" as="p" multiline className="text-sm text-muted-foreground leading-relaxed" />
+          <ElementSlot ctx={ctx} />
         </div>
       );
     },
@@ -730,6 +782,7 @@ export const ELEMENTS: ElementDef[] = [
             className="inline-block self-start px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-sm font-medium font-mono"
           />
           <F field="desc" as="p" multiline className="text-sm text-muted-foreground leading-relaxed" />
+          <ElementSlot ctx={ctx} className="mt-0" />
         </div>
       );
     },
@@ -745,6 +798,7 @@ export const ELEMENTS: ElementDef[] = [
         <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/[0.03] p-6">
           <F field="value" as="div" className="text-3xl sm:text-4xl font-bold gradient-text mb-2" />
           <F field="label" as="div" multiline className="text-sm text-muted-foreground leading-relaxed" />
+          <ElementSlot ctx={ctx} />
         </div>
       );
     },
@@ -761,7 +815,10 @@ export const ELEMENTS: ElementDef[] = [
           <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
             <Check className="w-4 h-4 text-primary" />
           </div>
-          <F field="text" as="p" multiline className="text-sm sm:text-base text-foreground/85 leading-relaxed" />
+          <div className="flex-1">
+            <F field="text" as="p" multiline className="text-sm sm:text-base text-foreground/85 leading-relaxed" />
+            <ElementSlot ctx={ctx} />
+          </div>
         </div>
       );
     },
@@ -780,6 +837,7 @@ export const ELEMENTS: ElementDef[] = [
               <F field="eyebrow" as="span" className="text-xs font-mono text-primary/70" />
               <F field="title" as="h4" className="text-lg lg:text-xl font-semibold mt-2 mb-3" />
               <F field="question" as="p" multiline className="text-sm text-muted-foreground leading-relaxed italic" />
+              <ElementSlot ctx={ctx} />
             </div>
             <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0 mt-1" />
           </div>
@@ -798,6 +856,7 @@ export const ELEMENTS: ElementDef[] = [
         <div className="rounded-2xl bg-primary/10 p-8">
           <F field="eyebrow" as="p" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
           <F field="text" as="p" multiline className="text-xl sm:text-2xl font-semibold text-balance leading-snug" />
+          <ElementSlot ctx={ctx} />
         </div>
       );
     },
@@ -867,6 +926,7 @@ export const ELEMENTS: ElementDef[] = [
           <blockquote className="text-2xl sm:text-3xl font-semibold leading-snug text-balance">
             <F field="text" as="span" multiline />
           </blockquote>
+          <ElementSlot ctx={ctx} />
         </figure>
       );
     },
