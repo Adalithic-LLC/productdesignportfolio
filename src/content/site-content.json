@@ -2022,7 +2022,7 @@
       "clusters": [
         {
           "id": "disconnected",
-          "insight": "Learning is disconnected from real life",
+          "insight": "Apps are disconnected from real life",
           "groups": [
             {
               "title": "Years in, still can't converse",
@@ -2037,7 +2037,7 @@
                 },
                 {
                   "who": "P19 · Spanish, 28",
-                  "text": "I mean honestly I just — I open it on the train, do the thing, close it, and I couldn't tell you one sentence I learned."
+                  "text": "I mean honestly I just. I open it on the train, do the thing, close it, and I couldn't tell you one sentence I learned."
                 },
                 {
                   "who": "P02 · Japanese, 41",
@@ -2458,36 +2458,7 @@
         "It had to support relevant vocabulary and grammar, align with users’ interests, and enable practice through real or highly customizable conversations. That led to a keyboard-first strategy: a keyboard could support real conversations wherever they already happened, while also creating a foundation for future AI conversation tools, learning insights, and teacher-facing features."
       ],
       "insightToResponseTitle": "From insight to product response",
-      "productResponses": [
-        {
-          "insight": "Reduce friction in translating and understanding messages",
-          "response": "A consolidated keyboard experience that brought previously dispersed translation tasks into one writing surface."
-        },
-        {
-          "insight": "Build confidence before sending",
-          "response": "The Check experience: reverse translation, a glanceable naturalness score concept, and teacher-style explanations to verify intent and avoid sending fluent-looking translations that subtly change meaning."
-        },
-        {
-          "insight": "Support same-language corrections",
-          "response": "Part of the Reword feature — improving clarity, grammar, and naturalness even when the user is not translating into another language."
-        },
-        {
-          "insight": "Lower the barrier for non-Roman script languages",
-          "response": "Alphabet and romanization controls."
-        },
-        {
-          "insight": "Help users maintain conversation context",
-          "response": "The \"send a copy\" concept, helping users preserve translated context across message exchanges."
-        },
-        {
-          "insight": "Expose the learning value inside each message",
-          "response": "Synonyms, homograph clarification, sentence breakdown, and the Meaning Map concept."
-        },
-        {
-          "insight": "Support contextual accuracy through user controls",
-          "response": "Gender controls, script options, clarification tools, and alternate phrasing."
-        }
-      ]
+      "productResponses": []
     },
     "strategy": {
       "eyebrow": "Strategy",
@@ -4456,36 +4427,109 @@
         ],
         "1": [
           {
-            "type": "heading",
+            "type": "element",
             "style": "h4",
-            "text": "01. Learning is disconnected from real life"
-          },
-          {
-            "type": "paragraph",
-            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
-          },
-          {
-            "type": "element",
-            "variant": "callout",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
             "data": {
-              "eyebrow": "Recommendation 01",
-              "text": "fjkdsla;f jkdsla'f"
-            }
+              "num": "Insight 01",
+              "title": "Apps are disconnected from real life",
+              "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "quotes-link",
+                "data": {
+                  "cluster": ""
+                }
+              },
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "12"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Enable conversations with real people and leverage AI for realistic scenario practice."
+              }
+            ],
+            "stack": true
           },
           {
             "type": "element",
-            "variant": "spacer",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
             "data": {
-              "height": "300"
-            }
+              "num": "Insight 02",
+              "title": "Real conversations lose learning value over time",
+              "desc": "In community-based apps, users experience the same conversations repeatedly without a connection to a specific goal."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
           },
           {
             "type": "element",
-            "text": "Current learning systems offer the feeling of progress, but learners succeed within unrealistic constructed environments and struggle in real conversations when they need to use the language without support.",
-            "variant": "grid",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 03",
+              "title": "Generic content is prioritized over personal goals",
+              "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
             "data": {
               "cols": "2",
-              "rows": "3"
+              "rows": "3",
+              "num": "Insight 04",
+              "title": "Language apps don't leverage teachers",
+              "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
             },
             "cells": {
               "r1c1": [
@@ -4672,17 +4716,164 @@
                   }
                 }
               ]
-            }
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "variant": "card-numbered",
+            "data": {
+              "eyebrow": "Recommendation 01",
+              "text": "fjkdsla;f jkdsla'f",
+              "num": "Insight 05",
+              "title": "Language nuance needed more controls",
+              "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning. Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs."
+            },
+            "style": "h4",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Multi-tool workflows create too much friction",
+              "desc": "When practicing with real chats in messaging apps, learners had to move between the messaging app and translation app just to understand and respond to a message. Even when using translation keyboards, this friction still existed."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Trust mattered as much as accuracy",
+              "desc": "Users know tools like Google Translate and DeepL can be \"bad,\" but they think of bad translation as obvious broken grammar. They are less prepared for the more dangerous failure: a translation that looks fluent but changes tone, sounds unnatural, or subtly shifts intent."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "variant": "card-numbered",
+            "data": {
+              "height": "300",
+              "num": "Insight 06",
+              "title": "Unfamiliar scripts add a second barrier",
+              "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language."
+            },
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "variant": "spacer",
+            "data": {
+              "height": "300",
+              "eyebrow": "Recommendation 01",
+              "text": "fjkdsla;f jkdsla'f"
+            },
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
           }
+        ],
+        "hidden": [
+          "0",
+          "1"
         ]
       },
       "3-in": {
-        "1": [
-          {
-            "type": "paragraph",
-            "text": "Research synthesis produced a set of key product concepts."
-          }
-        ]
+        "1": []
       }
     },
     "arcatext-05": {
@@ -4833,6 +5024,41 @@
         }
       ],
       "3": []
+    },
+    "arcatext-research": {
+      "1-in": {
+        "hidden": [
+          "0",
+          "1"
+        ]
+      },
+      "2-in": {
+        "hidden": [
+          "0",
+          "1"
+        ]
+      },
+      "3-in": {
+        "hidden": [
+          "0",
+          "1"
+        ]
+      },
+      "4-in": {
+        "hidden": [
+          "0",
+          "1"
+        ]
+      },
+      "hidden": [
+        "0"
+      ],
+      "6-in": {
+        "hidden": [
+          "0",
+          "1"
+        ]
+      }
     }
   },
   "aristotle": {
@@ -5028,5 +5254,41 @@
         }
       ]
     }
-  }
+  },
+  "blockGroups": [
+    {
+      "id": "gmwbnzjl3kaeo",
+      "name": "Insight block",
+      "blocks": [
+        {
+          "type": "element",
+          "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+          "variant": "card-numbered",
+          "data": {
+            "num": "Insight 01",
+            "title": "Learning is disconnected from real life",
+            "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+          },
+          "inside": [
+            {
+              "type": "element",
+              "variant": "spacer",
+              "data": {
+                "height": "32"
+              }
+            },
+            {
+              "type": "heading",
+              "style": "eyebrow",
+              "text": "Product Response"
+            },
+            {
+              "type": "paragraph",
+              "text": "Learning is disconnected from real life"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
