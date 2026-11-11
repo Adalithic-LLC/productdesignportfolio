@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { SiteContent } from './types';
-import { canMoveBlocks, type InsertTool, type ProseBlock } from './proseBlocks';
+import type { BlockGroup, SiteContent } from './types';
+import { canMoveBlocks, type InsertTool, type ProseBlock, type ProseItem } from './proseBlocks';
 import defaultContent from './site-content.json';
 
 /**
@@ -58,12 +58,30 @@ interface ContentContextValue {
   setInsertTool: (tool: InsertTool | null) => void;
   /** Whether admin "Move" mode is active (select + reorder sections/blocks). */
   moveMode: boolean;
+  /**
+   * Whether admin "Duplicate" mode is active: the same block selection as
+   * Move, but what you do with it is copy it in place or keep it under a name
+   * to place again later.
+   */
+  groupMode: boolean;
   /** The current move selection, or null when nothing is selected. */
   selection: MoveSelection | null;
   /** Enter move mode (clears any insert tool and selection). */
   startMove: () => void;
   /** Exit move mode and clear the selection. */
   cancelMove: () => void;
+  /** Enter duplicate mode (clears any insert tool and selection). */
+  startGroup: () => void;
+  /** Leave duplicate mode and clear the selection. */
+  cancelGroup: () => void;
+  /** Copy the selected blocks in directly below themselves. */
+  duplicateSelection: () => void;
+  /** Keep the selected blocks under a name, to place again later. */
+  saveSelectionAsGroup: (name: string) => void;
+  /** Forget a saved group. The blocks already placed from it are untouched. */
+  deleteBlockGroup: (id: string) => void;
+  /** Splice a saved group's blocks into the list at `path`, before `index`. */
+  insertGroup: (path: string, index: number, id: string) => void;
   toggleSectionSelection: (id: string) => void;
   toggleBlockSelection: (path: string, index: number) => void;
   /** Select/deselect one of a seam group's own parts (page markup). */
@@ -428,6 +446,7 @@ export function ContentProvider({
   const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
   const [insertTool, setInsertToolState] = useState<InsertTool | null>(null);
   const [moveMode, setMoveMode] = useState(false);
+  const [groupMode, setGroupMode] = useState(false);
   const [selection, setSelection] = useState<MoveSelection | null>(null);
 
   /* Admin actions change the layout around the reader: arming a tool opens an
@@ -523,6 +542,7 @@ export function ContentProvider({
     holdScroll();
     if (tool) {
       setMoveMode(false);
+      setGroupMode(false);
       setSelection(null);
     }
     setInsertToolState(tool);
@@ -531,6 +551,7 @@ export function ContentProvider({
   const startMove = useCallback(() => {
     holdScroll();
     setInsertToolState(null);
+    setGroupMode(false);
     setSelection(null);
     setMoveMode(true);
   }, [holdScroll]);
@@ -538,6 +559,20 @@ export function ContentProvider({
   const cancelMove = useCallback(() => {
     holdScroll();
     setMoveMode(false);
+    setSelection(null);
+  }, [holdScroll]);
+
+  const startGroup = useCallback(() => {
+    holdScroll();
+    setInsertToolState(null);
+    setMoveMode(false);
+    setSelection(null);
+    setGroupMode(true);
+  }, [holdScroll]);
+
+  const cancelGroup = useCallback(() => {
+    holdScroll();
+    setGroupMode(false);
     setSelection(null);
   }, [holdScroll]);
 
@@ -823,6 +858,96 @@ export function ContentProvider({
     [persistDraft, requestScrollRestore]
   );
 
+  /* A deep copy, so a duplicate and its original share nothing: editing one
+     must never reach into the other, and a saved group has to survive the
+     blocks it was taken from being changed or deleted. */
+  const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+  /** The selected blocks, in page order, or null when the selection is not blocks. */
+  const selectedBlocks = useCallback((): { path: string; indices: number[] } | null => {
+    if (selection?.domain !== 'block' || selection.indices.length === 0) return null;
+    return { path: selection.path, indices: [...selection.indices].sort((a, b) => a - b) };
+  }, [selection]);
+
+  /* Placed directly under the last of them rather than at the end of the
+     list: a duplicate you then have to hunt for is barely a duplicate, and
+     the thing being copied is a run that reads in order. */
+  const duplicateSelection = useCallback(() => {
+    const picked = selectedBlocks();
+    if (!picked) return;
+    const { path, indices } = picked;
+    requestScrollRestore(path);
+    setContent((prev) => {
+      const arr = getByPath(prev, path);
+      if (!Array.isArray(arr)) return prev;
+      const copies = indices.map((i) => clone(arr[i] as ProseItem));
+      const at = Math.min(arr.length, indices[indices.length - 1] + 1);
+      const list = [...arr];
+      list.splice(at, 0, ...copies);
+      const next = setByPath(prev, path, list);
+      persistDraft(next);
+      return next;
+    });
+    setSelection(null);
+  }, [selectedBlocks, persistDraft, requestScrollRestore]);
+
+  const saveSelectionAsGroup = useCallback(
+    (name: string) => {
+      const picked = selectedBlocks();
+      const label = name.trim();
+      if (!picked || !label) return;
+      const { path, indices } = picked;
+      setContent((prev) => {
+        const arr = getByPath(prev, path);
+        if (!Array.isArray(arr)) return prev;
+        const group: BlockGroup = {
+          id: `g${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+          name: label,
+          blocks: indices.map((i) => clone(arr[i] as ProseItem)),
+        };
+        const existing = Array.isArray(prev.blockGroups) ? prev.blockGroups : [];
+        const next = setByPath(prev, 'blockGroups', [...existing, group]);
+        persistDraft(next);
+        return next;
+      });
+      setSelection(null);
+    },
+    [selectedBlocks, persistDraft]
+  );
+
+  const deleteBlockGroup = useCallback(
+    (id: string) => {
+      setContent((prev) => {
+        const existing = Array.isArray(prev.blockGroups) ? prev.blockGroups : [];
+        if (!existing.some((g) => g.id === id)) return prev;
+        const next = setByPath(prev, 'blockGroups', existing.filter((g) => g.id !== id));
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft]
+  );
+
+  /* Copies again on the way in, so placing one group twice gives two runs
+     that drift apart as they are edited rather than one shared by reference. */
+  const insertGroup = useCallback(
+    (path: string, index: number, id: string) => {
+      requestScrollRestore(path);
+      setContent((prev) => {
+        const group = (prev.blockGroups ?? []).find((g) => g.id === id);
+        if (!group || group.blocks.length === 0) return prev;
+        const arr = getByPath(prev, path);
+        const list = Array.isArray(arr) ? [...arr] : [];
+        const at = Math.max(0, Math.min(index, list.length));
+        list.splice(at, 0, ...group.blocks.map((b) => clone(b as ProseItem)));
+        const next = setByPath(prev, path, list);
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft, requestScrollRestore]
+  );
+
   const setToken = useCallback((value: string) => {
     setTokenState(value);
     try {
@@ -1030,9 +1155,16 @@ export function ContentProvider({
       insertTool,
       setInsertTool,
       moveMode,
+      groupMode,
       selection,
       startMove,
       cancelMove,
+      startGroup,
+      cancelGroup,
+      duplicateSelection,
+      saveSelectionAsGroup,
+      deleteBlockGroup,
+      insertGroup,
       toggleSectionSelection,
       toggleBlockSelection,
       togglePartSelection,
@@ -1052,7 +1184,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, selection, startMove, cancelMove, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

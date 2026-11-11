@@ -189,7 +189,11 @@ export default function Arcatext() {
               'radial-gradient(ellipse at 20% 20%, hsl(var(--primary) / 0.18) 0%, transparent 55%), radial-gradient(ellipse at 80% 0%, hsl(var(--accent) / 0.14) 0%, transparent 50%)',
           }}
         />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Seamed like a section, though it is the page header rather than a
+            section: without it the title and the line under it were the one
+            part of the page that could be retyped but never moved or taken
+            out. */}
+        <SectionBody id="arcatext-hero" className="max-w-6xl">
           {/* The name and what it is, and nothing else: the way into the
               prototype is now the first card of the row below, among the
               phones it belongs with, and the facts of the work sit with the
@@ -239,7 +243,7 @@ export default function Arcatext() {
             path="arcatext.hero.subhead"
             className="my-0 mt-5 max-w-4xl space-y-4 text-balance [&_p]:text-xl [&_p]:font-bold [&_p]:tracking-tight [&_p]:text-foreground sm:[&_p]:text-2xl lg:[&_p]:text-3xl"
           />
-        </div>
+        </SectionBody>
       </section>
 
 
@@ -799,9 +803,11 @@ export default function Arcatext() {
       </section>
       </ReorderableSections>
 
-      {/* Footer CTA */}
+      {/* Footer CTA. Seamed too, for the same reason as the header: a page
+          where every section can be rearranged but the closing call cannot is
+          a page with one stubborn corner in it. */}
       <section className="py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <SectionBody id="arcatext-cta" className="max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-balance">
             <Editable as="span" path="arcatext.footerCta.titleLead" />{' '}
             <Editable as="span" path="arcatext.footerCta.titleHighlight" className="gradient-text" />{' '}
@@ -829,7 +835,7 @@ export default function Arcatext() {
               </a>
             </Button>
           </div>
-        </div>
+        </SectionBody>
       </section>
     </div>
   );

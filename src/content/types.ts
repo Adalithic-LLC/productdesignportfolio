@@ -126,7 +126,21 @@ export interface AristotleContent {
   sources: { label: string; items: { text: string; href: string }[] };
 }
 
+/**
+ * A run of blocks an admin saved to stamp out again: a heading, its paragraph
+ * and the card under it, kept together under a name. Stored on the content
+ * root, so a group saved on one page can be dropped into any other.
+ */
+export interface BlockGroup {
+  id: string;
+  name: string;
+  /** Deep copies, taken at save time: editing the original leaves these be. */
+  blocks: unknown[];
+}
+
 export interface SiteContent {
+  /** Saved block groups, in the order they were created. */
+  blockGroups?: BlockGroup[];
   nav: {
     links: NavLink[];
   };

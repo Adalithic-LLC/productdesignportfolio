@@ -34,9 +34,10 @@ function focusAtEnd(el: HTMLElement) {
 }
 
 /** Short label for the armed tool, used on the insertion line. */
-function toolLabel(tool: InsertTool): string {
+function toolLabel(tool: InsertTool, groups: { id: string; name: string }[] = []): string {
   if (tool.kind === 'paragraph') return 'Paragraph';
   if (tool.kind === 'heading') return headerConfig(tool.style).label;
+  if (tool.kind === 'group') return groups.find((g) => g.id === tool.id)?.name ?? 'Group';
   return getElement(tool.variant)?.label ?? 'Element';
 }
 
@@ -91,7 +92,8 @@ export function EditableBlocks({
   from?: number;
   to?: number;
 }) {
-  const { content, isAdmin, moveMode, insertTool, selection, moveBlocksTo } = useContent();
+  const { content, isAdmin, moveMode, groupMode, insertTool, selection, moveBlocksTo } =
+    useContent();
   const raw = getByPath(content, path);
   const all: ProseItem[] = Array.isArray(raw) ? (raw as ProseItem[]) : [];
   const start = Math.max(0, Math.min(from, all.length));
@@ -101,8 +103,13 @@ export function EditableBlocks({
   const items = all;
 
   const inMove = isAdmin && moveMode;
-  // While inserting or moving, every gap gets an insert/move line.
-  const interactive = inMove || (isAdmin && !!insertTool);
+  /* Duplicate mode picks blocks exactly as Move does -- same overlay, same
+     selection -- so the two share `MoveBlock`. What differs is the gaps: Move
+     offers somewhere to put them, Duplicate does not, because a copy lands
+     under its original. */
+  const picking = inMove || (isAdmin && groupMode);
+  // While inserting, moving or duplicating, every gap gets its line.
+  const interactive = picking || (isAdmin && !!insertTool);
   const moveActiveHere =
     inMove &&
     selection?.domain === 'block' &&
@@ -134,9 +141,9 @@ export function EditableBlocks({
      picture and its caption side by side, which a line in the cell would
      break, so while a tool is armed it stacks with the lines between. */
   const slot = (gap: number) =>
-    !interactive ? null : inMove ? moveLine(gap) : <InsertZone key={`zone-${gap}`} path={path} index={gap} />;
+    !interactive ? null : picking ? moveLine(gap) : <InsertZone key={`zone-${gap}`} path={path} index={gap} />;
   const block = (i: number) =>
-    inMove ? (
+    picking ? (
       <MoveBlock key={i} path={path} index={i} item={items[i]} />
     ) : (
       <Block key={i} path={path} index={i} item={items[i]} editable={isAdmin} />
@@ -226,10 +233,10 @@ export function BlockSlot({
      pass false: their type is the card's, not the page's. */
   prose?: boolean;
 }) {
-  const { content, isAdmin, insertTool, moveMode } = useContent();
+  const { content, isAdmin, insertTool, moveMode, groupMode } = useContent();
   const raw = getByPath(content, path);
   const items: ProseItem[] = Array.isArray(raw) ? (raw as ProseItem[]) : [];
-  const armed = isAdmin && (!!insertTool || moveMode);
+  const armed = isAdmin && (!!insertTool || moveMode || groupMode);
   if (items.length === 0 && !armed) return null;
   return (
     <div
@@ -313,9 +320,13 @@ export function ItemGroup({
       {kids.map((child, i) => {
         if (!isValidElement(child)) return child;
         const el = child as ReactElement<{ className?: string; children?: ReactNode }>;
-        return cloneElement(el, {
+        return cloneElement(el as ReactElement<Record<string, unknown>>, {
           key: i,
           className: cn('relative', el.props.className),
+          /* Names the content entry this child stands for: the probe that
+             checks every editable thing on the page can be moved or deleted
+             looks for one of these, a part, or a block. */
+          'data-item': `${path}.${i}`,
           children: (
             <>
               {el.props.children}
@@ -447,6 +458,7 @@ function SeamGroup({
             {line(gap)}
             {slot}
             <div
+              data-part={`${prefix}.${key}`}
               className={cn(
                 'relative',
                 picked(key) && 'rounded-xl ring-2 ring-primary ring-offset-4 ring-offset-background'
@@ -563,6 +575,10 @@ function MoveBlock({ path, index, item }: { path: string; index: number; item: P
 
   return (
     <div
+      /* On the wrapper as well as the overlay below: the overlay is a sibling
+         of the content, so anything asking "is this thing selectable?" by
+         walking up from the content would never find it there. */
+      data-movable={`${path}.${index}`}
       className={cn(
         'relative rounded-lg transition-shadow',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
@@ -636,18 +652,26 @@ function Block({
  * the block that will be created.
  */
 function InsertZone({ path, index }: { path: string; index: number }) {
-  const { isAdmin, insertTool, insertBlock } = useContent();
+  const { content, isAdmin, insertTool, insertBlock, insertGroup } = useContent();
   const [hover, setHover] = useState(false);
 
   if (!isAdmin || !insertTool) return null;
 
+  const groups = content.blockGroups ?? [];
   const heading = insertTool.kind === 'heading';
   const isElement = insertTool.kind === 'element';
+  const isGroup = insertTool.kind === 'group';
   const cfg = heading ? headerConfig(insertTool.style) : null;
 
   const handleInsert = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    /* A group is several blocks at once, so it splices and there is no one
+       field to put the caret in afterwards. */
+    if (insertTool.kind === 'group') {
+      insertGroup(path, index, insertTool.id);
+      return;
+    }
     const block = isElement ? makeElementBlock(insertTool.variant) : blockForTool(insertTool);
     insertBlock(path, index, block);
     /* The tool stays armed: adding one of something is rarely the whole job,
@@ -670,7 +694,7 @@ function InsertZone({ path, index }: { path: string; index: number }) {
     <div
       role="button"
       tabIndex={0}
-      aria-label={`Insert ${toolLabel(insertTool)} here`}
+      aria-label={`Insert ${toolLabel(insertTool, groups)} here`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={handleInsert}
@@ -686,7 +710,7 @@ function InsertZone({ path, index }: { path: string; index: number }) {
             hover ? 'text-primary' : 'text-primary/60'
           )}
         >
-          + {toolLabel(insertTool)}
+          + {toolLabel(insertTool, groups)}
         </span>
         <span
           className={cn(
@@ -698,7 +722,12 @@ function InsertZone({ path, index }: { path: string; index: number }) {
 
       {hover && (
         <div className="pointer-events-none mt-2 select-none opacity-60" aria-hidden>
-          {isElement ? (
+          {isGroup ? (
+            <p className="text-sm text-muted-foreground">
+              {groups.find((g) => g.id === (insertTool as { id: string }).id)?.blocks.length ?? 0}{' '}
+              blocks
+            </p>
+          ) : isElement ? (
             <ElementPreview variant={insertTool.variant} />
           ) : cfg ? (
             (() => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, ExternalLink, Eye, EyeOff, LayoutGrid, List, Loader2, LogOut, Move, Plus, RotateCcw, Save, X } from 'lucide-react';
+import { Check, ChevronDown, Copy, ExternalLink, Eye, EyeOff, LayoutGrid, List, Loader2, LogOut, Move, Plus, RotateCcw, Save, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -27,11 +27,15 @@ export function AdminBar() {
     isAdmin, dirty, token, branch, saveState,
     insertTool, setInsertTool,
     moveMode, selection, startMove, cancelMove,
+    groupMode, startGroup, cancelGroup,
+    duplicateSelection, saveSelectionAsGroup, deleteBlockGroup,
     setToken, setBranch, save, discardChanges, setPreviewing, content, setText,
   } = useContent();
   const [showToken, setShowToken] = useState(false);
   const [open, setOpen] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
+  // The name being typed for a group, or null when not naming one.
+  const [groupName, setGroupName] = useState<string | null>(null);
   // Element palette: which variant is being hovered (drives the side preview).
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [hiddenOpen, setHiddenOpen] = useState(false);
@@ -39,15 +43,16 @@ export function AdminBar() {
 
   // Esc cancels an armed insert tool or move mode.
   useEffect(() => {
-    if (!insertTool && !moveMode) return;
+    if (!insertTool && !moveMode && !groupMode) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       if (insertTool) setInsertTool(null);
       if (moveMode) cancelMove();
+      if (groupMode) cancelGroup();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [insertTool, moveMode, setInsertTool, cancelMove]);
+  }, [insertTool, moveMode, groupMode, setInsertTool, cancelMove, cancelGroup]);
 
   if (!isAdmin) return null;
 
@@ -57,13 +62,16 @@ export function AdminBar() {
   const paragraphArmed = insertTool?.kind === 'paragraph';
   const headerArmed = insertTool?.kind === 'heading';
   const elementArmed = insertTool?.kind === 'element';
+  const savedGroups = content.blockGroups ?? [];
   const armedLabel = !insertTool
     ? ''
     : insertTool.kind === 'paragraph'
       ? 'Paragraph'
       : insertTool.kind === 'heading'
         ? headerConfig(insertTool.style).label
-        : getElement(insertTool.variant)?.label ?? 'Element';
+        : insertTool.kind === 'group'
+          ? savedGroups.find((g) => g.id === insertTool.id)?.name ?? 'Group'
+          : getElement(insertTool.variant)?.label ?? 'Element';
 
   const selectedCount = !selection
     ? 0
@@ -112,6 +120,13 @@ export function AdminBar() {
     {insertTool && (
       <div className="fixed top-20 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-center text-xs font-medium text-primary shadow-lg backdrop-blur">
         Inserting {armedLabel} — click a “+ {armedLabel}” line in the page. Esc to cancel.
+      </div>
+    )}
+    {groupMode && (
+      <div className="fixed top-20 left-1/2 z-[100] -translate-x-1/2 max-w-[calc(100%-2rem)] rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-center text-xs font-medium text-primary shadow-lg backdrop-blur">
+        {selectedCount === 0
+          ? 'Duplicate mode — click the blocks that belong together. Esc to cancel.'
+          : `${selectedCount} block${selectedCount > 1 ? 's' : ''} selected — Duplicate copies them in below, or save them as a group to place again later.`}
       </div>
     )}
     {moveMode && (
@@ -251,6 +266,56 @@ export function AdminBar() {
                   )}
                 </DropdownMenuItem>
               ))}
+              {savedGroups.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
+                    Saved groups
+                  </DropdownMenuLabel>
+                  {savedGroups.map((g) => (
+                    <DropdownMenuItem
+                      key={g.id}
+                      onMouseEnter={() => setHoverVariant(null)}
+                      onClick={() => {
+                        setInsertTool({ kind: 'group', id: g.id });
+                        setPaletteOpen(false);
+                      }}
+                      className="gap-3"
+                    >
+                      <span className="flex-1 truncate">{g.name}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {g.blocks.length}
+                      </span>
+                      {insertTool?.kind === 'group' && insertTool.id === g.id && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                      {/* A span, not a button: a button inside a menu item
+                          takes the item's own click as well as its own. */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        title={`Forget “${g.name}”`}
+                        aria-label={`Forget the group ${g.name}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          deleteBlockGroup(g.id);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteBlockGroup(g.id);
+                          }
+                        }}
+                        className="text-muted-foreground/60 transition-colors hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <span className="mx-1 h-5 w-px bg-border" aria-hidden />
@@ -261,6 +326,17 @@ export function AdminBar() {
             onClick={() => (moveMode ? cancelMove() : startMove())}
           >
             <Move className="h-3.5 w-3.5" /> Move
+          </Button>
+          <Button
+            size="sm"
+            variant={groupMode ? 'default' : 'outline'}
+            className="h-8 gap-1.5 px-2.5 text-xs"
+            onClick={() => {
+              setGroupName(null);
+              groupMode ? cancelGroup() : startGroup();
+            }}
+          >
+            <Copy className="h-3.5 w-3.5" /> Duplicate
           </Button>
           {moveMode && (
             <div className="ml-auto flex items-center gap-1.5 text-xs text-primary">
@@ -278,6 +354,85 @@ export function AdminBar() {
               >
                 Done
               </Button>
+            </div>
+          )}
+          {groupMode && (
+            <div className="ml-auto flex items-center gap-1.5 text-xs text-primary">
+              {groupName === null ? (
+                <>
+                  <span className="hidden sm:inline">
+                    {selectedCount > 0
+                      ? `${selectedCount} block${selectedCount > 1 ? 's' : ''} selected`
+                      : 'Click the blocks to group'}
+                  </span>
+                  <Button
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    disabled={selectedCount === 0}
+                    onClick={duplicateSelection}
+                    title="Copy them in below the originals"
+                  >
+                    Duplicate below
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    disabled={selectedCount === 0}
+                    onClick={() => setGroupName('')}
+                    title="Keep them under a name, to place again later"
+                  >
+                    Save as group
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      setGroupName(null);
+                      cancelGroup();
+                    }}
+                  >
+                    Done
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Input
+                    autoFocus
+                    value={groupName}
+                    placeholder="Name this group"
+                    onChange={(e) => setGroupName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && groupName.trim()) {
+                        saveSelectionAsGroup(groupName);
+                        setGroupName(null);
+                      }
+                      if (e.key === 'Escape') setGroupName(null);
+                    }}
+                    className="h-7 w-44 text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    disabled={!groupName.trim()}
+                    onClick={() => {
+                      saveSelectionAsGroup(groupName);
+                      setGroupName(null);
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setGroupName(null)}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
             </div>
           )}
           {insertTool && (

@@ -36,7 +36,10 @@ export type ProseItem = string | ProseBlock;
 export type InsertTool =
   | { kind: 'paragraph' }
   | { kind: 'heading'; style: HeaderStyle }
-  | { kind: 'element'; variant: string };
+  | { kind: 'element'; variant: string }
+  /* A saved run of blocks (see BlockGroup). Unlike the others it places more
+     than one block, so the insert zone splices rather than inserts. */
+  | { kind: 'group'; id: string };
 
 export interface HeaderStyleConfig {
   style: HeaderStyle;
@@ -138,5 +141,6 @@ export function headerConfig(style: HeaderStyle | undefined): HeaderStyleConfig 
 export function blockForTool(tool: InsertTool): ProseBlock {
   if (tool.kind === 'paragraph') return { type: 'paragraph', text: '' };
   if (tool.kind === 'heading') return { type: 'heading', style: tool.style, text: '' };
+  if (tool.kind === 'group') throw new Error('a group places its own blocks');
   return { type: 'element', variant: tool.variant, data: {} };
 }
