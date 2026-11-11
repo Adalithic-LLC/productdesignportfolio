@@ -4433,7 +4433,7 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 01",
-              "title": "Apps are disconnected from real life",
+              "title": "Most language apps are disconnected from real life",
               "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
             },
             "inside": [
@@ -4470,7 +4470,93 @@
             "data": {
               "num": "Insight 02",
               "title": "Real conversations lose learning value over time",
-              "desc": "In community-based apps, users experience the same conversations repeatedly without a connection to a specific goal."
+              "desc": "In community-based apps, users experience the same basic conversations and find it difficult to cover a wide range of topics and real life scenarios."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Learners don't have consistent practice in their target language",
+              "desc": "The nature of language exchanges means learners don't consistently read and write in their target language, since each party wants to practice the other's native language."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Learners can't always remember previous discussion topics.",
+              "desc": "In language exchange apps, users don't want to repeat prior questions so they re-read chats. This is amplified when a user has multiple simultaneous chats."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Chat partners are not always available when people want to practice.",
+              "desc": "Schedules don't always align and rich back and forth in a single learning session doesn't happen as often as learners want."
             },
             "inside": [
               {
@@ -4529,7 +4615,7 @@
               "rows": "3",
               "num": "Insight 04",
               "title": "Language apps don't leverage teachers",
-              "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
+              "desc": "Language apps are positioned as alternatives to lessons, and in doing so, ignore a recurring revenue stream of B2B."
             },
             "cells": {
               "r1c1": [
@@ -4744,7 +4830,7 @@
               "eyebrow": "Recommendation 01",
               "text": "fjkdsla;f jkdsla'f",
               "num": "Insight 05",
-              "title": "Language nuance needed more controls",
+              "title": "Language nuance doesn't have controls -----",
               "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning. Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs."
             },
             "style": "h4",
@@ -4834,9 +4920,123 @@
               "height": "300",
               "num": "Insight 06",
               "title": "Unfamiliar scripts add a second barrier",
-              "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language."
+              "desc": "For Japanese, Arabic, Hindi, and others the writing system is its own challenge on top of the language. This makes texting to learn unrealistic."
             },
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Bad quality and awkward translations create obstacles in language practice.",
+              "desc": "Learners with access to native speakers don't engage with them as often as they could for fear of making mistakes. Translation tools they attempt to use sound awkward and sometimes change the meaning, creating confusion with the other person."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Offer a way to access translations during the conversation."
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Writing in the target language drives progress, but tools don't always provide same-language corrections.",
+              "desc": "-------"
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Context gets lost, so learners re-translate messages they've already sent.",
+              "desc": "---"
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Learning is disconnected from real life"
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Learners expect translation to be free; it feels like a basic utility.",
+              "desc": "---"
+            },
             "inside": [
               {
                 "type": "element",
