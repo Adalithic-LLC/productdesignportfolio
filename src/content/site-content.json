@@ -4422,7 +4422,7 @@
         "0": [
           {
             "type": "paragraph",
-            "text": "After broad market research on language learning tools & methods, I approached the user interviews with a focus on realistic conversations and writing tools.\n\nI conducted 31 interviews with language learners and teachers, synthesized 12 insights, then derived recommendations.\nOverall, people learn languages in many different ways: traditional classes, tutors, guided and community apps, texting with translators, and various self-study methods.\n\nI explored the tools they rely on, where existing methods break down, what made conversational practice difficult, and what support they want in real communication contexts."
+            "text": "This project began with an observation on the impracticality of texting to learn a language and inspired a hypothesis that there is a way to carve out a niche, building a learning method around the behavior of texting.\n\nAfter broad market research on language learning tools & methods, I approached the user interviews with a focus on realistic conversations and writing tools.\n\nI conducted 31 interviews with language learners and teachers, synthesized 12 insights, then derived recommendations.\nOverall, people learn languages in many different ways: traditional classes, tutors, guided and community apps, texting with translators, and various self-study methods.\n\nI explored the tools they rely on, where existing methods break down, what made conversational practice difficult, and what support they want in real communication contexts."
           }
         ],
         "1": [
@@ -4497,7 +4497,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 03",
               "title": "Learners don't have consistent practice in their target language",
               "desc": "The nature of language exchanges means learners don't consistently read and write in their target language, since each party wants to practice the other's native language."
             },
@@ -4525,7 +4525,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 04",
               "title": "Learners can't always remember previous discussion topics.",
               "desc": "In language exchange apps, users don't want to repeat prior questions so they re-read chats. This is amplified when a user has multiple simultaneous chats."
             },
@@ -4554,7 +4554,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 05",
               "title": "Chat partners are not always available when people want to practice.",
               "desc": "Schedules don't always align and rich back and forth in a single learning session doesn't happen as often as learners want."
             },
@@ -4583,7 +4583,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 03",
+              "num": "Insight 06",
               "title": "Generic content is prioritized over personal goals",
               "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
             },
@@ -4613,7 +4613,7 @@
             "data": {
               "cols": "2",
               "rows": "3",
-              "num": "Insight 04",
+              "num": "Insight 07",
               "title": "Language apps don't leverage teachers",
               "desc": "Language apps are positioned as alternatives to lessons, and in doing so, ignore a recurring revenue stream of B2B."
             },
@@ -4829,7 +4829,7 @@
             "data": {
               "eyebrow": "Recommendation 01",
               "text": "fjkdsla;f jkdsla'f",
-              "num": "Insight 05",
+              "num": "Insight 08",
               "title": "Language nuance doesn't have controls -----",
               "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning. Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs."
             },
@@ -4860,7 +4860,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 09",
               "title": "Multi-tool workflows create too much friction",
               "desc": "When practicing with real chats in messaging apps, learners had to move between the messaging app and translation app just to understand and respond to a message. Even when using translation keyboards, this friction still existed."
             },
@@ -4889,7 +4889,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 10",
               "title": "Trust mattered as much as accuracy",
               "desc": "Users know tools like Google Translate and DeepL can be \"bad,\" but they think of bad translation as obvious broken grammar. They are less prepared for the more dangerous failure: a translation that looks fluent but changes tone, sounds unnatural, or subtly shifts intent."
             },
@@ -4918,7 +4918,7 @@
             "variant": "card-numbered",
             "data": {
               "height": "300",
-              "num": "Insight 06",
+              "num": "Insight 11",
               "title": "Unfamiliar scripts add a second barrier",
               "desc": "For Japanese, Arabic, Hindi, and others the writing system is its own challenge on top of the language. This makes texting to learn unrealistic."
             },
@@ -4947,7 +4947,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 12",
               "title": "Bad quality and awkward translations create obstacles in language practice.",
               "desc": "Learners with access to native speakers don't engage with them as often as they could for fear of making mistakes. Translation tools they attempt to use sound awkward and sometimes change the meaning, creating confusion with the other person."
             },
@@ -4976,7 +4976,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 13",
               "title": "Writing in the target language drives progress, but tools don't always provide same-language corrections.",
               "desc": "-------"
             },
@@ -5004,7 +5004,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 14",
               "title": "Context gets lost, so learners re-translate messages they've already sent.",
               "desc": "---"
             },
@@ -5033,7 +5033,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 01",
+              "num": "Insight 15",
               "title": "Learners expect translation to be free; it feels like a basic utility.",
               "desc": "---"
             },
