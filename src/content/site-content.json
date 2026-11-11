@@ -506,7 +506,6 @@
     "toc": [
       "Overview",
       "Problem / Opportunity",
-      "Research & Insights",
       "Strategy",
       "Product System",
       "Key Design Decisions",
@@ -1973,20 +1972,15 @@
       "titleLead": "What is",
       "titleHighlight": "Arcatext?",
       "intro": [
-        "Arcatext is a language learning app that combines guided, unstructured, collaborative, and individual methods. It doesn't force anyone onto a particular learning path, but offers flexibility, support, and progress tracking on everything users type.",
+        "Arcatext is a language learning app that offers a range of text-based learning activities, including peer-chats, AI-chats, and creative writing.",
         {
           "type": "paragraph",
-          "text": "Partner writing activities give user access to a community, while the AI writing partner provides individual 24/7 collaborative access."
+          "text": "The overarching goal is offering flexible and user-driven learning over a single generic path while retaining lighter structure and a pedagogical point of view."
         },
         {
           "type": "paragraph",
-          "text": "Guided chats transform the top 1000 most common words into a series of learning scenarios with an embedded structure for gradual vocabulary exposure and spaced repetition."
-        },
-        {
-          "type": "paragraph",
-          "text": "The translation keyboard offers access to the complexity and nuance of language as well as methodological flexibility, allowing users to leverage conversations in any 3rd-party app."
-        },
-        "Underlying the keyboard and writing activities, is a word tracking infrastructure, that automatically documents words that users miss and generates a personal study guide."
+          "text": "The basic architecture is an app that hosts writing activities and the learning community, and a custom keyboard where value extends to 3rd party messaging apps."
+        }
       ],
       "productTypeLabel": "Product type",
       "productTypeList": [
@@ -2002,7 +1996,7 @@
       "readingWritingTitle": "Learning approach",
       "readingWriting": [
         "The basics of language learning are reading, writing, speaking, listening, vocabulary, and grammar. While many tools support speaking practice, I found the biggest opportunity in reading, writing, and listening.",
-        "The texting conversation is the vehicle to deliver value on that learning approach. It gives learners time to pause, reflect, revise, compare, and understand language before responding."
+        "The \"texting conversation\" is the vehicle to deliver value on that learning approach. It gives learners time to pause, reflect, revise, compare, and understand language before responding."
       ],
       "roleTitle": "My role",
       "role": [
@@ -2015,22 +2009,22 @@
         },
         {
           "type": "heading",
-          "style": "h4",
-          "text": "My Role"
+          "style": "h3",
+          "text": "My role"
         },
         "I led Arcatext as the company founder, product designer, and \"AI-developer\". I took the app from early concept through research, design, implementation, launch, and marketing.",
-        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin control center."
+        "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin webapp."
       ]
     },
     "problem": {
-      "eyebrow": "Problem / Opportunity",
-      "titleLead": "Language-learning tools separate practice from",
-      "titleHighlight": "real communication.",
+      "eyebrow": "Insights & requirements",
+      "titleLead": "What I learned from research and",
+      "titleHighlight": "how I applied it.",
       "intro": [],
       "opportunityEyebrow": "Driving question",
       "opportunityLead": "What does a practical self-guided system look like and",
       "opportunityHighlight": "how much structure does it need?",
-      "problemsTitle": "Key problems",
+      "problemsTitle": "Key insights & how a new app can respond",
       "problems": [
         {
           "title": "Learning is disconnected from real life",
@@ -2099,9 +2093,9 @@
     },
     "research": {
       "eyebrow": "Research & Insights",
-      "titleLead": "What learners and teachers",
-      "titleHighlight": "actually told me.",
-      "statsLabel": "Discovery at a glance",
+      "titleLead": "What I heard from",
+      "titleHighlight": "learners and teachers.",
+      "statsLabel": "Discovery overview",
       "stats": [
         {
           "value": "31",
@@ -2114,8 +2108,8 @@
       ],
       "discoveryTitle": "Conducted discovery interviews with learners and teachers",
       "discovery": [
-        "I spoke with language students, language teachers, and language-exchange app users to understand how they were currently learning, practicing, and teaching languages. I explored the tools they relied on, where existing methods broke down, what made conversation practice difficult, and what support they needed in real communication contexts.",
-        "These conversations helped validate the opportunity around texting-based practice and shaped early product decisions — including the shift away from a standalone messaging app and toward a keyboard that could support learners inside the apps they already used."
+        "",
+        ""
       ],
       "synthesisTitle": "Research synthesis",
       "synthesis": [
@@ -2356,20 +2350,63 @@
     },
     "execution": {
       "eyebrow": "Execution / Outcomes",
-      "titleLead": "From decisions to a",
+      "titleLead": "From discovery to a",
       "titleHighlight": "shipped product.",
-      "competitiveTitle": "Competitive product requirement",
+      "competitiveTitle": "Preserving Familiar Typing",
       "competitive": [
-        "After testing Arcatext with students and teachers, I learned that the translation feature set would not drive adoption if the keyboard was significantly less fluid and accurate than default keyboards from Apple & Google.",
-        "To earn a place in a daily-use interface, Arcatext needed to preserve familiar typing patterns and outperform the basic translation workflows available through Apple Translate and Gboard.",
+        "For Arcatext to become a daily-use interface, it needed to preserve familiar typing patterns.",
+        "After testing with students and teachers, I learned that the translation feature set would not drive adoption if the keyboard was significantly less fluid and accurate than default keyboards from Apple & Google.",
         {
-          "type": "heading",
+          "type": "element",
           "style": "h4",
-          "text": "The need for better typing UX"
-        },
-        {
-          "type": "paragraph",
-          "text": "In response to this feedback, I vastly improved the accuracy and forgiveness of the typing UX, added a personalization layer that learns each users' typing profile, and added a glide typing setting, which allows users to swipe a finger across the keys to write instead of tapping each key.\n\nTo capture and act on typing behaviors, I also built an admin tool for tuning the typing and autocorrect performance. This tool aggregates user data, creates scores, and recommends parameters updates.\n\nLearn more about the Arcatext Typing UX Admin Tool"
+          "text": "The need for better typing UX",
+          "variant": "grid",
+          "data": {
+            "cols": "4",
+            "rows": "1"
+          },
+          "cells": {
+            "r1c1": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "Improved typing accuracy and autocorrect UX",
+                  "size": "sm"
+                }
+              }
+            ],
+            "r1c2": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "Added a personalization layer that learns each users' typing profile",
+                  "size": "sm"
+                }
+              }
+            ],
+            "r1c3": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "Added a glide typing interface",
+                  "size": "sm"
+                }
+              }
+            ],
+            "r1c4": [
+              {
+                "type": "element",
+                "variant": "card-text",
+                "data": {
+                  "body": "Built an admin tool for tuning the typing and autocorrect performance",
+                  "size": "sm"
+                }
+              }
+            ]
+          }
         }
       ],
       "shippedTitle": "What I shipped after research",
@@ -2452,6 +2489,92 @@
         "Language-pair activity",
         "Free-to-paid conversion",
         "Token cost per active user"
+      ],
+      "discoveryTitle": "Conducted discovery interviews with learners and teachers",
+      "discovery": [
+        "I spoke with language students, language teachers, and language-exchange app users to understand how they were currently learning, practicing, and teaching languages. I explored the tools they relied on, where existing methods broke down, what made conversation practice difficult, and what support they needed in real communication contexts.",
+        "These conversations helped validate the opportunity around texting-based practice and shaped early product decisions — including the shift away from a standalone messaging app and toward a keyboard that could support learners inside the apps they already used."
+      ],
+      "synthesisTitle": "Research synthesis",
+      "synthesis": [
+        "To keep early product direction grounded in user needs, I translated interview notes and quotes into affinity themes — tracing each insight back to real user pain points instead of relying on assumptions about what language learners might want.",
+        "The strongest pattern was that learners did not need another generic practice environment. They needed a way to close the gap between learning and real conversation. Practice had to feel relevant to their goals, reflect the vocabulary and grammar they actually wanted to use, and support either real conversations or highly customizable conversational practice.",
+        "Further concept exploration, user feedback, market research, and language study helped narrow the strategy. There was overlap across users, but some needs were language-specific — additional support for non-Roman scripts, gendered grammar, and translation context. Studying translation tools also revealed a broader product gap: the complexity and nuance of language was not well supported, and users often had to accept generic outputs because tools lacked meaningful controls."
+      ],
+      "directionalTitle": "Directional insights",
+      "directionalInsights": [
+        {
+          "title": "Current apps did not fully prepare learners for real-world conversation",
+          "desc": "Language apps were useful for habit-building, vocabulary, and structured practice, but scripted content often failed to prepare learners for unpredictable, personal, context-dependent conversations.",
+          "response": ""
+        },
+        {
+          "title": "Generic content did not always align with learner goals",
+          "desc": "Learners had specific reasons for studying — travel, relationships, work, school, cultural connection, or communication with a specific person. When lesson content did not match those goals, practice felt less relevant and less motivating.",
+          "response": ""
+        },
+        {
+          "title": "Real conversations were motivating, but poorly supported",
+          "desc": "Students and language-exchange users were often most engaged when practice connected to real people and real topics. But the tools around those conversations were fragmented.",
+          "response": ""
+        },
+        {
+          "title": "Switching between tools created too much friction",
+          "desc": "Learners often had to move between messaging apps, translators, keyboards, and reverse-translation tools just to understand and respond to a message.",
+          "response": ""
+        },
+        {
+          "title": "Users were unlikely to move existing conversations into a new app",
+          "desc": "Learners were unlikely to move established relationships into a dedicated language-learning messenger or convince friends and penpals to adopt another platform. A standalone app could still serve dedicated language-exchange discovery, but it was not the strongest first surface for conversations already happening elsewhere.",
+          "response": ""
+        },
+        {
+          "title": "Trust mattered as much as accuracy",
+          "desc": "Users know tools like Google Translate and DeepL can be \"bad,\" but they think of bad translation as obvious broken grammar. They are less prepared for the more dangerous failure: a translation that looks fluent but changes tone, sounds unnatural, or subtly shifts intent.",
+          "response": "This shaped the Check experience. Reverse translation helps verify intent, while a glanceable naturalness score and teacher-style explanations help users understand whether a message sounds fluent in context — and why a translation works instead of simply trusting the output."
+        },
+        {
+          "title": "Language nuance needed more controls",
+          "desc": "Studying language-specific translation needs revealed gaps around gender, homographs, script options, and contextual accuracy. Users needed more levers to shape meaning instead of settling for generic outputs.",
+          "response": ""
+        }
+      ],
+      "soWhatLabel": "So what?",
+      "soWhatLead": "Arcatext needed to close the gap between learning and",
+      "soWhatHighlight": "real conversations.",
+      "soWhat": [
+        "It had to support relevant vocabulary and grammar, align with users’ interests, and enable practice through real or highly customizable conversations. That led to a keyboard-first strategy: a keyboard could support real conversations wherever they already happened, while also creating a foundation for future AI conversation tools, learning insights, and teacher-facing features."
+      ],
+      "insightToResponseTitle": "From insight to product response",
+      "productResponses": [
+        {
+          "insight": "Reduce friction in translating and understanding messages",
+          "response": "A consolidated keyboard experience that brought previously dispersed translation tasks into one writing surface."
+        },
+        {
+          "insight": "Build confidence before sending",
+          "response": "The Check experience: reverse translation, a glanceable naturalness score concept, and teacher-style explanations to verify intent and avoid sending fluent-looking translations that subtly change meaning."
+        },
+        {
+          "insight": "Support same-language corrections",
+          "response": "Part of the Reword feature — improving clarity, grammar, and naturalness even when the user is not translating into another language."
+        },
+        {
+          "insight": "Lower the barrier for non-Roman script languages",
+          "response": "Alphabet and romanization controls."
+        },
+        {
+          "insight": "Help users maintain conversation context",
+          "response": "The \"send a copy\" concept, helping users preserve translated context across message exchanges."
+        },
+        {
+          "insight": "Expose the learning value inside each message",
+          "response": "Synonyms, homograph clarification, sentence breakdown, and the Meaning Map concept."
+        },
+        {
+          "insight": "Support contextual accuracy through user controls",
+          "response": "Gender controls, script options, clarification tools, and alternate phrasing."
+        }
       ]
     },
     "caseStudies": {
@@ -4029,10 +4152,231 @@
     "arcatext-02": {
       "3": [],
       "2-in": {
-        "1": [
+        "0": [
           {
             "type": "paragraph",
-            "text": "Current learning systems offer the feeling of progress, but learners succeed within unrealistic constructed environments and struggle in real conversations when they need to use the language without support."
+            "text": "After broad market research on language learning tools & methods, I approached the user interviews with a focus on realistic conversations and writing tools.\n\nI conducted 31 interviews with language learners and teachers, synthesized 12 insights, then derived recommendations.\nOverall, people learn languages in many different ways: traditional classes, tutors, guided and community apps, texting with translators, and various self-study methods.\n\nI explored the tools they rely on, where existing methods break down, what made conversational practice difficult, and what support they want in real communication contexts."
+          }
+        ],
+        "1": [
+          {
+            "type": "heading",
+            "style": "h4",
+            "text": "01. Learning is disconnected from real life"
+          },
+          {
+            "type": "paragraph",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+          },
+          {
+            "type": "element",
+            "variant": "callout",
+            "data": {
+              "eyebrow": "Recommendation 01",
+              "text": "fjkdsla;f jkdsla'f"
+            }
+          },
+          {
+            "type": "element",
+            "variant": "spacer",
+            "data": {
+              "height": "300"
+            }
+          },
+          {
+            "type": "element",
+            "text": "Current learning systems offer the feeling of progress, but learners succeed within unrealistic constructed environments and struggle in real conversations when they need to use the language without support.",
+            "variant": "grid",
+            "data": {
+              "cols": "2",
+              "rows": "3"
+            },
+            "cells": {
+              "r1c1": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "1"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "01. Learning is disconnected from real life",
+                          "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+                        }
+                      },
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "01. Do it better"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "r1c2": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "2"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "02. Generic paths are prioritized over personal goals",
+                          "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
+                        }
+                      }
+                    ],
+                    "r2c1": [
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "02. A concrete outcome or highlight."
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "r2c1": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "2"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "03. Translators don't understand context",
+                          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning."
+                        }
+                      }
+                    ],
+                    "r2c1": [
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "A concrete outcome or highlight."
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "r2c2": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "2"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "04. Unfamiliar scripts add a second barrier",
+                          "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language."
+                        }
+                      }
+                    ],
+                    "r2c1": [
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "A concrete outcome or highlight."
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "r3c1": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "2"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "05. Language apps don't leverage teachers",
+                          "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
+                        }
+                      }
+                    ],
+                    "r2c1": [
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "A concrete outcome or highlight."
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "r3c2": [
+                {
+                  "type": "element",
+                  "variant": "grid",
+                  "data": {
+                    "cols": "1",
+                    "rows": "2"
+                  },
+                  "cells": {
+                    "r1c1": [
+                      {
+                        "type": "element",
+                        "variant": "card-basic",
+                        "data": {
+                          "title": "06. Large community without structure",
+                          "desc": "The same conversations repeat without any connection to a goal."
+                        }
+                      }
+                    ],
+                    "r2c1": [
+                      {
+                        "type": "element",
+                        "variant": "checklist-point",
+                        "data": {
+                          "text": "A concrete outcome or highlight."
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         ]
       },
@@ -4104,7 +4448,16 @@
       ]
     },
     "arcatext-06": {
-      "6": []
+      "6": [],
+      "3-in": {
+        "2": [
+          {
+            "type": "heading",
+            "style": "h4",
+            "text": "This tool aggregates user data, creates scores, and recommends parameters updates."
+          }
+        ]
+      }
     },
     "arcatext-07": {
       "3": []
