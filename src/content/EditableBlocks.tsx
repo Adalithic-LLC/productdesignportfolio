@@ -427,6 +427,11 @@ function SeamGroup({
 
   /* `-in` so a wrapper's inner gaps cannot be mistaken for entries in the slot
      that sits above it, which is the array at this very path. */
+  /** A part with no parts of its own inside it: the thing itself, not a box
+      around other things. Only these carry a remove button outside Move mode,
+      or every heading would sit under three nested crosses. */
+  const isLeaf = (key: string) => !(depth > 0 && seamable(kids[Number(key)]));
+
   const part = (key: string) => {
     const child = kids[Number(key)];
     return depth > 0 && seamable(child)
@@ -446,10 +451,50 @@ function SeamGroup({
         const isHidden = hidden.has(key);
         const slot = <BlockSlot path={`${prefix}.${key}`} rise={rise} />;
         if (!inMove) {
+          /* Outside Move mode a part is just the page, with one exception:
+             an admin looking at a heading that can be retyped but has no
+             cross beside it concludes it cannot be removed. Blocks have
+             carried one all along; a leaf part gets the same, in the same
+             gutter, so the two read as one affordance. */
+          if (!isAdmin || !isLeaf(key)) {
+            return (
+              <Fragment key={key}>
+                {slot}
+                {!isHidden && part(key)}
+              </Fragment>
+            );
+          }
           return (
             <Fragment key={key}>
               {slot}
-              {!isHidden && part(key)}
+              <div data-part={`${prefix}.${key}`} className="relative">
+                {isHidden ? (
+                  <div className="flex items-center gap-2 rounded-lg border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
+                    <span className="flex-1">Hidden — visitors do not see this part.</span>
+                    <button
+                      type="button"
+                      onClick={() => setPartHidden(prefix, key, false)}
+                      aria-label="Bring this part back"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-border/70 bg-background/90 transition hover:border-primary/60 hover:text-foreground"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {part(key)}
+                    <button
+                      type="button"
+                      onClick={() => setPartHidden(prefix, key, true)}
+                      title="Remove this from the page"
+                      aria-label="Remove this from the page"
+                      className="absolute -left-8 top-0.5 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-border/60 bg-background/90 text-muted-foreground opacity-70 shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive hover:opacity-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
             </Fragment>
           );
         }
