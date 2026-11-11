@@ -27,6 +27,11 @@ export interface ProseBlock {
   /* A grid element's cells, keyed by position (`r1c2` is row 1, column 2).
      Each is a block list like any other; created on first insert. */
   cells?: Record<string, ProseItem[]>;
+  /* Card elements sitting next to each other are laid out as a row by
+     default, which is what a set of short cards wants. A card that is really
+     a section of the page -- an insight and the response under it -- wants the
+     column instead, and sets this to opt out of the run. */
+  stack?: boolean;
 }
 
 /** A single entry in a prose array: a legacy string (= paragraph) or a block. */

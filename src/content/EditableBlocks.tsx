@@ -1,6 +1,6 @@
 import { Children, Fragment, cloneElement, isValidElement, useState } from 'react';
 import type { ElementType, ReactElement, ReactNode } from 'react';
-import { ArrowDown, ArrowUp, Copy, Eye, GripVertical, Check as CheckIcon, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIcon, Rows3, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
@@ -73,6 +73,8 @@ function isCardElement(item: ProseItem): boolean {
   return (
     isProseBlock(item) &&
     item.type === 'element' &&
+    /* Opted out of the row: it takes the column on its own. */
+    !item.stack &&
     getElement(item.variant ?? '')?.group === 'Cards'
   );
 }
@@ -658,7 +660,7 @@ function Block({
   item: ProseItem;
   editable: boolean;
 }) {
-  const { removeBlock } = useContent();
+  const { removeBlock, toggleBlockStack } = useContent();
   const el = blockElement(path, index, item);
 
   // Visitors see plain content; in admin every block gets a delete button.
@@ -668,6 +670,9 @@ function Block({
   // inside the top-right corner; prose blocks keep the gutter position.
   const isElement = isProseBlock(item) && item.type === 'element';
   const delPos = isElement ? 'right-2 top-2' : '-left-8 top-0.5';
+  /* Only a card has a row to leave: everything else is full width already. */
+  const canStack = isElement && getElement(item.variant ?? '')?.group === 'Cards';
+  const stacked = isProseBlock(item) && !!item.stack;
 
   return (
     /* Marked so a grid cell can stretch the card inside to the cell's height
@@ -687,6 +692,17 @@ function Block({
       >
         <X className="h-3.5 w-3.5" />
       </button>
+      {canStack && (
+        <button
+          type="button"
+          onClick={() => toggleBlockStack(path, index)}
+          title={stacked ? 'Put this card back in the row' : 'Give this card the full width'}
+          aria-label={stacked ? 'Put this card back in the row' : 'Give this card the full width'}
+          className="absolute right-10 top-2 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-border/60 bg-background/90 text-muted-foreground opacity-70 shadow-sm transition hover:border-primary/50 hover:text-foreground hover:opacity-100"
+        >
+          {stacked ? <Columns2 className="h-3.5 w-3.5" /> : <Rows3 className="h-3.5 w-3.5" />}
+        </button>
+      )}
     </div>
   );
 }

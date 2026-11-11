@@ -947,10 +947,21 @@ export function isMediaBlock(item: ProseItem): boolean {
   );
 }
 
-/** A fresh element block (with default sample data) for the given variant. */
+/**
+ * A fresh element block (with default sample data) for the given variant.
+ *
+ * Cards arrive stacked. A run of them is laid out as a row, which is right
+ * for a set of short cards and wrong for everything else -- and the line you
+ * click to place one runs the full width of the column and previews a
+ * full-width card, so landing in a three-up row beside the last one is the
+ * page doing something other than what it just showed you. The row is still
+ * one click away, per card, from the control beside its delete cross.
+ */
 export function makeElementBlock(variant: string): ProseBlock {
   const def = getElement(variant);
-  return { type: 'element', variant, data: { ...(def?.defaultData ?? {}) } };
+  const block: ProseBlock = { type: 'element', variant, data: { ...(def?.defaultData ?? {}) } };
+  if (def?.group === 'Cards') block.stack = true;
+  return block;
 }
 
 /** Live (editable) render of an element block at its content path. */

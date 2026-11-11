@@ -2016,6 +2016,296 @@
         "My role spanned product strategy, UX architecture, interaction design, AI behavior design, AI-assisted iOS and back-end development, and business formation. I designed and developed 20+ features, supporting systems, and a keyboard performance admin webapp."
       ]
     },
+    "quoteBoard": {
+      "label": "From the interviews",
+      "intro": "Quotes from the discovery interviews, sorted the way they were sorted when the insights came out of them: a column per insight, and inside it the groups the notes fell into.",
+      "clusters": [
+        {
+          "id": "disconnected",
+          "insight": "Learning is disconnected from real life",
+          "groups": [
+            {
+              "title": "Years in, still can't converse",
+              "notes": [
+                {
+                  "who": "P04 · Spanish, 3 yrs",
+                  "text": "I still can't hold a real conversation, even after going through language apps."
+                },
+                {
+                  "who": "P11 · Italian",
+                  "text": "Six months of streaks. Still froze at the ticket counter."
+                },
+                {
+                  "who": "P19 · Spanish, 28",
+                  "text": "I mean honestly I just — I open it on the train, do the thing, close it, and I couldn't tell you one sentence I learned."
+                },
+                {
+                  "who": "P02 · Japanese, 41",
+                  "text": "My comprehension is fine when I control the pace. The moment somebody speaks at me, it all goes."
+                }
+              ]
+            },
+            {
+              "title": "Lessons don't look like real talk",
+              "notes": [
+                {
+                  "who": "P07 · Korean",
+                  "text": "The sentences in there are nothing like what people actually text me."
+                },
+                {
+                  "who": "P23 · French, 17",
+                  "text": "nobody says 'the owl drinks milk' lol. i need to say im running late"
+                },
+                {
+                  "who": "P15 · Portuguese",
+                  "text": "Real messages are full of slang and typos and half-finished thoughts. The app never once prepared me for that."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "generic-paths",
+          "insight": "Generic paths are prioritized over personal goals",
+          "groups": [
+            {
+              "title": "Not what I want to say",
+              "notes": [
+                {
+                  "who": "P09 · Spanish",
+                  "text": "Most of the stuff I learn in duolingo isn't even what I want to say."
+                },
+                {
+                  "who": "P12 · Spanish, 34",
+                  "text": "I'm learning this for my in-laws. Not to order food in Madrid."
+                },
+                {
+                  "who": "P26 · German, work",
+                  "text": "I need the vocabulary for standups and emails. It keeps giving me zoo animals."
+                }
+              ]
+            },
+            {
+              "title": "The app decides, not me",
+              "notes": [
+                {
+                  "who": "P05 · Mandarin",
+                  "text": "There's no place to tell it what I care about. It just hands me the next unit."
+                },
+                {
+                  "who": "P18 · Spanish, 22",
+                  "text": "like let me say 'this week i need restaurant stuff' and have it actually follow me"
+                },
+                {
+                  "who": "P30 · French",
+                  "text": "I skip the lessons that don't apply to me, and then it tells me off for breaking the streak. So I'm being punished for knowing what I need."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "context",
+          "insight": "Translators don’t understand context",
+          "groups": [
+            {
+              "title": "Fluent-looking, still wrong",
+              "notes": [
+                {
+                  "who": "P03 · Spanish",
+                  "text": "I keep getting awkward translations with google translate and I can't even get a translation that's correct for who I'm talking to, like my girlfriend."
+                },
+                {
+                  "who": "P21 · Japanese",
+                  "text": "Grammatically fine. Reads like a robot wrote it."
+                },
+                {
+                  "who": "P08 · Italian, 38",
+                  "text": "I sent something I thought was warm and it landed completely cold. I only found out because she asked if I was upset with her."
+                }
+              ]
+            },
+            {
+              "title": "No control over meaning",
+              "notes": [
+                {
+                  "who": "P14 · Arabic",
+                  "text": "I can't tell it I'm speaking to a woman. Or to my manager. It doesn't ask."
+                },
+                {
+                  "who": "P27 · Korean, 25",
+                  "text": "if a word has two meanings it just picks one?? and i never find out which one it went with"
+                },
+                {
+                  "who": "P01 · Spanish, teacher",
+                  "text": "Students need to see the alternatives and choose between them. Being handed a single answer teaches nothing."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "scripts",
+          "insight": "Unfamiliar scripts add a second barrier",
+          "groups": [
+            {
+              "title": "Can't read it yet",
+              "notes": [
+                {
+                  "who": "P06 · Japanese",
+                  "text": "I can't read Japanese yet, but I still want to practice. It's so annoying that I can't get romaji from google translate."
+                },
+                {
+                  "who": "P16 · Korean, 31",
+                  "text": "The alphabet alone set me back months before I could say anything at all."
+                },
+                {
+                  "who": "P22 · Arabic",
+                  "text": "I can't even sound it out. I'm staring at shapes."
+                }
+              ]
+            },
+            {
+              "title": "Wanting in before literacy",
+              "notes": [
+                {
+                  "who": "P10 · Thai",
+                  "text": "I'd text in Thai today if I could just see how it's pronounced."
+                },
+                {
+                  "who": "P29 · Japanese, 19",
+                  "text": "put the kana and the romaji together and honestly i'd learn both at once"
+                },
+                {
+                  "who": "P13 · Hindi",
+                  "text": "Every time, I copy it into a second app just to read it out loud. Every single time."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "teachers",
+          "insight": "Language apps don’t leverage teachers",
+          "groups": [
+            {
+              "title": "Two separate worlds",
+              "notes": [
+                {
+                  "who": "P17 · Spanish",
+                  "text": "The apps I use are completely isolated from my language teacher, it feels like two completely separate worlds."
+                },
+                {
+                  "who": "P24 · French, 20",
+                  "text": "my tutor has no clue what i did in the app this week"
+                },
+                {
+                  "who": "P31 · German",
+                  "text": "I bring my mistakes to the lesson written on a scrap of paper, like it's 1995."
+                }
+              ]
+            },
+            {
+              "title": "What teachers say they are missing",
+              "notes": [
+                {
+                  "who": "T02 · teacher, Spanish",
+                  "text": "I would love to know what they actually struggle with between our lessons."
+                },
+                {
+                  "who": "T01 · teacher, Japanese",
+                  "text": "They arrive having practised all week and I can see none of it. I'm guessing every time."
+                },
+                {
+                  "who": "T03 · teacher, French",
+                  "text": "If I could set something inside the app they're already using, I'd use it tomorrow."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "community",
+          "insight": "Large community without structure",
+          "groups": [
+            {
+              "title": "Same conversation, over and over",
+              "notes": [
+                {
+                  "who": "P20 · Spanish",
+                  "text": "Having access to other learners is great, but I keep having the same conversations and I don't know if I'm really growing."
+                },
+                {
+                  "who": "P25 · Korean, 23",
+                  "text": "it's always 'where are you from' 'how long have you studied' every single time"
+                },
+                {
+                  "who": "P28 · Italian",
+                  "text": "I have had the same first message, more or less word for word, about a hundred times now."
+                }
+              ]
+            },
+            {
+              "title": "Nothing to aim at",
+              "notes": [
+                {
+                  "who": "P19 · Spanish, 28",
+                  "text": "There's no goal. You chat until somebody stops replying."
+                },
+                {
+                  "who": "P11 · Italian",
+                  "text": "Nobody corrects me. So I never find out what I'm getting wrong — I just get more fluent at my own mistakes."
+                },
+                {
+                  "who": "P07 · Korean",
+                  "text": "I'd stick with it if it felt like it was building towards something."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "friction",
+          "insight": "Switching between tools creates too much friction",
+          "groups": [
+            {
+              "title": "Too many steps for one message",
+              "notes": [
+                {
+                  "who": "P05 · Mandarin",
+                  "text": "Messages, translator, back to messages. For one reply."
+                },
+                {
+                  "who": "P23 · French, 17",
+                  "text": "by the time ive translated it theyve already moved on to something else"
+                },
+                {
+                  "who": "P15 · Portuguese",
+                  "text": "Copy, paste, switch, paste, switch back. That is the process for a single sentence, and I do it maybe forty times a day."
+                }
+              ]
+            },
+            {
+              "title": "Reading what you receive is just as bad",
+              "notes": [
+                {
+                  "who": "P12 · Spanish, 34",
+                  "text": "I translate what they sent, then re-translate what I wrote, just to check it didn't change on me."
+                },
+                {
+                  "who": "P02 · Japanese, 41",
+                  "text": "I lose the thread entirely, because half the conversation is sitting in a different app."
+                },
+                {
+                  "who": "P26 · German, work",
+                  "text": "Eventually I stopped replying in German. English was simply less work, and that's the whole problem."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
     "problem": {
       "eyebrow": "Insights & requirements",
       "titleLead": "What I learned from research and",
@@ -2028,27 +2318,33 @@
       "problems": [
         {
           "title": "Learning is disconnected from real life",
-          "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have."
+          "desc": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+          "quotes": "disconnected"
         },
         {
           "title": "Generic paths are prioritized over personal goals",
-          "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
+          "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user.",
+          "quotes": "generic-paths"
         },
         {
           "title": "Translators don't understand context",
-          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning."
+          "desc": "Most tools produce a generic result without giving the user the ability to clarify gender, homographs, tone and don't leverage translations for additional learning.",
+          "quotes": "context"
         },
         {
           "title": "Unfamiliar scripts add a second barrier",
-          "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language."
+          "desc": "For Japanese, Arabic, Hindi, Korean, Thai, Armenian, and others, the writing system is its own challenge on top of the language.",
+          "quotes": "scripts"
         },
         {
           "title": "Language apps don't leverage teachers",
-          "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers."
+          "desc": "Language apps are positioned as alternatives to lessons, when they don't offer enough rigor to replace teachers.",
+          "quotes": "teachers"
         },
         {
           "title": "Large community without structure",
-          "desc": "The same conversations repeat without any connection to a goal."
+          "desc": "The same conversations repeat without any connection to a goal.",
+          "quotes": "community"
         }
       ],
       "opportunitiesTitle": "Product opportunities",

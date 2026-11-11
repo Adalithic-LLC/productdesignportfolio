@@ -224,6 +224,31 @@ export interface SiteContent {
 export interface TitledItem {
   title: string;
   desc: string;
+  /** For an insight card: the quote-board cluster it has evidence in. */
+  quotes?: string;
+}
+
+/** One note on the wall: what was said, and enough to tell the speakers apart. */
+export interface QuoteNote {
+  text: string;
+  /** A tag, not a name: "P12 · Spanish, 34", "T01 · teacher". */
+  who?: string;
+  /** Overrides the group's colour. One of the board's sticky colours. */
+  color?: string;
+}
+
+/** One affinity subgroup inside a cluster: a heading and the notes under it. */
+export interface QuoteGroup {
+  title: string;
+  notes: QuoteNote[];
+}
+
+/** The quotes behind one insight, grouped the way they were sorted. */
+export interface QuoteCluster {
+  /** Stable, and what a link carries (?quotes=<id>). */
+  id: string;
+  insight: string;
+  groups: QuoteGroup[];
 }
 
 export interface ArcatextFlow {
@@ -375,6 +400,12 @@ export interface ArcatextContent {
     readingWriting: string[];
     roleTitle: string;
     role: string[];
+  };
+  /** The interview wall behind the insights; opened from an insight card. */
+  quoteBoard?: {
+    label: string;
+    intro: string;
+    clusters: QuoteCluster[];
   };
   problem: {
     eyebrow: string;

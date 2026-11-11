@@ -99,6 +99,8 @@ interface ContentContextValue {
   insertBlock: (path: string, index: number, block: ProseBlock) => void;
   /** Remove the array entry at `path`[index]. */
   removeBlock: (path: string, index: number) => void;
+  /** Flip a card block between taking the full width and joining the row. */
+  toggleBlockStack: (path: string, index: number) => void;
   /** Duplicate the array item at `path`[index], appending the copy to the end. */
   duplicateItem: (path: string, index: number) => void;
   /** Move the array item at `path`[index] by `delta` (-1 up / +1 down). */
@@ -679,6 +681,24 @@ export function ContentProvider({
     [persistDraft, holdScroll]
   );
 
+  const toggleBlockStack = useCallback(
+    (path: string, index: number) => {
+      requestScrollRestore(path);
+      setContent((prev) => {
+        const arr = getByPath(prev, path);
+        if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
+        const block = arr[index];
+        if (typeof block !== 'object' || block === null) return prev;
+        const list = [...arr];
+        list[index] = { ...(block as ProseBlock), stack: !(block as ProseBlock).stack };
+        const next = setByPath(prev, path, list);
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft, requestScrollRestore]
+  );
+
   const duplicateItem = useCallback(
     (path: string, index: number) => {
       requestScrollRestore(path);
@@ -1175,6 +1195,7 @@ export function ContentProvider({
       setText,
       insertBlock,
       removeBlock,
+      toggleBlockStack,
       duplicateItem,
       moveItem,
       removeItem,
@@ -1184,7 +1205,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

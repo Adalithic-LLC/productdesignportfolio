@@ -23,6 +23,7 @@ import { CaseStudyCard, CaseStudyModal } from '@/components/ArcatextCaseStudies'
 import { BlockSlot, EditableBlocks, ItemGroup, SectionBody } from '@/content/EditableBlocks';
 import { SectionToc, SectionNavDropdown } from '@/components/SectionToc';
 import { ReorderableSections } from '@/components/ReorderableSections';
+import { QuoteBoardLink, QuoteBoardProvider } from '@/components/QuoteBoard';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { TypingFlowDiagram } from '@/components/TypingFlowDiagram';
 import { ArcatextRoadmap } from '@/components/ArcatextRoadmap';
@@ -149,6 +150,9 @@ export default function Arcatext() {
   }, []);
 
   return (
+    /* The board is opened from the insight cards and lands over the whole
+       page, so the provider that holds it wraps everything. */
+    <QuoteBoardProvider>
     <div ref={rootRef} className="relative">
       <SectionToc
         items={tocItems}
@@ -373,6 +377,9 @@ export default function Arcatext() {
                 >
                   <Editable as="h4" path={`arcatext.problem.problems.${i}.title`} className="font-semibold mb-2" />
                   <Editable as="p" path={`arcatext.problem.problems.${i}.desc`} multiline className="text-sm text-muted-foreground leading-relaxed" />
+                  {/* Straight to the quotes this card was drawn from. Renders
+                      nothing until the card names a cluster that exists. */}
+                  <QuoteBoardLink clusterId={arc.problem.problems[i]?.quotes} />
                 </div>
               ))}
             </ItemGroup>
@@ -838,5 +845,6 @@ export default function Arcatext() {
         </SectionBody>
       </section>
     </div>
+    </QuoteBoardProvider>
   );
 }
