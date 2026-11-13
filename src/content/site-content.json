@@ -4949,7 +4949,7 @@
             "data": {
               "num": "Insight 12",
               "title": "Bad quality and awkward translations create obstacles in language practice.",
-              "desc": "Learners with access to native speakers don't engage with them as often as they could for fear of making mistakes. Translation tools they attempt to use sound awkward and sometimes change the meaning, creating confusion with the other person."
+              "desc": "Learners with access to native speakers in their personal lives don't engage with their language for fear of making mistakes, even when using translators."
             },
             "inside": [
               {
@@ -4966,7 +4966,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Offer a way to access translations during the conversation."
+                "text": "Offer higher quality translations that inspire confidence in learners."
               }
             ],
             "stack": true
@@ -4977,8 +4977,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 13",
-              "title": "Writing in the target language drives progress, but tools don't always provide same-language corrections.",
-              "desc": "-------"
+              "title": "Tools don't always provide same-language corrections.",
+              "desc": "Writing in the target language drives progress, but sometimes learners need to code-switch and translators don't always support this."
             },
             "inside": [
               {
@@ -4995,35 +4995,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Learning is disconnected from real life"
-              }
-            ]
-          },
-          {
-            "type": "element",
-            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
-            "variant": "card-numbered",
-            "data": {
-              "num": "Insight 14",
-              "title": "Context gets lost, so learners re-translate messages they've already sent.",
-              "desc": "---"
-            },
-            "inside": [
-              {
-                "type": "element",
-                "variant": "spacer",
-                "data": {
-                  "height": "32"
-                }
-              },
-              {
-                "type": "heading",
-                "style": "eyebrow",
-                "text": "Product Response"
-              },
-              {
-                "type": "paragraph",
-                "text": "Learning is disconnected from real life"
+                "text": "Accept mixed inputs (native/target languages) and dynamically produce either a correction or translation."
               }
             ],
             "stack": true
@@ -5034,8 +5006,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 15",
-              "title": "Learners expect translation to be free; it feels like a basic utility.",
-              "desc": "---"
+              "title": "Learners expect translation to be free.",
+              "desc": "People will not pay for a better translator without significant differentiation."
             },
             "inside": [
               {
@@ -5052,9 +5024,38 @@
               },
               {
                 "type": "paragraph",
-                "text": "Learning is disconnected from real life"
+                "text": "Address multiple painpoints so translation isn't the main value, but one integral piece of the system."
               }
             ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 01",
+              "title": "Chat practice doesn't give learners with any learning artifact.",
+              "desc": "There is no way to understand progress or extract anything from chats besides the repeated exposure."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Use chats and translations to generate a personalized study guide."
+              }
+            ],
+            "stack": true
           },
           {
             "type": "element",
