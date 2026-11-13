@@ -2465,7 +2465,7 @@
       "titleLead": "Balancing the learner, the product, the system, and the",
       "titleHighlight": "market.",
       "intro": [
-        "Product strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market — prioritizing what would reduce friction now while setting up the product for a broader language-learning platform later.",
+        "The research insights confirmed that learners want different things depending on their learning style and experience level. It was clear that a flexible system \n\nProduct strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market — prioritizing what would reduce friction now while setting up the product for a broader language-learning platform later.",
         {
           "type": "paragraph",
           "text": "Because Arcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability."
@@ -4422,7 +4422,7 @@
         "0": [
           {
             "type": "paragraph",
-            "text": "Arcatext started from an observation: people already leverage texting to practice language, but the tools just provide ephemeral translations and facilitate social connections. There are no integrated language education systems.\n\nThe hypothesis was that the act of texting could become a powerful learning method.\n\nPeople learn languages in many ways: classes, guided and community apps, translators, and self-study. After broad competitive and market research, I conducted interviews asking about all of it, with a particular interest in real conversations and the writing tools supporting them.\n\nI interviewed 31 learners and teachers and asked: What do learners rely on? Where do existing methods break down? What makes conversational practice hard? What do they ideally want from a tool?\n\nI synthesized 15 insights, then derived high-level product responses from each."
+            "text": "Arcatext started from an observation: people already leverage texting to practice language, but the tools just provide ephemeral translations and facilitate social connections. There are no integrated language education systems.\n\nThe hypothesis was that the act of texting could become a powerful learning method.\n\nPeople learn languages in many ways: classes, guided and community apps, translators, and self-study. After broad competitive and market research, I conducted interviews asking about all of it, with a particular interest in real conversations and the writing tools supporting them.\n\nI interviewed 31 learners and teachers and asked: What do learners rely on? Where do existing methods break down? What makes conversational practice hard? What do they ideally want from a tool?\n\nI synthesized 14 insights, then derived high-level product responses from each."
           }
         ],
         "1": [
@@ -4469,8 +4469,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 02",
-              "title": "Community chats lose learning value over time",
-              "desc": "In community-based apps, users enjoy talking to others but repeat the same conversations, find it difficult to cover a wide range of topics, and generally feel aimless."
+              "title": "Chat practice is often aimless with invisible value",
+              "desc": "There is no way to understand progress or extract anything from chats besides the repeated random exposure to the language."
             },
             "inside": [
               {
@@ -4487,7 +4487,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Add co-writing challenges to community chats to embed structure and learning progression."
+                "text": "Offer structured partner challenges inside chats and use open-chat data to generate a personalized study guide."
               }
             ],
             "stack": true
@@ -4498,8 +4498,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 03",
-              "title": "Learners don't have consistent practice in their target language",
-              "desc": "The nature of language exchanges means learners don't consistently practice their target language, since each party wants to practice the other's native language."
+              "title": "Bad quality and awkward translations create obstacles in language practice.",
+              "desc": "Learners with access to native speakers in their personal lives don't engage with their language for fear of making mistakes, even when using translators."
             },
             "inside": [
               {
@@ -4516,35 +4516,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Flip the community model from finding native speakers to finding students with shared language goals."
-              }
-            ]
-          },
-          {
-            "type": "element",
-            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
-            "variant": "card-numbered",
-            "data": {
-              "num": "Insight 04",
-              "title": "Learners can't always remember previous discussion topics.",
-              "desc": "Resetting context requires the time intensive task of re-translating messages."
-            },
-            "inside": [
-              {
-                "type": "element",
-                "variant": "spacer",
-                "data": {
-                  "height": "32"
-                }
-              },
-              {
-                "type": "heading",
-                "style": "eyebrow",
-                "text": "Product Response"
-              },
-              {
-                "type": "paragraph",
-                "text": "Offer message translations that are easy to access for both sent and received messages in both internal community chats and 3rd party app chats."
+                "text": "Offer higher quality translations that inspire confidence in learners."
               }
             ],
             "stack": true
@@ -4554,7 +4526,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 05",
+              "num": "Insight 04",
               "title": "Chat partners are not always available when people want to practice.",
               "desc": "Schedules don't always align, so a single learning session doesn't always give users rich back and forth conversations."
             },
@@ -4583,7 +4555,64 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
+              "num": "Insight 05",
+              "title": "Learners don't have consistent practice in their target language",
+              "desc": "The nature of language exchanges means learners don't consistently practice their target language, since each party wants to practice the other's native language."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Flip the community model from finding native speakers to finding students with shared language goals."
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
               "num": "Insight 06",
+              "title": "Learners can't always remember previous discussion topics.",
+              "desc": "Resetting context requires the time intensive task of re-translating messages."
+            },
+            "inside": [
+              {
+                "type": "element",
+                "variant": "spacer",
+                "data": {
+                  "height": "32"
+                }
+              },
+              {
+                "type": "heading",
+                "style": "eyebrow",
+                "text": "Product Response"
+              },
+              {
+                "type": "paragraph",
+                "text": "Offer message translations that are easy to access for both sent and received messages in both internal community chats and 3rd party app chats."
+              }
+            ],
+            "stack": true
+          },
+          {
+            "type": "element",
+            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
+            "variant": "card-numbered",
+            "data": {
+              "num": "Insight 07",
               "title": "Generic content is prioritized over personal goals",
               "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
             },
@@ -4613,7 +4642,7 @@
             "data": {
               "cols": "2",
               "rows": "3",
-              "num": "Insight 07",
+              "num": "Insight 08",
               "title": "Language apps don't integrate teachers",
               "desc": "Language apps are positioned as alternatives to human-lessons, and in doing so, ignore potential integration into teachers' curriculums and a B2B revenue stream."
             },
@@ -4829,7 +4858,7 @@
             "data": {
               "eyebrow": "Recommendation 01",
               "text": "fjkdsla;f jkdsla'f",
-              "num": "Insight 08",
+              "num": "Insight 09",
               "title": "Translation tools do not give control over nuance.",
               "desc": "Teachers' most common critique of translation tools is their lack of specificity, including gender and homographs."
             },
@@ -4860,7 +4889,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 09",
+              "num": "Insight 10",
               "title": "Multi-tool workflows create too much friction",
               "desc": "When practicing language in messaging apps, learners had to switch contexts to access translation tools, whether that was within the messaging app or an isolated translator."
             },
@@ -4889,7 +4918,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 10",
+              "num": "Insight 11",
               "title": "Translators don't have any trust mechanisms",
               "desc": "Users know Google Translate and DeepL can produce awkward or inaccurate translations, they occassionally translate the result back to their language and get very different results that they expect, but they have no way of correcting the translation."
             },
@@ -4918,7 +4947,7 @@
             "variant": "card-numbered",
             "data": {
               "height": "300",
-              "num": "Insight 11",
+              "num": "Insight 12",
               "title": "Unfamiliar scripts add a second barrier for beginners",
               "desc": "Learners don't need scripts to learn vocabulary, grammar, and word sounds."
             },
@@ -4941,35 +4970,6 @@
                 "text": "Give beginners a lower barrier to entry with romanized translations for applicable languages."
               }
             ]
-          },
-          {
-            "type": "element",
-            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
-            "variant": "card-numbered",
-            "data": {
-              "num": "Insight 12",
-              "title": "Bad quality and awkward translations create obstacles in language practice.",
-              "desc": "Learners with access to native speakers in their personal lives don't engage with their language for fear of making mistakes, even when using translators."
-            },
-            "inside": [
-              {
-                "type": "element",
-                "variant": "spacer",
-                "data": {
-                  "height": "32"
-                }
-              },
-              {
-                "type": "heading",
-                "style": "eyebrow",
-                "text": "Product Response"
-              },
-              {
-                "type": "paragraph",
-                "text": "Offer higher quality translations that inspire confidence in learners."
-              }
-            ],
-            "stack": true
           },
           {
             "type": "element",
@@ -5005,7 +5005,7 @@
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "variant": "card-numbered",
             "data": {
-              "num": "Insight 15",
+              "num": "Insight 14",
               "title": "Learners expect translation to be free.",
               "desc": "People will not pay for a better translator without significant differentiation."
             },
@@ -5027,35 +5027,6 @@
                 "text": "Address multiple painpoints so translation isn't the main value, but one integral piece of the system."
               }
             ]
-          },
-          {
-            "type": "element",
-            "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
-            "variant": "card-numbered",
-            "data": {
-              "num": "Insight 01",
-              "title": "Chat practice doesn't give learners with any learning artifact.",
-              "desc": "There is no way to understand progress or extract anything from chats besides the repeated exposure."
-            },
-            "inside": [
-              {
-                "type": "element",
-                "variant": "spacer",
-                "data": {
-                  "height": "32"
-                }
-              },
-              {
-                "type": "heading",
-                "style": "eyebrow",
-                "text": "Product Response"
-              },
-              {
-                "type": "paragraph",
-                "text": "Use chats and translations to generate a personalized study guide."
-              }
-            ],
-            "stack": true
           },
           {
             "type": "element",
