@@ -4422,7 +4422,23 @@
         "0": [
           {
             "type": "paragraph",
-            "text": "Arcatext started from an observation: people already leverage texting to practice language, but the tools just provide ephemeral translations and facilitate social connections. There are no integrated language education systems.\n\nThe hypothesis was that the act of texting could become a powerful learning method.\n\nPeople learn languages in many ways: classes, guided and community apps, translators, and self-study. After broad competitive and market research, I conducted interviews asking about all of it, with a particular interest in real conversations and the writing tools supporting them.\n\nI interviewed 31 learners and teachers and asked: What do learners rely on? Where do existing methods break down? What makes conversational practice hard? What do they ideally want from a tool?\n\nI synthesized 14 insights, then derived high-level product responses from each."
+            "text": "Arcatext started from an observation: people already leverage texting to practice language, but the tools just provide ephemeral translations and facilitate social connections. There are no integrated language education systems based on texting."
+          },
+          {
+            "type": "paragraph",
+            "text": "The hypothesis was that texting, a common behavior, could become a powerful learning method."
+          },
+          {
+            "type": "paragraph",
+            "text": "People learn languages in many ways: classes, guided and community apps, translators, and self-study. After competitive and market research, I conducted interviews asking about all of it, with a particular interest in real conversations and the writing tools supporting them."
+          },
+          {
+            "type": "paragraph",
+            "text": "I interviewed 31 learners and teachers and asked: What do learners rely on? Where do existing methods break down? What makes conversational practice hard? What do they ideally want from a tool?"
+          },
+          {
+            "type": "paragraph",
+            "text": "I synthesized 14 insights, then derived product responses from each."
           }
         ],
         "1": [
@@ -4458,9 +4474,10 @@
               },
               {
                 "type": "paragraph",
-                "text": "Prepare learners for real conversations and leverage AI for realistic scenario practice."
+                "text": "Prepare learners for real conversations via access to real human community and AI for realistic scenario practice."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4468,8 +4485,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 02",
-              "title": "Chat practice is often aimless with invisible value",
-              "desc": "There is no way to understand progress or extract anything from chats besides the repeated random exposure to the language."
+              "title": "Chat practice is often aimless with uncertain value",
+              "desc": "Chats give learners repeated exposure to the language, but there is no way to understand progress or extract data."
             },
             "inside": [
               {
@@ -4486,9 +4503,10 @@
               },
               {
                 "type": "paragraph",
-                "text": "Offer structured partner challenges inside chats and use open-chat data to generate a personalized study guide."
+                "text": "Offer structured partner activities within chats and use data to generate personalized study guides."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4514,9 +4532,10 @@
               },
               {
                 "type": "paragraph",
-                "text": "Offer higher quality translations that inspire confidence in learners."
+                "text": "Offer translations that understand the user's intention to produce a more reliable translation."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4544,7 +4563,8 @@
                 "type": "paragraph",
                 "text": "Offer a 24/7 chat option that doesn't rely on other users, but instead leverages AI."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4600,7 +4620,8 @@
                 "type": "paragraph",
                 "text": "Offer message translations that are easy to access for both sent and received messages in both internal community chats and 3rd party app chats."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4844,7 +4865,8 @@
                 "type": "paragraph",
                 "text": "Create tools for teachers to leverage the app in their existing workflows and curriculums."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4875,7 +4897,8 @@
                 "type": "paragraph",
                 "text": "Learning is disconnected from real life"
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4903,7 +4926,8 @@
                 "type": "paragraph",
                 "text": "Simplify the translation workflow to one step."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4931,7 +4955,8 @@
                 "type": "paragraph",
                 "text": "Allow users to check 'intention alignment' with a reverse translation to their native language and make clarifications that affect the original translation."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
@@ -4988,7 +5013,8 @@
                 "type": "paragraph",
                 "text": "Accept mixed inputs (native/target languages) and dynamically produce either a correction or translation."
               }
-            ]
+            ],
+            "stack": true
           },
           {
             "type": "element",
