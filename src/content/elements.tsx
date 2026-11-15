@@ -358,7 +358,7 @@ function GridElement({ ctx }: { ctx: ElementCtx }) {
       ref={bleed.ref}
       style={bleed.style}
       data-wide
-      className={full ? 'full-bleed px-4 sm:px-6 lg:px-8' : undefined}
+      className={full ? 'full-bleed pr-4 sm:pr-6 lg:pr-8' : undefined}
     >
       {/* In admin the grid gets a label strip of its own: its delete button
           sits top right, which is otherwise exactly where the last cell's card

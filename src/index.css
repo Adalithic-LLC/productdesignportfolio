@@ -276,22 +276,12 @@
 }
 
 @layer utilities {
-  /* Escapes the centred content column to span the window: the gutter either
-     side of the column is (100vw - 100%) / 2, so pulling that much off each
-     margin widens the element to the full page. Put the page's own padding
-     back on the inside. */
+  /* Grows a block to the right, out of the content column and across the rest
+     of the page, with its left edge left on the column. The margin here is the
+     centred-column guess; useFullBleed measures the real gap and overrides it
+     inline, since a left-aligned column (prose) is not centred. */
   .full-bleed {
-    margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-  }
-
-  /* Where a page carries the fixed section rail, a full-bleed block starts
-     clear of it rather than running underneath. Same breakpoint the rail
-     itself appears at, so below it the block takes the whole page. */
-  @media (min-width: 1600px) {
-    body[data-section-rail] .full-bleed {
-      padding-left: 15rem;
-    }
   }
 
   /* Solid brand blue, not a blue-to-teal fade. Kept as the same two class

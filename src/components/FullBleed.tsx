@@ -22,7 +22,7 @@ export function FullBleed({
     <div
       ref={bleed.ref}
       style={bleed.style}
-      className={cn(active && 'full-bleed px-4 sm:px-6 lg:px-8', className)}
+      className={cn(active && 'full-bleed pr-4 sm:pr-6 lg:pr-8', className)}
     >
       {children}
     </div>
