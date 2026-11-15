@@ -2465,7 +2465,7 @@
       "titleLead": "Balancing the learner, the product, the system, and the",
       "titleHighlight": "market.",
       "intro": [
-        "The research insights confirmed that learners want different things depending on their learning style and experience level. It was clear that a flexible system \n\nProduct strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market — prioritizing what would reduce friction now while setting up the product for a broader language-learning platform later.",
+        "The research insights confirmed that learners want different things depending on their learning style and experience level. It was clear that a flexible system\nProduct strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market — prioritizing what would reduce friction now while setting up the product for a broader language-learning platform later.",
         {
           "type": "paragraph",
           "text": "Because Arcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability."
@@ -4485,7 +4485,7 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 02",
-              "title": "Chat practice is often aimless with uncertain value",
+              "title": "Chat sessoins are often aimless with uncertain value",
               "desc": "Chats give learners repeated exposure to the language, but there is no way to understand progress or extract data."
             },
             "inside": [
@@ -4544,7 +4544,7 @@
             "data": {
               "num": "Insight 04",
               "title": "Chat partners are not always available when people want to practice.",
-              "desc": "Schedules don't always align, so a single learning session doesn't always give users rich back and forth conversations."
+              "desc": "Schedules don't always align, so a single chat session doesn't always give users rich back and forth conversations."
             },
             "inside": [
               {
@@ -4618,7 +4618,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Offer message translations that are easy to access for both sent and received messages in both internal community chats and 3rd party app chats."
+                "text": "Allow users to quickly see translations of each sent and received message in their native language."
               }
             ],
             "stack": true
@@ -4647,7 +4647,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Allow users to decide exactly what to learn, with suggestions instead of mandated structures and learning paths."
+                "text": "Give users learning flexibility with options and suggestions instead of a single path."
               }
             ]
           },
@@ -4659,7 +4659,7 @@
               "cols": "2",
               "rows": "3",
               "num": "Insight 08",
-              "title": "Language apps don't integrate teachers",
+              "title": "Language apps exclude teachers",
               "desc": "Language apps are positioned as alternatives to human-lessons, and in doing so, ignore potential integration into teachers' curriculums and a B2B revenue stream."
             },
             "cells": {
@@ -4863,7 +4863,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Create tools for teachers to leverage the app in their existing workflows and curriculums."
+                "text": "Enable teachers to connect to their students' accounts, assign activities, view progress, and create custom chats."
               }
             ],
             "stack": true
@@ -4876,7 +4876,7 @@
               "text": "fjkdsla;f jkdsla'f",
               "num": "Insight 09",
               "title": "Translation tools do not give control over nuance.",
-              "desc": "Teachers' most common critique of translation tools is their lack of specificity, including gender and homographs."
+              "desc": "Translation tools lack the ability to clarify intention and context, including choosing homographs and setting gender."
             },
             "style": "h4",
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
@@ -4895,7 +4895,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Learning is disconnected from real life"
+                "text": "Offer translation controls for speaker/recipient/subject gender and homographs, when detected."
               }
             ],
             "stack": true
@@ -4907,7 +4907,7 @@
             "data": {
               "num": "Insight 10",
               "title": "Multi-tool workflows create too much friction",
-              "desc": "When practicing language in messaging apps, learners had to switch contexts to access translation tools, whether that was within the messaging app or an isolated translator."
+              "desc": "In messaging apps, learners switch contexts to access translation tools, whether that's within the messaging app or to a separate translation app."
             },
             "inside": [
               {
@@ -4924,7 +4924,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Simplify the translation workflow to one step."
+                "text": "Simplify the translation workflow to one additional step within the messaging app."
               }
             ],
             "stack": true
@@ -4935,8 +4935,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 11",
-              "title": "Translators don't have any trust mechanisms",
-              "desc": "Users know Google Translate and DeepL can produce awkward or inaccurate translations, they occassionally translate the result back to their language and get very different results that they expect, but they have no way of correcting the translation."
+              "title": "Translators don't have trust mechanisms",
+              "desc": "Users don't know when they're getting an awkward or inaccurate translation and they have no way of correcting it."
             },
             "inside": [
               {
@@ -4953,7 +4953,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Allow users to check 'intention alignment' with a reverse translation to their native language and make clarifications that affect the original translation."
+                "text": "Allow users to check 'intention alignment' with a reverse translation and make edits here that update the original translation."
               }
             ],
             "stack": true
@@ -4964,8 +4964,8 @@
             "data": {
               "height": "300",
               "num": "Insight 12",
-              "title": "Unfamiliar scripts add a second barrier for beginners",
-              "desc": "Learners don't need scripts to learn vocabulary, grammar, and word sounds."
+              "title": "Unfamiliar scripts add a barrier for beginners",
+              "desc": "Scripts, like those used in Japanese, need to be learned in addition to the vocabulary, grammar etc."
             },
             "text": "Scripted exercises and flashcards rarely prepare learners for the unpredictable, personal conversations they actually want to have.",
             "inside": [
@@ -4983,7 +4983,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Give beginners a lower barrier to entry with romanized translations for applicable languages."
+                "text": "Allow users to enable romanized translations so they can read in a familiar script."
               }
             ]
           },
@@ -4993,8 +4993,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 13",
-              "title": "Tools don't always provide same-language corrections.",
-              "desc": "Writing in the target language drives progress, but sometimes learners need to code-switch and translators don't always support this."
+              "title": "Apps don't always provide same-language corrections",
+              "desc": "Some learners want to code-switch to utilize what they know, but translators don't always support this behavior."
             },
             "inside": [
               {
@@ -5011,7 +5011,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Accept mixed inputs (native/target languages) and dynamically produce either a correction or translation."
+                "text": "Accept mixed native & target language inputs and dynamically produce either a correction or translation."
               }
             ],
             "stack": true
@@ -5022,8 +5022,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 14",
-              "title": "Learners expect translation to be free.",
-              "desc": "People will not pay for a better translator without significant differentiation."
+              "title": "Translation has become a free utility",
+              "desc": "Learners rely on Google / Apple Translate and DeepL for free translations, so they are the ones to outperform to make paid translation feasible."
             },
             "inside": [
               {
@@ -5040,7 +5040,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Address multiple painpoints so translation isn't the main value, but one integral piece of the system."
+                "text": "Create an educational system where translation is only part of the value."
               }
             ]
           },
