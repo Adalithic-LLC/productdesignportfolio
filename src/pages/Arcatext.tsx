@@ -354,7 +354,11 @@ export default function Arcatext() {
 
       {/* 02 — Problem / Opportunity */}
       <section id="sec-02" className="py-20 sm:py-28 scroll-mt-24">
-        <SectionBody id="arcatext-02">
+        {/* The insight cards are one run of griddable cards, so the
+            default card row (3-up at lg) applies. Two columns suit them
+            better: each card carries a product response under the
+            finding, so a third column would squeeze the prose. */}
+        <SectionBody id="arcatext-02" className="lg:[&_[data-card-row]]:grid-cols-2">
           <div className="reveal">
             <SectionHeader number="02" eyebrowPath="arcatext.problem.eyebrow" titlePath="arcatext.problem.titleLead" highlightPath="arcatext.problem.titleHighlight" />
           </div>
