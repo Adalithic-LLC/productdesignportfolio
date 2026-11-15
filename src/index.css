@@ -267,10 +267,24 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    /* A full-bleed child is one viewport wide, and a viewport unit counts the
+       scrollbar the page is already showing. `clip` absorbs that overhang
+       without making the body a scroll container, so sticky headers and
+       ScrollTrigger keep working as they do. */
+    overflow-x: clip;
   }
 }
 
 @layer utilities {
+  /* Escapes the centred content column to span the window: the gutter either
+     side of the column is (100vw - 100%) / 2, so pulling that much off each
+     margin widens the element to the full page. Put the page's own padding
+     back on the inside. */
+  .full-bleed {
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
   /* Solid brand blue, not a blue-to-teal fade. Kept as the same two class
      names so every place that used the gradient picks the flat colour up
      without touching the markup. */

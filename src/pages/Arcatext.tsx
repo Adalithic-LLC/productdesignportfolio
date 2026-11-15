@@ -586,8 +586,11 @@ export default function Arcatext() {
 
           {/* The canvas itself, directly under the copy that introduces it --
               so it carries no heading of its own here; the full-screen view
-              supplies one. */}
-          <div className="mt-6 reveal">
+              supplies one. It breaks out of the centred column to the width of
+              the page, since the board has more columns than that column fits.
+              The section rail is fixed in the left gutter from 1600px up, so
+              the board starts clear of it rather than running underneath. */}
+          <div className="mt-6 reveal full-bleed px-4 sm:px-6 lg:px-8 min-[1600px]:pl-[15rem]">
             <ArcatextStrategyCanvas />
           </div>
 

@@ -95,6 +95,10 @@ interface ContentContextValue {
   /** Hide (or bring back) one of a seam group's parts. */
   setPartHidden: (prefix: string, key: string, hidden: boolean) => void;
   setText: (path: string, value: string | number) => void;
+  /** Write any value at `path` -- objects and arrays included, for the
+      structural edits text alone cannot express (reordering a diagram's
+      rows, resizing a cell, adding a column). */
+  setValue: (path: string, value: unknown) => void;
   /** Insert a block into the array at `path` at the given index. */
   insertBlock: (path: string, index: number, block: ProseBlock) => void;
   /** Remove the array entry at `path`[index]. */
@@ -632,6 +636,17 @@ export function ContentProvider({
       setContent((prev) => {
         const current = getByPath(prev, path);
         if (current === value) return prev;
+        const next = setByPath(prev, path, value);
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft]
+  );
+
+  const setValue = useCallback(
+    (path: string, value: unknown) => {
+      setContent((prev) => {
         const next = setByPath(prev, path, value);
         persistDraft(next);
         return next;
@@ -1193,6 +1208,7 @@ export function ContentProvider({
       movePartsTo,
       setPartHidden,
       setText,
+      setValue,
       insertBlock,
       removeBlock,
       toggleBlockStack,

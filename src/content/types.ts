@@ -251,26 +251,49 @@ export interface QuoteCluster {
   groups: QuoteGroup[];
 }
 
-/** A cell in a canvas row, placed on the 4-phase grid. */
+/** One item in a list-style canvas cell (the Features row). */
+export interface CanvasItem {
+  text: string;
+  sub?: string[];
+}
+
+/** A cell in a canvas row, placed on the column grid by start and width. */
 export interface CanvasBand {
-  /** 1-based phase column the band starts in. */
+  /** 1-based column the band starts in. */
   col: number;
-  /** How many phase columns it covers. */
+  /** How many columns it covers. */
   span: number;
-  text: string;
+  /** Plain cell copy. */
+  text?: string;
+  /** Sub-lines under the copy. */
   sub?: string[];
+  /** A bulleted cell instead of plain copy. */
+  items?: CanvasItem[];
 }
 
-export interface CanvasFeature {
-  text: string;
-  sub?: string[];
+/** Row tints, keyed to the page's own tokens. */
+export type CanvasTint =
+  | 'focus'
+  | 'offering'
+  | 'value'
+  | 'target'
+  | 'major'
+  | 'minor'
+  | 'revenue'
+  | 'ai'
+  | 'plain';
+
+export interface CanvasRow {
+  label: string;
+  /** `columns` draws the column headers; `bands` places its own cells. */
+  kind: 'bands' | 'columns';
+  tint: CanvasTint;
+  bands: CanvasBand[];
 }
 
-export interface StrategyCanvasPhase {
+export interface CanvasColumn {
   n: string;
   name: string;
-  offering: string;
-  value: string;
 }
 
 export interface StrategyCanvas {
@@ -285,24 +308,8 @@ export interface StrategyCanvas {
   vp: string[];
   storeTitle: string;
   store: string;
-  focusLabel: string;
-  focus: string;
-  phaseLabel: string;
-  offeringLabel: string;
-  valueLabel: string;
-  targetLabel: string;
-  majorLabel: string;
-  minorLabel: string;
-  featuresLabel: string;
-  revenueLabel: string;
-  aiLabel: string;
-  phases: StrategyCanvasPhase[];
-  target: CanvasBand[];
-  major: CanvasBand[];
-  minor: CanvasBand[];
-  features: { items: CanvasFeature[] }[];
-  revenue: CanvasBand[];
-  ai: CanvasBand[];
+  columns: CanvasColumn[];
+  rows: CanvasRow[];
 }
 
 export interface ArcatextFlow {
