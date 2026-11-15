@@ -2462,13 +2462,21 @@
     },
     "strategy": {
       "eyebrow": "Strategy",
-      "titleLead": "Balancing the learner, the product, the system, and the",
-      "titleHighlight": "market.",
+      "titleLead": "Understanding priorities, constraints,",
+      "titleHighlight": "and timelines.",
       "intro": [
-        "The research insights confirmed that learners want different things depending on their learning style and experience level. It was clear that a flexible system\nProduct strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market — prioritizing what would reduce friction now while setting up the product for a broader language-learning platform later.",
+        "The research insights revealed that learners want different things depending on their learning style and experience level.",
         {
           "type": "paragraph",
-          "text": "Because Arcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability."
+          "text": ""
+        },
+        {
+          "type": "paragraph",
+          "text": "Product strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market. I had to prioritize what would reduce friction in the short term while setting up the product for a broader language-learning platform later."
+        },
+        {
+          "type": "paragraph",
+          "text": "Arcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, so product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability."
         }
       ],
       "second": [
@@ -2502,7 +2510,7 @@
           "desc": "Repeated communication becomes structured insight: vocabulary, grammar patterns, translation choices, confidence gaps. The foundation for adaptive practice and teacher tools."
         }
       ],
-      "artifactEyebrow": "Strategic planning artifact",
+      "artifactEyebrow": "Feature staging",
       "artifactTitle": "A four-phase product strategy canvas",
       "artifact": [
         "To map the product beyond the MVP, I created a strategy canvas organizing Arcatext across four phases: an integrated translation keyboard, an AI conversation platform, data-driven learning insights, and teacher tools. The canvas mapped target users, competitive disruption, feature evolution, revenue streams, and long-term AI infrastructure — connecting near-term UX decisions to a scalable product strategy."
@@ -2520,7 +2528,7 @@
       "titleLead": "Not one linear flow a",
       "titleHighlight": "system of flows.",
       "intro": [
-        "Arcatext is not built around one linear feature flow. It is a system designed to support multiple communication needs while preserving the speed and familiarity of texting. The default path stays simple, and deeper support is revealed only when the user needs it."
+        "The goal was to create a flexible system that combines:\n1. Optional structure, for clear vocabulary goals & progression\n2. Self-guided activities, for freedom\n3. Human chat community, for peer-motivation and a connection to reality\n4. Customizable AI chats, for 24/7 personalized access\n5. App, for a dedicated practice environment\n6. Keyboard extension, for practice in 3rd party apps\n7. Study guide system, that creates learning value from translation data\n\nArcatext is not built around one linear feature flow. It is a system designed to support multiple communication needs while preserving the speed and familiarity of texting. The default path stays simple, and deeper support is revealed only when the user needs it."
       ],
       "flows": [
         {
@@ -4485,7 +4493,7 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 02",
-              "title": "Chat sessoins are often aimless with uncertain value",
+              "title": "Chat sessions are enjoyable but aimless with uncertain value",
               "desc": "Chats give learners repeated exposure to the language, but there is no way to understand progress or extract data."
             },
             "inside": [
@@ -4629,8 +4637,8 @@
             "variant": "card-numbered",
             "data": {
               "num": "Insight 07",
-              "title": "Generic content is prioritized over personal goals",
-              "desc": "Guided systems decide what to learn next, even when those lessons ignore the relationships and topics that motivate the user."
+              "title": "Structure is restrictive rather than empowering",
+              "desc": "Guided systems are appreciated for understanding progression, but they often ignore the topics that motivate the user."
             },
             "inside": [
               {
@@ -4647,7 +4655,7 @@
               },
               {
                 "type": "paragraph",
-                "text": "Give users learning flexibility with options and suggestions instead of a single path."
+                "text": "Combine a learning path, for clear direction, with flexibility, for freedom to pursue interests."
               }
             ]
           },
