@@ -1,4 +1,12 @@
-import { Children, Fragment, cloneElement, isValidElement, useState } from 'react';
+import {
+  Children,
+  Fragment,
+  cloneElement,
+  createContext,
+  isValidElement,
+  useContext,
+  useState,
+} from 'react';
 import type { ElementType, ReactElement, ReactNode } from 'react';
 import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIcon, Rows3, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -68,13 +76,22 @@ function blockElement(path: string, index: number, item: ProseItem) {
  *     between blocks once blocks from this list are selected.
  *   - Otherwise: inserted blocks show a hover delete affordance.
  */
+/**
+ * Set by a section that wants its cards gridded whatever the blocks say, so a
+ * per-block `stack` cannot pull one out of the row. A section whose cards are
+ * a single list reads as a list, and an admin save made from a stale draft
+ * cannot silently restore a flag that breaks the layout.
+ */
+const AlwaysGridCards = createContext(false);
+
 /** True for an element block whose variant is a "Cards"-group card (griddable). */
-function isCardElement(item: ProseItem): boolean {
+function isCardElement(item: ProseItem, alwaysGrid = false): boolean {
   return (
     isProseBlock(item) &&
     item.type === 'element' &&
-    /* Opted out of the row: it takes the column on its own. */
-    !item.stack &&
+    /* Opted out of the row: it takes the column on its own. A section that
+       grids unconditionally ignores the opt-out. */
+    (alwaysGrid || !item.stack) &&
     getElement(item.variant ?? '')?.group === 'Cards'
   );
 }
@@ -160,13 +177,14 @@ export function EditableBlocks({
   /* A grid cell is already a column of the author's choosing, so cards in
      one stack rather than forming a row of their own inside it. */
   const inCell = path.includes('.cells.');
+  const alwaysGrid = useContext(AlwaysGridCards);
   const out: React.ReactNode[] = [];
   let i = start;
   while (i < end) {
-    if (!inCell && isCardElement(items[i])) {
+    if (!inCell && isCardElement(items[i], alwaysGrid)) {
       const runStart = i;
       const run: number[] = [];
-      while (i < end && isCardElement(items[i])) {
+      while (i < end && isCardElement(items[i], alwaysGrid)) {
         run.push(i);
         i += 1;
       }
@@ -602,15 +620,20 @@ export function SectionBody({
   id,
   children,
   className,
+  gridCards = false,
 }: {
   id: string;
   children: ReactNode;
   className?: string;
+  /* Grid this section's card elements whatever their `stack` says. */
+  gridCards?: boolean;
 }) {
   return (
-    <div className={cn('max-w-6xl mx-auto px-4 sm:px-6 lg:px-8', className)}>
-      <Seams id={id}>{children}</Seams>
-    </div>
+    <AlwaysGridCards.Provider value={gridCards}>
+      <div className={cn('max-w-6xl mx-auto px-4 sm:px-6 lg:px-8', className)}>
+        <Seams id={id}>{children}</Seams>
+      </div>
+    </AlwaysGridCards.Provider>
   );
 }
 
