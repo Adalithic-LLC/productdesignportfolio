@@ -2465,22 +2465,88 @@
       "titleLead": "Closing the gap between",
       "titleHighlight": "learning and conversations in the wild.",
       "intro": [
-        "The goal of Arcatext was now to close the gap between learning and holding a real conversation. Memorizing vocabulary doesn't build skills. Forcing one rigid learning path would not drive outcomes that can be used in the real world.",
+        "Having a greater understanding of which problems to address, the goal of Arcatext was now to close the gap between learning and holding a real conversation.",
         {
           "type": "paragraph",
-          "text": "The product strategy centered on extracting aspects of real communication, converting those into app-based activities and tools, then deciding which features to build first and why."
+          "text": "The strategy required me to decide which problems were highest priority to users and which would lead to long term success for the business."
         },
         {
           "type": "paragraph",
-          "text": "Product strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market. I had to prioritize what would reduce friction in the short term while setting up the product for a broader language-learning platform later."
+          "text": "After developing multiple high-level options, I landed on a strategy that combines what most users wanted and leveraged the speed of AI development to build, test, and launch quickly."
         },
         {
           "type": "paragraph",
-          "text": "Arcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, so product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability."
+          "text": ""
+        },
+        {
+          "type": "element",
+          "variant": "grid",
+          "data": {
+            "cols": "5",
+            "rows": "1",
+            "width": "full"
+          },
+          "cells": {
+            "r1c1": [
+              {
+                "type": "heading",
+                "style": "h4",
+                "text": "1. Custom Keyboard"
+              },
+              {
+                "type": "paragraph",
+                "text": "Leverage the flexibility of a keyboard extension to create value in any 3rd party app and enable user-driven learning."
+              }
+            ],
+            "r1c2": [
+              {
+                "type": "heading",
+                "style": "h4",
+                "text": "2. Community Chat App"
+              },
+              {
+                "type": "paragraph",
+                "text": "Build a better language exchange platform, with more guidance and partner activities."
+              }
+            ],
+            "r1c3": [
+              {
+                "type": "heading",
+                "style": "h4",
+                "text": "3. AI Chat App"
+              },
+              {
+                "type": "paragraph",
+                "text": "Text AI chatbots about any topic and control parameters, like vocabulary level and tense."
+              }
+            ],
+            "r1c4": [
+              {
+                "type": "heading",
+                "style": "h4",
+                "text": "4. Creative Writing Platform"
+              },
+              {
+                "type": "paragraph",
+                "text": "Create a collection of writing challenges co-authored with AI."
+              }
+            ],
+            "r1c5": [
+              {
+                "type": "heading",
+                "style": "h4",
+                "text": "5. Structured & Guided"
+              },
+              {
+                "type": "paragraph",
+                "text": "Curated chats and texting activities based on the most common vocabulary, with a goals system."
+              }
+            ]
+          }
         }
       ],
       "second": [
-        "Starting with a keyboard gave Arcatext the most versatile entry point into the learner’s communication life. Instead of asking users to practice in one new destination, the keyboard could plug into daily texting with friends and penpals, language-exchange apps, dating apps, email, and AI chatbots. This allowed me to test the core learning hypothesis — that real texting can become effective language practice — across many existing contexts before investing in a dedicated AI conversation platform for more focused learning."
+        "I combined the best aspects of each concept into a flexible learning platform that would allow for user-driven learning with embedded guidance. This allowed me to connect ideas in meaningful ways, like tracking words used in AI & Community chats and updating goal progression.\n\nThe other part of the strategy focused on developing a valuable freemium product.\n\nStarting with a keyboard gave Arcatext the most versatile entry point into the learner’s communication life. Instead of asking users to practice in one new destination, the keyboard could plug into daily texting with friends and penpals, language-exchange apps, dating apps, email, and AI chatbots. This allowed me to test the core learning hypothesis — that real texting can become effective language practice — across many existing contexts before investing in a dedicated AI conversation platform for more focused learning.\n\nProduct strategy meant constantly weighing the relationship between the learner, the product experience, the technical system, and the market. I had to prioritize what would reduce friction in the short term while setting up the product for a broader language-learning platform later.\n\nArcatext combined a custom keyboard, AI translation, subscription pricing, and future learning features, so product decisions could not be separated from technical and business constraints. Model choice affected cost and latency. Keyboard limitations affected interaction design. Pricing affected infrastructure decisions. Each strategic decision had to balance user value, technical feasibility, and long-term scalability.\n\nOne half of the product strategy centered on extracting aspects of real communication, converting those into app-based activities and tools, then deciding which features to build first and why."
       ],
       "quoteLead": "“The keyboard is not just a translation shortcut. It is the",
       "quoteHighlight": "entry point into a larger learning system.”",
