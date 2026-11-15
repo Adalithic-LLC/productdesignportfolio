@@ -116,6 +116,16 @@ export function SectionToc({ items: rawItems, labels: rawLabels, routeHash, orde
   const activeId = useActiveSection(items);
   const jump = useSectionJump(routeHash);
 
+  /* Marks the page as carrying a rail, so a full-bleed block can start clear
+     of it instead of running underneath. The rail is hidden below 1600px and
+     the rule that reads this sits behind the same breakpoint. */
+  useEffect(() => {
+    document.body.dataset.sectionRail = 'true';
+    return () => {
+      delete document.body.dataset.sectionRail;
+    };
+  }, []);
+
   return (
     <nav
       aria-label="Section navigation"

@@ -285,6 +285,15 @@
     margin-right: calc(50% - 50vw);
   }
 
+  /* Where a page carries the fixed section rail, a full-bleed block starts
+     clear of it rather than running underneath. Same breakpoint the rail
+     itself appears at, so below it the block takes the whole page. */
+  @media (min-width: 1600px) {
+    body[data-section-rail] .full-bleed {
+      padding-left: 15rem;
+    }
+  }
+
   /* Solid brand blue, not a blue-to-teal fade. Kept as the same two class
      names so every place that used the gradient picks the flat colour up
      without touching the markup. */

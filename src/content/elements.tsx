@@ -6,6 +6,7 @@ import { Editable } from './Editable';
 import { BlockSlot } from './EditableBlocks';
 import { EditableImage } from './EditableImage';
 import { useContent } from './ContentContext';
+import { useFullBleed } from '@/lib/useFullBleed';
 import { Mark } from '@/components/BrandMark';
 import RewordOptionScreen, { OPTION_SCREENS, type OptionScreen } from '@/components/RewordOptionScreen';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
@@ -336,17 +337,29 @@ function Spacer({ ctx }: { ctx: ElementCtx }) {
  * empty cell draws as a dashed frame, since that frame is where a block goes.
  */
 function GridElement({ ctx }: { ctx: ElementCtx }) {
-  const { content, isAdmin, insertTool, moveMode } = useContent();
+  const { content, isAdmin, insertTool, moveMode, setText } = useContent();
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   const rows = clamp(Number(ctx.data.rows) || 1, 1, 12);
   const cols = clamp(Number(ctx.data.cols) || 3, 1, 6);
   const armed = isAdmin && (!!insertTool || moveMode);
 
+  /* A grid either sits in the column the rest of the page reads down, or
+     breaks out to the width of the window. Wide suits a board of many
+     columns; the column suits anything read as part of the prose. */
+  const full = String(ctx.data.width ?? 'content') === 'full';
+
+  const bleed = useFullBleed(full);
+
   const block = ctx.path ? (lookup(content, ctx.path) as ProseBlock | undefined) : undefined;
   const cells = block?.cells ?? {};
 
   return (
-    <div data-wide>
+    <div
+      ref={bleed.ref}
+      style={bleed.style}
+      data-wide
+      className={full ? 'full-bleed px-4 sm:px-6 lg:px-8' : undefined}
+    >
       {/* In admin the grid gets a label strip of its own: its delete button
           sits top right, which is otherwise exactly where the last cell's card
           keeps its own. */}
@@ -402,6 +415,14 @@ function GridElement({ ctx }: { ctx: ElementCtx }) {
           <Editable as="span" path={`${ctx.path}.data.rows`} className="inline-block min-w-3" />
           <span className="ml-3 font-medium">Columns:</span>{' '}
           <Editable as="span" path={`${ctx.path}.data.cols`} className="inline-block min-w-3" />
+          <span className="ml-3 font-medium">Width:</span>{' '}
+          <button
+            type="button"
+            onClick={() => setText(`${ctx.path}.data.width`, full ? 'content' : 'full')}
+            className="rounded border border-border/70 px-1.5 py-0.5 text-[11px] font-medium transition hover:border-primary/60 hover:text-foreground"
+          >
+            {full ? 'Full page' : 'Content column'}
+          </button>
           <span className="ml-2 opacity-60">
             — up to 12 rows and 6 columns; to fill a cell, pick an element and click + inside it, or
             select blocks in Move mode and move them in

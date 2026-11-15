@@ -28,6 +28,7 @@ import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { TypingFlowDiagram } from '@/components/TypingFlowDiagram';
 import { ArcatextRoadmap } from '@/components/ArcatextRoadmap';
 import { ArcatextStrategyCanvas } from '@/components/ArcatextStrategyCanvas';
+import { FullBleed } from '@/components/FullBleed';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -590,9 +591,9 @@ export default function Arcatext() {
               the page, since the board has more columns than that column fits.
               The section rail is fixed in the left gutter from 1600px up, so
               the board starts clear of it rather than running underneath. */}
-          <div className="mt-6 reveal full-bleed px-4 sm:px-6 lg:px-8 min-[1600px]:pl-[15rem]">
+          <FullBleed className="mt-6 reveal">
             <ArcatextStrategyCanvas />
-          </div>
+          </FullBleed>
 
           <div className="mt-6 reveal rounded-2xl bg-gradient-to-br from-primary/10 to-primary/[0.03] p-8 lg:p-10">
             <Editable as="p" path="arcatext.strategy.aiEyebrow" className="text-xs uppercase tracking-[0.2em] text-primary mb-3" />
