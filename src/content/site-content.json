@@ -4476,8 +4476,7 @@
                 "type": "paragraph",
                 "text": "Prepare learners for real conversations via access to real human community and AI for realistic scenario practice."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4505,8 +4504,7 @@
                 "type": "paragraph",
                 "text": "Offer structured partner activities within chats and use data to generate personalized study guides."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4534,8 +4532,7 @@
                 "type": "paragraph",
                 "text": "Offer translations that understand the user's intention to produce a more reliable translation."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4563,8 +4560,7 @@
                 "type": "paragraph",
                 "text": "Offer a 24/7 chat option that doesn't rely on other users, but instead leverages AI."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4620,8 +4616,7 @@
                 "type": "paragraph",
                 "text": "Offer message translations that are easy to access for both sent and received messages in both internal community chats and 3rd party app chats."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4865,8 +4860,7 @@
                 "type": "paragraph",
                 "text": "Create tools for teachers to leverage the app in their existing workflows and curriculums."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4897,8 +4891,7 @@
                 "type": "paragraph",
                 "text": "Learning is disconnected from real life"
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4926,8 +4919,7 @@
                 "type": "paragraph",
                 "text": "Simplify the translation workflow to one step."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -4955,8 +4947,7 @@
                 "type": "paragraph",
                 "text": "Allow users to check 'intention alignment' with a reverse translation to their native language and make clarifications that affect the original translation."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
@@ -5013,8 +5004,7 @@
                 "type": "paragraph",
                 "text": "Accept mixed inputs (native/target languages) and dynamically produce either a correction or translation."
               }
-            ],
-            "stack": true
+            ]
           },
           {
             "type": "element",
