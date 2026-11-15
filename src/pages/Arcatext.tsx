@@ -27,6 +27,7 @@ import { QuoteBoardLink, QuoteBoardProvider } from '@/components/QuoteBoard';
 import { PromptArchitecture } from '@/components/PromptArchitecture';
 import { TypingFlowDiagram } from '@/components/TypingFlowDiagram';
 import { ArcatextRoadmap } from '@/components/ArcatextRoadmap';
+import { ArcatextStrategyCanvas } from '@/components/ArcatextStrategyCanvas';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -581,6 +582,13 @@ export default function Arcatext() {
             <Prose>
               <Paragraphs base="arcatext.strategy.artifact" items={arc.strategy.artifact} />
             </Prose>
+          </div>
+
+          {/* The canvas itself, directly under the copy that introduces it --
+              so it carries no heading of its own here; the full-screen view
+              supplies one. */}
+          <div className="mt-6 reveal">
+            <ArcatextStrategyCanvas />
           </div>
 
           <div className="mt-6 reveal rounded-2xl bg-gradient-to-br from-primary/10 to-primary/[0.03] p-8 lg:p-10">

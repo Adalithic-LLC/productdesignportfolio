@@ -251,6 +251,60 @@ export interface QuoteCluster {
   groups: QuoteGroup[];
 }
 
+/** A cell in a canvas row, placed on the 4-phase grid. */
+export interface CanvasBand {
+  /** 1-based phase column the band starts in. */
+  col: number;
+  /** How many phase columns it covers. */
+  span: number;
+  text: string;
+  sub?: string[];
+}
+
+export interface CanvasFeature {
+  text: string;
+  sub?: string[];
+}
+
+export interface StrategyCanvasPhase {
+  n: string;
+  name: string;
+  offering: string;
+  value: string;
+}
+
+export interface StrategyCanvas {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  enlarge: string;
+  close: string;
+  optimizedForTitle: string;
+  optimizedFor: string[];
+  vpTitle: string;
+  vp: string[];
+  storeTitle: string;
+  store: string;
+  focusLabel: string;
+  focus: string;
+  phaseLabel: string;
+  offeringLabel: string;
+  valueLabel: string;
+  targetLabel: string;
+  majorLabel: string;
+  minorLabel: string;
+  featuresLabel: string;
+  revenueLabel: string;
+  aiLabel: string;
+  phases: StrategyCanvasPhase[];
+  target: CanvasBand[];
+  major: CanvasBand[];
+  minor: CanvasBand[];
+  features: { items: CanvasFeature[] }[];
+  revenue: CanvasBand[];
+  ai: CanvasBand[];
+}
+
 export interface ArcatextFlow {
   title: string;
   steps: string[];
@@ -407,6 +461,8 @@ export interface ArcatextContent {
     intro: string;
     clusters: QuoteCluster[];
   };
+  /** The product strategy canvas: one matrix of the four phases. */
+  strategyCanvas?: StrategyCanvas;
   problem: {
     eyebrow: string;
     titleLead: string;

@@ -2987,7 +2987,236 @@
         "title": "Gendered words",
         "body": "In Spanish, “friends” changes with gender. Choose who you mean, all male, all female or both, and the reword follows."
       }
-    ]
+    ],
+    "strategyCanvas": {
+      "eyebrow": "Product strategy",
+      "title": "Product Strategy Canvas",
+      "intro": "One view of the whole strategy: what ships in each phase, who it serves, what it displaces, and how it earns.",
+      "enlarge": "Enlarge",
+      "close": "Close",
+      "optimizedForTitle": "Optimized for",
+      "optimizedFor": [
+        "Learning progression & depth",
+        "Learning results / outcomes",
+        "Evolution into a powerful tool used by professionals",
+        "Long term usage & professional process integration"
+      ],
+      "vpTitle": "Value proposition",
+      "vp": [
+        "Arcatext transforms the way you communicate; your real conversations, stories, and everyday writing, into a user-driven language learning journey, combining context-accurate translation and measurable progress so you can communicate across languages with growing fluency, accuracy, and confidence.",
+        "It turns your life, interests, and thoughts into the lesson—then gives you the insight to grow from it."
+      ],
+      "storeTitle": "App Store description",
+      "store": "Unlike language apps with fixed lessons or translators that don't teach, Arcatext lets you learn by communicating. Practice inside real conversations and writing, choose what you talk about, and use layered support when you need it. Arcatext gives you control over linguistic context, tracks your mistakes and vocabulary over time, and turns your activity into personalized study guides—so your language learning evolves naturally from your life, not a preset curriculum.",
+      "focusLabel": "Focus",
+      "focus": "Language Learning",
+      "phaseLabel": "Phase",
+      "offeringLabel": "Product Offering",
+      "valueLabel": "Value",
+      "targetLabel": "Target",
+      "majorLabel": "Major Disruption",
+      "minorLabel": "Minor Disruption",
+      "featuresLabel": "Features",
+      "revenueLabel": "Revenue Streams",
+      "aiLabel": "AI Approach",
+      "phases": [
+        {
+          "n": "Phase 1",
+          "name": "Integrated language learning",
+          "offering": "Keyboard",
+          "value": "Peer-to-peer learning in any messaging app, with friends / family / student groups"
+        },
+        {
+          "n": "Phase 2",
+          "name": "AI language learning",
+          "offering": "Internal AI Conversation Platform",
+          "value": "24/7 access to customizable conversations"
+        },
+        {
+          "n": "Phase 3",
+          "name": "Leveraging Data",
+          "offering": "Data Driven Insights & Stats",
+          "value": "Understanding performance & encouraging continued engagement"
+        },
+        {
+          "n": "Phase 4",
+          "name": "Enterprise",
+          "offering": "Teacher Tools",
+          "value": "Leveraging data to create teacher assessment tools & accelerate student performance"
+        }
+      ],
+      "target": [
+        {
+          "col": 1,
+          "span": 3,
+          "text": "Hobbyist learners, language community members, online teachers"
+        },
+        {
+          "col": 4,
+          "span": 1,
+          "text": "Teachers"
+        },
+        {
+          "col": 2,
+          "span": 1,
+          "text": "Professional learners (ie doctors)"
+        },
+        {
+          "col": 3,
+          "span": 1,
+          "text": "Advanced learners"
+        }
+      ],
+      "major": [
+        {
+          "col": 1,
+          "span": 2,
+          "text": "Translator keyboards & Apple iMessage translator"
+        },
+        {
+          "col": 2,
+          "span": 2,
+          "text": "Penpal apps"
+        },
+        {
+          "col": 2,
+          "span": 3,
+          "text": "Established language learning apps / platforms"
+        }
+      ],
+      "minor": [
+        {
+          "col": 1,
+          "span": 1,
+          "text": "Established language apps / platforms"
+        },
+        {
+          "col": 1,
+          "span": 1,
+          "text": "Google Gboard"
+        }
+      ],
+      "features": [
+        {
+          "items": [
+            {
+              "text": "Reword"
+            },
+            {
+              "text": "Reverse translation"
+            },
+            {
+              "text": "Gender specification"
+            },
+            {
+              "text": "Homograph selection"
+            },
+            {
+              "text": "Alphabet selection"
+            },
+            {
+              "text": "Text to speech"
+            },
+            {
+              "text": "In-app translation of received messages"
+            },
+            {
+              "text": "Send a copy (for retaining context)"
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "text": "All keyboard features"
+            },
+            {
+              "text": "Text AI bots on internal platform (controlled practice environment)"
+            },
+            {
+              "text": "Create customized AI conversations",
+              "sub": [
+                "Conversation topic & scope",
+                "Choose level",
+                "Specify vocab",
+                "AI vocab repetition support",
+                "Story writing",
+                "Letter writing"
+              ]
+            },
+            {
+              "text": "Text AI on internal platform (proprietary messaging app)"
+            },
+            {
+              "text": "Define & save words & phrases"
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "text": "Leverage data generated by keyboard & AI chat usage"
+            },
+            {
+              "text": "Data visualizations & performance statistics"
+            },
+            {
+              "text": "Lightly-gamified features to encourage usage"
+            },
+            {
+              "text": "Performance tracking & improvement",
+              "sub": [
+                "using data to uncover often missed words, generate personalized study guides etc",
+                "shows up in keyboard and AI chats"
+              ]
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "text": "Teacher-created conversation templates"
+            },
+            {
+              "text": "Chat export for teacher evaluation"
+            },
+            {
+              "text": "Define & save words & phrases"
+            },
+            {
+              "text": "Teacher dashboard for student performance tracking"
+            }
+          ]
+        }
+      ],
+      "revenue": [
+        {
+          "col": 1,
+          "span": 4,
+          "text": "Monthly / annual subscriptions"
+        },
+        {
+          "col": 1,
+          "span": 4,
+          "text": "Extra token usage (LLM & TTS)"
+        }
+      ],
+      "ai": [
+        {
+          "col": 1,
+          "span": 1,
+          "text": "OpenAI LLM API (pay for tokens)"
+        },
+        {
+          "col": 2,
+          "span": 3,
+          "text": "Self hosted LLM (pay for GPU time — use an LLM like Llama and host with Nebius)",
+          "sub": [
+            "use language pairs to train / fine-tune the Arcatext LLM (my LLM gets better with more usage)"
+          ]
+        }
+      ]
+    }
   },
   "conversant": {
     "backToPortfolio": "Back to portfolio",
