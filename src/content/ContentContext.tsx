@@ -146,10 +146,50 @@ function setByPath<T>(obj: T, path: string, value: unknown): T {
 }
 
 /** The first field rendered for the block at `path` (a list entry), if any. */
-function findField(path: string): HTMLElement | null {
-  return document.querySelector<HTMLElement>(
-    `[data-editable-path="${path}"], [data-editable-path^="${path}."]`
+/**
+ * True when the element is carried by fixed or sticky chrome. Such an element
+ * keeps its place in the window while the page scrolls under it, so scrolling
+ * never moves it: held as an anchor it reports the same offset every frame and
+ * the correction is applied again and again instead of settling.
+ */
+function isPinned(el: HTMLElement): boolean {
+  for (let n: HTMLElement | null = el; n && n !== document.body; n = n.parentElement) {
+    const pos = getComputedStyle(n).position;
+    if (pos === 'fixed' || pos === 'sticky') return true;
+  }
+  return false;
+}
+
+/** Usable anchors for a path: in the flow of the page, and actually drawn. */
+function fieldsFor(selector: string): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => el.getBoundingClientRect().height > 0 && !isPinned(el)
   );
+}
+
+function findField(path: string): HTMLElement | null {
+  return (
+    fieldsFor(`[data-editable-path="${path}"], [data-editable-path^="${path}."]`)[0] ?? null
+  );
+}
+
+/**
+ * The element to measure a held path by. A path can be on the page more than
+ * once -- a title repeated in the section rail, say -- so take the copy nearest
+ * where the held one was rather than whichever comes first in the document.
+ */
+function findHeld(path: string, near: number): HTMLElement | null {
+  const all = fieldsFor(`[data-editable-path="${path}"]`);
+  let best: HTMLElement | null = null;
+  let bestDist = Infinity;
+  for (const el of all) {
+    const d = Math.abs(el.getBoundingClientRect().top - near);
+    if (d < bestDist) {
+      bestDist = d;
+      best = el;
+    }
+  }
+  return best;
 }
 
 /**
@@ -165,6 +205,7 @@ function pickAnchor(exclude?: (path: string) => boolean): HTMLElement | null {
     const r = el.getBoundingClientRect();
     if (r.height === 0 || r.bottom <= 72 || r.top >= window.innerHeight) return;
     if (exclude?.(el.getAttribute('data-editable-path') ?? '')) return;
+    if (isPinned(el)) return;
     const d = Math.abs(r.top - line);
     if (d < bestDist) {
       bestDist = d;
@@ -426,7 +467,7 @@ export function ContentProvider({
      session: `isAdmin` goes false for consumers, so the page renders exactly
      as a visitor's would, while the draft stays in memory and the bar that
      turns preview off reads `previewing` instead. */
-  const [previewing, setPreviewing] = useState(false);
+  const [previewing, setPreviewingState] = useState(false);
   const isAdmin = unlocked && !previewing;
   /* Editing outlives preview: the point of preview is to read the page as a
      visitor would, and the thing most often wanted on reading it is to change
@@ -510,24 +551,33 @@ export function ContentProvider({
     const html = document.documentElement;
     const prevBehavior = html.style.scrollBehavior;
     html.style.scrollBehavior = 'auto'; // restore instantly, not smoothly
+    /* A correction that repeats unchanged is not converging -- the anchor is
+       not moving with the page -- so it is dropped rather than applied every
+       frame, which would walk the page away from where it started. */
+    let lastMoved: number | null = null;
+    let stuck = 0;
     const settle = () => {
-      const el = hold.path
-        ? document.querySelector<HTMLElement>(`[data-editable-path="${hold.path}"]`)
-        : null;
+      const el = hold.path ? findHeld(hold.path, hold.top) : null;
       if (el) {
         const moved = el.getBoundingClientRect().top - hold.top;
-        if (Math.abs(moved) >= 1) window.scrollBy(0, moved);
+        if (Math.abs(moved) < 1) return;
+        if (lastMoved !== null && Math.abs(moved - lastMoved) < 1 && ++stuck >= 2) return;
+        lastMoved = moved;
+        window.scrollBy(0, moved);
       } else if (window.scrollY !== hold.y) {
         window.scrollTo(0, hold.y);
       }
     };
     settle();
-    // Kept in place for a few frames against late reflows (a grid measuring,
-    // an image settling), then scroll anchoring and smooth scrolling return.
+    // Kept in place against late reflows -- a wide block measuring its parent,
+    // an image settling -- then scroll anchoring and smooth scrolling return.
+    // Long enough to outlast a layout effect and the resize observer it arms;
+    // a correction that stops converging is dropped by `settle` itself, so the
+    // longer window costs nothing when the page is already still.
     let frame = 0;
     const tick = () => {
       settle();
-      if (++frame < 8) {
+      if (++frame < 24) {
         requestAnimationFrame(tick);
       } else {
         html.style.overflowAnchor = '';
@@ -536,6 +586,18 @@ export function ContentProvider({
     };
     requestAnimationFrame(tick);
   });
+  /* Entering or leaving preview adds or removes every piece of admin furniture
+     on the page -- delete crosses, insertion lines, a diagram's row and column
+     controls -- so everything below the first of them shifts. Held like any
+     other layout change, so the reader stays on the same line. */
+  const setPreviewing = useCallback(
+    (on: boolean) => {
+      holdScroll();
+      setPreviewingState(on);
+    },
+    [holdScroll]
+  );
+
   /** Hold the view across a change to the lists at `paths`, anchoring outside them. */
   const requestScrollRestore = useCallback(
     (...paths: string[]) =>
@@ -1221,7 +1283,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, setPreviewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;
