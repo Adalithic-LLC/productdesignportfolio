@@ -5,6 +5,8 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useLayoutEffect,
+  useRef,
   useState,
 } from 'react';
 import type { ElementType, ReactElement, ReactNode } from 'react';
@@ -12,6 +14,7 @@ import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIc
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
+import { listDomToValue } from './inlineMarks';
 import {
   blockForTool,
   canMoveBlocks,
@@ -104,9 +107,76 @@ function ListBlock({
   textPath: string;
   style: 'bullet' | 'number';
 }) {
-  const { setText, setBlockList, insertBlock } = useContent();
+  const { content, isAdmin, setText, setBlockList, insertBlock, removeBlock } = useContent();
+  const host = useRef<HTMLDivElement>(null);
+  const [rows, setRows] = useState<{ top: number; left: number; height: number }[]>([]);
+  const value = String(getByPath(content, textPath) ?? '');
+
+  /* The items live inside a contentEditable, so a control cannot be rendered
+     among them -- the markup in there is written by hand and would be thrown
+     away on the next sync. The crosses are laid over the gutter instead, one
+     per item, measured from where the items actually sit. */
+  useLayoutEffect(() => {
+    if (!isAdmin) return;
+    const el = host.current;
+    const listEl = el?.querySelector('ul, ol');
+    if (!el || !listEl) return;
+    const measure = () => {
+      const box = el.getBoundingClientRect();
+      setRows(
+        Array.from(listEl.querySelectorAll<HTMLElement>('li')).map((li) => {
+          const r = li.getBoundingClientRect();
+          /* Beside the item rather than in the page gutter: the gutter is
+             where the block's own delete cross sits, and the first item's
+             would land underneath it. */
+          return { top: r.top - box.top, left: r.right - box.left + 8, height: r.height };
+        })
+      );
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(listEl);
+    const mo = new MutationObserver(measure);
+    mo.observe(listEl, { childList: true, subtree: true, characterData: true });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [isAdmin, value, style]);
+
+  /* Read the list as it stands rather than from the store: the field commits
+     on blur, and blur runs on the way to this click, so the store may be a
+     keystroke behind what is on screen. */
+  const removeItemAt = (i: number) => {
+    const listEl = host.current?.querySelector('ul, ol');
+    const current = listEl ? listDomToValue(listEl) : value;
+    const lines = current.split('\n');
+    if (i < 0 || i >= lines.length) return;
+    lines.splice(i, 1);
+    if (!lines.length || lines.every((line: string) => line.trim() === '')) {
+      removeBlock(path, index);
+      return;
+    }
+    setText(textPath, lines.join('\n'));
+  };
+
   return (
-    <Editable
+    <div ref={host} className="group/list relative">
+      {isAdmin &&
+        rows.map((row, i) => (
+          <button
+            key={i}
+            type="button"
+            title="Delete this bullet"
+            aria-label="Delete this bullet"
+            onClick={() => removeItemAt(i)}
+            style={{ top: row.top + Math.max(0, (row.height - 20) / 2), left: row.left }}
+            className="absolute z-20 flex h-5 w-5 items-center justify-center rounded border border-border/60 bg-background/90 text-muted-foreground opacity-0 shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 group-hover/list:opacity-100"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        ))}
+      <Editable
       as={style === 'number' ? 'ol' : 'ul'}
       list
       multiline
@@ -115,16 +185,16 @@ function ListBlock({
         'max-w-3xl space-y-1 pl-5 marker:text-muted-foreground/60',
         style === 'number' ? 'list-decimal' : 'list-disc'
       )}
-      onListExit={(value) => {
-        setText(textPath, value);
+      onListExit={(next) => {
+        setText(textPath, next);
         setBlockList(path, index, null);
         requestAnimationFrame(() => {
           const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
           if (el) focusAtStart(el);
         });
       }}
-      onListBreak={(value) => {
-        setText(textPath, value);
+      onListBreak={(next) => {
+        setText(textPath, next);
         insertBlock(path, index + 1, { type: 'paragraph', text: '' });
         requestAnimationFrame(() => {
           const el = document.querySelector<HTMLElement>(
@@ -133,7 +203,8 @@ function ListBlock({
           if (el) focusAtEnd(el);
         });
       }}
-    />
+      />
+    </div>
   );
 }
 
