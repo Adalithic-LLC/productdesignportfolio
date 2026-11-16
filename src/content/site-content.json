@@ -2567,7 +2567,7 @@
               {
                 "type": "heading",
                 "style": "h4",
-                "text": "1. Custom Keyboard"
+                "text": "1. Keyboard"
               },
               {
                 "type": "element",
@@ -2580,12 +2580,12 @@
                   "r1c1": [
                     {
                       "type": "paragraph",
-                      "text": "Build a custom keyboard extension with translation features."
+                      "text": "Custom keyboard extension with translation features."
                     },
                     {
                       "type": "paragraph",
-                      "text": "Pros\nEnables learning value in any 3rd party app, where the user already has chats\nUseful on day one\nSimpler utility, without requiring a pedagogy, lessons, or activities\nNo complex parent app\nFocuses on what users actually want to say\nDifficult for competitors to match performance\n\nCons:\nNo direct competition with language exchange platforms, where most 'texting learners' are\nHigh level of technical development & optimization\nUsers judge typing quality first, learning value second and will abandon if typing is frustrating\nRisk of Apple/Google features making keyboard features obsolete\nMultiple keyboard layouts & autocorrect\nFull access must be enabled in phone settings",
-                      "list": "bullet"
+                      "text": "Pros\nEnables learning value in any 3rd party app, where the user already has chats\nUseful on day one\nSimpler utility, without requiring a pedagogy, lessons, or activities\nNo complex parent app\nFocuses on what users actually want to say\nDifficult for competitors to match performance\n\nCons:\nNo direct competition with language exchange platforms, where most 'texting learners' are\nHigh level of technical development & optimization\nUsers judge typing quality first, learning value second and will abandon if typing is frustrating\nRisk of Apple/Google features making keyboard features obsolete\nMultiple keyboard layouts & autocorrect\nFull access must be enabled in phone settings\nLearning is limited to in the moment translations and personalized study guide\nKeyboards are expected to be free",
+                      "styles": ".bbbbbb..bbbbbbbb"
                     }
                   ]
                 }
@@ -2608,14 +2608,14 @@
                   "r1c1": [
                     {
                       "type": "paragraph",
-                      "text": "Build a better language exchange platform, with guidance and partner activities."
+                      "text": "Co-learning platform, with guidance and partner activities."
                     }
                   ],
                   "r2c1": [
                     {
                       "type": "paragraph",
-                      "text": "Pros:\nGives users highly valued human connection\nOpens possibilities for partner activities\nIntegrated automatic or manual translation\nCan rely on default system keyboard\n\n\n\n\n\nCons:\nRisk of abuse\nContent moderation\nCannot practice outside app\nUseless until enough users join and leverage the community",
-                      "list": "bullet"
+                      "text": "Pros:\nGives users highly valued human connection\nOpens possibilities for partner activities\nIntegrated automatic or manual translation\nCan rely on default system keyboard\nPartner accountability is a strong retention mechanism\nContent is free and infinite\nAlso serves classes with multiple students\n\nCons:\nRisk of abuse\nRetention and reputation is affected by user behavior\nScams\nContent moderation\nCannot practice outside app\nUseless until enough users join and leverage the community",
+                      "styles": ".bbbbbbb..bbbbbb"
                     }
                   ]
                 }
@@ -2638,14 +2638,14 @@
                   "r1c1": [
                     {
                       "type": "paragraph",
-                      "text": "Text AI chatbots about any topic and control parameters, like vocabulary level and tense."
+                      "text": "AI chats with control over topic, vocabulary, level etc."
                     }
                   ],
                   "r2c1": [
                     {
                       "type": "paragraph",
-                      "text": "Pros:\n24/7 practice\nAccess to range of topics\nAble to practice with high degree of specificity\nAble to integrate techniques like spaced repetition\nIntegrated automatic or manual translation\nCan rely on default system keyboard\n\nCons:\nNo human connection\nRisk of AI losing track of chat history\nToken cost to user\nCannot practice outside app",
-                      "list": "bullet"
+                      "text": "Pros:\n24/7 practice\nUseful on day one\nRemoves the fear of embarrassment\nAccess to range of topics\nDifficulty is fully controllable\nNo moderation or matching\nAble to integrate techniques like spaced repetition\nIntegrated automatic or manual translation\nCan rely on default system keyboard\n\nCons:\nNo human connection\nRisk of AI losing track of chat history\nToken cost to user\nProfit margins decrease with engagement\nOverlap with basic ChatGPT, so value must be clearly differentiated\nAI teaching hallucinations can lead to negative learning outcomes\nCannot practice outside app",
+                      "styles": ".bbbbbbbbb..bbbbbbb"
                     }
                   ]
                 }
@@ -2678,14 +2678,14 @@
                   "r1c1": [
                     {
                       "type": "paragraph",
-                      "text": "Create a collection of writing challenges co-authored with AI."
+                      "text": "Co-authored creative writing with AI."
                     }
                   ],
                   "r2c1": [
                     {
                       "type": "paragraph",
-                      "text": "Pros:\nEngaging and varied content can drive participation\nOpportunity to write in ways that chats often don't offer (ie. telling a story, giving commands etc)\nCan rely on default system keyboard\n\n\n\nCons:\n\n\nCannot practice outside app",
-                      "list": "bullet"
+                      "text": "Pros:\nWriting is deliberate practice\nOutput accumulates into something personal\nServes intermediate and advanced learners\nOpportunity to write in ways that chats often don't offer (ie. telling a story, giving commands etc)\nCan rely on default system keyboard\n\n\nCons:\nIt can be interpreted as homework\nNo default integrated habit aspect (something pulling you back)\nCannot practice outside app",
+                      "styles": ".bbbbb...bbb"
                     }
                   ]
                 }
@@ -2714,8 +2714,8 @@
                   "r2c1": [
                     {
                       "type": "paragraph",
-                      "text": "Pros:\nDesign for specific types of practice, like manual translation challenges\nControl what vocabulary is taught\nConnect user activity to vocabulary goals\nCan rely on default system keyboard\n\n\n\nCons:\n\nCannot practice outside app",
-                      "list": "bullet"
+                      "text": "Pros:\nServes users who want structure and clear goals\nMeasurable learning outcomes\nCheapest to operate with one translation at time of activity creation (serves all users)\nWorks offline\nDesign for specific types of practice, like manual translation challenges and replying within preset conversations\nControlling what vocabulary is taught creates a real pedagogy\nConnect user activity to vocabulary goals\nCan rely on default system keyboard\n\nCons:\nOccupies the most crowded part of the market\nContent is manually written (or AI assisted) but must be reviewed/approved\nCannot practice outside app",
+                      "styles": ".bbbbbbbb..bbb"
                     }
                   ]
                 }
