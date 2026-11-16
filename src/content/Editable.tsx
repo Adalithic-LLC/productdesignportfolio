@@ -52,7 +52,7 @@ interface EditableProps {
    * at all. The lines are a range because a selection can cover several; with
    * no selection it is the one line the caret is on.
    */
-  onLineStyle?: (from: number, to: number, style: LineStyle) => void;
+  onLineStyle?: (from: number, to: number, style: LineStyle, col: number) => void;
   /** Commit the lines and their styles together. */
   onCommitLines?: (text: string, styles: LineStyle[]) => void;
   /**
@@ -171,7 +171,9 @@ export function Editable({
         commit(e.currentTarget);
       }}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
-        if (!multiline && e.key === 'Enter') {
+        /* A field of drawn lines is multi-line by definition: Enter makes the
+           next line rather than finishing the field. */
+        if (!multiline && !lines && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.blur();
           return;
@@ -191,7 +193,12 @@ export function Editable({
             e.preventDefault();
             /* Pressed again on what is already that style, it comes off. */
             const here = lines?.[span.from] ?? 'none';
-            onLineStyle?.(span.from, span.to, here === want ? 'none' : want);
+            onLineStyle?.(
+              span.from,
+              span.to,
+              here === want ? 'none' : want,
+              caretColumn(e.currentTarget, list)
+            );
           }
           return;
         }
@@ -288,6 +295,26 @@ export function Editable({
       {...rest}
     />
   );
+}
+
+/** How far along its own line the caret sits, in characters. */
+function caretColumn(root: HTMLElement, list: boolean): number {
+  const sel = window.getSelection();
+  if (!sel || !sel.anchorNode || !root.contains(sel.anchorNode)) return 0;
+  let scope: Node = root;
+  if (list) {
+    const line = Array.from(root.children).find((el) => el.contains(sel.anchorNode));
+    if (line) scope = line;
+  }
+  const range = document.createRange();
+  range.selectNodeContents(scope);
+  try {
+    range.setEnd(sel.anchorNode, sel.anchorOffset);
+  } catch {
+    return 0;
+  }
+  const before = segmentsToValue(domToSegments(range.cloneContents()));
+  return list ? before.length : (before.split('\n').pop()?.length ?? 0);
 }
 
 /**

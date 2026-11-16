@@ -440,6 +440,62 @@ export function toLinesHtml(value: string, styles: LineStyle[]): string {
     .join('');
 }
 
+/**
+ * Put the caret back on a line, at a column, after the field has been redrawn.
+ *
+ * Marking a line swaps the element the text lives in -- a paragraph becomes a
+ * set of drawn lines, and the last marker coming off turns them back into a
+ * paragraph. React replaces the node either way, so the caret has to be put
+ * back by hand or the next keystroke goes nowhere.
+ */
+export function focusLine(field: HTMLElement, line: number, col: number): void {
+  field.focus();
+  const drawn = Array.from(field.children).filter((el) => el.hasAttribute('data-style'));
+  const scope: Node = drawn.length ? (drawn[Math.min(line, drawn.length - 1)] ?? field) : field;
+
+  /* In a paragraph the lines are separated by `<br>`, so the walk counts them
+     on the way to the one wanted; in drawn lines the scope is the line itself
+     and there is nothing to count. */
+  let seen = 0;
+  let left = col;
+  let node: Text | null = null;
+  let offset = 0;
+  const walk = (n: Node): boolean => {
+    for (const child of Array.from(n.childNodes)) {
+      if (child.nodeName === 'BR') {
+        if (!drawn.length) seen += 1;
+        continue;
+      }
+      if (child.nodeType === Node.TEXT_NODE) {
+        if (drawn.length || seen === line) {
+          const len = (child as Text).data.length;
+          if (left <= len) {
+            node = child as Text;
+            offset = left;
+            return true;
+          }
+          left -= len;
+        }
+        continue;
+      }
+      if (walk(child)) return true;
+    }
+    return false;
+  };
+  walk(scope);
+
+  const range = document.createRange();
+  if (node) range.setStart(node, offset);
+  else {
+    range.selectNodeContents(scope);
+    range.collapse(false);
+  }
+  range.collapse(true);
+  const sel = window.getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(range);
+}
+
 /** What a lines field holds, read back off its lines. */
 export function linesFromDom(root: Node): { text: string; styles: LineStyle[] } {
   const els = Array.from((root as HTMLElement).children) as HTMLElement[];

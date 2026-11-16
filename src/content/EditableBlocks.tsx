@@ -16,6 +16,7 @@ import { useContent } from './ContentContext';
 import { Editable } from './Editable';
 import {
   type LineStyle,
+  focusLine,
   hasMarkers,
   parseStyles,
   serializeStyles,
@@ -129,11 +130,17 @@ function LinesBlock({
     setValue(`${path}.${index}`, base);
   };
 
-  const restyle = (from: number, to: number, style: LineStyle) => {
+  const restyle = (from: number, to: number, style: LineStyle, col = 0) => {
     const next = styles.slice();
     while (next.length < splitLines(value).length) next.push('none');
     for (let i = from; i <= to && i < next.length; i += 1) next[i] = style;
     commit(value, next);
+    /* Marking a line swaps the element the text lives in, so the caret is put
+       back where it was rather than left on the body. */
+    requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
+      if (el) focusLine(el, from, col);
+    });
   };
 
   /* The lines live inside a contentEditable, so a control cannot be rendered
