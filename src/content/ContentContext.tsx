@@ -107,6 +107,8 @@ interface ContentContextValue {
   toggleBlockStack: (path: string, index: number) => void;
   /** Step a paragraph block through plain -> bulleted -> numbered -> plain. */
   cycleBlockList: (path: string, index: number) => void;
+  /** Set (or with null clear) a paragraph block's list style. */
+  setBlockList: (path: string, index: number, style: 'bullet' | 'number' | null) => void;
   /** Duplicate the array item at `path`[index], appending the copy to the end. */
   duplicateItem: (path: string, index: number) => void;
   /** Move the array item at `path`[index] by `delta` (-1 up / +1 down). */
@@ -778,6 +780,27 @@ export function ContentProvider({
     [persistDraft, requestScrollRestore]
   );
 
+  const setBlockList = useCallback(
+    (path: string, index: number, style: 'bullet' | 'number' | null) => {
+      setContent((prev) => {
+        const arr = getByPath(prev, path);
+        if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
+        const item = arr[index];
+        const block =
+          typeof item === 'string' ? { type: 'paragraph' as const, text: item } : { ...item };
+        if (block.type !== 'paragraph') return prev;
+        if (style) block.list = style;
+        else delete block.list;
+        const list = [...arr];
+        list[index] = block;
+        const next = setByPath(prev, path, list);
+        persistDraft(next);
+        return next;
+      });
+    },
+    [persistDraft]
+  );
+
   const cycleBlockList = useCallback(
     (path: string, index: number) => {
       holdScroll();
@@ -1302,6 +1325,7 @@ export function ContentProvider({
       removeBlock,
       toggleBlockStack,
       cycleBlockList,
+      setBlockList,
       duplicateItem,
       moveItem,
       removeItem,
@@ -1311,7 +1335,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, setPreviewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, cycleBlockList, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, setPreviewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, cycleBlockList, setBlockList, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

@@ -41,6 +41,17 @@ function focusAtEnd(el: HTMLElement) {
   sel?.addRange(range);
 }
 
+/** Place the text caret at the start of a contentEditable element. */
+function focusAtStart(el: HTMLElement) {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(true);
+  const sel = window.getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(range);
+}
+
 /** Short label for the armed tool, used on the insertion line. */
 function toolLabel(tool: InsertTool, groups: { id: string; name: string }[] = []): string {
   if (tool.kind === 'paragraph') return 'Paragraph';
@@ -63,24 +74,67 @@ function blockElement(path: string, index: number, item: ProseItem) {
   /* A paragraph set as a list keeps the same stored text -- one line per item
      -- and only changes how it is drawn. */
   if (block && item.list) {
-    return (
-      <Editable
-        as={item.list === 'number' ? 'ol' : 'ul'}
-        list
-        multiline
-        path={textPath}
-        className={cn(
-          'max-w-3xl space-y-1 pl-5',
-          item.list === 'number' ? 'list-decimal' : 'list-disc',
-          'marker:text-muted-foreground/60'
-        )}
-      />
-    );
+    return <ListBlock path={path} index={index} textPath={textPath} style={item.list} />;
   }
   /* The measure travels with the block; its size, weight and colour do not --
      those belong to the prose the block has been put into, and every page sets
      them its own way. */
   return <Editable as="p" multiline path={textPath} className="max-w-3xl" />;
+}
+
+/**
+ * A paragraph drawn as a list, with the two ways out of it wired up.
+ *
+ * Inside the list the browser already does the right thing: backspace at the
+ * start of an item merges it into the one above, and emptying an item and
+ * deleting again removes it. Neither works at the edges, because the list is
+ * the editing host -- there is no block above the first item, and none after
+ * the last. So backspace at the very start turns the block back into a
+ * paragraph, and Enter on an empty last item ends the list and opens a
+ * paragraph under it, which is what the second Enter is for.
+ */
+function ListBlock({
+  path,
+  index,
+  textPath,
+  style,
+}: {
+  path: string;
+  index: number;
+  textPath: string;
+  style: 'bullet' | 'number';
+}) {
+  const { setText, setBlockList, insertBlock } = useContent();
+  return (
+    <Editable
+      as={style === 'number' ? 'ol' : 'ul'}
+      list
+      multiline
+      path={textPath}
+      className={cn(
+        'max-w-3xl space-y-1 pl-5 marker:text-muted-foreground/60',
+        style === 'number' ? 'list-decimal' : 'list-disc'
+      )}
+      onListExit={(value) => {
+        setText(textPath, value);
+        setBlockList(path, index, null);
+        requestAnimationFrame(() => {
+          const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
+          if (el) focusAtStart(el);
+        });
+      }}
+      onListBreak={(value) => {
+        setText(textPath, value);
+        insertBlock(path, index + 1, { type: 'paragraph', text: '' });
+        requestAnimationFrame(() => {
+          const el = document.querySelector<HTMLElement>(
+            `[data-editable-path="${path}.${index + 1}.text"]`
+          );
+          if (el) focusAtEnd(el);
+        });
+      }}
+    />
+  );
 }
 
 /**

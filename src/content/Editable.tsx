@@ -32,6 +32,16 @@ interface EditableProps {
    * paragraph can be shown as a list and back without rewriting it.
    */
   list?: boolean;
+  /**
+   * Backspace at the very start of the first item: the caret has nowhere left
+   * to go inside the list, so it leaves it. Called with the text as it stands.
+   */
+  onListExit?: (value: string) => void;
+  /**
+   * Enter on an empty last item: ends the list and carries on below it.
+   * Called with the text minus that empty item.
+   */
+  onListBreak?: (value: string) => void;
   /** Extra props forwarded to the rendered element (e.g. href, style). */
   [key: string]: unknown;
 }
@@ -53,6 +63,8 @@ export function Editable({
   className,
   multiline = false,
   list = false,
+  onListExit,
+  onListBreak,
   ...rest
 }: EditableProps) {
   const { content, canEdit, previewing, setText } = useContent();
@@ -105,6 +117,33 @@ export function Editable({
         if (!multiline && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.blur();
+          return;
+        }
+        if (!list) return;
+        /* Inside a list the browser handles the ordinary cases -- backspace at
+           the start of an item merges it into the one above, and emptying an
+           item and deleting again removes it. The two it cannot handle are the
+           ways out of the list, because the list is the editing host: there is
+           no block above the first item to merge into, and no paragraph after
+           the last one to drop into. */
+        const el = e.currentTarget;
+        const at = caretItem(el);
+        if (!at) return;
+        if (e.key === 'Backspace' && at.atStart && at.index === 0) {
+          e.preventDefault();
+          onListExit?.(domToValue(el));
+          return;
+        }
+        if (e.key === 'Enter' && at.empty && at.last) {
+          e.preventDefault();
+          const lines = domToValue(el).split('\n');
+          while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+          /* The item the caret is in goes now, by hand. The value it leaves
+             behind is the one already stored, so nothing re-renders this field
+             and the empty bullet would otherwise sit there until something
+             else did. */
+          el.querySelectorAll('li')[at.index]?.remove();
+          onListBreak?.(lines.join('\n'));
         }
       }}
       onClick={(e: React.MouseEvent) => {
@@ -121,6 +160,33 @@ export function Editable({
       {...rest}
     />
   );
+}
+
+/**
+ * Where a collapsed caret sits among a list's items: which item, whether it is
+ * at the very start of it, whether that item is empty, and whether it is the
+ * last one. Null when the selection is not a caret inside one of the items.
+ */
+function caretItem(
+  root: HTMLElement
+): { index: number; last: boolean; atStart: boolean; empty: boolean } | null {
+  const sel = window.getSelection();
+  if (!sel || !sel.isCollapsed || !sel.anchorNode || !root.contains(sel.anchorNode)) return null;
+  const items = Array.from(root.querySelectorAll('li'));
+  const index = items.findIndex((li) => li.contains(sel.anchorNode));
+  if (index < 0) return null;
+  const li = items[index];
+  /* Measured as text rather than by offset: the caret can sit at offset 0 of a
+     node that is itself part-way through the item (just inside a mark, say). */
+  const before = document.createRange();
+  before.selectNodeContents(li);
+  before.setEnd(sel.anchorNode, sel.anchorOffset);
+  return {
+    index,
+    last: index === items.length - 1,
+    atStart: before.toString().length === 0,
+    empty: (li.textContent ?? '').trim() === '',
+  };
 }
 
 function resolveValue(content: unknown, path: string): unknown {
