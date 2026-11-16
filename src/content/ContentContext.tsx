@@ -105,6 +105,8 @@ interface ContentContextValue {
   removeBlock: (path: string, index: number) => void;
   /** Flip a card block between taking the full width and joining the row. */
   toggleBlockStack: (path: string, index: number) => void;
+  /** Step a paragraph block through plain -> bulleted -> numbered -> plain. */
+  cycleBlockList: (path: string, index: number) => void;
   /** Duplicate the array item at `path`[index], appending the copy to the end. */
   duplicateItem: (path: string, index: number) => void;
   /** Move the array item at `path`[index] by `delta` (-1 up / +1 down). */
@@ -776,6 +778,31 @@ export function ContentProvider({
     [persistDraft, requestScrollRestore]
   );
 
+  const cycleBlockList = useCallback(
+    (path: string, index: number) => {
+      holdScroll();
+      setContent((prev) => {
+        const arr = getByPath(prev, path);
+        if (!Array.isArray(arr) || index < 0 || index >= arr.length) return prev;
+        const item = arr[index];
+        /* A legacy plain string becomes a block so it can carry the style;
+           the text itself is untouched. */
+        const block =
+          typeof item === 'string' ? { type: 'paragraph' as const, text: item } : { ...item };
+        if (block.type !== 'paragraph') return prev;
+        const next = block.list === 'bullet' ? 'number' : block.list === 'number' ? undefined : 'bullet';
+        if (next) block.list = next;
+        else delete block.list;
+        const list = [...arr];
+        list[index] = block;
+        const updated = setByPath(prev, path, list);
+        persistDraft(updated);
+        return updated;
+      });
+    },
+    [persistDraft, holdScroll]
+  );
+
   const duplicateItem = useCallback(
     (path: string, index: number) => {
       requestScrollRestore(path);
@@ -1274,6 +1301,7 @@ export function ContentProvider({
       insertBlock,
       removeBlock,
       toggleBlockStack,
+      cycleBlockList,
       duplicateItem,
       moveItem,
       removeItem,
@@ -1283,7 +1311,7 @@ export function ContentProvider({
       discardChanges,
       uploadAsset,
     }),
-    [content, isAdmin, canEdit, previewing, setPreviewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
+    [content, isAdmin, canEdit, previewing, setPreviewing, dirty, token, branch, saveState, insertTool, setInsertTool, moveMode, groupMode, selection, startMove, cancelMove, startGroup, cancelGroup, duplicateSelection, saveSelectionAsGroup, deleteBlockGroup, insertGroup, toggleSectionSelection, toggleBlockSelection, togglePartSelection, moveSectionsTo, moveBlocksTo, movePartsTo, setPartHidden, setText, insertBlock, removeBlock, toggleBlockStack, cycleBlockList, duplicateItem, moveItem, removeItem, setToken, setBranch, save, discardChanges, uploadAsset]
   );
 
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;

@@ -353,6 +353,26 @@ export function toHtml(value: string): string {
     .join('');
 }
 
+/**
+ * The same value as list markup: one `<li>` per line.
+ *
+ * `LI` is already a block tag to {@link domToSegments}, so reading the field
+ * back turns each item into a line again and the stored value is unchanged by
+ * the round trip -- a list is a way of showing a paragraph's lines, not a
+ * different kind of content.
+ */
+export function toListHtml(value: string): string {
+  return splitLines(value)
+    .map((line) => `<li>${toHtml(line) || '<br>'}</li>`)
+    .join('');
+}
+
+/** A value's lines, keeping a single empty item for an empty value. */
+export function splitLines(value: string): string[] {
+  const lines = value.split('\n');
+  return lines.length ? lines : [''];
+}
+
 /** Read a mark off a DOM element, if it is one of ours and well formed. */
 function specFromEl(el: Element): MarkSpec | null {
   const kind = el.getAttribute('data-mark');

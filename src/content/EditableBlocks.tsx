@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import type { ElementType, ReactElement, ReactNode } from 'react';
-import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIcon, Rows3, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIcon, List, ListOrdered, Rows3, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
@@ -59,6 +59,23 @@ function blockElement(path: string, index: number, item: ProseItem) {
   if (block && item.type === 'heading') {
     const cfg = headerConfig(item.style);
     return <Editable as={cfg.tag} path={textPath} className={cfg.className} />;
+  }
+  /* A paragraph set as a list keeps the same stored text -- one line per item
+     -- and only changes how it is drawn. */
+  if (block && item.list) {
+    return (
+      <Editable
+        as={item.list === 'number' ? 'ol' : 'ul'}
+        list
+        multiline
+        path={textPath}
+        className={cn(
+          'max-w-3xl space-y-1 pl-5',
+          item.list === 'number' ? 'list-decimal' : 'list-disc',
+          'marker:text-muted-foreground/60'
+        )}
+      />
+    );
   }
   /* The measure travels with the block; its size, weight and colour do not --
      those belong to the prose the block has been put into, and every page sets
@@ -683,7 +700,7 @@ function Block({
   item: ProseItem;
   editable: boolean;
 }) {
-  const { removeBlock, toggleBlockStack } = useContent();
+  const { removeBlock, toggleBlockStack, cycleBlockList } = useContent();
   const el = blockElement(path, index, item);
 
   // Visitors see plain content; in admin every block gets a delete button.
@@ -696,6 +713,15 @@ function Block({
   /* Only a card has a row to leave: everything else is full width already. */
   const canStack = isElement && getElement(item.variant ?? '')?.group === 'Cards';
   const stacked = isProseBlock(item) && !!item.stack;
+  /* Paragraphs -- typed or legacy plain strings -- can be shown as a list. */
+  const canList = typeof item === 'string' || (isProseBlock(item) && item.type === 'paragraph');
+  const listStyle = isProseBlock(item) ? item.list : undefined;
+  const listLabel =
+    listStyle === 'bullet'
+      ? 'Number this list'
+      : listStyle === 'number'
+        ? 'Back to a paragraph'
+        : 'Show as a bulleted list';
 
   return (
     /* Marked so a grid cell can stretch the card inside to the cell's height
@@ -715,6 +741,26 @@ function Block({
       >
         <X className="h-3.5 w-3.5" />
       </button>
+      {canList && (
+        <button
+          type="button"
+          onClick={() => cycleBlockList(path, index)}
+          title={listLabel}
+          aria-label={listLabel}
+          className={cn(
+            'absolute right-10 top-2 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-border/60 bg-background/90 shadow-sm transition hover:border-primary/50 hover:text-foreground hover:opacity-100',
+            listStyle
+              ? 'text-primary opacity-100'
+              : 'text-muted-foreground opacity-70'
+          )}
+        >
+          {listStyle === 'number' ? (
+            <ListOrdered className="h-3.5 w-3.5" />
+          ) : (
+            <List className="h-3.5 w-3.5" />
+          )}
+        </button>
+      )}
       {canStack && (
         <button
           type="button"

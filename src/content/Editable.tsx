@@ -2,9 +2,22 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { ElementType } from 'react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
-import { domToValue, renderMarks, toHtml } from './inlineMarks';
+import { domToValue, renderMarks, splitLines, toHtml, toListHtml } from './inlineMarks';
 
-type EditableTag = 'span' | 'p' | 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'a' | 'dt' | 'dd' | 'figcaption';
+type EditableTag =
+  | 'span'
+  | 'p'
+  | 'div'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'a'
+  | 'dt'
+  | 'dd'
+  | 'figcaption'
+  | 'ul'
+  | 'ol';
 
 interface EditableProps {
   /** Dot path into the content store, e.g. "hero.title" or "projects.items.0.title". */
@@ -13,6 +26,12 @@ interface EditableProps {
   className?: string;
   /** Allow line breaks (Enter inserts a newline instead of committing). */
   multiline?: boolean;
+  /**
+   * Render the value's lines as list items rather than as one run of text.
+   * The stored value is the same either way -- one line per item -- so a
+   * paragraph can be shown as a list and back without rewriting it.
+   */
+  list?: boolean;
   /** Extra props forwarded to the rendered element (e.g. href, style). */
   [key: string]: unknown;
 }
@@ -28,29 +47,42 @@ interface EditableProps {
  * committed to the store on blur, read back out of the DOM so marks survive
  * being typed around -- see inlineMarks.tsx.
  */
-export function Editable({ path, as = 'span', className, multiline = false, ...rest }: EditableProps) {
+export function Editable({
+  path,
+  as = 'span',
+  className,
+  multiline = false,
+  list = false,
+  ...rest
+}: EditableProps) {
   const { content, canEdit, previewing, setText } = useContent();
   const value = String(resolveValue(content, path) ?? '');
   const ref = useRef<HTMLElement>(null);
   const Tag = as as ElementType;
-  const html = useMemo(() => toHtml(value), [value]);
+  const html = useMemo(() => (list ? toListHtml(value) : toHtml(value)), [list, value]);
 
   // Keep the DOM in sync with the store, but never while focused/typing. The
   // comparison is on what the DOM *means* rather than on its markup, because
   // the browser rewrites the markup it is given (attribute order, quoting) and
   // a string comparison would then rewrite the field on every render.
+  /* `as` is a dependency because changing it swaps the element: a list going
+     from bulleted to numbered is a new, empty `<ol>` in place of the `<ul>`,
+     and the markup to put in it has not changed -- so without this the field
+     would be left blank. */
   useEffect(() => {
     const el = ref.current;
     if (!canEdit || !el) return;
     if (document.activeElement !== el && domToValue(el) !== value) {
       el.innerHTML = html;
     }
-  }, [canEdit, html, value]);
+  }, [as, canEdit, html, value]);
 
   if (!canEdit) {
     return (
       <Tag className={className} {...rest}>
-        {renderMarks(value)}
+        {list
+          ? splitLines(value).map((line, i) => <li key={i}>{renderMarks(line)}</li>)
+          : renderMarks(value)}
       </Tag>
     );
   }

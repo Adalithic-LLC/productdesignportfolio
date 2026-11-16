@@ -32,6 +32,10 @@ export interface ProseBlock {
      a section of the page -- an insight and the response under it -- wants the
      column instead, and sets this to opt out of the run. */
   stack?: boolean;
+  /* A paragraph shown as a list: each of its lines is an item. The text is
+     stored the same either way, so this can be turned on and off without
+     rewriting the block. */
+  list?: 'bullet' | 'number';
 }
 
 /** A single entry in a prose array: a legacy string (= paragraph) or a block. */
