@@ -418,8 +418,12 @@ export function toListHtml(value: string, ordered = false): string {
 export function listDomToValue(root: Node): string {
   const items = Array.from((root as HTMLElement).querySelectorAll('li'));
   if (!items.length) return domToValue(root);
+  /* A line break inside an item is not one: items are what the newlines in
+     the stored value separate, and an empty item carries a filler `<br>` that
+     would otherwise read back as a line of its own. */
   const lines = items.map(
-    (li) => '\t'.repeat(itemDepth(li)) + segmentsToValue(domToSegments(li))
+    (li) =>
+      '\t'.repeat(itemDepth(li)) + segmentsToValue(domToSegments(li)).replace(/\n/g, '')
   );
   while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
   return lines.join('\n');

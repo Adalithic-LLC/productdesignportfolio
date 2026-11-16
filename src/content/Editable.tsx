@@ -4,12 +4,14 @@ import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import {
   LIST_MAX_DEPTH,
+  domToSegments,
   domToValue,
   itemDepth,
   listDomToValue,
   listItemStyle,
   parseListLine,
   renderMarks,
+  segmentsToValue,
   setItemDepth,
   splitLines,
   toHtml,
@@ -45,10 +47,13 @@ interface EditableProps {
    */
   list?: boolean;
   /**
-   * Backspace at the very start of the first item: the caret has nowhere left
-   * to go inside the list, so it leaves it. Called with the text as it stands.
+   * Re-style a run of the field's lines: as bullets, as numbers, or as no list
+   * at all. The lines are a range because a selection can cover several; with
+   * no selection it is the one line the caret is on.
    */
-  onListExit?: (value: string) => void;
+  onLineStyle?: (from: number, to: number, style: 'bullet' | 'number' | null) => void;
+  /** Drop a line outright -- an empty bullet backspaced over. */
+  onLineRemove?: (line: number) => void;
   /**
    * Enter on an empty last item: ends the list and carries on below it.
    * Called with the text minus that empty item.
@@ -75,13 +80,19 @@ export function Editable({
   className,
   multiline = false,
   list = false,
-  onListExit,
+  onLineStyle,
+  onLineRemove,
   onListBreak,
   ...rest
 }: EditableProps) {
   const { content, canEdit, previewing, setText } = useContent();
   const value = String(resolveValue(content, path) ?? '');
   const ref = useRef<HTMLElement>(null);
+  /* Set when a key has just rebuilt the blocks around this field. The
+     element is about to be replaced, and the blur on the way out would
+     otherwise commit what it still holds -- the whole list -- over the
+     first of the new blocks. */
+  const restructured = useRef(false);
   const Tag = as as ElementType;
   const ordered = as === 'ol';
   const html = useMemo(
@@ -137,11 +148,36 @@ export function Editable({
       spellCheck={false}
       data-editable-path={path}
       title={`Editing: ${path}`}
-      onBlur={(e: React.FocusEvent<HTMLElement>) => setText(path, read(e.currentTarget))}
+      onBlur={(e: React.FocusEvent<HTMLElement>) => {
+        if (restructured.current) {
+          restructured.current = false;
+          return;
+        }
+        setText(path, read(e.currentTarget));
+      }}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (!multiline && e.key === 'Enter') {
           e.preventDefault();
           e.currentTarget.blur();
+          return;
+        }
+        /* The list shortcuts, which work the same in a paragraph and in a
+           list: the usual pair, 8 for bullets and 7 for numbers. */
+        /* By code, not by key: with Shift held the 8 key reports '*'. */
+        if (
+          (e.metaKey || e.ctrlKey) &&
+          e.shiftKey &&
+          (e.code === 'Digit8' || e.code === 'Digit7')
+        ) {
+          const want = e.code === 'Digit8' ? 'bullet' : 'number';
+          const span = lineSpan(e.currentTarget, list);
+          if (span) {
+            e.preventDefault();
+            /* Pressed again on what is already that style, it comes off. */
+            const same = list && listStyleOf(as) === want;
+            restructured.current = true;
+            onLineStyle?.(span.from, span.to, same ? null : (want as 'bullet' | 'number'));
+          }
           return;
         }
         if (!list) return;
@@ -163,6 +199,12 @@ export function Editable({
           const li = items[at.index];
           const above = at.index > 0 ? itemDepth(items[at.index - 1]) : -1;
           const now = itemDepth(li);
+          if (e.shiftKey && now === 0) {
+            restructured.current = true;
+            if (at.empty) onLineRemove?.(at.index);
+            else onLineStyle?.(at.index, at.index, null);
+            return;
+          }
           const next = e.shiftKey
             ? Math.max(0, now - 1)
             : Math.min(now + 1, above + 1, LIST_MAX_DEPTH);
@@ -172,22 +214,25 @@ export function Editable({
           }
           return;
         }
+        /* Backspace at the start of an item, and Shift+Tab, are the same
+           move outwards: a step of indent if there is one to give back, and
+           otherwise the bullet itself, leaving the line's text where it was.
+           Neither merges the line into the one above and neither touches the
+           rest of the list. */
         if (e.key === 'Backspace' && at.atStart) {
-          /* An indented item comes back a level first; only a top-level one at
-             the very top leaves the list. */
-          const li = items[at.index];
-          const now = itemDepth(li);
+          e.preventDefault();
+          const now = itemDepth(items[at.index]);
           if (now > 0) {
-            e.preventDefault();
-            setItemDepth(li, now - 1, ordered);
+            setItemDepth(items[at.index], now - 1, ordered);
             setText(path, listDomToValue(el));
-            return;
+          } else if (at.empty) {
+            restructured.current = true;
+            onLineRemove?.(at.index);
+          } else {
+            restructured.current = true;
+            onLineStyle?.(at.index, at.index, null);
           }
-          if (at.index === 0) {
-            e.preventDefault();
-            onListExit?.(read(el));
-            return;
-          }
+          return;
         }
         if (e.key === 'Enter' && at.empty && at.last) {
           e.preventDefault();
@@ -229,6 +274,50 @@ export function Editable({
       {...rest}
     />
   );
+}
+
+/** Which list style a tag stands for, if any. */
+function listStyleOf(tag: string): 'bullet' | 'number' | null {
+  if (tag === 'ol') return 'number';
+  if (tag === 'ul') return 'bullet';
+  return null;
+}
+
+/**
+ * The lines a selection covers, as indices into the stored value.
+ *
+ * In a list that is which items the selection touches. In a paragraph the
+ * lines are separated by `<br>`, so it is how many line breaks the text before
+ * each end of the selection holds -- counted off the DOM, the same way the
+ * value itself is read, rather than from an offset into a single text node.
+ */
+function lineSpan(root: HTMLElement, list: boolean): { from: number; to: number } | null {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !sel.anchorNode || !root.contains(sel.anchorNode)) return null;
+  const range = sel.getRangeAt(0);
+
+  if (list) {
+    const items = Array.from(root.querySelectorAll('li'));
+    const from = items.findIndex((li) => li.contains(range.startContainer));
+    const to = items.findIndex((li) => li.contains(range.endContainer));
+    if (from < 0) return null;
+    return { from, to: to < 0 ? from : to };
+  }
+
+  const linesTo = (node: Node, offset: number) => {
+    const pre = document.createRange();
+    pre.selectNodeContents(root);
+    try {
+      pre.setEnd(node, offset);
+    } catch {
+      return 0;
+    }
+    return segmentsToValue(domToSegments(pre.cloneContents())).split('\n').length - 1;
+  };
+  return {
+    from: linesTo(range.startContainer, range.startOffset),
+    to: linesTo(range.endContainer, range.endOffset),
+  };
 }
 
 /** The shared item style, as React wants it. */

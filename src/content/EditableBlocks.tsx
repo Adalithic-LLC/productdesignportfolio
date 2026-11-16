@@ -14,13 +14,14 @@ import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIc
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
-import { listDomToValue } from './inlineMarks';
+import { listDomToValue, parseListLine } from './inlineMarks';
 import {
   blockForTool,
   canMoveBlocks,
   headerConfig,
   isProseBlock,
   type InsertTool,
+  type ProseBlock,
   type ProseItem,
 } from './proseBlocks';
 import { ElementPreview, ElementView, getElement, isMediaBlock, makeElementBlock } from './elements';
@@ -82,7 +83,99 @@ function blockElement(path: string, index: number, item: ProseItem) {
   /* The measure travels with the block; its size, weight and colour do not --
      those belong to the prose the block has been put into, and every page sets
      them its own way. */
-  return <Editable as="p" multiline path={textPath} className="max-w-3xl" />;
+  return <ParagraphBlock path={path} index={index} textPath={textPath} />;
+}
+
+/**
+ * Re-style a run of a block's lines, splitting the block around them.
+ *
+ * A list style belongs to a block, but the thing being styled is a line. So
+ * bulleting one line of a paragraph, or taking the bullet off one item of a
+ * list, turns one block into up to three: what came before at its old style,
+ * the chosen lines at the new one, and what came after at the old style again.
+ * Blocks that would hold nothing are left out.
+ *
+ * Returns the index the middle block landed at, for putting the caret back.
+ */
+function useRestyleLines(path: string, index: number) {
+  const { content, setValue } = useContent();
+  return (
+    from: number,
+    to: number,
+    style: 'bullet' | 'number' | null,
+    text: string,
+    was: 'bullet' | 'number' | null
+  ) => {
+    const lines = text.split('\n');
+    if (!lines.length) return index;
+    const a = Math.min(Math.max(from, 0), lines.length - 1);
+    const b = Math.min(Math.max(to, a), lines.length - 1);
+
+    const block = (ls: string[], st: 'bullet' | 'number' | null): ProseBlock => {
+      const out: ProseBlock = { type: 'paragraph', text: ls.join('\n') };
+      if (st) out.list = st;
+      return out;
+    };
+    /* Indent is a list's business: a line leaving one drops its tabs, and a
+       tail left without its head is pulled back to the margin so it does not
+       hang indented under nothing. */
+    const flatten = (ls: string[]) => ls.map((l) => parseListLine(l).text);
+    const reseat = (ls: string[]) => {
+      const depths = ls.map((l) => parseListLine(l).depth);
+      const base = Math.min(...depths);
+      return ls.map((l, i) => '\t'.repeat(depths[i] - base) + parseListLine(l).text);
+    };
+
+    const out: ProseBlock[] = [];
+    if (a > 0) out.push(block(lines.slice(0, a), was));
+    out.push(block(style ? lines.slice(a, b + 1) : flatten(lines.slice(a, b + 1)), style));
+    if (b < lines.length - 1) {
+      const rest = lines.slice(b + 1);
+      out.push(block(was ? reseat(rest) : rest, was));
+    }
+
+    const arr = (getByPath(content, path) as ProseItem[]) ?? [];
+    setValue(path, [...arr.slice(0, index), ...out, ...arr.slice(index + 1)]);
+    return index + (a > 0 ? 1 : 0);
+  };
+}
+
+/** Put the caret in a block's field once it has been rendered. */
+function focusBlockSoon(path: string, index: number, atEnd = false) {
+  requestAnimationFrame(() => {
+    const el = document.querySelector<HTMLElement>(`[data-editable-path="${path}.${index}.text"]`);
+    if (el) (atEnd ? focusAtEnd : focusAtStart)(el);
+  });
+}
+
+/**
+ * A plain paragraph, which can have any of its lines turned into a list.
+ */
+function ParagraphBlock({
+  path,
+  index,
+  textPath,
+}: {
+  path: string;
+  index: number;
+  textPath: string;
+}) {
+  const { content } = useContent();
+  const restyle = useRestyleLines(path, index);
+  const value = String(getByPath(content, textPath) ?? '');
+  return (
+    <Editable
+      as="p"
+      multiline
+      path={textPath}
+      className="max-w-3xl"
+      onLineStyle={(from, to, style) => {
+        const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
+        const current = el ? (el.innerText ?? value) : value;
+        focusBlockSoon(path, restyle(from, to, style, current.replace(/\r/g, ''), null));
+      }}
+    />
+  );
 }
 
 /**
@@ -107,7 +200,8 @@ function ListBlock({
   textPath: string;
   style: 'bullet' | 'number';
 }) {
-  const { content, isAdmin, setText, setBlockList, insertBlock, removeBlock } = useContent();
+  const { content, isAdmin, setText, insertBlock, removeBlock } = useContent();
+  const restyle = useRestyleLines(path, index);
   const host = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<{ top: number; left: number; height: number }[]>([]);
   const value = String(getByPath(content, textPath) ?? '');
@@ -145,12 +239,14 @@ function ListBlock({
   }, [isAdmin, value, style]);
 
   /* Read the list as it stands rather than from the store: the field commits
-     on blur, and blur runs on the way to this click, so the store may be a
+     on blur, and blur runs on the way to a click, so the store can be a
      keystroke behind what is on screen. */
-  const removeItemAt = (i: number) => {
+  const currentValue = () => {
     const listEl = host.current?.querySelector('ul, ol');
-    const current = listEl ? listDomToValue(listEl) : value;
-    const lines = current.split('\n');
+    return listEl ? listDomToValue(listEl) : value;
+  };
+  const removeItemAt = (i: number) => {
+    const lines = currentValue().split('\n');
     if (i < 0 || i >= lines.length) return;
     lines.splice(i, 1);
     if (!lines.length || lines.every((line: string) => line.trim() === '')) {
@@ -185,14 +281,10 @@ function ListBlock({
         'max-w-3xl space-y-1 pl-5 marker:text-muted-foreground/60',
         style === 'number' ? 'list-decimal' : 'list-disc'
       )}
-      onListExit={(next) => {
-        setText(textPath, next);
-        setBlockList(path, index, null);
-        requestAnimationFrame(() => {
-          const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
-          if (el) focusAtStart(el);
-        });
+      onLineStyle={(from, to, next) => {
+        focusBlockSoon(path, restyle(from, to, next, currentValue(), style));
       }}
+      onLineRemove={(line) => removeItemAt(line)}
       onListBreak={(next) => {
         setText(textPath, next);
         insertBlock(path, index + 1, { type: 'paragraph', text: '' });
