@@ -353,18 +353,76 @@ export function toHtml(value: string): string {
     .join('');
 }
 
+/** How deep a sub-list can go. Past this the indent stops reading as structure. */
+export const LIST_MAX_DEPTH = 3;
+
+/** Markers by depth, so a sub-item is told apart from its parent at a glance. */
+const BULLETS = ['disc', 'circle', 'square', 'circle'];
+const NUMBERS = ['decimal', 'lower-alpha', 'lower-roman', 'lower-alpha'];
+
 /**
- * The same value as list markup: one `<li>` per line.
+ * A stored line split into its indent and its text.
+ *
+ * Depth rides along as leading tabs. That keeps a list one line per item like
+ * any other paragraph -- nothing in the store knows about nesting -- and a tab
+ * never survives as visible text, since the markup carries the indent instead.
+ */
+export function parseListLine(line: string): { depth: number; text: string } {
+  const indent = /^\t*/.exec(line)?.[0] ?? '';
+  return { depth: Math.min(indent.length, LIST_MAX_DEPTH), text: line.slice(indent.length) };
+}
+
+/** The inline style an item at this depth is drawn with. */
+export function listItemStyle(depth: number, ordered: boolean): string {
+  const marker = (ordered ? NUMBERS : BULLETS)[Math.min(depth, LIST_MAX_DEPTH)];
+  return `margin-left:${depth * 1.35}rem;list-style-type:${marker}`;
+}
+
+/** Write a depth onto an item, markup and marker together. */
+export function setItemDepth(li: HTMLElement, depth: number, ordered: boolean): void {
+  li.setAttribute('data-depth', String(depth));
+  li.setAttribute('style', listItemStyle(depth, ordered));
+}
+
+/** An item's depth, defaulting to the top level. */
+export function itemDepth(li: Element): number {
+  return Math.min(Math.max(Number(li.getAttribute('data-depth')) || 0, 0), LIST_MAX_DEPTH);
+}
+
+/**
+ * The same value as list markup: one `<li>` per line, indented by its tabs.
  *
  * `LI` is already a block tag to {@link domToSegments}, so reading the field
  * back turns each item into a line again and the stored value is unchanged by
  * the round trip -- a list is a way of showing a paragraph's lines, not a
  * different kind of content.
  */
-export function toListHtml(value: string): string {
+export function toListHtml(value: string, ordered = false): string {
   return splitLines(value)
-    .map((line) => `<li>${toHtml(line) || '<br>'}</li>`)
+    .map((line) => {
+      const { depth, text } = parseListLine(line);
+      return (
+        `<li data-depth="${depth}" style="${listItemStyle(depth, ordered)}">` +
+        `${toHtml(text) || '<br>'}</li>`
+      );
+    })
     .join('');
+}
+
+/**
+ * What a list field holds, read back off its items.
+ *
+ * Unlike {@link domToValue} this keeps each item's depth, putting the tabs
+ * back on the front of the line.
+ */
+export function listDomToValue(root: Node): string {
+  const items = Array.from((root as HTMLElement).querySelectorAll('li'));
+  if (!items.length) return domToValue(root);
+  const lines = items.map(
+    (li) => '\t'.repeat(itemDepth(li)) + segmentsToValue(domToSegments(li))
+  );
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+  return lines.join('\n');
 }
 
 /** A value's lines, keeping a single empty item for an empty value. */

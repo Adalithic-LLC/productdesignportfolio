@@ -2,7 +2,19 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { ElementType } from 'react';
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
-import { domToValue, renderMarks, splitLines, toHtml, toListHtml } from './inlineMarks';
+import {
+  LIST_MAX_DEPTH,
+  domToValue,
+  itemDepth,
+  listDomToValue,
+  listItemStyle,
+  parseListLine,
+  renderMarks,
+  setItemDepth,
+  splitLines,
+  toHtml,
+  toListHtml,
+} from './inlineMarks';
 
 type EditableTag =
   | 'span'
@@ -71,7 +83,13 @@ export function Editable({
   const value = String(resolveValue(content, path) ?? '');
   const ref = useRef<HTMLElement>(null);
   const Tag = as as ElementType;
-  const html = useMemo(() => (list ? toListHtml(value) : toHtml(value)), [list, value]);
+  const ordered = as === 'ol';
+  const html = useMemo(
+    () => (list ? toListHtml(value, ordered) : toHtml(value)),
+    [list, ordered, value]
+  );
+  /* A list keeps each item's depth, which plain text has no room for. */
+  const read = (el: HTMLElement) => (list ? listDomToValue(el) : domToValue(el));
 
   // Keep the DOM in sync with the store, but never while focused/typing. The
   // comparison is on what the DOM *means* rather than on its markup, because
@@ -84,7 +102,7 @@ export function Editable({
   useEffect(() => {
     const el = ref.current;
     if (!canEdit || !el) return;
-    if (document.activeElement !== el && domToValue(el) !== value) {
+    if (document.activeElement !== el && read(el) !== value) {
       el.innerHTML = html;
     }
   }, [as, canEdit, html, value]);
@@ -93,7 +111,14 @@ export function Editable({
     return (
       <Tag className={className} {...rest}>
         {list
-          ? splitLines(value).map((line, i) => <li key={i}>{renderMarks(line)}</li>)
+          ? splitLines(value).map((line, i) => {
+              const { depth, text } = parseListLine(line);
+              return (
+                <li key={i} style={cssFromText(listItemStyle(depth, as === 'ol'))}>
+                  {renderMarks(text)}
+                </li>
+              );
+            })
           : renderMarks(value)}
       </Tag>
     );
@@ -112,7 +137,7 @@ export function Editable({
       spellCheck={false}
       data-editable-path={path}
       title={`Editing: ${path}`}
-      onBlur={(e: React.FocusEvent<HTMLElement>) => setText(path, domToValue(e.currentTarget))}
+      onBlur={(e: React.FocusEvent<HTMLElement>) => setText(path, read(e.currentTarget))}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (!multiline && e.key === 'Enter') {
           e.preventDefault();
@@ -129,14 +154,44 @@ export function Editable({
         const el = e.currentTarget;
         const at = caretItem(el);
         if (!at) return;
-        if (e.key === 'Backspace' && at.atStart && at.index === 0) {
+        const items = Array.from(el.querySelectorAll('li'));
+        if (e.key === 'Tab') {
+          /* Indent is capped one level below the item above: a sub-item needs
+             something to be under, and a list that jumps two levels at once
+             has no parent to show. */
           e.preventDefault();
-          onListExit?.(domToValue(el));
+          const li = items[at.index];
+          const above = at.index > 0 ? itemDepth(items[at.index - 1]) : -1;
+          const now = itemDepth(li);
+          const next = e.shiftKey
+            ? Math.max(0, now - 1)
+            : Math.min(now + 1, above + 1, LIST_MAX_DEPTH);
+          if (next !== now) {
+            setItemDepth(li, next, ordered);
+            setText(path, listDomToValue(el));
+          }
           return;
+        }
+        if (e.key === 'Backspace' && at.atStart) {
+          /* An indented item comes back a level first; only a top-level one at
+             the very top leaves the list. */
+          const li = items[at.index];
+          const now = itemDepth(li);
+          if (now > 0) {
+            e.preventDefault();
+            setItemDepth(li, now - 1, ordered);
+            setText(path, listDomToValue(el));
+            return;
+          }
+          if (at.index === 0) {
+            e.preventDefault();
+            onListExit?.(read(el));
+            return;
+          }
         }
         if (e.key === 'Enter' && at.empty && at.last) {
           e.preventDefault();
-          const lines = domToValue(el).split('\n');
+          const lines = read(el).split('\n');
           while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
           /* The item the caret is in goes now, by hand. The value it leaves
              behind is the one already stored, so nothing re-renders this field
@@ -146,6 +201,20 @@ export function Editable({
           onListBreak?.(lines.join('\n'));
         }
       }}
+      onInput={
+        list
+          ? (e: React.FormEvent<HTMLElement>) => {
+              /* An item the browser made (Enter at the end of one) carries no
+                 depth of its own, so it takes the depth of the item above --
+                 which is what continuing a sub-list means. */
+              let depth = 0;
+              e.currentTarget.querySelectorAll('li').forEach((li) => {
+                if (li.hasAttribute('data-depth')) depth = itemDepth(li);
+                else setItemDepth(li, depth, ordered);
+              });
+            }
+          : undefined
+      }
       onClick={(e: React.MouseEvent) => {
         // Editing a clicked element shouldn't trigger parent button/link
         // handlers, and must not follow a link it happens to sit inside.
@@ -160,6 +229,18 @@ export function Editable({
       {...rest}
     />
   );
+}
+
+/** The shared item style, as React wants it. */
+function cssFromText(style: string): React.CSSProperties {
+  const out: Record<string, string> = {};
+  style.split(';').forEach((rule) => {
+    const [prop, value] = rule.split(':');
+    if (!prop || !value) return;
+    const key = prop.trim().replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    out[key] = value.trim();
+  });
+  return out as React.CSSProperties;
 }
 
 /**
