@@ -197,7 +197,16 @@ function LinesBlock({
     /* The measure travels with the block; its size, weight and colour do not
        -- those belong to the prose the block has been put into, and every page
        sets them its own way. */
-    <Editable as="p" multiline path={textPath} className="max-w-3xl" onLineStyle={restyle} />
+    /* `pre-line` so the breaks an author typed survive: in admin they are
+       `<br>` elements and show, and without this a visitor saw the lines run
+       together and a blank line vanish altogether. */
+    <Editable
+      as="p"
+      multiline
+      path={textPath}
+      className="max-w-3xl whitespace-pre-line"
+      onLineStyle={restyle}
+    />
   );
 
   if (!marked) return field;

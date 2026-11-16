@@ -141,7 +141,10 @@ export function Editable({
                   data-depth={depth}
                   style={{ marginLeft: `${depth * 1.35}rem` }}
                 >
-                  {renderMarks(text)}
+                  {/* An empty line keeps its height: a blank line between two
+                      runs is spacing the author put there, and a div with
+                      nothing in it would collapse to nothing. */}
+                  {text ? renderMarks(text) : <br />}
                 </div>
               );
             })
