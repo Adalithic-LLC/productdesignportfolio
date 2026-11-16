@@ -4,18 +4,19 @@ import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import {
   LIST_MAX_DEPTH,
+  type LineStyle,
   domToSegments,
   domToValue,
   itemDepth,
-  listDomToValue,
-  listItemStyle,
+  itemStyle,
+  linesFromDom,
   parseListLine,
   renderMarks,
   segmentsToValue,
-  setItemDepth,
+  setItemStyle,
   splitLines,
   toHtml,
-  toListHtml,
+  toLinesHtml,
 } from './inlineMarks';
 
 type EditableTag =
@@ -41,19 +42,19 @@ interface EditableProps {
   /** Allow line breaks (Enter inserts a newline instead of committing). */
   multiline?: boolean;
   /**
-   * Render the value's lines as list items rather than as one run of text.
-   * The stored value is the same either way -- one line per item -- so a
-   * paragraph can be shown as a list and back without rewriting it.
+   * Draw each line separately so lines can carry their own markers. Bulleted
+   * and plain lines then sit in one block, which is what a list in the middle
+   * of prose actually is.
    */
-  list?: boolean;
+  lines?: LineStyle[];
   /**
    * Re-style a run of the field's lines: as bullets, as numbers, or as no list
    * at all. The lines are a range because a selection can cover several; with
    * no selection it is the one line the caret is on.
    */
-  onLineStyle?: (from: number, to: number, style: 'bullet' | 'number' | null) => void;
-  /** Drop a line outright -- an empty bullet backspaced over. */
-  onLineRemove?: (line: number) => void;
+  onLineStyle?: (from: number, to: number, style: LineStyle) => void;
+  /** Commit the lines and their styles together. */
+  onCommitLines?: (text: string, styles: LineStyle[]) => void;
   /**
    * Enter on an empty last item: ends the list and carries on below it.
    * Called with the text minus that empty item.
@@ -79,9 +80,9 @@ export function Editable({
   as = 'span',
   className,
   multiline = false,
-  list = false,
+  lines,
   onLineStyle,
-  onLineRemove,
+  onCommitLines,
   onListBreak,
   ...rest
 }: EditableProps) {
@@ -94,13 +95,22 @@ export function Editable({
      first of the new blocks. */
   const restructured = useRef(false);
   const Tag = as as ElementType;
-  const ordered = as === 'ol';
+  const list = !!lines;
   const html = useMemo(
-    () => (list ? toListHtml(value, ordered) : toHtml(value)),
-    [list, ordered, value]
+    () => (lines ? toLinesHtml(value, lines) : toHtml(value)),
+    [lines, value]
   );
-  /* A list keeps each item's depth, which plain text has no room for. */
-  const read = (el: HTMLElement) => (list ? listDomToValue(el) : domToValue(el));
+  /* Drawn lines carry depth and a marker, which plain text has no room for,
+     so they are committed as a pair rather than through `setText`. */
+  const read = (el: HTMLElement) => (lines ? linesFromDom(el).text : domToValue(el));
+  const commit = (el: HTMLElement) => {
+    if (lines && onCommitLines) {
+      const next = linesFromDom(el);
+      onCommitLines(next.text, next.styles);
+    } else {
+      setText(path, domToValue(el));
+    }
+  };
 
   // Keep the DOM in sync with the store, but never while focused/typing. The
   // comparison is on what the DOM *means* rather than on its markup, because
@@ -121,13 +131,18 @@ export function Editable({
   if (!canEdit) {
     return (
       <Tag className={className} {...rest}>
-        {list
+        {lines
           ? splitLines(value).map((line, i) => {
               const { depth, text } = parseListLine(line);
               return (
-                <li key={i} style={cssFromText(listItemStyle(depth, as === 'ol'))}>
+                <div
+                  key={i}
+                  data-style={lines[i] ?? 'none'}
+                  data-depth={depth}
+                  style={{ marginLeft: `${depth * 1.35}rem` }}
+                >
                   {renderMarks(text)}
-                </li>
+                </div>
               );
             })
           : renderMarks(value)}
@@ -153,7 +168,7 @@ export function Editable({
           restructured.current = false;
           return;
         }
-        setText(path, read(e.currentTarget));
+        commit(e.currentTarget);
       }}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (!multiline && e.key === 'Enter') {
@@ -161,101 +176,100 @@ export function Editable({
           e.currentTarget.blur();
           return;
         }
-        /* The list shortcuts, which work the same in a paragraph and in a
-           list: the usual pair, 8 for bullets and 7 for numbers. */
-        /* By code, not by key: with Shift held the 8 key reports '*'. */
+        /* The list shortcuts: the usual pair, 8 for bullets and 7 for
+           numbers. By code, not by key -- with Shift held the 8 key reports
+           '*'. They apply to the line the caret is on, or to every line a
+           selection covers. */
         if (
           (e.metaKey || e.ctrlKey) &&
           e.shiftKey &&
           (e.code === 'Digit8' || e.code === 'Digit7')
         ) {
-          const want = e.code === 'Digit8' ? 'bullet' : 'number';
+          const want: LineStyle = e.code === 'Digit8' ? 'bullet' : 'number';
           const span = lineSpan(e.currentTarget, list);
           if (span) {
             e.preventDefault();
             /* Pressed again on what is already that style, it comes off. */
-            const same = list && listStyleOf(as) === want;
-            restructured.current = true;
-            onLineStyle?.(span.from, span.to, same ? null : (want as 'bullet' | 'number'));
+            const here = lines?.[span.from] ?? 'none';
+            onLineStyle?.(span.from, span.to, here === want ? 'none' : want);
           }
           return;
         }
         if (!list) return;
-        /* Inside a list the browser handles the ordinary cases -- backspace at
-           the start of an item merges it into the one above, and emptying an
-           item and deleting again removes it. The two it cannot handle are the
-           ways out of the list, because the list is the editing host: there is
-           no block above the first item to merge into, and no paragraph after
-           the last one to drop into. */
         const el = e.currentTarget;
         const at = caretItem(el);
         if (!at) return;
-        const items = Array.from(el.querySelectorAll('li'));
+        const items = Array.from(el.children) as HTMLElement[];
+        const line = items[at.index];
+
+        /* Tab indents, Shift+Tab is the way back out: a level of indent if
+           there is one to give back, then the marker itself, leaving the
+           line's text where it is and the rest of the block alone. */
         if (e.key === 'Tab') {
-          /* Indent is capped one level below the item above: a sub-item needs
-             something to be under, and a list that jumps two levels at once
-             has no parent to show. */
           e.preventDefault();
-          const li = items[at.index];
-          const above = at.index > 0 ? itemDepth(items[at.index - 1]) : -1;
-          const now = itemDepth(li);
-          if (e.shiftKey && now === 0) {
-            restructured.current = true;
-            if (at.empty) onLineRemove?.(at.index);
-            else onLineStyle?.(at.index, at.index, null);
+          const now = itemDepth(line);
+          const style = itemStyle(line);
+          if (!e.shiftKey) {
+            if (style === 'none') return;
+            const above = at.index > 0 ? itemDepth(items[at.index - 1]) : -1;
+            const next = Math.min(now + 1, above + 1, LIST_MAX_DEPTH);
+            if (next !== now) {
+              setItemStyle(line, style, next);
+              commit(el);
+            }
             return;
           }
-          const next = e.shiftKey
-            ? Math.max(0, now - 1)
-            : Math.min(now + 1, above + 1, LIST_MAX_DEPTH);
-          if (next !== now) {
-            setItemDepth(li, next, ordered);
-            setText(path, listDomToValue(el));
-          }
+          if (now > 0) setItemStyle(line, style, now - 1);
+          else if (style !== 'none') setItemStyle(line, 'none', 0);
+          else return;
+          commit(el);
           return;
         }
-        /* Backspace at the start of an item, and Shift+Tab, are the same
-           move outwards: a step of indent if there is one to give back, and
-           otherwise the bullet itself, leaving the line's text where it was.
-           Neither merges the line into the one above and neither touches the
-           rest of the list. */
+
+        /* Backspace at the start of a line does the same, so the two keys
+           agree: give back the indent, then the marker. Only once the line is
+           plain does it behave like ordinary text and join the line above. */
         if (e.key === 'Backspace' && at.atStart) {
-          e.preventDefault();
-          const now = itemDepth(items[at.index]);
+          const now = itemDepth(line);
+          const style = itemStyle(line);
           if (now > 0) {
-            setItemDepth(items[at.index], now - 1, ordered);
-            setText(path, listDomToValue(el));
-          } else if (at.empty) {
-            restructured.current = true;
-            onLineRemove?.(at.index);
-          } else {
-            restructured.current = true;
-            onLineStyle?.(at.index, at.index, null);
+            e.preventDefault();
+            setItemStyle(line, style, now - 1);
+            commit(el);
+            return;
           }
-          return;
+          if (style !== 'none') {
+            e.preventDefault();
+            setItemStyle(line, 'none', 0);
+            commit(el);
+            return;
+          }
         }
-        if (e.key === 'Enter' && at.empty && at.last) {
+
+        if (e.key === 'Enter' && at.empty && itemStyle(line) !== 'none') {
+          /* The second Enter of the usual pair: the first made an empty item,
+             this one ends the run of markers rather than the block. */
           e.preventDefault();
-          const lines = read(el).split('\n');
-          while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
-          /* The item the caret is in goes now, by hand. The value it leaves
-             behind is the one already stored, so nothing re-renders this field
-             and the empty bullet would otherwise sit there until something
-             else did. */
-          el.querySelectorAll('li')[at.index]?.remove();
-          onListBreak?.(lines.join('\n'));
+          setItemStyle(line, 'none', 0);
+          commit(el);
         }
       }}
       onInput={
         list
           ? (e: React.FormEvent<HTMLElement>) => {
-              /* An item the browser made (Enter at the end of one) carries no
-                 depth of its own, so it takes the depth of the item above --
-                 which is what continuing a sub-list means. */
+              /* A line the browser made (Enter at the end of one) carries no
+                 style of its own, so it takes the style and depth of the line
+                 above -- which is what continuing a list means. */
+              let style: LineStyle = 'none';
               let depth = 0;
-              e.currentTarget.querySelectorAll('li').forEach((li) => {
-                if (li.hasAttribute('data-depth')) depth = itemDepth(li);
-                else setItemDepth(li, depth, ordered);
+              Array.from(e.currentTarget.children).forEach((child) => {
+                const el = child as HTMLElement;
+                if (el.hasAttribute('data-style')) {
+                  style = itemStyle(el);
+                  depth = itemDepth(el);
+                } else {
+                  setItemStyle(el, style, depth);
+                }
               });
             }
           : undefined
@@ -276,13 +290,6 @@ export function Editable({
   );
 }
 
-/** Which list style a tag stands for, if any. */
-function listStyleOf(tag: string): 'bullet' | 'number' | null {
-  if (tag === 'ol') return 'number';
-  if (tag === 'ul') return 'bullet';
-  return null;
-}
-
 /**
  * The lines a selection covers, as indices into the stored value.
  *
@@ -297,9 +304,9 @@ function lineSpan(root: HTMLElement, list: boolean): { from: number; to: number 
   const range = sel.getRangeAt(0);
 
   if (list) {
-    const items = Array.from(root.querySelectorAll('li'));
-    const from = items.findIndex((li) => li.contains(range.startContainer));
-    const to = items.findIndex((li) => li.contains(range.endContainer));
+    const items = Array.from(root.children);
+    const from = items.findIndex((el) => el.contains(range.startContainer));
+    const to = items.findIndex((el) => el.contains(range.endContainer));
     if (from < 0) return null;
     return { from, to: to < 0 ? from : to };
   }
@@ -320,18 +327,6 @@ function lineSpan(root: HTMLElement, list: boolean): { from: number; to: number 
   };
 }
 
-/** The shared item style, as React wants it. */
-function cssFromText(style: string): React.CSSProperties {
-  const out: Record<string, string> = {};
-  style.split(';').forEach((rule) => {
-    const [prop, value] = rule.split(':');
-    if (!prop || !value) return;
-    const key = prop.trim().replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
-    out[key] = value.trim();
-  });
-  return out as React.CSSProperties;
-}
-
 /**
  * Where a collapsed caret sits among a list's items: which item, whether it is
  * at the very start of it, whether that item is empty, and whether it is the
@@ -342,8 +337,8 @@ function caretItem(
 ): { index: number; last: boolean; atStart: boolean; empty: boolean } | null {
   const sel = window.getSelection();
   if (!sel || !sel.isCollapsed || !sel.anchorNode || !root.contains(sel.anchorNode)) return null;
-  const items = Array.from(root.querySelectorAll('li'));
-  const index = items.findIndex((li) => li.contains(sel.anchorNode));
+  const items = Array.from(root.children);
+  const index = items.findIndex((el) => el.contains(sel.anchorNode));
   if (index < 0) return null;
   const li = items[index];
   /* Measured as text rather than by offset: the caret can sit at offset 0 of a

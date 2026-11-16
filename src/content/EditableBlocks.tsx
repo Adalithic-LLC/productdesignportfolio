@@ -14,7 +14,13 @@ import { ArrowDown, ArrowUp, Columns2, Copy, Eye, GripVertical, Check as CheckIc
 import { cn } from '@/lib/utils';
 import { useContent } from './ContentContext';
 import { Editable } from './Editable';
-import { listDomToValue, parseListLine } from './inlineMarks';
+import {
+  type LineStyle,
+  hasMarkers,
+  parseStyles,
+  serializeStyles,
+  splitLines,
+} from './inlineMarks';
 import {
   blockForTool,
   canMoveBlocks,
@@ -45,17 +51,6 @@ function focusAtEnd(el: HTMLElement) {
   sel?.addRange(range);
 }
 
-/** Place the text caret at the start of a contentEditable element. */
-function focusAtStart(el: HTMLElement) {
-  el.focus();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(true);
-  const sel = window.getSelection();
-  sel?.removeAllRanges();
-  sel?.addRange(range);
-}
-
 /** Short label for the armed tool, used on the insertion line. */
 function toolLabel(tool: InsertTool, groups: { id: string; name: string }[] = []): string {
   if (tool.kind === 'paragraph') return 'Paragraph';
@@ -75,186 +70,130 @@ function blockElement(path: string, index: number, item: ProseItem) {
     const cfg = headerConfig(item.style);
     return <Editable as={cfg.tag} path={textPath} className={cfg.className} />;
   }
-  /* A paragraph set as a list keeps the same stored text -- one line per item
-     -- and only changes how it is drawn. */
-  if (block && item.list) {
-    return <ListBlock path={path} index={index} textPath={textPath} style={item.list} />;
-  }
-  /* The measure travels with the block; its size, weight and colour do not --
-     those belong to the prose the block has been put into, and every page sets
-     them its own way. */
-  return <ParagraphBlock path={path} index={index} textPath={textPath} />;
-}
-
-/**
- * Re-style a run of a block's lines, splitting the block around them.
- *
- * A list style belongs to a block, but the thing being styled is a line. So
- * bulleting one line of a paragraph, or taking the bullet off one item of a
- * list, turns one block into up to three: what came before at its old style,
- * the chosen lines at the new one, and what came after at the old style again.
- * Blocks that would hold nothing are left out.
- *
- * Returns the index the middle block landed at, for putting the caret back.
- */
-function useRestyleLines(path: string, index: number) {
-  const { content, setValue } = useContent();
+  /* A line carries its own marker, so bulleted and plain lines sit in one
+     block. Only a block that has none of them is drawn as plain prose. */
+  const text = block ? (item.text ?? '') : item;
+  const styles = parseStyles(text, block ? item.styles : undefined, block ? (item.list ?? 'none') : 'none');
   return (
-    from: number,
-    to: number,
-    style: 'bullet' | 'number' | null,
-    text: string,
-    was: 'bullet' | 'number' | null
-  ) => {
-    const lines = text.split('\n');
-    if (!lines.length) return index;
-    const a = Math.min(Math.max(from, 0), lines.length - 1);
-    const b = Math.min(Math.max(to, a), lines.length - 1);
-
-    const block = (ls: string[], st: 'bullet' | 'number' | null): ProseBlock => {
-      const out: ProseBlock = { type: 'paragraph', text: ls.join('\n') };
-      if (st) out.list = st;
-      return out;
-    };
-    /* Indent is a list's business: a line leaving one drops its tabs, and a
-       tail left without its head is pulled back to the margin so it does not
-       hang indented under nothing. */
-    const flatten = (ls: string[]) => ls.map((l) => parseListLine(l).text);
-    const reseat = (ls: string[]) => {
-      const depths = ls.map((l) => parseListLine(l).depth);
-      const base = Math.min(...depths);
-      return ls.map((l, i) => '\t'.repeat(depths[i] - base) + parseListLine(l).text);
-    };
-
-    const out: ProseBlock[] = [];
-    if (a > 0) out.push(block(lines.slice(0, a), was));
-    out.push(block(style ? lines.slice(a, b + 1) : flatten(lines.slice(a, b + 1)), style));
-    if (b < lines.length - 1) {
-      const rest = lines.slice(b + 1);
-      out.push(block(was ? reseat(rest) : rest, was));
-    }
-
-    const arr = (getByPath(content, path) as ProseItem[]) ?? [];
-    setValue(path, [...arr.slice(0, index), ...out, ...arr.slice(index + 1)]);
-    return index + (a > 0 ? 1 : 0);
-  };
-}
-
-/** Put the caret in a block's field once it has been rendered. */
-function focusBlockSoon(path: string, index: number, atEnd = false) {
-  requestAnimationFrame(() => {
-    const el = document.querySelector<HTMLElement>(`[data-editable-path="${path}.${index}.text"]`);
-    if (el) (atEnd ? focusAtEnd : focusAtStart)(el);
-  });
-}
-
-/**
- * A plain paragraph, which can have any of its lines turned into a list.
- */
-function ParagraphBlock({
-  path,
-  index,
-  textPath,
-}: {
-  path: string;
-  index: number;
-  textPath: string;
-}) {
-  const { content } = useContent();
-  const restyle = useRestyleLines(path, index);
-  const value = String(getByPath(content, textPath) ?? '');
-  return (
-    <Editable
-      as="p"
-      multiline
-      path={textPath}
-      className="max-w-3xl"
-      onLineStyle={(from, to, style) => {
-        const el = document.querySelector<HTMLElement>(`[data-editable-path="${textPath}"]`);
-        const current = el ? (el.innerText ?? value) : value;
-        focusBlockSoon(path, restyle(from, to, style, current.replace(/\r/g, ''), null));
-      }}
+    <LinesBlock
+      path={path}
+      index={index}
+      textPath={textPath}
+      styles={styles}
+      marked={hasMarkers(styles)}
     />
   );
 }
 
 /**
- * A paragraph drawn as a list, with the two ways out of it wired up.
+ * A paragraph, whose lines may each carry a marker.
  *
- * Inside the list the browser already does the right thing: backspace at the
- * start of an item merges it into the one above, and emptying an item and
- * deleting again removes it. Neither works at the edges, because the list is
- * the editing host -- there is no block above the first item, and none after
- * the last. So backspace at the very start turns the block back into a
- * paragraph, and Enter on an empty last item ends the list and opens a
- * paragraph under it, which is what the second Enter is for.
+ * A list style belongs to a line rather than to the block, so bulleted lines
+ * and the prose around them stay in one block. Taking the marker off a line
+ * leaves it where it is -- it does not split the block in three, and it does
+ * not unmark the lines around it.
+ *
+ * With no markers anywhere the block is drawn as an ordinary paragraph, which
+ * is what nearly all of them are; the line machinery only appears once a line
+ * asks for it.
  */
-function ListBlock({
+function LinesBlock({
   path,
   index,
   textPath,
-  style,
+  styles,
+  marked,
 }: {
   path: string;
   index: number;
   textPath: string;
-  style: 'bullet' | 'number';
+  styles: LineStyle[];
+  marked: boolean;
 }) {
-  const { content, isAdmin, setText, insertBlock, removeBlock } = useContent();
-  const restyle = useRestyleLines(path, index);
+  const { content, isAdmin, setValue } = useContent();
   const host = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<{ top: number; left: number; height: number }[]>([]);
-  const value = String(getByPath(content, textPath) ?? '');
+  const item = getByPath(content, `${path}.${index}`);
+  const value = typeof item === 'string' ? item : String((item as ProseBlock)?.text ?? '');
 
-  /* The items live inside a contentEditable, so a control cannot be rendered
-     among them -- the markup in there is written by hand and would be thrown
-     away on the next sync. The crosses are laid over the gutter instead, one
-     per item, measured from where the items actually sit. */
+  /* Text and markers are written together: they are one edit, and a commit of
+     either on its own would leave a line without its marker. */
+  const commit = (text: string, next: LineStyle[]) => {
+    const was = getByPath(content, `${path}.${index}`);
+    const base: ProseBlock =
+      typeof was === 'string' ? { type: 'paragraph', text: was } : { ...(was as ProseBlock) };
+    base.text = text;
+    delete base.list;
+    if (hasMarkers(next)) base.styles = serializeStyles(next);
+    else delete base.styles;
+    setValue(`${path}.${index}`, base);
+  };
+
+  const restyle = (from: number, to: number, style: LineStyle) => {
+    const next = styles.slice();
+    while (next.length < splitLines(value).length) next.push('none');
+    for (let i = from; i <= to && i < next.length; i += 1) next[i] = style;
+    commit(value, next);
+  };
+
+  /* The lines live inside a contentEditable, so a control cannot be rendered
+     among them -- the markup in there is written by hand and replaced on the
+     next sync. The crosses are laid over instead, beside each line, measured
+     from where the lines actually sit. */
   useLayoutEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin || !marked) {
+      setRows((prev) => (prev.length ? [] : prev));
+      return;
+    }
     const el = host.current;
-    const listEl = el?.querySelector('ul, ol');
-    if (!el || !listEl) return;
+    const field = el?.querySelector('[data-editable-path]');
+    if (!el || !field) return;
     const measure = () => {
       const box = el.getBoundingClientRect();
       setRows(
-        Array.from(listEl.querySelectorAll<HTMLElement>('li')).map((li) => {
-          const r = li.getBoundingClientRect();
-          /* Beside the item rather than in the page gutter: the gutter is
-             where the block's own delete cross sits, and the first item's
-             would land underneath it. */
+        Array.from(field.children).map((child) => {
+          const r = (child as HTMLElement).getBoundingClientRect();
           return { top: r.top - box.top, left: r.right - box.left + 8, height: r.height };
         })
       );
     };
     measure();
     const ro = new ResizeObserver(measure);
-    ro.observe(listEl);
+    ro.observe(field);
     const mo = new MutationObserver(measure);
-    mo.observe(listEl, { childList: true, subtree: true, characterData: true });
+    mo.observe(field, { childList: true, subtree: true, characterData: true });
     return () => {
       ro.disconnect();
       mo.disconnect();
     };
-  }, [isAdmin, value, style]);
+  }, [isAdmin, marked, value, styles.join('')]);
 
-  /* Read the list as it stands rather than from the store: the field commits
-     on blur, and blur runs on the way to a click, so the store can be a
-     keystroke behind what is on screen. */
-  const currentValue = () => {
-    const listEl = host.current?.querySelector('ul, ol');
-    return listEl ? listDomToValue(listEl) : value;
+  const removeLine = (i: number) => {
+    const ls = splitLines(value);
+    if (i < 0 || i >= ls.length) return;
+    const nextStyles = styles.slice();
+    ls.splice(i, 1);
+    nextStyles.splice(i, 1);
+    commit(ls.join('\n'), nextStyles);
   };
-  const removeItemAt = (i: number) => {
-    const lines = currentValue().split('\n');
-    if (i < 0 || i >= lines.length) return;
-    lines.splice(i, 1);
-    if (!lines.length || lines.every((line: string) => line.trim() === '')) {
-      removeBlock(path, index);
-      return;
-    }
-    setText(textPath, lines.join('\n'));
-  };
+
+  const field = marked ? (
+    <Editable
+      as="div"
+      lines={styles}
+      path={textPath}
+      className="pdp-lines max-w-3xl space-y-1"
+      onCommitLines={commit}
+      onLineStyle={restyle}
+    />
+  ) : (
+    /* The measure travels with the block; its size, weight and colour do not
+       -- those belong to the prose the block has been put into, and every page
+       sets them its own way. */
+    <Editable as="p" multiline path={textPath} className="max-w-3xl" onLineStyle={restyle} />
+  );
+
+  if (!marked) return field;
 
   return (
     <div ref={host} className="group/list relative">
@@ -263,39 +202,16 @@ function ListBlock({
           <button
             key={i}
             type="button"
-            title="Delete this bullet"
-            aria-label="Delete this bullet"
-            onClick={() => removeItemAt(i)}
+            title="Delete this line"
+            aria-label="Delete this line"
+            onClick={() => removeLine(i)}
             style={{ top: row.top + Math.max(0, (row.height - 20) / 2), left: row.left }}
             className="absolute z-20 flex h-5 w-5 items-center justify-center rounded border border-border/60 bg-background/90 text-muted-foreground opacity-0 shadow-sm transition hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 group-hover/list:opacity-100"
           >
             <X className="h-3 w-3" />
           </button>
         ))}
-      <Editable
-      as={style === 'number' ? 'ol' : 'ul'}
-      list
-      multiline
-      path={textPath}
-      className={cn(
-        'max-w-3xl space-y-1 pl-5 marker:text-muted-foreground/60',
-        style === 'number' ? 'list-decimal' : 'list-disc'
-      )}
-      onLineStyle={(from, to, next) => {
-        focusBlockSoon(path, restyle(from, to, next, currentValue(), style));
-      }}
-      onLineRemove={(line) => removeItemAt(line)}
-      onListBreak={(next) => {
-        setText(textPath, next);
-        insertBlock(path, index + 1, { type: 'paragraph', text: '' });
-        requestAnimationFrame(() => {
-          const el = document.querySelector<HTMLElement>(
-            `[data-editable-path="${path}.${index + 1}.text"]`
-          );
-          if (el) focusAtEnd(el);
-        });
-      }}
-      />
+      {field}
     </div>
   );
 }

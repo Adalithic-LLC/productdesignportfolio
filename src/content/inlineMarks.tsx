@@ -356,32 +356,48 @@ export function toHtml(value: string): string {
 /** How deep a sub-list can go. Past this the indent stops reading as structure. */
 export const LIST_MAX_DEPTH = 3;
 
-/** Markers by depth, so a sub-item is told apart from its parent at a glance. */
-const BULLETS = ['disc', 'circle', 'square', 'circle'];
-const NUMBERS = ['decimal', 'lower-alpha', 'lower-roman', 'lower-alpha'];
+export type LineStyle = 'bullet' | 'number' | 'none';
+
+/** A value's lines, keeping a single empty line for an empty value. */
+export function splitLines(value: string): string[] {
+  const lines = value.split('\n');
+  return lines.length ? lines : [''];
+}
+
+/* One character per line, kept beside the text rather than in it: the text
+   stays readable in the content file and a line that happens to begin with a
+   dash is never mistaken for a bullet. */
+const STYLE_CODE: Record<LineStyle, string> = { bullet: 'b', number: 'n', none: '.' };
+const STYLE_OF: Record<string, LineStyle> = { b: 'bullet', n: 'number', '.': 'none' };
+
+/** A line's style per line of `value`, falling back to the block's own. */
+export function parseStyles(
+  value: string,
+  styles: string | undefined,
+  fallback: LineStyle = 'none'
+): LineStyle[] {
+  return splitLines(value).map((_, i) => STYLE_OF[styles?.[i] ?? ''] ?? fallback);
+}
+
+/** The styles of a set of lines, as stored. */
+export function serializeStyles(styles: LineStyle[]): string {
+  return styles.map((st) => STYLE_CODE[st]).join('');
+}
+
+/** True when a block's lines are drawn as anything other than plain prose. */
+export function hasMarkers(styles: LineStyle[]): boolean {
+  return styles.some((st) => st !== 'none');
+}
 
 /**
  * A stored line split into its indent and its text.
  *
- * Depth rides along as leading tabs. That keeps a list one line per item like
- * any other paragraph -- nothing in the store knows about nesting -- and a tab
- * never survives as visible text, since the markup carries the indent instead.
+ * Depth rides along as leading tabs, so a line keeps its place in the outline
+ * without the markup having to hold it. A tab never survives as visible text.
  */
 export function parseListLine(line: string): { depth: number; text: string } {
   const indent = /^\t*/.exec(line)?.[0] ?? '';
   return { depth: Math.min(indent.length, LIST_MAX_DEPTH), text: line.slice(indent.length) };
-}
-
-/** The inline style an item at this depth is drawn with. */
-export function listItemStyle(depth: number, ordered: boolean): string {
-  const marker = (ordered ? NUMBERS : BULLETS)[Math.min(depth, LIST_MAX_DEPTH)];
-  return `margin-left:${depth * 1.35}rem;list-style-type:${marker}`;
-}
-
-/** Write a depth onto an item, markup and marker together. */
-export function setItemDepth(li: HTMLElement, depth: number, ordered: boolean): void {
-  li.setAttribute('data-depth', String(depth));
-  li.setAttribute('style', listItemStyle(depth, ordered));
 }
 
 /** An item's depth, defaulting to the top level. */
@@ -389,50 +405,58 @@ export function itemDepth(li: Element): number {
   return Math.min(Math.max(Number(li.getAttribute('data-depth')) || 0, 0), LIST_MAX_DEPTH);
 }
 
+/** An item's style, defaulting to plain. */
+export function itemStyle(el: Element): LineStyle {
+  const v = el.getAttribute('data-style');
+  return v === 'bullet' || v === 'number' ? v : 'none';
+}
+
+/** Write a style and depth onto a line, together. */
+export function setItemStyle(el: HTMLElement, style: LineStyle, depth: number): void {
+  el.setAttribute('data-style', style);
+  el.setAttribute('data-depth', String(depth));
+  el.setAttribute('style', `margin-left:${depth * 1.35}rem`);
+}
+
 /**
- * The same value as list markup: one `<li>` per line, indented by its tabs.
+ * A block's lines as markup: one `<div>` each, carrying its own style and
+ * depth.
  *
- * `LI` is already a block tag to {@link domToSegments}, so reading the field
- * back turns each item into a line again and the stored value is unchanged by
- * the round trip -- a list is a way of showing a paragraph's lines, not a
- * different kind of content.
+ * Plain lines and marked ones sit together, which is the point -- a list and
+ * the prose around it are one block, not three. `DIV` is already a block tag
+ * to {@link domToSegments}, so reading the lines back turns each one into a
+ * line again.
  */
-export function toListHtml(value: string, ordered = false): string {
+export function toLinesHtml(value: string, styles: LineStyle[]): string {
   return splitLines(value)
-    .map((line) => {
+    .map((line, i) => {
       const { depth, text } = parseListLine(line);
+      const style = styles[i] ?? 'none';
       return (
-        `<li data-depth="${depth}" style="${listItemStyle(depth, ordered)}">` +
-        `${toHtml(text) || '<br>'}</li>`
+        `<div data-style="${style}" data-depth="${depth}" ` +
+        `style="margin-left:${depth * 1.35}rem">${toHtml(text) || '<br>'}</div>`
       );
     })
     .join('');
 }
 
-/**
- * What a list field holds, read back off its items.
- *
- * Unlike {@link domToValue} this keeps each item's depth, putting the tabs
- * back on the front of the line.
- */
-export function listDomToValue(root: Node): string {
-  const items = Array.from((root as HTMLElement).querySelectorAll('li'));
-  if (!items.length) return domToValue(root);
-  /* A line break inside an item is not one: items are what the newlines in
-     the stored value separate, and an empty item carries a filler `<br>` that
-     would otherwise read back as a line of its own. */
-  const lines = items.map(
-    (li) =>
-      '\t'.repeat(itemDepth(li)) + segmentsToValue(domToSegments(li)).replace(/\n/g, '')
-  );
-  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
-  return lines.join('\n');
-}
-
-/** A value's lines, keeping a single empty item for an empty value. */
-export function splitLines(value: string): string[] {
-  const lines = value.split('\n');
-  return lines.length ? lines : [''];
+/** What a lines field holds, read back off its lines. */
+export function linesFromDom(root: Node): { text: string; styles: LineStyle[] } {
+  const els = Array.from((root as HTMLElement).children) as HTMLElement[];
+  if (!els.length) return { text: domToValue(root), styles: [] };
+  const text: string[] = [];
+  const styles: LineStyle[] = [];
+  els.forEach((el) => {
+    /* A break inside a line is not a line: lines are what the newlines in the
+       stored value separate, and an empty one carries a filler `<br>`. */
+    text.push('\t'.repeat(itemDepth(el)) + segmentsToValue(domToSegments(el)).replace(/\n/g, ''));
+    styles.push(itemStyle(el));
+  });
+  while (text.length > 1 && text[text.length - 1].trim() === '') {
+    text.pop();
+    styles.pop();
+  }
+  return { text: text.join('\n'), styles };
 }
 
 /** Read a mark off a DOM element, if it is one of ours and well formed. */

@@ -280,6 +280,42 @@
      of the page, with its left edge left on the column. The margin here is the
      centred-column guess; useFullBleed measures the real gap and overrides it
      inline, since a left-aligned column (prose) is not centred. */
+  /* Lines that carry their own marker. Markers are drawn rather than left to
+     `list-style`, because a block holds bulleted and plain lines together: a
+     real list would number the plain ones too, and a counter only counts the
+     lines that ask to be counted. */
+  .pdp-lines > [data-style='bullet'],
+  .pdp-lines > [data-style='number'] {
+    position: relative;
+    padding-left: 1.4em;
+  }
+  .pdp-lines > [data-style='bullet']::before {
+    content: '\2022';
+    position: absolute;
+    left: 0.3em;
+    color: hsl(var(--muted-foreground) / 0.65);
+  }
+  .pdp-lines > [data-style='bullet'][data-depth='1']::before {
+    content: '\25E6';
+  }
+  .pdp-lines > [data-style='bullet'][data-depth='2']::before,
+  .pdp-lines > [data-style='bullet'][data-depth='3']::before {
+    content: '\25AA';
+  }
+  .pdp-lines {
+    counter-reset: pdp-line;
+  }
+  .pdp-lines > [data-style='number'] {
+    counter-increment: pdp-line;
+  }
+  .pdp-lines > [data-style='number']::before {
+    content: counter(pdp-line) '.';
+    position: absolute;
+    left: 0;
+    color: hsl(var(--muted-foreground) / 0.65);
+    font-variant-numeric: tabular-nums;
+  }
+
   .full-bleed {
     margin-right: calc(50% - 50vw);
   }

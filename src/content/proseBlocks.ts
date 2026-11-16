@@ -32,9 +32,14 @@ export interface ProseBlock {
      a section of the page -- an insight and the response under it -- wants the
      column instead, and sets this to opt out of the run. */
   stack?: boolean;
-  /* A paragraph shown as a list: each of its lines is an item. The text is
-     stored the same either way, so this can be turned on and off without
-     rewriting the block. */
+  /* A marker per line: 'b' bulleted, 'n' numbered, '.' plain. Kept beside the
+     text rather than in it, so the text stays readable and a line that happens
+     to begin with a dash is never mistaken for a bullet. Lines past the end of
+     the string are plain. */
+  styles?: string;
+  /* How a block's lines were marked before markers were per line: the style
+     every line of it carries. Read as the default for lines `styles` does not
+     cover, and dropped the first time the block is written. */
   list?: 'bullet' | 'number';
 }
 
